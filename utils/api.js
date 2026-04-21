@@ -5,7 +5,7 @@
  * TMDB API key is configured in config.js (injected by GitHub Actions at deploy time)
  */
 
-import { API_CONFIG, PLACEHOLDER_IMAGE } from './config.js';
+import { API_CONFIG, PLACEHOLDER_IMAGE } from '../config.js';
 
 /**
  * Search for movies and TV shows using TMDB API

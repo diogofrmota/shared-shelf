@@ -122,8 +122,11 @@ const API_REQUEST_CONFIG = {
 const getUserId = () => {
   let userId = localStorage.getItem('media-tracker-user-id');
   if (!userId) {
-    userId = crypto.randomUUID?.() || 
-      `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    userId = crypto.randomUUID?.() ||
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
     localStorage.setItem('media-tracker-user-id', userId);
   }
   return userId;
