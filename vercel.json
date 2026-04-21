@@ -5,7 +5,6 @@
     }
   },
   "env": {
-    "TMDB_API_KEY": "@tmdb_api_key",
-    "DATABASE_URL": "@database_url"
+    "TMDB_API_KEY": "@tmdb_api_key"
   }
 }

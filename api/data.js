@@ -1,9 +1,8 @@
-import { sql } from '@vercel/postgres';
+import { getUserData, saveUserData } from '../lib/db.js';
 
 export default async function handler(req, res) {
-  // CORS headers for PWA
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-user-id');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -15,22 +14,20 @@ export default async function handler(req, res) {
 
   try {
     switch (req.method) {
-      case 'GET':
-        const { rows } = await sql`
-          SELECT data FROM user_data WHERE user_id = ${userId}
-        `;
-        return res.status(200).json(rows[0]?.data || { movies: [], anime: [], books: [] });
+      case 'GET': {
+        const result = await getUserData(userId);
+        return res.status(200).json(result?.data || { movies: [], anime: [], books: [] });
+      }
 
       case 'POST':
-      case 'PUT':
+      case 'PUT': {
         const { data } = req.body;
-        await sql`
-          INSERT INTO user_data (user_id, data, updated_at)
-          VALUES (${userId}, ${data}, NOW())
-          ON CONFLICT (user_id)
-          DO UPDATE SET data = ${data}, updated_at = NOW()
-        `;
-        return res.status(200).json({ success: true });
+        if (!data || !data.movies || !data.anime || !data.books) {
+          return res.status(400).json({ error: 'Invalid data structure' });
+        }
+        const result = await saveUserData(userId, data);
+        return res.status(200).json({ success: true, updatedAt: result.updatedAt });
+      }
 
       default:
         return res.status(405).json({ error: 'Method not allowed' });

@@ -1,17 +1,15 @@
 /**
- * Media Tracker PWA - Complete Application
- * 
- * Consolidated single-file architecture optimized for browser environment
- * Originally modular, now combined for direct browser loading
- * 
+ * Media Tracker - Complete Application
+ *
+ * Consolidated single-file architecture optimized for browser environment.
+ * Deployed on Vercel (free tier) with Vercel Postgres for cloud persistence.
+ *
  * Features:
  * - React Hooks for state management
  * - Component composition
- * - Proper error handling
  * - Responsive design
  * - Multiple media type support (Movies, TV, Anime, Books)
- * - Cloud persistence with Vercel Postgres (localStorage fallback)
- * - PWA compatible
+ * - Cloud persistence with Vercel Postgres (localStorage fallback for offline)
  */
 
 const React = window.React;
