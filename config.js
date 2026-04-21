@@ -1,15 +1,15 @@
 /**
  * Configuration file for API keys and constants
- * 
- * TMDB API key is injected at deploy time by GitHub Actions.
- * For local development, create a .env file (see .env.example).
+ *
+ * For local development, create a .env.local file (see .env.example).
+ * On Vercel, set environment variables in the project settings.
  */
 
 // API Configuration
 export const API_CONFIG = {
   TMDB: {
     BASE_URL: 'https://api.themoviedb.org/3',
-    API_KEY: 'TMDB_API_KEY_PLACEHOLDER', // Replaced by GitHub Actions at deploy time
+    API_KEY: 'TMDB_API_KEY_PLACEHOLDER',
     ENDPOINTS: {
       SEARCH_MULTI: '/search/multi'
     }
