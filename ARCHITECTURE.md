@@ -1,77 +1,60 @@
-# Media Tracker - Architecture Documentation
+# Architecture
 
-## Project Structure
+## File structure
 
 ```
 media-tracker/
-├── index.html                 # App entry point
-├── media-tracker.jsx          # Main application (single-file React)
-├── config.js                  # Centralized configuration (API keys, constants)
-├── package.json               # Node dependencies (@vercel/postgres)
-├── vercel.json                # Vercel deployment configuration
+├── index.html                 # Entry point — loads React, Babel, Tailwind via CDN
+├── media-tracker.jsx          # Full React application (self-contained, no build step)
+├── config.js                  # API endpoints and app constants
+├── package.json               # @vercel/postgres dependency
+├── vercel.json                # Vercel function config
 ├── .env.example               # Environment variable template
 │
-├── /api                       # Vercel serverless functions
-│   ├── data.js               # GET/POST user media data
-│   └── health.js             # Database health check
+├── api/
+│   ├── data.js               # Serverless function — GET/POST/PUT user data
+│   └── health.js             # Serverless function — database health check
 │
-├── /lib                       # Server-side utilities
-│   └── db.js                 # Vercel Postgres helper functions
+├── lib/
+│   └── db.js                 # Vercel Postgres helpers (getUserData, saveUserData, etc.)
 │
-├── /components                # Reusable UI components
-│   ├── Icons.jsx             # SVG icon components
-│   ├── MediaCard.jsx         # Individual media item card
-│   ├── SearchModal.jsx       # API search modal
-│   ├── GlobalSearchModal.jsx # Library search modal
-│   ├── Header.jsx            # Header and navigation
-│   └── UI.jsx                # Reusable UI components (FilterButton, EmptyState, etc.)
+├── components/               # Modular components (not loaded by browser — reference only)
+│   ├── Icons.jsx
+│   ├── MediaCard.jsx
+│   ├── SearchModal.jsx
+│   ├── GlobalSearchModal.jsx
+│   ├── Header.jsx
+│   └── UI.jsx
 │
-└── /utils                    # Client-side utilities
-    ├── api.js                # API calls (TMDB, Jikan, Google Books)
+└── utils/
+    ├── api.js                # External API calls (TMDB, Jikan, Google Books)
     ├── storage.js            # Cloud sync + localStorage fallback
-    └── helpers.js            # Helper functions and common logic
+    └── helpers.js            # Shared helper functions
 ```
 
-## Vercel Architecture (Cloud Storage)
+> `media-tracker.jsx` is self-contained — it duplicates logic from `utils/` and `components/` so it can run directly in the browser via Babel without a build step. The files in `components/` and `utils/` are not loaded by the browser.
+
+---
+
+## Data flow
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│    Browser      │───▶│  Vercel Edge/CDN │───▶│  Static Files   │
-│  (React + JS)   │◀───│    (Hosting)     │◀───│  (index.html)   │
-└────────┬────────┘    └────────┬─────────┘    └─────────────────┘
-         │                      │
-         │ API Calls            │ Routes to
-         ▼                      ▼
-┌─────────────────┐    ┌──────────────────┐
-│   /api/data     │───▶│  Vercel Postgres │
-│ Serverless Func │◀───│   (Free Tier)    │
-└─────────────────┘    └──────────────────┘
+Browser                   Vercel Edge              Vercel Postgres
+──────────────────────────────────────────────────────────────────
+Load app              →   Serve index.html + jsx
+GET /api/data         →   api/data.js          →   SELECT from user_data
+POST /api/data        →   api/data.js          →   UPSERT into user_data
+GET /api/health       →   api/health.js        →   SELECT 1
 ```
 
-**Data Flow**:
-1. User loads app → requests `/api/data` with `x-user-id` header
-2. Serverless function queries Postgres for user's JSON blob
-3. Changes are saved via `POST /api/data` (upsert)
-4. localStorage cache provides offline fallback
+1. On load, the app fetches `/api/data` with an `x-user-id` header (a UUID stored in localStorage)
+2. The serverless function queries Postgres and returns the user's data blob
+3. Every save calls `POST /api/data` — an upsert keyed on `user_id`
+4. If the API is unreachable, the app falls back to `localStorage` cache
 
-## Key Architecture Decisions
+---
 
-### 1. **Single Responsibility**
-
-- `api/data.js` — HTTP handler only, delegates to `lib/db.js`
-- `lib/db.js` — all Postgres queries, no HTTP concerns
-- `utils/storage.js` — client-side cloud sync logic
-- `config.js` — all configuration in one place
-
-### 2. **User Identity**
-
-No authentication is required. A random UUID is generated on first visit and stored in localStorage as `media-tracker-user-id`. This ID is sent with every API request as the `x-user-id` header, scoping all data to that browser.
-
-### 3. **Offline Support**
-
-Cloud data is cached in localStorage under `media-tracker-data-cache`. If the API is unreachable, the app falls back to this cache. Every save also writes to localStorage simultaneously.
-
-### 4. **Data Model**
+## Database schema
 
 ```sql
 CREATE TABLE user_data (
@@ -82,152 +65,92 @@ CREATE TABLE user_data (
 );
 ```
 
-The entire user library is stored as a single JSONB blob per user:
+The entire library is one JSONB blob per user:
 
 ```json
 {
-  "movies": [...],
-  "anime":  [...],
-  "books":  [...]
+  "movies": [ { "id": "tmdb-123", "title": "...", "status": "watching", ... } ],
+  "anime":  [ { "id": "mal-456",  "title": "...", "status": "completed", ... } ],
+  "books":  [ { "id": "book-789", "title": "...", "status": "plan-to-read", ... } ]
 }
 ```
 
-## Component Documentation
+The schema is created automatically on the first API call (`CREATE TABLE IF NOT EXISTS` runs in `api/data.js`).
 
-### MediaCard
+---
 
-Displays a single media item with title, rating, year, and status dropdown.
+## Status values
 
-```jsx
-<MediaCard
-  item={{ title: "Movie Title", rating: 8.5, year: 2023, ... }}
-  onStatusChange={(id, status) => handleStatusChange(id, status)}
-/>
-```
+**Movies, TV shows, Anime**
 
-### SearchModal
+| Value | Label |
+|---|---|
+| `plan-to-watch` | To Watch |
+| `watching` | Watching |
+| `completed` | Completed |
 
-Modal for searching and adding items from external APIs.
+**Books**
 
-```jsx
-<SearchModal
-  isOpen={true}
-  onClose={() => setOpen(false)}
-  category="movies"
-  onAdd={(item) => handleAdd(item)}
-/>
-```
+| Value | Label |
+|---|---|
+| `plan-to-read` | To Read |
+| `reading` | Reading |
+| `read` | Read |
 
-### GlobalSearchModal
+---
 
-Modal for searching within the user's saved library.
-
-```jsx
-<GlobalSearchModal
-  isOpen={true}
-  onClose={() => setOpen(false)}
-  data={savedData}
-  setActiveTab={(tab) => setTab(tab)}
-/>
-```
-
-## Utility Functions
-
-### API Functions (`utils/api.js`)
-
-- `searchMovies(query)` — Search TMDB for movies/TV
-- `searchAnime(query)` — Search Jikan for anime
-- `searchBooks(query)` — Search Google Books
-
-All return a consistent format:
+## API layer (`lib/db.js`)
 
 ```javascript
-{
-  id: "unique-id",
-  title: "Item Title",
-  thumbnail: "image-url",
-  rating: "8.5",
-  year: "2023",
-  type: "Movie|TV Show|Anime",
-  author: "Author Name" // books only
-}
+getUserData(userId)           // → { data, updatedAt } | null
+saveUserData(userId, data)    // → { success, updatedAt }
+deleteUserData(userId)        // → true
+cleanupOldData(daysOld)       // → rowCount  (utility, not called by routes)
+checkConnection()             // → boolean
+initializeDatabase()          // → boolean  (called on cold start in api/data.js)
 ```
 
-### Storage Functions (`utils/storage.js`)
+---
 
-- `getStoredData()` — Fetch from cloud, fall back to localStorage cache
-- `saveData(data)` — Save to Postgres + localStorage
-- `exportData()` — Export as JSON string
-- `importData(jsonString)` — Import from JSON
-- `clearStoredData()` — Reset all data
-- `checkCloudConnection()` — Ping `/api/health`
-
-### Database Functions (`lib/db.js`)
-
-- `getUserData(userId)` — Fetch user's data blob
-- `saveUserData(userId, data)` — Upsert user's data blob
-- `deleteUserData(userId)` — Remove user record
-- `cleanupOldData(daysOld)` — Delete stale records (utility)
-- `checkConnection()` — Verify database is reachable
-- `initializeDatabase()` — Create table if not exists
-
-## Configuration (`config.js`)
+## Storage layer (`utils/storage.js`)
 
 ```javascript
-API_CONFIG        // API endpoints and keys
-STORAGE_CONFIG    // localStorage keys and defaults
-STATUS_CONFIG     // Status constants
-STATUS_STYLES     // CSS classes for each status
-STATUS_LABELS     // Display labels for statuses
-FILTER_CONFIG     // Filter options per category
-TAB_CONFIG        // Tab definitions
-PLACEHOLDER_IMAGE // Default image URL
-API_REQUEST_CONFIG // Debounce delay, timeouts
+getStoredData()         // cloud first, falls back to localStorage cache
+saveData(data)          // writes to cloud + localStorage simultaneously
+clearStoredData()       // clears cloud + localStorage
+exportData()            // returns JSON string of current data
+importData(jsonString)  // validates and saves imported data
+checkCloudConnection()  // pings /api/health
 ```
 
-## Deployment
+---
 
-### Vercel Setup
+## User identity
 
-1. Link a Vercel Postgres database to the project — Vercel auto-provides `POSTGRES_URL` and related env vars
-2. Add `TMDB_API_KEY` in Vercel project settings
-3. Run the `CREATE TABLE` SQL once via the Vercel Postgres query console
-4. Deploy — no build step required
+No authentication. On first visit, a UUID is generated and stored in `localStorage` as `media-tracker-user-id`. This ID is sent with every API request as `x-user-id`. Each browser/device has its own ID and sees only its own data.
 
-### Environment Variables
+---
 
-| Variable | Source | Required |
+## Environment variables
+
+| Variable | Source | Purpose |
 |---|---|---|
-| `POSTGRES_URL` | Auto-provided by Vercel Postgres | Yes |
-| `POSTGRES_URL_NON_POOLING` | Auto-provided by Vercel Postgres | Yes |
-| `TMDB_API_KEY` | Set manually in Vercel settings | Yes |
+| `POSTGRES_URL` | Auto-injected by Vercel Postgres | Pooled connection (used by `@vercel/postgres`) |
+| `POSTGRES_URL_NON_POOLING` | Auto-injected by Vercel Postgres | Direct connection |
+| `TMDB_API_KEY` | Set manually in Vercel dashboard | Available to serverless functions |
 
-## Security Considerations
+---
 
-- The `user_id` is a random UUID stored in the user's browser — it's not a secret and not tied to any account
-- All write operations go through the serverless function, preventing direct DB access
-- The TMDB API key is currently hardcoded in `media-tracker.jsx` (client-side) since the search is browser-side; consider proxying through a serverless function if you want to keep it private
-- Consider adding rate limiting in `vercel.json` for the API routes if needed
+## Adding a new status
 
-## How to Add New Features
+1. Add the value to `STATUS_CONFIG` in `config.js` and inline in `media-tracker.jsx`
+2. Add a label to `STATUS_LABELS`
+3. Add a CSS class to `STATUS_STYLES`
+4. Add to `FILTER_CONFIG` for the relevant category
 
-### Adding a New Filter
+## Adding a new API source
 
-1. Update `config.js`:
-```javascript
-export const FILTER_CONFIG = {
-  MOVIES_TV: [
-    { value: 'on-hold', label: 'On Hold' },
-  ],
-};
-```
-
-2. Update `STATUS_CONFIG` and `STATUS_STYLES` in `config.js`
-
-The component will automatically support the new filter.
-
-### Adding a New API
-
-1. Add search function in `utils/api.js`
-2. Add endpoint config in `config.js`
-3. Wire into `SearchModal` switch statement in `media-tracker.jsx`
+1. Add search function to `utils/api.js`
+2. Add endpoint config to `config.js`
+3. Mirror the inline equivalent in `media-tracker.jsx`
+4. Wire into the `SearchModal` switch statement
