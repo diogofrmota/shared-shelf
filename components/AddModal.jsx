@@ -23,7 +23,6 @@ export const AddModal = ({ isOpen, onClose, activeTab, onAdd }) => {
 
   // For other types (calendar, trips, places, recipes) - show form modal
   const handleAddOther = () => {
-    // You'll implement specific forms for each type
     console.log('Open form for:', activeTab);
   };
 
@@ -109,9 +108,27 @@ const getAddTypeLabel = (tab) => {
   return labels[tab] || 'Item';
 };
 
+// Helper function to format date input
+const formatDateInput = (value) => {
+  // Remove any non-digit characters
+  const digits = value.replace(/\D/g, '');
+  
+  // Format as DD/MM/YYYY
+  if (digits.length <= 2) {
+    return digits;
+  } else if (digits.length <= 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  } else {
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+  }
+};
+
 // Render specific form based on type
 const renderFormByType = (type, onAdd, onClose) => {
   const [formData, setFormData] = React.useState({});
+  const [dateInput, setDateInput] = React.useState('');
+  const [startDateInput, setStartDateInput] = React.useState('');
+  const [endDateInput, setEndDateInput] = React.useState('');
   
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -119,55 +136,50 @@ const renderFormByType = (type, onAdd, onClose) => {
     onClose();
   };
 
-  // Format date to dd/mm/yyyy
-  const formatDateForDisplay = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`;
-  };
-
   switch(type) {
     case 'calendar':
       return (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Activity Name
             </label>
             <input
               type="text"
-              placeholder="Enter activity name"
+              placeholder="e.g., Movie Night"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Date (DD/MM/YYYY)
             </label>
             <input
               type="text"
               placeholder="DD/MM/YYYY"
+              value={dateInput}
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => {
-                let value = e.target.value;
-                // Store as YYYY-MM-DD internally but allow DD/MM/YYYY input
-                const dateParts = value.split('/');
-                if (dateParts.length === 3) {
-                  const [day, month, year] = dateParts;
+                const formatted = formatDateInput(e.target.value);
+                setDateInput(formatted);
+                
+                // Convert to YYYY-MM-DD for storage when complete
+                if (formatted.length === 10) {
+                  const [day, month, year] = formatted.split('/');
                   setFormData({ ...formData, date: `${year}-${month}-${day}` });
-                } else {
-                  setFormData({ ...formData, date: value });
                 }
               }}
+              maxLength={10}
               required
             />
+            <p className="text-xs text-slate-500 mt-1">Format: DD/MM/YYYY</p>
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Description
             </label>
             <textarea
@@ -180,7 +192,7 @@ const renderFormByType = (type, onAdd, onClose) => {
           
           <button 
             type="submit" 
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
           >
             Add Activity
           </button>
@@ -190,65 +202,67 @@ const renderFormByType = (type, onAdd, onClose) => {
     case 'trips':
       return (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Destination
             </label>
             <input
               type="text"
-              placeholder="Where are you going?"
+              placeholder="e.g., Paris, France"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
               required
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Start Date (DD/MM/YYYY)
             </label>
             <input
               type="text"
               placeholder="DD/MM/YYYY"
+              value={startDateInput}
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => {
-                let value = e.target.value;
-                const dateParts = value.split('/');
-                if (dateParts.length === 3) {
-                  const [day, month, year] = dateParts;
+                const formatted = formatDateInput(e.target.value);
+                setStartDateInput(formatted);
+                
+                if (formatted.length === 10) {
+                  const [day, month, year] = formatted.split('/');
                   setFormData({ ...formData, startDate: `${year}-${month}-${day}` });
-                } else {
-                  setFormData({ ...formData, startDate: value });
                 }
               }}
+              maxLength={10}
               required
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               End Date (DD/MM/YYYY)
             </label>
             <input
               type="text"
               placeholder="DD/MM/YYYY"
+              value={endDateInput}
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => {
-                let value = e.target.value;
-                const dateParts = value.split('/');
-                if (dateParts.length === 3) {
-                  const [day, month, year] = dateParts;
+                const formatted = formatDateInput(e.target.value);
+                setEndDateInput(formatted);
+                
+                if (formatted.length === 10) {
+                  const [day, month, year] = formatted.split('/');
                   setFormData({ ...formData, endDate: `${year}-${month}-${day}` });
-                } else {
-                  setFormData({ ...formData, endDate: value });
                 }
               }}
+              maxLength={10}
             />
           </div>
           
           <button 
             type="submit" 
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
           >
             Add Trip
           </button>
@@ -258,21 +272,21 @@ const renderFormByType = (type, onAdd, onClose) => {
     case 'dates':
       return (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Place Name
             </label>
             <input
               type="text"
-              placeholder="Name of the date spot"
+              placeholder="e.g., Romantic Restaurant"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Address
             </label>
             <input
@@ -283,8 +297,8 @@ const renderFormByType = (type, onAdd, onClose) => {
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Notes
             </label>
             <textarea
@@ -297,7 +311,7 @@ const renderFormByType = (type, onAdd, onClose) => {
           
           <button 
             type="submit" 
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
           >
             Add Date Spot
           </button>
@@ -307,37 +321,37 @@ const renderFormByType = (type, onAdd, onClose) => {
     case 'recipes':
       return (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Recipe Name
             </label>
             <input
               type="text"
-              placeholder="What's cooking?"
+              placeholder="e.g., Spaghetti Carbonara"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Ingredients
             </label>
             <textarea
-              placeholder="List each ingredient on a new line"
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+              placeholder="• 200g spaghetti&#10;• 2 eggs&#10;• 100g pancetta"
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 font-mono text-sm"
               rows="4"
               onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Instructions
             </label>
             <textarea
-              placeholder="Step by step instructions"
+              placeholder="Step by step cooking instructions"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
               rows="4"
               onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
@@ -346,7 +360,7 @@ const renderFormByType = (type, onAdd, onClose) => {
           
           <button 
             type="submit" 
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
           >
             Add Recipe
           </button>
