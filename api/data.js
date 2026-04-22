@@ -22,13 +22,21 @@ export default async function handler(req, res) {
     switch (req.method) {
       case 'GET': {
         const result = await getUserData(userId);
-        return res.status(200).json(result?.data || { movies: [], anime: [], books: [] });
+        return res.status(200).json(result?.data || {
+          movies: [],
+          tvshows: [],
+          books: [],
+          calendarEvents: [],
+          trips: [],
+          recipes: [],
+          dates: []
+        });
       }
 
       case 'POST':
       case 'PUT': {
         const { data } = req.body;
-        if (!data || !data.movies || !data.anime || !data.books) {
+        if (!data || typeof data !== 'object') {
           return res.status(400).json({ error: 'Invalid data structure' });
         }
         const result = await saveUserData(userId, data);
