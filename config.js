@@ -80,6 +80,22 @@ export const FILTER_CONFIG = {
 
 // Tab Configuration
 export const TAB_CONFIG = {
+  CALENDAR: {
+    id: 'calendar',
+    label: 'Calendar'
+  },
+  TRIPS: {
+    id: 'trips',
+    label: 'Trips'
+  },
+  DATES: {
+    id: 'dates',
+    label: 'Date Spots'
+  },
+  RECIPES: {
+    id: 'recipes',
+    label: 'Recipes'
+  },
   MOVIES: {
     id: 'movies',
     label: 'Movies'

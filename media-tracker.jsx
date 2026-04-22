@@ -1,5 +1,5 @@
 /**
- * Media Tracker - Complete Application
+ * Relationship Dashboard - Complete Application
  *
  * Consolidated single-file architecture optimized for browser environment.
  * Deployed on Vercel (free tier) with Vercel Postgres for cloud persistence.
@@ -744,7 +744,7 @@ const LoadingScreen = () => (
   <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
     <div className="text-center">
       <div className="inline-block w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mb-4"></div>
-      <p className="text-white text-lg">Loading your library...</p>
+      <p className="text-white text-lg">Loading...</p>
     </div>
   </div>
 );
@@ -771,8 +771,8 @@ const LoginScreen = ({ onLogin }) => {
         onSubmit={handleSubmit}
         className="w-full max-w-sm bg-slate-900/60 border border-slate-700 rounded-2xl p-8 backdrop-blur-sm"
       >
-        <h1 className="text-2xl font-bold text-white text-center mb-1">Media Tracker</h1>
-        <p className="text-slate-400 text-sm text-center mb-6">Sign in to access your library</p>
+        <h1 className="text-2xl font-bold text-white text-center mb-1">Shared Dashboard</h1>
+        <p className="text-slate-400 text-sm text-center mb-6">Please enter your credentials.</p>
 
         <label className="block text-slate-300 text-sm mb-2" htmlFor="login-username">Username</label>
         <input

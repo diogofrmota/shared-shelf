@@ -1,6 +1,6 @@
 const React = window.React;
 
-import { Search, Plus, Film, Tv, Book } from './Icons.jsx';
+import { Search, Plus, Film, Tv, Book, CalendarIcon, MapPin, Utensils, ChefHat } from './Icons.jsx';
 import { TAB_CONFIG } from '../config.js';
 
 /**
