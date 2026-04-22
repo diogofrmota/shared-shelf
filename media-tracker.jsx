@@ -2986,7 +2986,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick }) => 
             {sectionItems.length === 0 ? (
               <p className="text-slate-600 text-sm py-2 italic">Nothing here yet.</p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-12 gap-2 sm:gap-3 md:gap-4">
                 {sectionItems.map(item => (
                   <MediaCard key={item.id} item={item} onStatusChange={onStatusChange} />
                 ))}
