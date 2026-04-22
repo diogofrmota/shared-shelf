@@ -6,7 +6,7 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-import { searchMovies, searchAnime, searchBooks } from '../utils/api.js';
+import { searchMovies, searchTvShows, searchBooks } from '../utils/api.js';
 import { Close } from './Icons.jsx';
 import { getCategoryName, debounce } from '../utils/helpers.js';
 import { API_REQUEST_CONFIG } from '../config.js';
@@ -79,8 +79,8 @@ export const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
           case 'movies':
             searchResults = await searchMovies(query);
             break;
-          case 'anime':
-            searchResults = await searchAnime(query);
+          case 'tvshows':
+            searchResults = await searchTvShows(query);
             break;
           case 'books':
             searchResults = await searchBooks(query);

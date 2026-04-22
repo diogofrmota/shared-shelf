@@ -66,7 +66,7 @@ export const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
 
     const allItems = [
       ...data.movies.map(m => ({ ...m, category: 'movies' })),
-      ...data.anime.map(a => ({ ...a, category: 'anime' })),
+      ...data.tvshows.map(t => ({ ...t, category: 'tvshows' })),
       ...data.books.map(b => ({ ...b, category: 'books' }))
     ];
 

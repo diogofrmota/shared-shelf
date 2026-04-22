@@ -13,7 +13,7 @@ import { API_CONFIG, PLACEHOLDER_IMAGE } from '../config.js';
 export const searchMovies = async (query) => {
   try {
     const { TMDB } = API_CONFIG;
-    
+
     const url = new URL(`${TMDB.BASE_URL}${TMDB.ENDPOINTS.SEARCH_MULTI}`);
     url.searchParams.append('api_key', TMDB.API_KEY);
     url.searchParams.append('query', query);
@@ -23,12 +23,45 @@ export const searchMovies = async (query) => {
     if (!response.ok) throw new Error('Failed to fetch movies');
 
     const data = await response.json();
-    
+
     return data.results
-      .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+      .filter(item => item.media_type === 'movie')
       .map(item => transformMovieData(item));
   } catch (error) {
     console.error('Movie search error:', error);
+    return [];
+  }
+};
+
+export const searchTvShows = async (query) => {
+  try {
+    const { TMDB, JIKAN } = API_CONFIG;
+
+    const tmdbUrl = new URL(`${TMDB.BASE_URL}${TMDB.ENDPOINTS.SEARCH_MULTI}`);
+    tmdbUrl.searchParams.append('api_key', TMDB.API_KEY);
+    tmdbUrl.searchParams.append('query', query);
+    tmdbUrl.searchParams.append('include_adult', false);
+
+    const jikanUrl = new URL(`${JIKAN.BASE_URL}${JIKAN.ENDPOINTS.SEARCH_ANIME}`);
+    jikanUrl.searchParams.append('q', query);
+    jikanUrl.searchParams.append('limit', 10);
+
+    const [tmdbResult, jikanResult] = await Promise.allSettled([
+      fetch(tmdbUrl.toString()).then(r => r.json()),
+      fetch(jikanUrl.toString()).then(r => r.json())
+    ]);
+
+    const tvResults = tmdbResult.status === 'fulfilled'
+      ? (tmdbResult.value.results || []).filter(i => i.media_type === 'tv').map(transformMovieData)
+      : [];
+
+    const animeResults = jikanResult.status === 'fulfilled'
+      ? (jikanResult.value.data || []).map(transformAnimeData)
+      : [];
+
+    return [...tvResults, ...animeResults];
+  } catch (error) {
+    console.error('TV show search error:', error);
     return [];
   }
 };

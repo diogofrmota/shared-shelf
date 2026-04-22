@@ -33,7 +33,7 @@ export const STORAGE_CONFIG = {
   KEY: 'media-tracker-data',
   SCHEMA: {
     movies: [],
-    anime: [],
+    tvshows: [],
     books: []
   }
 };
@@ -91,9 +91,9 @@ export const TAB_CONFIG = {
     id: 'movies',
     label: 'Movies'
   },
-  ANIME: {
-    id: 'anime',
-    label: 'Tv Shows'
+  TV_SHOWS: {
+    id: 'tvshows',
+    label: 'TV Shows'
   },
   BOOKS: {
     id: 'books',

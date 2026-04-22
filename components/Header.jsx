@@ -80,6 +80,6 @@ export const Header = ({
  */
 export const getDefaultTabs = () => [
   { id: TAB_CONFIG.MOVIES.id, label: TAB_CONFIG.MOVIES.label, icon: Film },
-  { id: TAB_CONFIG.ANIME.id, label: TAB_CONFIG.ANIME.label, icon: Tv },
+  { id: TAB_CONFIG.TV_SHOWS.id, label: TAB_CONFIG.TV_SHOWS.label, icon: Tv },
   { id: TAB_CONFIG.BOOKS.id, label: TAB_CONFIG.BOOKS.label, icon: Book }
 ];

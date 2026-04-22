@@ -147,7 +147,7 @@ export const exportData = async () => {
 export const importData = async (jsonString) => {
   try {
     const data = JSON.parse(jsonString);
-    if (data.movies && data.anime && data.books) {
+    if (data.movies && data.tvshows && data.books) {
       await saveData(data);
       return true;
     }
