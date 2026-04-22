@@ -1340,12 +1340,12 @@ const TIME_SLOTS = (() => {
   return slots;
 })();
 
-const FormRow = ({ label, children, required }) => (
-  <div className="flex items-start gap-3">
-    <label className="text-slate-300 text-sm w-28 shrink-0 pt-2 text-right">
+const FormField = ({ label, required, children }) => (
+  <div className="space-y-1">
+    <label className="block text-sm font-medium text-slate-300">
       {label} {required && <span className="text-red-400">*</span>}
     </label>
-    <div className="flex-1">{children}</div>
+    {children}
   </div>
 );
 
@@ -1375,16 +1375,16 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
   };
 
   const isMediaType = ['movies', 'tvshows', 'books'].includes(activeTab);
-  const isTasksType = activeTab === 'tasks';
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+    const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
     switch(activeTab) {
       case 'tasks':
         if (formData.title) {
           onAddTask({
-            id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `task-${uid()}`,
             title: formData.title,
             description: formData.description || '',
             completed: false,
@@ -1394,26 +1394,27 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         }
         break;
       case 'calendar':
-        if (formData.title && formData.startDate) {
+        if (formData.title && formData.date) {
           onAddEvent({
-            id: `event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `event-${uid()}`,
             title: formData.title,
-            date: formData.startDate,
-            startDate: formData.startDate,
-            endDate: formData.endDate || formData.startDate,
-            startHour: formData.startHour || '',
-            endHour: formData.endHour || '',
+            date: formData.date,
+            startDate: formData.date,
+            endDate: formData.endDate || formData.date,
+            time: formData.time || '',
             description: formData.description || ''
           });
           onClose();
         }
         break;
       case 'trips':
-        if (formData.destination && formData.year) {
+        if (formData.destination) {
           onAddTrip({
-            id: `trip-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `trip-${uid()}`,
             destination: formData.destination,
-            year: parseInt(formData.year),
+            year: formData.startDate ? parseInt(formData.startDate.split('-')[0]) : new Date().getFullYear(),
+            startDate: formData.startDate || '',
+            endDate: formData.endDate || '',
             photo: formData.photo || '',
             accommodation: formData.accommodation || ''
           });
@@ -1423,7 +1424,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
       case 'recipes':
         if (formData.name) {
           onAddRecipe({
-            id: `recipe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `recipe-${uid()}`,
             name: formData.name,
             photo: formData.photo || '',
             prepTime: formData.prepTime || '',
@@ -1438,13 +1439,12 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
       case 'dates':
         if (formData.name) {
           onAddDate({
-            id: `date-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `date-${uid()}`,
             name: formData.name,
             category: formData.category || 'restaurant',
             address: formData.address || '',
-            lat: formData.lat || null,
-            lng: formData.lng || null,
-            placeId: formData.placeId || '',
+            lat: null,
+            lng: null,
             notes: formData.notes || '',
             link: formData.link || '',
             isFavourite: formData.isFavourite || false,
@@ -1458,7 +1458,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
   if (!isOpen) return null;
 
-  // For media types, show a simple modal that opens the search modal
+  const inputCls = "w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500";
+  const selectCls = "w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-purple-500";
+
   if (isMediaType) {
     return (
       <>
@@ -1484,7 +1486,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
           </div>
         </div>
 
-        {/* Search Modal */}
         <SearchModal
           isOpen={showSearchModal}
           onClose={() => {
@@ -1502,12 +1503,11 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     );
   }
 
-  // For non-media types, show a form modal
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-gradient-to-br from-slate-800 to-slate-900 z-10">
+          <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">{getModalTitle()}</h2>
             <button
               onClick={onClose}
@@ -1516,237 +1516,229 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <Close size={24} />
             </button>
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {activeTab === 'tasks' && (
-              <>
-                <FormRow label="Title" required>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                    autoFocus
-                  />
-                </FormRow>
-                <FormRow label="Description">
-                  <textarea
-                    rows="3"
-                    placeholder="Optional details…"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </FormRow>
-              </>
-            )}
-
-            {activeTab === 'calendar' && (
-              <>
-                <FormRow label="Title" required>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                  />
-                </FormRow>
-                <FormRow label="Start Date" required>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    required
-                  />
-                </FormRow>
-                <FormRow label="End Date">
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Start time">
-                  <select
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, startHour: e.target.value })}
-                  >
-                    <option value="">— none —</option>
-                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </FormRow>
-                <FormRow label="End time">
-                  <select
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, endHour: e.target.value })}
-                  >
-                    <option value="">— none —</option>
-                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </FormRow>
-                <FormRow label="Description">
-                  <textarea
-                    rows="3"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </FormRow>
-              </>
-            )}
-
-            {activeTab === 'trips' && (
-              <>
-                <FormRow label="Destination" required>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                    required
-                  />
-                </FormRow>
-                <FormRow label="Year" required>
-                  <input
-                    type="number"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                    required
-                  />
-                </FormRow>
-                <FormRow label="Photo URL">
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Accommodation">
-                  <input
-                    type="url"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })}
-                  />
-                </FormRow>
-              </>
-            )}
-
-            {activeTab === 'recipes' && (
-              <>
-                <FormRow label="Name" required>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                </FormRow>
-                <FormRow label="Prep time">
-                  <input
-                    type="text"
-                    placeholder="e.g. 45 min"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Recipe link">
-                  <input
-                    type="url"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Photo URL">
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Ingredients">
-                  <textarea
-                    placeholder="One per line"
-                    rows="4"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Instructions">
-                  <textarea
-                    rows="5"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                  />
-                </FormRow>
-              </>
-            )}
-
-            {activeTab === 'dates' && (
-              <>
-                <FormRow label="Place name" required>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                </FormRow>
-                <FormRow label="Category" required>
-                  <select
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    required
-                  >
-                    <option value="restaurant">Restaurant</option>
-                    <option value="bar">Bar</option>
-                    <option value="coffee">Coffee</option>
-                    <option value="brunch">Brunch</option>
-                    <option value="other">Other</option>
-                  </select>
-                </FormRow>
-                <FormRow label="Address">
-                  <NominatimAddressSearch
-                    placeholder="Search for the place..."
-                    onSelect={({ lat, lng, address }) =>
-                      setFormData(prev => ({ ...prev, address, lat, lng }))
-                    }
-                  />
-                  {formData.address && (
-                    <p className="mt-1 text-xs text-slate-400 truncate">{formData.address}</p>
-                  )}
-                </FormRow>
-                <FormRow label="Website">
-                  <input
-                    type="url"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Notes">
-                  <textarea
-                    rows="3"
-                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  />
-                </FormRow>
-                <FormRow label="Favourite">
-                  <label className="flex items-center gap-2 text-slate-300 pt-1">
-                    <input
-                      type="checkbox"
-                      onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })}
-                      className="accent-purple-500"
-                    />
-                    Mark as favourite
-                  </label>
-                </FormRow>
-              </>
-            )}
-
-            <button
-              type="submit"
-              className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold mt-4"
-            >
-              Add {getModalTitle().replace('Add ', '')}
-            </button>
-          </form>
         </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {activeTab === 'tasks' && (
+            <>
+              <FormField label="Title" required>
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  autoFocus
+                />
+              </FormField>
+              <FormField label="Description">
+                <textarea
+                  rows="3"
+                  placeholder="Optional details…"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </FormField>
+            </>
+          )}
+
+          {activeTab === 'calendar' && (
+            <>
+              <FormField label="Title" required>
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField label="Date" required>
+                <input
+                  type="date"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField label="End Date">
+                <input
+                  type="date"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Time">
+                <select
+                  className={selectCls}
+                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                >
+                  <option value="">— none —</option>
+                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </FormField>
+              <FormField label="Description">
+                <textarea
+                  rows="3"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </FormField>
+            </>
+          )}
+
+          {activeTab === 'trips' && (
+            <>
+              <FormField label="Destination" required>
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField label="Start Date">
+                <input
+                  type="date"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                />
+              </FormField>
+              <FormField label="End Date">
+                <input
+                  type="date"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Photo URL">
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Accommodation URL">
+                <input
+                  type="url"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })}
+                />
+              </FormField>
+            </>
+          )}
+
+          {activeTab === 'recipes' && (
+            <>
+              <FormField label="Name" required>
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField label="Prep Time">
+                <input
+                  type="text"
+                  placeholder="e.g. 45 min"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Photo URL">
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Recipe Link">
+                <input
+                  type="url"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Ingredients">
+                <textarea
+                  placeholder="One per line"
+                  rows="4"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Instructions">
+                <textarea
+                  rows="5"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                />
+              </FormField>
+            </>
+          )}
+
+          {activeTab === 'dates' && (
+            <>
+              <FormField label="Place Name" required>
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField label="Category">
+                <select
+                  className={selectCls}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                >
+                  <option value="restaurant">Restaurant</option>
+                  <option value="bar">Bar</option>
+                  <option value="coffee">Coffee</option>
+                  <option value="brunch">Brunch</option>
+                  <option value="other">Other</option>
+                </select>
+              </FormField>
+              <FormField label="Address">
+                <input
+                  type="text"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Website">
+                <input
+                  type="url"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Notes">
+                <textarea
+                  rows="3"
+                  className={inputCls}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                />
+              </FormField>
+              <FormField label="Favourite">
+                <label className="flex items-center gap-2 text-slate-300 pt-1">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })}
+                    className="accent-purple-500"
+                  />
+                  Mark as favourite
+                </label>
+              </FormField>
+            </>
+          )}
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold mt-2"
+          >
+            {getModalTitle()}
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -1946,7 +1938,7 @@ const CalendarView = ({ events, onDeleteEvent }) => {
                       className="text-[10px] leading-tight px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-100 truncate"
                       title={ev.title}
                     >
-                      {ev.startHour && <span className="font-medium mr-1">{ev.startHour}</span>}
+                      {(ev.startHour || ev.time) && <span className="font-medium mr-1">{ev.startHour || ev.time}</span>}
                       {ev.title}
                     </div>
                   ))}
@@ -2010,11 +2002,12 @@ const CalendarView = ({ events, onDeleteEvent }) => {
                       <Trash size={14} />
                     </button>
                   </div>
-                  {(ev.startHour || ev.endHour) && (
+                  {(ev.time || ev.startHour || ev.endHour) && (
                     <p className="text-sm text-slate-400 mt-0.5">
-                      {formatTime(ev.startHour)}
-                      {ev.startHour && ev.endHour && ' – '}
-                      {formatTime(ev.endHour)}
+                      {ev.time
+                        ? ev.time
+                        : `${formatTime(ev.startHour)}${ev.startHour && ev.endHour ? ' – ' : ''}${formatTime(ev.endHour)}`
+                      }
                     </p>
                   )}
                   {ev.description && (
