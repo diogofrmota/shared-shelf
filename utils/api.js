@@ -1,8 +1,6 @@
 /**
- * API utilities for fetching data from external services
- * Handles movie, anime, and book searches
- * 
- * TMDB API key is configured in config.js (injected by GitHub Actions at deploy time)
+ * API utilities for fetching data from external services.
+ * Handles movie, anime, and book searches.
  */
 
 import { API_CONFIG, PLACEHOLDER_IMAGE } from '../config.js';

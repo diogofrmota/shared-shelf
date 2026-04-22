@@ -77,28 +77,41 @@ You don't need to copy these — they are injected automatically.
 
 ---
 
-## Step 5 — Add Your TMDB API Key
+## Step 5 — Set Your TMDB API Key in the Code
 
-1. In your project → **Settings → Environment Variables**
-2. Add:
+The app loads `media-tracker.jsx` directly in the browser via Babel, with no build step. That means environment variables **cannot** be injected into the client-side code — you need to edit the file directly.
 
-| Name | Value |
-|---|---|
-| `TMDB_API_KEY` | your key from Step 1 |
+1. Open `media-tracker.jsx` in your editor
+2. Find line 25 (inside `API_CONFIG.TMDB`):
 
-3. Make sure **Production**, **Preview**, and **Development** are all checked, then save
+   ```javascript
+   API_KEY: '147c6816aa8af87999a726d9c5e2d184',
+   ```
+
+3. Replace the string with your TMDB API key from Step 1
+4. Commit and push:
+
+   ```bash
+   git add media-tracker.jsx
+   git commit -m "Set TMDB API key"
+   git push
+   ```
+
+Vercel will automatically deploy the change.
+
+> **Optional:** You can also add `TMDB_API_KEY` as an environment variable in **Settings → Environment Variables**. It isn't used by the current app (the client reads the hardcoded value), but it's available to the serverless functions for future server-side use.
 
 ---
 
-## Step 6 — Redeploy
+## Step 6 — Redeploy to Pick Up Postgres Env Vars
 
-After connecting the database and adding the API key, the project needs a new deployment to pick up the environment variables.
+After connecting the database in Step 4, the existing deployment does not yet have the `POSTGRES_URL` env var. Push from Step 5 triggers a new deployment automatically — but if you skipped the edit or want to force a redeploy:
 
 1. Go to your project → **Deployments**
 2. Click the three-dot menu on the latest deployment → **Redeploy**
 3. Wait for it to finish
 
-The database schema is created automatically on the first request — no manual SQL needed.
+The database schema is created automatically on the first API call — no manual SQL needed.
 
 ---
 
