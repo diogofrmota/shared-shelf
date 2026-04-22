@@ -3,15 +3,15 @@ import { getUserData, saveUserData, initializeDatabase } from '../lib/db.js';
 let dbReady = false;
 
 export default async function handler(req, res) {
-  if (!dbReady) {
-    dbReady = await initializeDatabase();
-  }
-
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-user-id');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (!dbReady) {
+    dbReady = await initializeDatabase();
+  }
 
   const userId = req.headers['x-user-id'];
   if (!userId) {

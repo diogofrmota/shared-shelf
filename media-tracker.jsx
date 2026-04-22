@@ -22,7 +22,7 @@ const { useState, useEffect } = React;
 const API_CONFIG = {
   TMDB: {
     BASE_URL: 'https://api.themoviedb.org/3',
-    API_KEY: '147c6816aa8af87999a726d9c5e2d184', // TODO: Move to env vars
+    API_KEY: '147c6816aa8af87999a726d9c5e2d184', // Replace with your own TMDB key (see INSTALLATION.md Step 5)
     ENDPOINTS: {
       SEARCH_MULTI: '/search/multi'
     }
