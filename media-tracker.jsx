@@ -1409,9 +1409,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
           onAddTrip({
             id: `trip-${uid()}`,
             destination: formData.destination,
-            year: formData.startDate ? parseInt(formData.startDate.split('-')[0]) : new Date().getFullYear(),
-            startDate: formData.startDate || '',
-            endDate: formData.endDate || '',
+            year: formData.year || new Date().getFullYear(),
             photo: formData.photo || '',
             accommodation: formData.accommodation || ''
           });
@@ -1564,18 +1562,14 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                   required
                 />
               </FormField>
-              <FormField label="Start Date">
+              <FormField label="Year">
                 <input
-                  type="date"
+                  type="number"
+                  min="1900"
+                  max="2100"
+                  placeholder={new Date().getFullYear()}
                   className={inputCls}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                />
-              </FormField>
-              <FormField label="End Date">
-                <input
-                  type="date"
-                  className={inputCls}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })}
                 />
               </FormField>
               <FormField label="Photo URL">
@@ -2321,9 +2315,9 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe }) => {
             : 'No recipes yet. Add your first one above!'}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {sorted.map(recipe => (
-            <RecipeCard 
+            <RecipeCard
               key={recipe.id} 
               recipe={recipe} 
               onDelete={onDeleteRecipe}
