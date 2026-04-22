@@ -679,6 +679,20 @@ const Star = ({ size = 16, className = '', filled = false }) => (
   </svg>
 );
 
+const Eye = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+    <circle cx="12" cy="12" r="3"></circle>
+  </svg>
+);
+
+const EyeOff = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+    <line x1="1" y1="1" x2="23" y2="23"></line>
+  </svg>
+);
+
 // ============================================================================
 // UI COMPONENTS
 // ============================================================================
@@ -753,6 +767,7 @@ const LoginScreen = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -786,14 +801,25 @@ const LoginScreen = ({ onLogin }) => {
         />
 
         <label className="block text-slate-300 text-sm mb-2" htmlFor="login-password">Password</label>
-        <input
-          id="login-password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-3 mb-4 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
-        />
+        <div className="relative mb-4">
+          <input
+            id="login-password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 pr-12 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+            tabIndex={-1}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
         {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
 
@@ -1270,6 +1296,25 @@ const getDefaultTabs = () => [
 // ADD MODAL COMPONENT
 // ============================================================================
 
+const TIME_SLOTS = (() => {
+  const slots = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      slots.push(`${hh}:${mm}`);
+    }
+  }
+  return slots;
+})();
+
+const FormRow = ({ label, children }) => (
+  <div className="flex items-start gap-3">
+    <label className="text-slate-300 text-sm w-28 shrink-0 pt-2 text-right">{label}</label>
+    <div className="flex-1">{children}</div>
+  </div>
+);
+
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate }) => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [formData, setFormData] = useState({});
@@ -1425,165 +1470,194 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
           <form onSubmit={handleSubmit} className="space-y-3">
             {activeTab === 'calendar' && (
               <>
-                <input
-                  type="text"
-                  placeholder="Activity title *"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                />
-                <input
-                  type="date"
-                  placeholder="Date *"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  required
-                />
-                <input
-                  type="time"
-                  placeholder="Start time"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, startHour: e.target.value })}
-                />
-                <input
-                  type="time"
-                  placeholder="End time"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, endHour: e.target.value })}
-                />
-                <textarea
-                  placeholder="Description"
-                  rows="3"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+                <FormRow label="Title *">
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
+                </FormRow>
+                <FormRow label="Date *">
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                  />
+                </FormRow>
+                <FormRow label="Start time">
+                  <select
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, startHour: e.target.value })}
+                  >
+                    <option value="">— none —</option>
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </FormRow>
+                <FormRow label="End time">
+                  <select
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, endHour: e.target.value })}
+                  >
+                    <option value="">— none —</option>
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </FormRow>
+                <FormRow label="Description">
+                  <textarea
+                    rows="3"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </FormRow>
               </>
             )}
 
             {activeTab === 'trips' && (
               <>
-                <input
-                  type="text"
-                  placeholder="Destination *"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Year *"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Photo URL"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-                />
-                <input
-                  type="url"
-                  placeholder="Accommodation link"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })}
-                />
+                <FormRow label="Destination *">
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                    required
+                  />
+                </FormRow>
+                <FormRow label="Year *">
+                  <input
+                    type="number"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                    required
+                  />
+                </FormRow>
+                <FormRow label="Photo URL">
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Accommodation">
+                  <input
+                    type="url"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })}
+                  />
+                </FormRow>
               </>
             )}
 
             {activeTab === 'recipes' && (
               <>
-                <input
-                  type="text"
-                  placeholder="Recipe name *"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Prep time (e.g., 45 min)"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })}
-                />
-                <input
-                  type="url"
-                  placeholder="Recipe link"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                />
-                <input
-                  type="text"
-                  placeholder="Photo URL"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-                />
-                <textarea
-                  placeholder="Ingredients (one per line)"
-                  rows="4"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
-                />
-                <textarea
-                  placeholder="Instructions"
-                  rows="5"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                />
+                <FormRow label="Name *">
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </FormRow>
+                <FormRow label="Prep time">
+                  <input
+                    type="text"
+                    placeholder="e.g. 45 min"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Recipe link">
+                  <input
+                    type="url"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Photo URL">
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Ingredients">
+                  <textarea
+                    placeholder="One per line"
+                    rows="4"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Instructions">
+                  <textarea
+                    rows="5"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                  />
+                </FormRow>
               </>
             )}
 
             {activeTab === 'dates' && (
               <>
-                <input
-                  type="text"
-                  placeholder="Place name *"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-                <select
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                >
-                  <option value="restaurant">Restaurant</option>
-                  <option value="bar">Bar</option>
-                  <option value="coffee">Coffee</option>
-                  <option value="brunch">Brunch</option>
-                  <option value="other">Other</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="Address"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                />
-                <input
-                  type="url"
-                  placeholder="Website link"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                />
-                <textarea
-                  placeholder="Notes"
-                  rows="3"
-                  className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white"
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                />
-                <label className="flex items-center gap-2 text-slate-300">
+                <FormRow label="Place name *">
                   <input
-                    type="checkbox"
-                    onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })}
-                    className="accent-purple-500"
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
                   />
-                  Mark as favourite
-                </label>
+                </FormRow>
+                <FormRow label="Category">
+                  <select
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    <option value="restaurant">Restaurant</option>
+                    <option value="bar">Bar</option>
+                    <option value="coffee">Coffee</option>
+                    <option value="brunch">Brunch</option>
+                    <option value="other">Other</option>
+                  </select>
+                </FormRow>
+                <FormRow label="Address">
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Website">
+                  <input
+                    type="url"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Notes">
+                  <textarea
+                    rows="3"
+                    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  />
+                </FormRow>
+                <FormRow label="Favourite">
+                  <label className="flex items-center gap-2 text-slate-300 pt-1">
+                    <input
+                      type="checkbox"
+                      onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })}
+                      className="accent-purple-500"
+                    />
+                    Mark as favourite
+                  </label>
+                </FormRow>
               </>
             )}
 
             <button
               type="submit"
-              className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold mt-4"
+              className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold mt-4"
             >
               Add {getModalTitle().replace('Add ', '')}
             </button>
@@ -1610,13 +1684,17 @@ const formatTime = (time) => {
   return time;
 };
 
+const formatDateDisplay = (isoDate) => {
+  if (!isoDate) return '';
+  const [y, m, d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
+};
+
 const formatDateLong = (isoDate) => {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-').map(Number);
   const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString(undefined, {
-    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
-  });
+  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y} — ${date.toLocaleDateString(undefined, { weekday: 'long' })}`;
 };
 
 const buildMonthGrid = (year, month) => {
@@ -1813,12 +1891,9 @@ const CalendarView = ({ events, onDeleteEvent }) => {
                 key={ev.id}
                 className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-800/40 border border-slate-700/50"
               >
-                <div className="flex flex-col items-center justify-center min-w-[56px] px-2 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30">
-                  <span className="text-xs text-purple-300 uppercase font-medium">
-                    {MONTH_NAMES[parseInt(ev.date.split('-')[1], 10) - 1].slice(0, 3)}
-                  </span>
-                  <span className="text-lg font-bold text-white">
-                    {parseInt(ev.date.split('-')[2], 10)}
+                <div className="flex flex-col items-center justify-center min-w-[64px] px-2 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30">
+                  <span className="text-xs text-purple-300 font-medium tabular-nums">
+                    {formatDateDisplay(ev.date)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -2445,6 +2520,58 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite }) => {
 };
 
 // ============================================================================
+// MEDIA SECTIONS VIEW
+// ============================================================================
+
+const MEDIA_SECTIONS = {
+  movies: [
+    { status: 'watching',      title: 'WATCHING',  subtitle: 'Movies that I\'m watching' },
+    { status: 'plan-to-watch', title: 'TO WATCH',  subtitle: 'Movies I will watch' },
+    { status: 'completed',     title: 'COMPLETED', subtitle: 'Movies completed' }
+  ],
+  tvshows: [
+    { status: 'watching',      title: 'WATCHING',  subtitle: 'TV Shows that I\'m watching' },
+    { status: 'plan-to-watch', title: 'TO WATCH',  subtitle: 'TV Shows I will watch' },
+    { status: 'completed',     title: 'COMPLETED', subtitle: 'TV Shows completed' }
+  ],
+  books: [
+    { status: 'reading',       title: 'READING',   subtitle: 'Books that I\'m reading' },
+    { status: 'plan-to-read',  title: 'TO READ',   subtitle: 'Books I will read' },
+    { status: 'read',          title: 'READ',      subtitle: 'Books completed' }
+  ]
+};
+
+const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick }) => {
+  const sections = MEDIA_SECTIONS[activeTab] || [];
+  return (
+    <div className="space-y-10 animate-fade-in">
+      {sections.map(section => {
+        const sectionItems = items.filter(item => item.status === section.status);
+        return (
+          <div key={section.status}>
+            <div className="mb-5 border-b border-slate-800 pb-3">
+              <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest">
+                {section.title}
+              </h2>
+              <p className="text-slate-400 text-sm mt-1">({section.subtitle})</p>
+            </div>
+            {sectionItems.length === 0 ? (
+              <p className="text-slate-600 text-sm py-2 italic">Nothing here yet.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-2 sm:gap-3 md:gap-4">
+                {sectionItems.map(item => (
+                  <MediaCard key={item.id} item={item} onStatusChange={onStatusChange} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ============================================================================
 // MAIN APPLICATION COMPONENT
 // ============================================================================
 
@@ -2458,12 +2585,7 @@ function MediaTracker() {
   const [loading, setLoading] = useState(true);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false); // NEW: Add modal state
-  const [selectedFilters, setSelectedFilters] = useState({
-    movies: ['plan-to-watch'],
-    tvshows: ['plan-to-watch'],
-    books: ['plan-to-read']
-  });
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   // Load data once the user is signed in
   useEffect(() => {
@@ -2519,15 +2641,6 @@ function MediaTracker() {
         )
       }));
     }
-  };
-
-  const toggleFilter = (status) => {
-    setSelectedFilters(prev => ({
-      ...prev,
-      [activeTab]: prev[activeTab].includes(status)
-        ? prev[activeTab].filter(s => s !== status)
-        : [...prev[activeTab], status]
-    }));
   };
 
   const handleAddEvent = (event) => {
@@ -2606,14 +2719,7 @@ function MediaTracker() {
   }
 
   const isMediaTab = MEDIA_TABS.includes(activeTab);
-
-  // Selectors (media tabs only)
-  const filteredItems = isMediaTab
-    ? data[activeTab].filter(item => selectedFilters[activeTab].includes(item.status))
-    : [];
-
   const tabs = getDefaultTabs();
-  const filterOptions = isMediaTab ? getFilterOptions(activeTab) : [];
 
   // Render
   return (
@@ -2665,30 +2771,12 @@ function MediaTracker() {
       {/* Main Content */}
       <div className="flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {isMediaTab && (
-          <>
-            <FilterBar label="Filter:">
-              {filterOptions.map(option => (
-                <FilterButton
-                  key={option.value}
-                  label={option.label}
-                  isActive={selectedFilters[activeTab].includes(option.value)}
-                  onClick={() => toggleFilter(option.value)}
-                />
-              ))}
-            </FilterBar>
-
-            <MediaGrid
-              items={filteredItems}
-              renderItem={item => (
-                <MediaCard
-                  key={item.id}
-                  item={item}
-                  onStatusChange={handleStatusChange}
-                />
-              )}
-              emptyComponent={<EmptyState onAddClick={() => setAddModalOpen(true)} />}
-            />
-          </>
+          <MediaSectionsView
+            activeTab={activeTab}
+            items={data[activeTab] || []}
+            onStatusChange={handleStatusChange}
+            onAddClick={() => setAddModalOpen(true)}
+          />
         )}
 
         {activeTab === 'calendar' && (
