@@ -13,7 +13,7 @@
  */
 
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 // ============================================================================
 // CONFIGURATION
@@ -102,11 +102,11 @@ const FILTER_CONFIG = {
 const TAB_CONFIG = {
   TASKS: { id: 'tasks', label: 'Tasks' },
   CALENDAR: { id: 'calendar', label: 'Calendar' },
+  DATES: { id: 'dates', label: 'Date Spots' },
   TRIPS: { id: 'trips', label: 'Trips' },
-  DATES: { id: 'dates', label: 'Dates' },
   RECIPES: { id: 'recipes', label: 'Recipes' },
-  MOVIES: { id: 'movies', label: 'Movies' },
   TV_SHOWS: { id: 'tvshows', label: 'TV Shows' },
+  MOVIES: { id: 'movies', label: 'Movies' },
   BOOKS: { id: 'books', label: 'Books' }
 };
 
@@ -356,63 +356,6 @@ const saveData = async (data) => {
       console.error('Error syncing to cloud:', error);
     }
   }
-};
-
-// Google Maps Loader — fetches the API key from the serverless endpoint
-// and injects the Maps JS script (with Places library) exactly once. Returns
-// a shared promise so callers share a single load.
-let googleMapsLoadPromise = null;
-
-const loadGoogleMaps = () => {
-  if (typeof window === 'undefined') return Promise.reject(new Error('No window'));
-  if (window.google?.maps?.places) return Promise.resolve(window.google);
-  if (googleMapsLoadPromise) return googleMapsLoadPromise;
-
-  googleMapsLoadPromise = (async () => {
-    let apiKey = window.GOOGLE_MAPS_API_KEY || '';
-    if (!apiKey) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/maps-key`);
-        if (res.ok) {
-          const json = await res.json();
-          apiKey = json.apiKey || '';
-        }
-      } catch (err) {
-        console.warn('Could not fetch Google Maps API key:', err);
-      }
-    }
-    if (!apiKey) {
-      throw new Error('Google Maps API key not configured');
-    }
-
-    await new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-google-maps="true"]');
-      if (existing) {
-        existing.addEventListener('load', resolve);
-        existing.addEventListener('error', reject);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&loading=async`;
-      script.async = true;
-      script.defer = true;
-      script.dataset.googleMaps = 'true';
-      script.addEventListener('load', resolve);
-      script.addEventListener('error', reject);
-      document.head.appendChild(script);
-    });
-
-    if (!window.google?.maps) {
-      throw new Error('Google Maps failed to load');
-    }
-    return window.google;
-  })();
-
-  googleMapsLoadPromise.catch(() => {
-    googleMapsLoadPromise = null;
-  });
-
-  return googleMapsLoadPromise;
 };
 
 // Helper Utilities
@@ -1287,7 +1230,7 @@ const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
 };
 
 // ============================================================================
-// HEADER COMPONENT
+// HEADER COMPONENT (Search button removed)
 // ============================================================================
 
 const Tabs = ({ tabs, activeTab, onTabChange }) => (
@@ -1329,7 +1272,6 @@ const getAddButtonText = (activeTab) => {
 const Header = ({
   activeTab,
   onTabChange,
-  onSearchClick,
   onAddClick,
   onLogout,
   tabs,
@@ -1345,22 +1287,13 @@ const Header = ({
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {showMediaActions && (
-            <>
-              <button
-                onClick={onSearchClick}
-                className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-slate-900/30 hover:shadow-xl hover:shadow-slate-900/40 hover:scale-105"
-              >
-                <Search size={18} />
-                <span className="hidden sm:inline">Search</span>
-              </button>
-              <button
-                onClick={onAddClick}
-                className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-900/40 hover:scale-105"
-              >
-                <Plus size={18} />
-                <span className="hidden sm:inline">{getAddButtonText(activeTab)}</span>
-              </button>
-            </>
+            <button
+              onClick={onAddClick}
+              className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-900/40 hover:scale-105"
+            >
+              <Plus size={18} />
+              <span className="hidden sm:inline">{getAddButtonText(activeTab)}</span>
+            </button>
           )}
           {onLogout && (
             <button
@@ -1383,11 +1316,11 @@ const Header = ({
 const getDefaultTabs = () => [
   { id: TAB_CONFIG.TASKS.id, label: TAB_CONFIG.TASKS.label, icon: CheckSquare },
   { id: TAB_CONFIG.CALENDAR.id, label: TAB_CONFIG.CALENDAR.label, icon: CalendarIcon },
-  { id: TAB_CONFIG.TRIPS.id, label: TAB_CONFIG.TRIPS.label, icon: MapPin },
   { id: TAB_CONFIG.DATES.id, label: TAB_CONFIG.DATES.label, icon: Utensils },
+  { id: TAB_CONFIG.TRIPS.id, label: TAB_CONFIG.TRIPS.label, icon: MapPin },
   { id: TAB_CONFIG.RECIPES.id, label: TAB_CONFIG.RECIPES.label, icon: ChefHat },
-  { id: TAB_CONFIG.MOVIES.id, label: TAB_CONFIG.MOVIES.label, icon: Film },
   { id: TAB_CONFIG.TV_SHOWS.id, label: TAB_CONFIG.TV_SHOWS.label, icon: Tv },
+  { id: TAB_CONFIG.MOVIES.id, label: TAB_CONFIG.MOVIES.label, icon: Film },
   { id: TAB_CONFIG.BOOKS.id, label: TAB_CONFIG.BOOKS.label, icon: Book }
 ];
 
@@ -1407,9 +1340,11 @@ const TIME_SLOTS = (() => {
   return slots;
 })();
 
-const FormRow = ({ label, children }) => (
+const FormRow = ({ label, children, required }) => (
   <div className="flex items-start gap-3">
-    <label className="text-slate-300 text-sm w-28 shrink-0 pt-2 text-right">{label}</label>
+    <label className="text-slate-300 text-sm w-28 shrink-0 pt-2 text-right">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
     <div className="flex-1">{children}</div>
   </div>
 );
@@ -1505,9 +1440,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             name: formData.name,
             category: formData.category || 'restaurant',
             address: formData.address || '',
-            lat: null,
-            lng: null,
-            placeId: '',
+            lat: formData.lat || null,
+            lng: formData.lng || null,
+            placeId: formData.placeId || '',
             notes: formData.notes || '',
             link: formData.link || '',
             isFavourite: formData.isFavourite || false,
@@ -1583,7 +1518,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
           <form onSubmit={handleSubmit} className="space-y-3">
             {activeTab === 'tasks' && (
               <>
-                <FormRow label="Title *">
+                <FormRow label="Title" required>
                   <input
                     type="text"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
@@ -1605,7 +1540,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
             {activeTab === 'calendar' && (
               <>
-                <FormRow label="Title *">
+                <FormRow label="Title" required>
                   <input
                     type="text"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
@@ -1613,7 +1548,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                     required
                   />
                 </FormRow>
-                <FormRow label="Date *">
+                <FormRow label="Date" required>
                   <input
                     type="date"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
@@ -1651,7 +1586,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
             {activeTab === 'trips' && (
               <>
-                <FormRow label="Destination *">
+                <FormRow label="Destination" required>
                   <input
                     type="text"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
@@ -1659,7 +1594,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                     required
                   />
                 </FormRow>
-                <FormRow label="Year *">
+                <FormRow label="Year" required>
                   <input
                     type="number"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
@@ -1686,7 +1621,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
             {activeTab === 'recipes' && (
               <>
-                <FormRow label="Name *">
+                <FormRow label="Name" required>
                   <input
                     type="text"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
@@ -1736,7 +1671,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
             {activeTab === 'dates' && (
               <>
-                <FormRow label="Place name *">
+                <FormRow label="Place name" required>
                   <input
                     type="text"
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
@@ -1744,10 +1679,11 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                     required
                   />
                 </FormRow>
-                <FormRow label="Category">
+                <FormRow label="Category" required>
                   <select
                     className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
                   >
                     <option value="restaurant">Restaurant</option>
                     <option value="bar">Bar</option>
@@ -2287,7 +2223,7 @@ const RecipesView = ({ recipes, onDeleteRecipe }) => {
 };
 
 // ============================================================================
-// DATES VIEW COMPONENT (restaurants, bars, coffee, brunch with Google Maps)
+// DATES VIEW COMPONENT - UPDATED WITH LEAFLET/OPENSTREETMAP
 // ============================================================================
 
 const getDateCategoryLabel = (value) => {
@@ -2295,185 +2231,115 @@ const getDateCategoryLabel = (value) => {
   return found ? found.label : 'Other';
 };
 
-// Autocomplete input backed by Google Places. Falls back to a plain input
-// (and plain saves without lat/lng) when Maps is unavailable.
-const PlacesAutocompleteInput = ({ value, onChange, onPlaceSelected, disabled, placeholder }) => {
-  const inputRef = React.useRef(null);
-  const autocompleteRef = React.useRef(null);
+// Simple address input (no Google Places dependency)
+const AddressInput = ({ value, onChange, placeholder }) => (
+  <input
+    type="text"
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    placeholder={placeholder}
+    className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+  />
+);
 
+// Leaflet Map Component for Dates
+const DatesLeafletMap = ({ places, focusedId }) => {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersLayerRef = useRef(null);
+  const markersRef = useRef(new Map());
+  const [mapReady, setMapReady] = useState(false);
+
+  // Initialize map
   useEffect(() => {
-    if (disabled || !inputRef.current) return;
-    let cancelled = false;
+    if (!mapRef.current) return;
+    
+    // Check if Leaflet is available
+    if (typeof window.L === 'undefined') {
+      console.warn('Leaflet not loaded');
+      return;
+    }
 
-    loadGoogleMaps()
-      .then((google) => {
-        if (cancelled || !inputRef.current) return;
-        const ac = new google.maps.places.Autocomplete(inputRef.current, {
-          fields: ['formatted_address', 'geometry', 'name', 'place_id']
-        });
-        autocompleteRef.current = ac;
-        ac.addListener('place_changed', () => {
-          const place = ac.getPlace();
-          if (!place?.geometry?.location) return;
-          onPlaceSelected({
-            name: place.name || '',
-            address: place.formatted_address || place.name || '',
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-            placeId: place.place_id || ''
-          });
-        });
-      })
-      .catch((err) => {
-        console.warn('Places Autocomplete unavailable:', err.message);
-      });
+    const L = window.L;
+    
+    // Only create map if it doesn't exist
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = L.map(mapRef.current).setView([38.7223, -9.1393], 3);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapInstanceRef.current);
+      
+      markersLayerRef.current = L.layerGroup().addTo(mapInstanceRef.current);
+      setMapReady(true);
+    }
 
     return () => {
-      cancelled = true;
-      if (autocompleteRef.current && window.google?.maps?.event) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        markersLayerRef.current = null;
+        markersRef.current.clear();
+        setMapReady(false);
       }
     };
-  }, [disabled]);
-
-  return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-60"
-    />
-  );
-};
-
-const DatesMap = ({ places, focusedId }) => {
-  const mapRef = React.useRef(null);
-  const mapInstanceRef = React.useRef(null);
-  const markersRef = React.useRef(new Map());
-  const infoWindowRef = React.useRef(null);
-  const [status, setStatus] = useState('loading'); // loading | ready | error
-
-  useEffect(() => {
-    let cancelled = false;
-    loadGoogleMaps()
-      .then((google) => {
-        if (cancelled || !mapRef.current) return;
-        mapInstanceRef.current = new google.maps.Map(mapRef.current, {
-          center: { lat: 38.7223, lng: -9.1393 }, // Lisbon default
-          zoom: 3,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-          styles: [
-            { elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
-            { elementType: 'labels.text.fill', stylers: [{ color: '#cbd5e1' }] },
-            { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },
-            { featureType: 'water', stylers: [{ color: '#0f172a' }] },
-            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#334155' }] },
-            { featureType: 'poi', stylers: [{ visibility: 'off' }] }
-          ]
-        });
-        infoWindowRef.current = new google.maps.InfoWindow();
-        setStatus('ready');
-      })
-      .catch((err) => {
-        console.warn('Map unavailable:', err.message);
-        if (!cancelled) setStatus('error');
-      });
-    return () => { cancelled = true; };
   }, []);
 
-  // Sync markers with places
+  // Update markers when places change
   useEffect(() => {
-    if (status !== 'ready') return;
-    const google = window.google;
+    if (!mapReady || !mapInstanceRef.current || !markersLayerRef.current) return;
+    
+    const L = window.L;
     const map = mapInstanceRef.current;
-    if (!google || !map) return;
-
-    const existingIds = new Set(markersRef.current.keys());
-    const incomingIds = new Set();
-    const bounds = new google.maps.LatLngBounds();
-    let hasAny = false;
-
+    const layerGroup = markersLayerRef.current;
+    
+    // Clear existing markers
+    layerGroup.clearLayers();
+    markersRef.current.clear();
+    
+    const bounds = L.latLngBounds([]);
+    let hasMarkers = false;
+    
     places.forEach(place => {
-      if (place.lat == null || place.lng == null) return;
-      incomingIds.add(place.id);
-      hasAny = true;
-      bounds.extend({ lat: place.lat, lng: place.lng });
-
-      let marker = markersRef.current.get(place.id);
-      if (!marker) {
-        marker = new google.maps.Marker({
-          position: { lat: place.lat, lng: place.lng },
-          map,
-          title: place.name
-        });
-        marker.addListener('click', () => {
-          if (infoWindowRef.current) {
-            const linkHtml = place.link
-              ? `<a href="${place.link}" target="_blank" rel="noreferrer noopener" style="color:#c4b5fd;">Open link</a>`
-              : '';
-            infoWindowRef.current.setContent(
-              `<div style="color:#0f172a;min-width:180px;">
-                <strong>${place.name}</strong><br/>
-                <span style="text-transform:capitalize;">${getDateCategoryLabel(place.category)}</span><br/>
-                ${place.address ? `<span>${place.address}</span><br/>` : ''}
-                ${linkHtml}
-              </div>`
-            );
-            infoWindowRef.current.open(map, marker);
-          }
-        });
+      if (place.lat != null && place.lng != null) {
+        const latLng = L.latLng(place.lat, place.lng);
+        bounds.extend(latLng);
+        hasMarkers = true;
+        
+        const popupContent = `
+          <div style="min-width:180px;">
+            <strong>${place.name}</strong><br/>
+            <span style="text-transform:capitalize;">${getDateCategoryLabel(place.category)}</span><br/>
+            ${place.address ? `<span>${place.address}</span><br/>` : ''}
+            ${place.link ? `<a href="${place.link}" target="_blank" rel="noreferrer noopener" style="color:#c4b5fd;">Open link</a>` : ''}
+          </div>
+        `;
+        
+        const marker = L.marker(latLng)
+          .bindPopup(popupContent)
+          .addTo(layerGroup);
+        
         markersRef.current.set(place.id, marker);
-      } else {
-        marker.setPosition({ lat: place.lat, lng: place.lng });
-        marker.setTitle(place.name);
       }
     });
-
-    existingIds.forEach(id => {
-      if (!incomingIds.has(id)) {
-        const m = markersRef.current.get(id);
-        if (m) m.setMap(null);
-        markersRef.current.delete(id);
-      }
-    });
-
-    if (hasAny) {
-      map.fitBounds(bounds, 60);
-      if (places.filter(p => p.lat != null).length === 1) {
-        map.setZoom(14);
-      }
+    
+    // Fit bounds if there are markers
+    if (hasMarkers) {
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
     }
-  }, [places, status]);
+  }, [places, mapReady]);
 
-  // Focus/pan to a specific place when user clicks on the list
+  // Focus on a specific place when focusedId changes
   useEffect(() => {
-    if (status !== 'ready' || !focusedId) return;
+    if (!mapReady || !mapInstanceRef.current || !focusedId) return;
+    
     const marker = markersRef.current.get(focusedId);
-    const map = mapInstanceRef.current;
-    if (marker && map && window.google?.maps?.event) {
-      map.panTo(marker.getPosition());
-      map.setZoom(15);
-      window.google.maps.event.trigger(marker, 'click');
+    if (marker) {
+      const map = mapInstanceRef.current;
+      map.setView(marker.getLatLng(), 15);
+      marker.openPopup();
     }
-  }, [focusedId, status]);
-
-  if (status === 'error') {
-    return (
-      <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-6 mb-6 text-center">
-        <MapPin size={32} className="mx-auto text-slate-500 mb-3" />
-        <p className="text-slate-300 font-medium">Map unavailable</p>
-        <p className="text-slate-500 text-sm mt-1">
-          Set <code className="text-purple-300">GOOGLE_MAPS_API_KEY</code> in your Vercel
-          environment variables to enable the map.
-        </p>
-      </div>
-    );
-  }
+  }, [focusedId, mapReady]);
 
   return (
     <div className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden mb-6">
@@ -2481,6 +2347,9 @@ const DatesMap = ({ places, focusedId }) => {
         ref={mapRef}
         className="w-full h-[320px] sm:h-[420px] bg-slate-900"
       />
+      <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-700">
+        © OpenStreetMap contributors
+      </div>
     </div>
   );
 };
@@ -2514,7 +2383,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused }) =>
             </span>
             {place.lat != null && place.lng != null && (
               <span className="inline-flex items-center gap-1 text-xs text-purple-300">
-                <MapPin size={12} /> pin
+                <MapPin size={12} /> pinned
               </span>
             )}
           </div>
@@ -2578,19 +2447,83 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused }) =>
   );
 };
 
+// Nominatim search component for address lookup
+const NominatimAddressSearch = ({ onSelect, placeholder = "Search for an address..." }) => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const fetchPlaces = debounce(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/nominatim?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setResults(data);
+        setShowResults(true);
+      } catch (err) {
+        console.error('Nominatim search error', err);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    fetchPlaces();
+  }, [query]);
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onFocus={() => setShowResults(true)}
+        onBlur={() => setTimeout(() => setShowResults(false), 200)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+      />
+      {loading && (
+        <div className="absolute z-10 bg-slate-800 border border-slate-700 rounded-lg p-2 mt-1 w-full text-slate-400 text-sm">
+          Searching...
+        </div>
+      )}
+      {showResults && results.length > 0 && (
+        <ul className="absolute z-10 bg-slate-800 border border-slate-700 rounded-lg mt-1 max-h-60 overflow-auto w-full shadow-lg">
+          {results.map((place) => (
+            <li
+              key={place.place_id}
+              className="px-4 py-2 hover:bg-slate-700 cursor-pointer text-white text-sm border-b border-slate-700 last:border-b-0 transition-colors"
+              onClick={() => {
+                onSelect({
+                  lat: parseFloat(place.lat),
+                  lng: parseFloat(place.lon),
+                  displayName: place.display_name,
+                  address: place.display_name
+                });
+                setQuery('');
+                setResults([]);
+                setShowResults(false);
+              }}
+            >
+              {place.display_name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 const DatesView = ({ places, onDeletePlace, onToggleFavourite }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [onlyFavourites, setOnlyFavourites] = useState(false);
   const [focusedId, setFocusedId] = useState(null);
-  const [mapsAvailable, setMapsAvailable] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadGoogleMaps()
-      .then(() => { if (!cancelled) setMapsAvailable(true); })
-      .catch(() => { if (!cancelled) setMapsAvailable(false); });
-    return () => { cancelled = true; };
-  }, []);
 
   const filtered = places.filter(p => {
     if (onlyFavourites && !p.isFavourite) return false;
@@ -2607,7 +2540,7 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite }) => {
 
   return (
     <div>
-      <DatesMap places={filtered} focusedId={focusedId} />
+      <DatesLeafletMap places={filtered} focusedId={focusedId} />
 
       <FilterBar label="Filter:">
         <FilterButton
@@ -2798,7 +2731,6 @@ function MediaTracker() {
   const [activeTab, setActiveTab] = useState('calendar');
   const [data, setData] = useState(null); // Start with null for loading state
   const [loading, setLoading] = useState(true);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
 
@@ -3022,7 +2954,6 @@ function MediaTracker() {
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onSearchClick={() => setGlobalSearchOpen(true)}
         onAddClick={() => setAddModalOpen(true)}
         onLogout={handleLogout}
         tabs={tabs}
