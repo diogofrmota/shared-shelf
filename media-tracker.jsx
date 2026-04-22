@@ -263,7 +263,7 @@ const transformMovieData = (item) => ({
   id: `tmdb-${item.id}`,
   title: item.title || item.name,
   thumbnail: item.poster_path
-    ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+    ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
     : PLACEHOLDER_IMAGE,
   rating: item.vote_average?.toFixed(1) || 'N/A',
   year: item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0] || 'N/A',
@@ -812,7 +812,7 @@ const LoadingScreen = () => (
   <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
     <div className="text-center">
       <div className="inline-block w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mb-4"></div>
-      <p className="text-white text-lg">Loading...</p>
+      <p className="text-white text-lg">Loading ...</p>
     </div>
   </div>
 );
@@ -850,8 +850,8 @@ const LoginScreen = ({ onLogin }) => {
         onSubmit={handleSubmit}
         className="w-full max-w-sm bg-slate-900/60 border border-slate-700 rounded-2xl p-8 backdrop-blur-sm"
       >
-        <h1 className="text-2xl font-bold text-white text-center mb-1">Diogo & Mónica</h1>
-        <p className="text-slate-400 text-sm text-center mb-6">Relationship Dashboard</p>
+        <h1 className="text-2xl font-bold text-white text-center mb-1">Shared Dashboard</h1>
+        <p className="text-slate-400 text-sm text-center mb-6">Please enter your credentials to login.</p>
 
         <label className="block text-slate-300 text-sm mb-2" htmlFor="login-username">Username</label>
         <input
@@ -892,7 +892,7 @@ const LoginScreen = ({ onLogin }) => {
           disabled={loading}
           className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Authenticating...' : 'Sign in'}
+          {loading ? 'Authenticating ...' : 'Sign in'}
         </button>
       </form>
     </div>
@@ -2603,19 +2603,19 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite }) => {
 
 const MEDIA_SECTIONS = {
   movies: [
-    { status: 'watching',      title: 'WATCHING',  subtitle: 'Movies that I\'m watching' },
-    { status: 'plan-to-watch', title: 'TO WATCH',  subtitle: 'Movies I will watch' },
-    { status: 'completed',     title: 'COMPLETED', subtitle: 'Movies completed' }
+    { status: 'watching',      title: 'WATCHING' },
+    { status: 'plan-to-watch', title: 'PLANNED TO WATCH' },
+    { status: 'completed',     title: 'COMPLETED' }
   ],
   tvshows: [
-    { status: 'watching',      title: 'WATCHING',  subtitle: 'TV Shows that I\'m watching' },
-    { status: 'plan-to-watch', title: 'TO WATCH',  subtitle: 'TV Shows I will watch' },
-    { status: 'completed',     title: 'COMPLETED', subtitle: 'TV Shows completed' }
+    { status: 'watching',      title: 'WATCHING' },
+    { status: 'plan-to-watch', title: 'PLANNED TO WATCH' },
+    { status: 'completed',     title: 'COMPLETED' }
   ],
   books: [
-    { status: 'reading',       title: 'READING',   subtitle: 'Books that I\'m reading' },
-    { status: 'plan-to-read',  title: 'TO READ',   subtitle: 'Books I will read' },
-    { status: 'read',          title: 'READ',      subtitle: 'Books completed' }
+    { status: 'reading',       title: 'READING' },
+    { status: 'plan-to-read',  title: 'TO BE READ', },
+    { status: 'read',          title: 'READ' }
   ]
 };
 
@@ -2631,7 +2631,6 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick }) => 
               <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest">
                 {section.title}
               </h2>
-              <p className="text-slate-400 text-sm mt-1">({section.subtitle})</p>
             </div>
             {sectionItems.length === 0 ? (
               <p className="text-slate-600 text-sm py-2 italic">Nothing here yet.</p>
