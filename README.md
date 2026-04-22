@@ -1,6 +1,6 @@
 # Diogo & Mónica's Tracker
 
-Track movies, TV shows, anime, and books. Hosted on Vercel with Vercel Postgres.
+Track movies, TV shows, anime, and books. Hosted on Vercel with Vercel Postgres (Neon).
 
 For deployment instructions see [INSTALLATION.md](INSTALLATION.md).
 
