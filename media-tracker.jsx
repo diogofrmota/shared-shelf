@@ -111,21 +111,14 @@ const API_REQUEST_CONFIG = {
 // UTILITY FUNCTIONS
 // ============================================================================
 
-// Generate or retrieve persistent user ID
-const getUserId = () => {
-  let userId = localStorage.getItem('media-tracker-user-id');
-  if (!userId) {
-    userId = crypto.randomUUID?.() ||
-      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0;
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-      });
-    localStorage.setItem('media-tracker-user-id', userId);
-  }
-  return userId;
-};
+// Shared library — every browser writes/reads the same bucket in Neon.
+const USER_ID = 'diogo-monica-shared';
 
-const USER_ID = getUserId();
+// Client-side login gate. Credentials are visible in the bundled source
+// and the API routes themselves are unauthenticated, so this is a soft
+// gate for household use, not real access control.
+const AUTH_STORAGE_KEY = 'media-tracker-auth';
+const AUTH_CREDENTIALS = { username: 'diogo', password: 'monica' };
 
 // API Utilities
 const searchMovies = async (query) => {
@@ -494,6 +487,65 @@ const LoadingScreen = () => (
     </div>
   </div>
 );
+
+const LoginScreen = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
+      localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+      setError('');
+      onLogin();
+    } else {
+      setError('Invalid username or password');
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm bg-slate-900/60 border border-slate-700 rounded-2xl p-8 backdrop-blur-sm"
+      >
+        <h1 className="text-2xl font-bold text-white text-center mb-1">Media Tracker</h1>
+        <p className="text-slate-400 text-sm text-center mb-6">Sign in to access your library</p>
+
+        <label className="block text-slate-300 text-sm mb-2" htmlFor="login-username">Username</label>
+        <input
+          id="login-username"
+          type="text"
+          autoComplete="username"
+          autoFocus
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full px-4 py-3 mb-4 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+        />
+
+        <label className="block text-slate-300 text-sm mb-2" htmlFor="login-password">Password</label>
+        <input
+          id="login-password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-3 mb-4 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+        />
+
+        {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
+
+        <button
+          type="submit"
+          className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-xl transition-colors"
+        >
+          Sign in
+        </button>
+      </form>
+    </div>
+  );
+};
 
 // ============================================================================
 // MEDIA CARD COMPONENT
@@ -939,6 +991,9 @@ const getDefaultTabs = () => [
 
 function MediaTracker() {
   // State Management
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
+  );
   const [activeTab, setActiveTab] = useState('movies');
   const [data, setData] = useState(null); // Start with null for loading state
   const [loading, setLoading] = useState(true);
@@ -950,22 +1005,24 @@ function MediaTracker() {
     books: ['plan-to-read']
   });
 
-  // Load data on mount
+  // Load data once the user is signed in
   useEffect(() => {
+    if (!isAuthenticated) return;
     const loadData = async () => {
       const stored = await getStoredData();
       setData(stored);
       setLoading(false);
     };
     loadData();
-  }, []);
+  }, [isAuthenticated]);
 
   // Persist data whenever it changes
   useEffect(() => {
+    if (!isAuthenticated) return;
     if (data) {
       saveData(data);
     }
-  }, [data]);
+  }, [data, isAuthenticated]);
 
   // Event Handlers
   const handleAdd = (item) => {
@@ -1004,6 +1061,11 @@ function MediaTracker() {
         : [...prev[activeTab], status]
     }));
   };
+
+  // Gate the entire UI behind the login screen
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   // Show loading screen while data is being fetched
   if (loading || !data) {
