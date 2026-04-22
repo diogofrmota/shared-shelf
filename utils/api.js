@@ -92,16 +92,12 @@ export const searchAnime = async (query) => {
  */
 export const searchBooks = async (query) => {
   try {
-    const { GOOGLE_BOOKS } = API_CONFIG;
-    const url = new URL(`${GOOGLE_BOOKS.BASE_URL}${GOOGLE_BOOKS.ENDPOINTS.SEARCH_VOLUMES}`);
-    url.searchParams.append('q', query);
-    url.searchParams.append('maxResults', 10);
-
-    const response = await fetch(url.toString());
-    if (!response.ok) throw new Error('Failed to fetch books');
-
-    const data = await response.json();
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=10`;
     
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch books');
+    
+    const data = await response.json();
     return (data.items || []).map(item => transformBookData(item));
   } catch (error) {
     console.error('Book search error:', error);

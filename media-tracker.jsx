@@ -102,7 +102,7 @@ const FILTER_CONFIG = {
 const TAB_CONFIG = {
   TASKS: { id: 'tasks', label: 'Tasks' },
   CALENDAR: { id: 'calendar', label: 'Calendar' },
-  DATES: { id: 'dates', label: 'Date Spots' },
+  DATES: { id: 'dates', label: 'Dates' },
   TRIPS: { id: 'trips', label: 'Trips' },
   RECIPES: { id: 'recipes', label: 'Recipes' },
   TV_SHOWS: { id: 'tvshows', label: 'TV Shows' },
@@ -2181,7 +2181,198 @@ const RecipeCard = ({ recipe, onDelete }) => {
   );
 };
 
-const RecipesView = ({ recipes, onDeleteRecipe }) => {
+const RecipeCard = ({ recipe, onDelete, onEdit }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors group">
+      <div
+        className="aspect-video bg-slate-900 overflow-hidden cursor-pointer"
+        onClick={() => setExpanded(v => !v)}
+      >
+        <img
+          src={recipe.photo || RECIPE_PHOTO_PLACEHOLDER}
+          alt={recipe.name}
+          onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      </div>
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h4 className="text-lg font-bold text-white flex items-center gap-2">
+              <ChefHat size={18} className="text-purple-400 shrink-0" />
+              <span className="truncate">{recipe.name}</span>
+            </h4>
+            {recipe.prepTime && (
+              <p className="text-sm text-slate-400 mt-1">⏱ {recipe.prepTime}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onEdit(recipe)}
+              className="p-2 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-700/50 transition-colors opacity-0 group-hover:opacity-100"
+              aria-label="Edit recipe"
+            >
+              ✎
+            </button>
+            <button
+              onClick={() => onDelete(recipe.id)}
+              className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700/50 transition-colors opacity-0 group-hover:opacity-100"
+              aria-label="Delete recipe"
+            >
+              <Trash size={16} />
+            </button>
+          </div>
+        </div>
+
+        {recipe.link && (
+          <a
+            href={recipe.link}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="mt-2 inline-flex items-center gap-1.5 text-sm text-purple-300 hover:text-purple-200 transition-colors break-all"
+          >
+            <LinkIcon size={14} />
+            Source
+          </a>
+        )}
+
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="mt-3 text-sm text-slate-400 hover:text-white transition-colors"
+        >
+          {expanded ? 'Hide details' : 'Show details'}
+        </button>
+
+        {expanded && (
+          <div className="mt-4 space-y-4">
+            {recipe.ingredients && (
+              <div>
+                <h5 className="text-sm font-semibold text-purple-300 mb-1 uppercase tracking-wide">Ingredients</h5>
+                <p className="text-sm text-slate-200 whitespace-pre-wrap">{recipe.ingredients}</p>
+              </div>
+            )}
+            {recipe.instructions && (
+              <div>
+                <h5 className="text-sm font-semibold text-purple-300 mb-1 uppercase tracking-wide">Instructions</h5>
+                <p className="text-sm text-slate-200 whitespace-pre-wrap">{recipe.instructions}</p>
+              </div>
+            )}
+            {!recipe.ingredients && !recipe.instructions && (
+              <p className="text-sm text-slate-500 italic">No details saved.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
+  const [formData, setFormData] = useState(recipe || {});
+
+  useEffect(() => {
+    if (recipe) {
+      setFormData(recipe);
+    }
+  }, [recipe]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...formData });
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-white">Edit Recipe</h2>
+            <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <Close size={24} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300">
+                Recipe Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name || ''}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300">Prep Time</label>
+              <input
+                type="text"
+                value={formData.prepTime || ''}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300">Photo URL</label>
+              <input
+                type="text"
+                value={formData.photo || ''}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300">Recipe Link</label>
+              <input
+                type="url"
+                value={formData.link || ''}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300">Ingredients</label>
+              <textarea
+                value={formData.ingredients || ''}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 font-mono text-sm"
+                rows="4"
+                onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300">Instructions</label>
+              <textarea
+                value={formData.instructions || ''}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                rows="4"
+                onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+              />
+            </div>
+            
+            <button type="submit" className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Update RecipesView to handle editing
+const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe }) => {
   const [query, setQuery] = useState('');
   const filtered = query.trim()
     ? recipes.filter(r =>
@@ -2214,7 +2405,12 @@ const RecipesView = ({ recipes, onDeleteRecipe }) => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {sorted.map(recipe => (
-            <RecipeCard key={recipe.id} recipe={recipe} onDelete={onDeleteRecipe} />
+            <RecipeCard 
+              key={recipe.id} 
+              recipe={recipe} 
+              onDelete={onDeleteRecipe}
+              onEdit={onEditRecipe}
+            />
           ))}
         </div>
       )}
@@ -2342,10 +2538,11 @@ const DatesLeafletMap = ({ places, focusedId }) => {
   }, [focusedId, mapReady]);
 
   return (
-    <div className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden mb-6">
+    <div className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden mb-6" style={{ zIndex: 1 }}>
       <div
         ref={mapRef}
         className="w-full h-[320px] sm:h-[420px] bg-slate-900"
+        style={{ zIndex: 1 }}
       />
       <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-700">
         © OpenStreetMap contributors
