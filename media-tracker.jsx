@@ -39,7 +39,9 @@ const STORAGE_CONFIG = {
   SCHEMA: {
     movies: [],
     tvshows: [],
-    books: []
+    books: [],
+    calendarEvents: [],
+    trips: []
   }
 };
 
@@ -95,10 +97,14 @@ const FILTER_CONFIG = {
 };
 
 const TAB_CONFIG = {
+  CALENDAR: { id: 'calendar', label: 'Calendar' },
+  TRIPS: { id: 'trips', label: 'Trips' },
   MOVIES: { id: 'movies', label: 'Movies' },
   TV_SHOWS: { id: 'tvshows', label: 'TV Shows' },
   BOOKS: { id: 'books', label: 'Books' }
 };
+
+const MEDIA_TABS = ['movies', 'tvshows', 'books'];
 
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/500x750/1a1a2e/8b5cf6?text=No+Image';
 
@@ -419,6 +425,111 @@ const Book = ({ size = 20, className = '' }) => (
   >
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+  </svg>
+);
+
+const CalendarIcon = ({ size = 20, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    className={className}
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </svg>
+);
+
+const MapPin = ({ size = 20, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    className={className}
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+    <circle cx="12" cy="10" r="3"></circle>
+  </svg>
+);
+
+const ChevronLeft = ({ size = 20, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    className={className}
+  >
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+);
+
+const ChevronRight = ({ size = 20, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    className={className}
+  >
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+);
+
+const Trash = ({ size = 16, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    className={className}
+  >
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path>
+    <path d="M10 11v6"></path>
+    <path d="M14 11v6"></path>
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+  </svg>
+);
+
+const LinkIcon = ({ size = 14, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    className={className}
+  >
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
   </svg>
 );
 
@@ -968,7 +1079,8 @@ const Header = ({
   onTabChange,
   onSearchClick,
   onAddClick,
-  tabs
+  tabs,
+  showMediaActions = true
 }) => (
   <div className="border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-40">
     <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
@@ -978,22 +1090,24 @@ const Header = ({
             Diogo & Mónica's Dashboard
           </h1>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={onSearchClick}
-            className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-slate-900/30 hover:shadow-xl hover:shadow-slate-900/40 hover:scale-105"
-          >
-            <Search size={18} />
-            <span className="hidden sm:inline">Search</span>
-          </button>
-          <button
-            onClick={onAddClick}
-            className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-900/40 hover:scale-105"
-          >
-            <Plus size={18} />
-            <span className="hidden sm:inline">Add New</span>
-          </button>
-        </div>
+        {showMediaActions && (
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={onSearchClick}
+              className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-slate-900/30 hover:shadow-xl hover:shadow-slate-900/40 hover:scale-105"
+            >
+              <Search size={18} />
+              <span className="hidden sm:inline">Search</span>
+            </button>
+            <button
+              onClick={onAddClick}
+              className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-900/40 hover:scale-105"
+            >
+              <Plus size={18} />
+              <span className="hidden sm:inline">Add New</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
@@ -1002,10 +1116,573 @@ const Header = ({
 );
 
 const getDefaultTabs = () => [
+  { id: TAB_CONFIG.CALENDAR.id, label: TAB_CONFIG.CALENDAR.label, icon: CalendarIcon },
+  { id: TAB_CONFIG.TRIPS.id, label: TAB_CONFIG.TRIPS.label, icon: MapPin },
   { id: TAB_CONFIG.MOVIES.id, label: TAB_CONFIG.MOVIES.label, icon: Film },
   { id: TAB_CONFIG.TV_SHOWS.id, label: TAB_CONFIG.TV_SHOWS.label, icon: Tv },
   { id: TAB_CONFIG.BOOKS.id, label: TAB_CONFIG.BOOKS.label, icon: Book }
 ];
+
+// ============================================================================
+// CALENDAR VIEW COMPONENT
+// ============================================================================
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const formatTime = (time) => {
+  if (!time) return '';
+  return time;
+};
+
+const formatDateLong = (isoDate) => {
+  if (!isoDate) return '';
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+};
+
+const buildMonthGrid = (year, month) => {
+  const firstDay = new Date(year, month, 1);
+  const startWeekday = firstDay.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
+};
+
+const isoDateFromParts = (year, month, day) => {
+  const mm = String(month + 1).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
+  return `${year}-${mm}-${dd}`;
+};
+
+const AddEventForm = ({ onAdd }) => {
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [startHour, setStartHour] = useState('');
+  const [endHour, setEndHour] = useState('');
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title.trim() || !date) {
+      setError('Title and date are required.');
+      return;
+    }
+    if (startHour && endHour && endHour < startHour) {
+      setError('End hour must be after start hour.');
+      return;
+    }
+    onAdd({
+      id: `event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title: title.trim(),
+      date,
+      startHour: startHour || '',
+      endHour: endHour || '',
+      description: description.trim()
+    });
+    setTitle('');
+    setDate('');
+    setStartHour('');
+    setEndHour('');
+    setDescription('');
+    setError('');
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6 mb-6"
+    >
+      <h3 className="text-lg font-semibold text-white mb-4">Add Activity</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="md:col-span-2">
+          <label className="block text-slate-400 text-sm mb-1">Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Dinner with friends"
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-slate-400 text-sm mb-1">Start Hour</label>
+            <input
+              type="time"
+              value={startHour}
+              onChange={(e) => setStartHour(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-slate-400 text-sm mb-1">End Hour</label>
+            <input
+              type="time"
+              value={endHour}
+              onChange={(e) => setEndHour(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 transition-colors"
+            />
+          </div>
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-slate-400 text-sm mb-1">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add some details..."
+            rows={2}
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors resize-y"
+          />
+        </div>
+      </div>
+      {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+      <div className="mt-4 flex justify-end">
+        <button
+          type="submit"
+          className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg transition-colors inline-flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Add Activity
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const CalendarView = ({ events, onAddEvent, onDeleteEvent }) => {
+  const today = new Date();
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const cells = buildMonthGrid(viewYear, viewMonth);
+
+  const eventsByDate = events.reduce((acc, ev) => {
+    if (!acc[ev.date]) acc[ev.date] = [];
+    acc[ev.date].push(ev);
+    return acc;
+  }, {});
+
+  Object.keys(eventsByDate).forEach(d => {
+    eventsByDate[d].sort((a, b) => (a.startHour || '').localeCompare(b.startHour || ''));
+  });
+
+  const goPrev = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(y => y - 1);
+    } else {
+      setViewMonth(m => m - 1);
+    }
+    setSelectedDate(null);
+  };
+
+  const goNext = () => {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(y => y + 1);
+    } else {
+      setViewMonth(m => m + 1);
+    }
+    setSelectedDate(null);
+  };
+
+  const goToday = () => {
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+    setSelectedDate(null);
+  };
+
+  const todayIso = isoDateFromParts(today.getFullYear(), today.getMonth(), today.getDate());
+
+  const monthEvents = events
+    .filter(ev => {
+      const [y, m] = ev.date.split('-').map(Number);
+      return y === viewYear && m - 1 === viewMonth;
+    })
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (a.startHour || '').localeCompare(b.startHour || '');
+    });
+
+  const agendaEvents = selectedDate
+    ? (eventsByDate[selectedDate] || [])
+    : monthEvents;
+
+  const agendaTitle = selectedDate
+    ? formatDateLong(selectedDate)
+    : `Agenda — ${MONTH_NAMES[viewMonth]} ${viewYear}`;
+
+  return (
+    <div>
+      <AddEventForm onAdd={onAddEvent} />
+
+      <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goPrev}
+              className="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+              aria-label="Previous month"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h3 className="text-lg sm:text-xl font-semibold text-white min-w-[180px] text-center">
+              {MONTH_NAMES[viewMonth]} {viewYear}
+            </h3>
+            <button
+              onClick={goNext}
+              className="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+              aria-label="Next month"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+          <button
+            onClick={goToday}
+            className="px-3 py-1.5 text-sm bg-slate-800/60 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors"
+          >
+            Today
+          </button>
+        </div>
+
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
+          {WEEKDAY_LABELS.map(day => (
+            <div key={day} className="text-center text-xs sm:text-sm font-medium text-slate-400 py-1">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+          {cells.map((day, idx) => {
+            if (day === null) {
+              return <div key={`empty-${idx}`} className="aspect-square sm:aspect-auto sm:min-h-[88px]" />;
+            }
+            const iso = isoDateFromParts(viewYear, viewMonth, day);
+            const dayEvents = eventsByDate[iso] || [];
+            const isToday = iso === todayIso;
+            const isSelected = iso === selectedDate;
+            return (
+              <button
+                key={iso}
+                onClick={() => setSelectedDate(isSelected ? null : iso)}
+                className={`text-left aspect-square sm:aspect-auto sm:min-h-[88px] p-1 sm:p-2 rounded-lg border transition-colors flex flex-col ${
+                  isSelected
+                    ? 'border-purple-500 bg-purple-500/10'
+                    : isToday
+                      ? 'border-purple-500/60 bg-slate-800/40 hover:bg-slate-800/70'
+                      : 'border-slate-700/60 bg-slate-800/20 hover:bg-slate-800/50'
+                }`}
+              >
+                <span className={`text-xs sm:text-sm font-semibold ${isToday ? 'text-purple-300' : 'text-slate-200'}`}>
+                  {day}
+                </span>
+                <div className="mt-1 flex-1 overflow-hidden space-y-1 hidden sm:block">
+                  {dayEvents.slice(0, 2).map(ev => (
+                    <div
+                      key={ev.id}
+                      className="text-[10px] leading-tight px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-100 truncate"
+                      title={ev.title}
+                    >
+                      {ev.startHour && <span className="font-medium mr-1">{ev.startHour}</span>}
+                      {ev.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 2 && (
+                    <div className="text-[10px] text-slate-400">+{dayEvents.length - 2} more</div>
+                  )}
+                </div>
+                {dayEvents.length > 0 && (
+                  <div className="sm:hidden flex justify-center mt-auto">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">{agendaTitle}</h3>
+          {selectedDate && (
+            <button
+              onClick={() => setSelectedDate(null)}
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              Show month
+            </button>
+          )}
+        </div>
+
+        {agendaEvents.length === 0 ? (
+          <p className="text-slate-500 text-sm py-6 text-center">
+            No activities {selectedDate ? 'for this day' : 'for this month'}.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {agendaEvents.map(ev => (
+              <li
+                key={ev.id}
+                className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-800/40 border border-slate-700/50"
+              >
+                <div className="flex flex-col items-center justify-center min-w-[56px] px-2 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30">
+                  <span className="text-xs text-purple-300 uppercase font-medium">
+                    {MONTH_NAMES[parseInt(ev.date.split('-')[1], 10) - 1].slice(0, 3)}
+                  </span>
+                  <span className="text-lg font-bold text-white">
+                    {parseInt(ev.date.split('-')[2], 10)}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-semibold text-white truncate">{ev.title}</h4>
+                    <button
+                      onClick={() => onDeleteEvent(ev.id)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700/50 transition-colors"
+                      aria-label="Delete event"
+                    >
+                      <Trash size={14} />
+                    </button>
+                  </div>
+                  {(ev.startHour || ev.endHour) && (
+                    <p className="text-sm text-slate-400 mt-0.5">
+                      {formatTime(ev.startHour)}
+                      {ev.startHour && ev.endHour && ' – '}
+                      {formatTime(ev.endHour)}
+                    </p>
+                  )}
+                  {ev.description && (
+                    <p className="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
+                      {ev.description}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// TRIPS VIEW COMPONENT
+// ============================================================================
+
+const TRIP_PHOTO_PLACEHOLDER = 'https://via.placeholder.com/800x500/1a1a2e/8b5cf6?text=Trip';
+
+const AddTripForm = ({ onAdd }) => {
+  const [destination, setDestination] = useState('');
+  const [year, setYear] = useState('');
+  const [photo, setPhoto] = useState('');
+  const [accommodation, setAccommodation] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const parsedYear = parseInt(year, 10);
+    if (!destination.trim() || !parsedYear || parsedYear < 1900 || parsedYear > 9999) {
+      setError('Destination and a valid year are required.');
+      return;
+    }
+    onAdd({
+      id: `trip-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      destination: destination.trim(),
+      year: parsedYear,
+      photo: photo.trim(),
+      accommodation: accommodation.trim()
+    });
+    setDestination('');
+    setYear('');
+    setPhoto('');
+    setAccommodation('');
+    setError('');
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6 mb-6"
+    >
+      <h3 className="text-lg font-semibold text-white mb-4">Add Trip</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Destination</label>
+          <input
+            type="text"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            placeholder="e.g. Lisbon, Portugal"
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Year</label>
+          <input
+            type="number"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            placeholder="e.g. 2026"
+            min="1900"
+            max="9999"
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-slate-400 text-sm mb-1">
+            Photo <span className="text-slate-500">(URL or /trips/filename.jpg)</span>
+          </label>
+          <input
+            type="text"
+            value={photo}
+            onChange={(e) => setPhoto(e.target.value)}
+            placeholder="/trips/lisbon.jpg or https://..."
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-slate-400 text-sm mb-1">
+            Accommodation <span className="text-slate-500">(optional link)</span>
+          </label>
+          <input
+            type="url"
+            value={accommodation}
+            onChange={(e) => setAccommodation(e.target.value)}
+            placeholder="https://airbnb.com/..."
+            className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+        </div>
+      </div>
+      {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+      <div className="mt-4 flex justify-end">
+        <button
+          type="submit"
+          className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg transition-colors inline-flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Add Trip
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const TripCard = ({ trip, onDelete }) => (
+  <div className="flex gap-4 group">
+    <div className="flex flex-col items-center pt-2">
+      <div className="w-4 h-4 rounded-full bg-purple-500 border-4 border-slate-900 shadow-md shadow-purple-500/40"></div>
+      <div className="flex-1 w-px bg-slate-700/80 mt-1 min-h-[2rem]"></div>
+    </div>
+
+    <div className="flex-1 bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden mb-6 hover:border-purple-500/50 transition-colors">
+      <div className="aspect-video bg-slate-900 overflow-hidden">
+        <img
+          src={trip.photo || TRIP_PHOTO_PLACEHOLDER}
+          alt={trip.destination}
+          onError={(e) => { e.currentTarget.src = TRIP_PHOTO_PLACEHOLDER; }}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h4 className="text-lg sm:text-xl font-bold text-white truncate flex items-center gap-2">
+              <MapPin size={18} className="text-purple-400 shrink-0" />
+              {trip.destination}
+            </h4>
+            <p className="text-sm text-slate-400 mt-1">{trip.year}</p>
+          </div>
+          <button
+            onClick={() => onDelete(trip.id)}
+            className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700/50 transition-colors opacity-0 group-hover:opacity-100"
+            aria-label="Delete trip"
+          >
+            <Trash size={16} />
+          </button>
+        </div>
+        {trip.accommodation && (
+          <a
+            href={trip.accommodation}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm text-purple-300 hover:text-purple-200 transition-colors break-all"
+          >
+            <LinkIcon size={14} />
+            Accommodation
+          </a>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const TripsView = ({ trips, onAddTrip, onDeleteTrip }) => {
+  const currentYear = new Date().getFullYear();
+  const sorted = [...trips].sort((a, b) => a.year - b.year);
+  const upcoming = sorted.filter(t => t.year >= currentYear);
+  const past = sorted.filter(t => t.year < currentYear).reverse();
+
+  return (
+    <div>
+      <AddTripForm onAdd={onAddTrip} />
+
+      <section className="mb-8">
+        <h3 className="text-xl font-bold text-white mb-4">Next Trips</h3>
+        {upcoming.length === 0 ? (
+          <p className="text-slate-500 text-sm py-6 text-center bg-slate-900/30 border border-slate-800 rounded-xl">
+            No upcoming trips yet. Add one above!
+          </p>
+        ) : (
+          <div>
+            {upcoming.map(trip => (
+              <TripCard key={trip.id} trip={trip} onDelete={onDeleteTrip} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h3 className="text-xl font-bold text-white mb-4">Past Trips</h3>
+        {past.length === 0 ? (
+          <p className="text-slate-500 text-sm py-6 text-center bg-slate-900/30 border border-slate-800 rounded-xl">
+            No past trips yet.
+          </p>
+        ) : (
+          <div>
+            {past.map(trip => (
+              <TripCard key={trip.id} trip={trip} onDelete={onDeleteTrip} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+};
 
 // ============================================================================
 // MAIN APPLICATION COMPONENT
@@ -1016,7 +1693,7 @@ function MediaTracker() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
   );
-  const [activeTab, setActiveTab] = useState('movies');
+  const [activeTab, setActiveTab] = useState('calendar');
   const [data, setData] = useState(null); // Start with null for loading state
   const [loading, setLoading] = useState(true);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -1036,7 +1713,9 @@ function MediaTracker() {
       const migrated = {
         movies: stored.movies || [],
         tvshows: [...(stored.tvshows || []), ...(stored.anime || [])],
-        books: stored.books || []
+        books: stored.books || [],
+        calendarEvents: stored.calendarEvents || [],
+        trips: stored.trips || []
       };
       setData(migrated);
       setLoading(false);
@@ -1090,6 +1769,34 @@ function MediaTracker() {
     }));
   };
 
+  const handleAddEvent = (event) => {
+    setData(prev => ({
+      ...prev,
+      calendarEvents: [...(prev.calendarEvents || []), event]
+    }));
+  };
+
+  const handleDeleteEvent = (id) => {
+    setData(prev => ({
+      ...prev,
+      calendarEvents: (prev.calendarEvents || []).filter(e => e.id !== id)
+    }));
+  };
+
+  const handleAddTrip = (trip) => {
+    setData(prev => ({
+      ...prev,
+      trips: [...(prev.trips || []), trip]
+    }));
+  };
+
+  const handleDeleteTrip = (id) => {
+    setData(prev => ({
+      ...prev,
+      trips: (prev.trips || []).filter(t => t.id !== id)
+    }));
+  };
+
   // Gate the entire UI behind the login screen
   if (!isAuthenticated) {
     return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
@@ -1100,13 +1807,15 @@ function MediaTracker() {
     return <LoadingScreen />;
   }
 
-  // Selectors
-  const filteredItems = data[activeTab].filter(item =>
-    selectedFilters[activeTab].includes(item.status)
-  );
+  const isMediaTab = MEDIA_TABS.includes(activeTab);
+
+  // Selectors (media tabs only)
+  const filteredItems = isMediaTab
+    ? data[activeTab].filter(item => selectedFilters[activeTab].includes(item.status))
+    : [];
 
   const tabs = getDefaultTabs();
-  const filterOptions = getFilterOptions(activeTab);
+  const filterOptions = isMediaTab ? getFilterOptions(activeTab) : [];
 
   // Render
   return (
@@ -1152,34 +1861,53 @@ function MediaTracker() {
         onSearchClick={() => setGlobalSearchOpen(true)}
         onAddClick={() => setSearchModalOpen(true)}
         tabs={tabs}
+        showMediaActions={isMediaTab}
       />
 
       {/* Main Content */}
       <div className="flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {/* Filter Bar */}
-        <FilterBar label="Filter:">
-          {filterOptions.map(option => (
-            <FilterButton
-              key={option.value}
-              label={option.label}
-              isActive={selectedFilters[activeTab].includes(option.value)}
-              onClick={() => toggleFilter(option.value)}
-            />
-          ))}
-        </FilterBar>
+        {isMediaTab && (
+          <>
+            <FilterBar label="Filter:">
+              {filterOptions.map(option => (
+                <FilterButton
+                  key={option.value}
+                  label={option.label}
+                  isActive={selectedFilters[activeTab].includes(option.value)}
+                  onClick={() => toggleFilter(option.value)}
+                />
+              ))}
+            </FilterBar>
 
-        {/* Content Grid */}
-        <MediaGrid
-          items={filteredItems}
-          renderItem={item => (
-            <MediaCard
-              key={item.id}
-              item={item}
-              onStatusChange={handleStatusChange}
+            <MediaGrid
+              items={filteredItems}
+              renderItem={item => (
+                <MediaCard
+                  key={item.id}
+                  item={item}
+                  onStatusChange={handleStatusChange}
+                />
+              )}
+              emptyComponent={<EmptyState onAddClick={() => setSearchModalOpen(true)} />}
             />
-          )}
-          emptyComponent={<EmptyState onAddClick={() => setSearchModalOpen(true)} />}
-        />
+          </>
+        )}
+
+        {activeTab === 'calendar' && (
+          <CalendarView
+            events={data.calendarEvents || []}
+            onAddEvent={handleAddEvent}
+            onDeleteEvent={handleDeleteEvent}
+          />
+        )}
+
+        {activeTab === 'trips' && (
+          <TripsView
+            trips={data.trips || []}
+            onAddTrip={handleAddTrip}
+            onDeleteTrip={handleDeleteTrip}
+          />
+        )}
       </div>
 
       {/* Modals */}
