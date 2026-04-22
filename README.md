@@ -58,7 +58,7 @@ media-tracker/
 
 ## Troubleshooting
 
-**Search not working** — check that the TMDB API key is set in `media-tracker.jsx` and you have an internet connection.
+**Search not working** — Check that the TMDB API key is set in `media-tracker.jsx` and you have an internet connection.
 
 **Data not saving** — visit `/api/health` on your deployment. If it shows `"database": "unreachable"`, the Postgres database isn't linked to the project. Follow Steps 4–5 in INSTALLATION.md and redeploy.
 
