@@ -172,12 +172,13 @@ In Login Page
 - Task 7 - Add a subtle testimonial or tagline: "Organize your life, together."
 - Task 8 - Add input validation feedback in real-time (e.g., "Username must be at least 4 characters")
 
-Main Dashboard (Post-Login)
-- Task 1 - Add avatar in profile (*)
-- Task 2 - In Porfile you can set User 1 name, User 2 name, and can add more users (button) (*)
-- Task 2 - "Add" button should be a global add (+) that lets you quickly add to any category (*)
-- Task 3 - Add a subtle "last synced" indicator or online status dot on header (*)
-- Task 4 - Add to header a "Profile button" that lets you edit profile (*)
+**Implemented (Needs confirmation) -** Main Dashboard (Post-Login)
+- Task 1 - Create a profile popup page that appears when you click in buttom "profile" in header
+- Task 2 - Add to header a "Profile button" that lets you edit profile
+- Task 3 - Let people Add avatar in profile
+- Task 4 - In Porfile you can set User 1 name, User 2 name, and can add more users (button)
+- Task 5 - I n the header there should be a "Add" button that should be a global add (+) that lets - you quickly add to any category where after clicking you define which type are you adding
+- Task 6 - Add a subtle "last synced" indicator or online status dot on header
 
 Navigation
 - Task 1 - 9 tabs is too many for horizontal tabs, do a bottom nav (mobile-first thinking)
