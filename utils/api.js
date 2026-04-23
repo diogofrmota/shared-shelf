@@ -209,6 +209,22 @@ const registerUser = async (email, password, name) => {
   }
 };
 
+const forgotPassword = async (email) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await res.json();
+    return { success: res.ok, message: data.message || data.error };
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return { success: false, message: 'Network error occurred.' };
+  }
+};
+
 // ============================================================================
 // SHELF DATA FUNCTIONS
 // ============================================================================
@@ -280,6 +296,7 @@ Object.assign(window, {
   getDefaultStatus,
   loginUser,
   registerUser,
+  forgotPassword,
   getShelfData,
   saveShelfData
 });

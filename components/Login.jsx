@@ -49,6 +49,27 @@ function LoginScreen({ onLogin }) {
     validateField(field, value);
   };
 
+  const handleForgotPassword = async () => {
+    // Check if the user actually typed an email before clicking
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setServerError('Please enter a valid email address first to reset your password.');
+      return;
+    }
+
+    setLoading(true);
+    setServerError('');
+    
+    try {
+      const response = await window.forgotPassword(email);
+      // We are using setServerError here just to display the feedback message in the UI easily
+      setServerError(response.message || 'If the email exists, a reset link has been sent.');
+    } catch (err) {
+      setServerError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
@@ -177,7 +198,7 @@ function LoginScreen({ onLogin }) {
               <button
                 type="button"
                 className="text-purple-400 text-sm hover:underline"
-                onClick={() => alert('Forgot password flow – reset link sent (simulated)')}
+                onClick={handleForgotPassword}
               >
                 Forgot password?
               </button>
