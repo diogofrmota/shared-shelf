@@ -161,9 +161,9 @@ TMDB search is proxied through `/api/search` to keep the API key secure.
 App
 - Task 1 - Buy domain
 - Task 2 - Create logo
+- Task 3 - Add app logo to login page above "Shared Shelf"
 
 In Login Page
-- Task 1 - Add app logo to login page above "Shared Shelf"
 - Task 2 - Change "Please enter your credentials to login" → "Sign in to your shared space."
 - Task 3 - Add a "Remember me" checkbox
 - Task 4 - Include a "Forgot password?" link
@@ -184,20 +184,20 @@ Navigation
 - Task 1 - 9 tabs is too many for horizontal tabs, do a bottom nav (mobile-first thinking)
 - Task 2 - Group related items - Plan → Tasks, Calendar; Go → Dates, Trips; Enjoy → Recipes, TV Shows, Movies, Books
 
-Tasks
+**Implemented (Needs confirmation) -** Tasks
 - Task 1 - When adding task - Assign to User 1 or User 2
 - Task 2 - When adding task - Due date
 - Task 3 - When selecting appears a buttom called "Mark as completed"
 
-Calendar (*)
+**Implemented (Needs confirmation) -** Calendar
 - Task 1 - Export to Google Calendar button
 
-Dates (*)
+**Implemented (Needs confirmation) -** Dates
 - Task 1 - "Been there" toggle — not just favorites
 - Task 2 - Rating system (1-5 stars) — your own private rating per spot
 - Task 3 - Photo upload
 
-TV Shows (*)
+**Implemented (Needs confirmation) -** TV Shows
 - Task 1 - Add progress tracking — "S2 E5" not just Watching/Completed
 
 Missing Features
