@@ -224,6 +224,32 @@ const searchTvShows = async (query) => {
   }
 };
 
+const fetchTvDetails = async (tmdbId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/tvdetails?id=${tmdbId}`);
+    if (!response.ok) throw new Error('Failed to fetch TV details');
+    return await response.json();
+  } catch (error) {
+    console.error('TV details fetch error:', error);
+    return null;
+  }
+};
+
+const fetchAnimeDetails = async (malId) => {
+  try {
+    const response = await fetch(`${API_CONFIG.JIKAN.BASE_URL}/anime/${malId}`);
+    if (!response.ok) throw new Error('Failed to fetch anime details');
+    const data = await response.json();
+    return {
+      episodes: data.data?.episodes || null,
+      seasons: null
+    };
+  } catch (error) {
+    console.error('Anime details fetch error:', error);
+    return null;
+  }
+};
+
 const searchAnime = async (query) => {
   try {
     const { JIKAN } = API_CONFIG;
@@ -357,5 +383,6 @@ Object.assign(window, {
   searchMovies, searchTvShows, searchAnime, searchBooks,
   getStoredData, saveData,
   formatStatusLabel, getStatusOptions, getFilterOptions, getDefaultStatus,
-  debounce, filterByQuery, getCategoryName
+  debounce, filterByQuery, getCategoryName,
+  fetchTvDetails, fetchAnimeDetails
 });
