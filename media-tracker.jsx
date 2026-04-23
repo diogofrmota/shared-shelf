@@ -712,6 +712,32 @@ const LogoutIcon = ({ size = 20, className = '' }) => (
   </svg>
 );
 
+const UserIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const Camera = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </svg>
+);
+
+const WifiOff = ({ size = 16, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <line x1="1" y1="1" x2="23" y2="23"></line>
+    <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+    <path d="M5 12.55a11 11 0 0 1 5.17-2.39"></path>
+    <path d="M10.71 5.05A16 16 0 0 1 22.56 9"></path>
+    <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+  </svg>
+);
+
 // ============================================================================
 // UI COMPONENTS
 // ============================================================================
@@ -984,6 +1010,194 @@ const ResultCard = ({ item, category, onAdd }) => (
   </div>
 );
 
+// ============================================================================
+// PROFILE MODAL COMPONENT
+// ============================================================================
+
+const AVATAR_COLORS = ['#8b5cf6', '#ec4899', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#f97316', '#84cc16'];
+
+const UserAvatar = ({ user, size = 40 }) => {
+  const initials = (user.name || '?')
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+  const color = user.color || AVATAR_COLORS[0];
+  const [imgError, setImgError] = useState(false);
+
+  if (user.avatar && !imgError) {
+    return (
+      <img
+        src={user.avatar}
+        alt={user.name}
+        width={size}
+        height={size}
+        style={{ width: size, height: size, minWidth: size }}
+        className="rounded-full object-cover border-2 border-slate-600 flex-shrink-0"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{ width: size, height: size, minWidth: size, background: color }}
+      className="rounded-full flex items-center justify-center text-white font-bold border-2 border-slate-600 flex-shrink-0"
+    >
+      <span style={{ fontSize: Math.max(10, size * 0.35) }}>{initials}</span>
+    </div>
+  );
+};
+
+const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
+  const [users, setUsers] = useState([]);
+  const [expandedId, setExpandedId] = useState(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setUsers((profile?.users || []).map(u => ({ ...u })));
+      setExpandedId(null);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const updateUser = (id, field, value) =>
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, [field]: value } : u));
+
+  const addUser = () => {
+    const newId = `user-${Date.now()}`;
+    const usedColors = users.map(u => u.color).filter(Boolean);
+    const color = AVATAR_COLORS.find(c => !usedColors.includes(c)) || AVATAR_COLORS[users.length % AVATAR_COLORS.length];
+    setUsers(prev => [...prev, { id: newId, name: '', avatar: '', color }]);
+  };
+
+  const removeUser = (id) => {
+    if (users.length <= 1) return;
+    setUsers(prev => prev.filter(u => u.id !== id));
+  };
+
+  const handleSave = () => {
+    const valid = users.filter(u => u.name.trim());
+    if (valid.length === 0) return;
+    onSave({ users: valid });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-lg border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-slate-800 z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <UserIcon size={20} className="text-purple-400" />
+                Profiles
+              </h2>
+              <p className="text-slate-400 text-xs mt-0.5">Manage who uses this shared shelf</p>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <Close size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-5 space-y-3">
+          {users.map((user, index) => (
+            <div key={user.id} className="bg-slate-700/30 rounded-xl p-4 border border-slate-700/50">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-shrink-0">
+                  <UserAvatar user={user} size={52} />
+                  <button
+                    onClick={() => setExpandedId(expandedId === user.id ? null : user.id)}
+                    className="absolute -bottom-1 -right-1 w-5 h-5 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center transition-colors"
+                    title="Change avatar"
+                  >
+                    <Camera size={10} className="text-white" />
+                  </button>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">User {index + 1}</label>
+                  <input
+                    type="text"
+                    value={user.name}
+                    onChange={(e) => updateUser(user.id, 'name', e.target.value)}
+                    placeholder="Enter name…"
+                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm"
+                  />
+                </div>
+
+                {users.length > 1 && (
+                  <button
+                    onClick={() => removeUser(user.id)}
+                    className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-slate-500 hover:text-red-400 flex-shrink-0"
+                    title="Remove"
+                  >
+                    <Trash size={15} />
+                  </button>
+                )}
+              </div>
+
+              {expandedId === user.id && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Avatar URL (optional)</label>
+                    <input
+                      type="url"
+                      value={user.avatar || ''}
+                      onChange={(e) => updateUser(user.id, 'avatar', e.target.value)}
+                      placeholder="https://example.com/photo.jpg"
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-2">Color</label>
+                    <div className="flex gap-2 flex-wrap">
+                      {AVATAR_COLORS.map(color => (
+                        <button
+                          key={color}
+                          onClick={() => updateUser(user.id, 'color', color)}
+                          style={{ background: color }}
+                          className={`w-7 h-7 rounded-full transition-all ${user.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800 scale-110' : 'hover:scale-105'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={addUser}
+            className="w-full py-3 border-2 border-dashed border-slate-600 hover:border-purple-500 text-slate-400 hover:text-purple-400 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium"
+          >
+            <Plus size={16} />
+            Add Another Person
+          </button>
+        </div>
+
+        <div className="px-5 pb-5 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold transition-colors text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors text-sm shadow-lg shadow-purple-900/30"
+          >
+            Save Profiles
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -1252,63 +1466,100 @@ const Tabs = ({ tabs, activeTab, onTabChange }) => (
   </div>
 );
 
-const getAddButtonText = (activeTab) => {
-  switch(activeTab) {
-    case 'tasks': return 'Add Task';
-    case 'movies': return 'Add Movie';
-    case 'tvshows': return 'Add TV Show';
-    case 'books': return 'Add Book';
-    case 'calendar': return 'Add Activity';
-    case 'trips': return 'Add Trip';
-    case 'dates': return 'Add Place';
-    case 'recipes': return 'Add Recipe';
-    default: return 'Add New';
-  }
+const formatLastSynced = (ts) => {
+  if (!ts) return null;
+  const diff = Date.now() - ts;
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  return `${Math.floor(diff / 86400000)}d ago`;
 };
 
 const Header = ({
   activeTab,
   onTabChange,
-  onAddClick,
+  onGlobalAddClick,
+  onProfileClick,
   onLogout,
   tabs,
+  profile,
+  lastSynced,
+  isOnline,
   showMediaActions = true
-}) => (
-  <div className="border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-40">
-    <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-3 sm:py-4 gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
-            Diogo & Mónica - Shared Shelf
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {showMediaActions && (
-            <button
-              onClick={onAddClick}
-              className="flex-1 sm:flex-none px-3 sm:px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-900/40 hover:scale-105"
-            >
-              <Plus size={18} />
-              <span className="hidden sm:inline">{getAddButtonText(activeTab)}</span>
-            </button>
-          )}
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-3 bg-slate-700/30 hover:bg-red-600/80 text-slate-300 hover:text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center sm:gap-2 gap-1 text-sm sm:text-base border border-slate-700 hover:border-red-500"
-              title="Logout"
-            >
-              <LogoutIcon size={18} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          )}
-        </div>
-      </div>
+}) => {
+  const users = profile?.users || [];
+  const syncLabel = isOnline
+    ? (lastSynced ? `Synced ${formatLastSynced(lastSynced)}` : 'Online')
+    : 'Offline';
 
-      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
+  return (
+    <div className="border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-40">
+      <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-3 sm:py-4 gap-3">
+
+          {/* Title + sync indicator */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+              Shared Shelf
+            </h1>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isOnline ? 'bg-green-400' : 'bg-slate-500'}`} />
+              <span className="text-xs text-slate-500">{syncLabel}</span>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+
+            {/* Profile button */}
+            <button
+              onClick={onProfileClick}
+              className="flex-none px-2.5 py-2 bg-slate-700/30 hover:bg-slate-700/60 rounded-xl transition-all duration-200 border border-slate-700 hover:border-purple-500/50 flex items-center gap-2"
+              title="Edit profiles"
+            >
+              {users.length > 0 ? (
+                <div className="flex -space-x-2 items-center">
+                  {users.slice(0, 3).map(u => (
+                    <UserAvatar key={u.id} user={u} size={26} />
+                  ))}
+                </div>
+              ) : (
+                <UserIcon size={18} className="text-slate-300" />
+              )}
+              <span className="hidden sm:inline text-slate-300 text-sm font-medium">Profile</span>
+            </button>
+
+            {/* Global Add button */}
+            {showMediaActions && (
+              <button
+                onClick={onGlobalAddClick}
+                className="flex-1 sm:flex-none px-3 sm:px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-1.5 text-sm shadow-lg shadow-purple-900/30 hover:shadow-xl hover:shadow-purple-900/40 hover:scale-105"
+                title="Add new item"
+              >
+                <Plus size={18} />
+                <span className="hidden sm:inline">Add</span>
+              </button>
+            )}
+
+            {/* Logout */}
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="flex-none px-2.5 sm:px-4 py-2.5 bg-slate-700/30 hover:bg-red-600/80 text-slate-300 hover:text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-1.5 text-sm border border-slate-700 hover:border-red-500"
+                title="Logout"
+              >
+                <LogoutIcon size={18} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const getDefaultTabs = () => [
   { id: TAB_CONFIG.TASKS.id, label: TAB_CONFIG.TASKS.label, icon: CheckSquare },
@@ -1320,6 +1571,59 @@ const getDefaultTabs = () => [
   { id: TAB_CONFIG.MOVIES.id, label: TAB_CONFIG.MOVIES.label, icon: Film },
   { id: TAB_CONFIG.BOOKS.id, label: TAB_CONFIG.BOOKS.label, icon: Book }
 ];
+
+// ============================================================================
+// GLOBAL ADD MODAL COMPONENT
+// ============================================================================
+
+const GlobalAddModal = ({ isOpen, onClose, onSelect }) => {
+  if (!isOpen) return null;
+
+  const categories = [
+    { id: 'tasks',    label: 'Task',      icon: CheckSquare, bg: 'from-violet-500/20 to-violet-600/5',  border: 'border-violet-500/30',  text: 'text-violet-400'  },
+    { id: 'calendar', label: 'Activity',  icon: CalendarIcon, bg: 'from-blue-500/20 to-blue-600/5',     border: 'border-blue-500/30',    text: 'text-blue-400'    },
+    { id: 'dates',    label: 'Date Spot', icon: Utensils,     bg: 'from-pink-500/20 to-pink-600/5',     border: 'border-pink-500/30',    text: 'text-pink-400'    },
+    { id: 'trips',    label: 'Trip',      icon: MapPin,       bg: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/30', text: 'text-emerald-400' },
+    { id: 'recipes',  label: 'Recipe',    icon: ChefHat,      bg: 'from-orange-500/20 to-orange-600/5', border: 'border-orange-500/30',  text: 'text-orange-400'  },
+    { id: 'tvshows',  label: 'TV Show',   icon: Tv,           bg: 'from-cyan-500/20 to-cyan-600/5',     border: 'border-cyan-500/30',    text: 'text-cyan-400'    },
+    { id: 'movies',   label: 'Movie',     icon: Film,         bg: 'from-yellow-500/20 to-yellow-600/5', border: 'border-yellow-500/30',  text: 'text-yellow-400'  },
+    { id: 'books',    label: 'Book',      icon: Book,         bg: 'from-red-500/20 to-red-600/5',       border: 'border-red-500/30',     text: 'text-red-400'     },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="p-5 border-b border-slate-700/50 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-white">What are you adding?</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
+          >
+            <Close size={20} />
+          </button>
+        </div>
+        <div className="p-4 grid grid-cols-2 gap-2.5">
+          {categories.map(({ id, label, icon: Icon, bg, border, text }) => (
+            <button
+              key={id}
+              onClick={() => onSelect(id)}
+              className={`bg-gradient-to-br ${bg} border ${border} rounded-xl p-4 flex flex-col items-center gap-2 hover:scale-105 transition-all duration-200 hover:shadow-lg`}
+            >
+              <Icon size={22} className={text} />
+              <span className="text-white font-semibold text-sm">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ============================================================================
 // ADD MODAL COMPONENT
@@ -3149,10 +3453,27 @@ function MediaTracker() {
   const [loading, setLoading] = useState(true);
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addCategory, setAddCategory] = useState(null); // category override for GlobalAddModal
+  const [globalAddOpen, setGlobalAddOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [lastSynced, setLastSynced] = useState(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [editTripModalOpen, setEditTripModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState(null);
+
+  // Online / offline listener
+  useEffect(() => {
+    const setOnline = () => setIsOnline(true);
+    const setOffline = () => setIsOnline(false);
+    window.addEventListener('online', setOnline);
+    window.addEventListener('offline', setOffline);
+    return () => {
+      window.removeEventListener('online', setOnline);
+      window.removeEventListener('offline', setOffline);
+    };
+  }, []);
 
   // Load data once the user is signed in
   useEffect(() => {
@@ -3168,7 +3489,13 @@ function MediaTracker() {
         calendarEvents: stored.calendarEvents || [],
         trips: stored.trips || [],
         recipes: stored.recipes || [],
-        dates: stored.dates || []
+        dates: stored.dates || [],
+        profile: stored.profile || {
+          users: [
+            { id: 'user-1', name: 'Diogo',  avatar: '', color: '#8b5cf6' },
+            { id: 'user-2', name: 'Mónica', avatar: '', color: '#ec4899' }
+          ]
+        }
       };
       setData(migrated);
       setLoading(false);
@@ -3180,7 +3507,7 @@ function MediaTracker() {
   useEffect(() => {
     if (!isAuth) return;
     if (data) {
-      saveData(data);
+      saveData(data).then(() => setLastSynced(Date.now()));
     }
   }, [data, isAuth]);
 
@@ -3356,6 +3683,16 @@ function MediaTracker() {
     }));
   };
 
+  const handleSaveProfile = (profileData) => {
+    setData(prev => ({ ...prev, profile: profileData }));
+  };
+
+  const handleGlobalAddSelect = (category) => {
+    setAddCategory(category);
+    setGlobalAddOpen(false);
+    setAddModalOpen(true);
+  };
+
   // Gate the entire UI behind the login screen
   if (!isAuth) {
     return <LoginScreen onLogin={handleLogin} />;
@@ -3420,9 +3757,13 @@ function MediaTracker() {
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onAddClick={() => setAddModalOpen(true)}
+        onGlobalAddClick={() => setGlobalAddOpen(true)}
+        onProfileClick={() => setProfileModalOpen(true)}
         onLogout={handleLogout}
         tabs={tabs}
+        profile={data?.profile}
+        lastSynced={lastSynced}
+        isOnline={isOnline}
         showMediaActions={true}
       />
 
@@ -3490,14 +3831,27 @@ function MediaTracker() {
 
       <AddModal
         isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        activeTab={activeTab}
+        onClose={() => { setAddModalOpen(false); setAddCategory(null); }}
+        activeTab={addCategory || activeTab}
         onAddMedia={handleAddMedia}
         onAddEvent={handleAddEvent}
         onAddTrip={handleAddTrip}
         onAddRecipe={handleAddRecipe}
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
+      />
+
+      <GlobalAddModal
+        isOpen={globalAddOpen}
+        onClose={() => setGlobalAddOpen(false)}
+        onSelect={handleGlobalAddSelect}
+      />
+
+      <ProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        profile={data?.profile}
+        onSave={handleSaveProfile}
       />
 
       <EditRecipeModal
