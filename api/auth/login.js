@@ -6,10 +6,10 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { email, password, rememberMe } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
+    const { login, password, rememberMe } = req.body;
+    if (!login || !password) return res.status(400).json({ error: 'Missing fields' });
 
-    const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+    const result = await sql`SELECT * FROM users WHERE email = ${login} OR display_name = ${login} LIMIT 1`;
     const user = result.rows[0];
     if (!user || !user.password_hash) return res.status(401).json({ error: 'Invalid credentials' });
 
