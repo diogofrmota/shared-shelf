@@ -6,7 +6,9 @@ After sign in then you go to a screen like when you enter netflix with profiles 
 
 Also in the login page add a tag line like "Organize your life, together. Create your shared calendar, mark your favorite dating spots, favourite recipes and track your movies, tv shows and books."
 
-**Shelfs logic**
+---
+
+**Shelfs logic** - CHECK IF IMPLEMENTED
 Please change how shelfs exist in the app. Users create their account, users can have and join multiple shelf. Each shelf has a shelf id(which can be used by other people to join where you can request in settings to generate a new shelf join code that will work for a 1-time join)
 
 In the login page (starting point) the text in the browser should be "Shared Shelf - Homepage"
@@ -15,7 +17,7 @@ Inside the specific shelf the text in the browser should be "Shared Shelf - <Nam
 
 ---
 
-**Change Navigation**
+**Change Navigation** - CHECK IF IMPLEMENTED
 Please updated header to be like this, from left to right:
 1. Shelf logo - users can edit from profile the shelf logo
 2. Shelf name - shelf name that was given when creating the specific shelf (that can be edited from shelf settings
