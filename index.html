@@ -47,7 +47,24 @@
   <!-- Leaflet JS for maps -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Your App -->
+  <!-- App Components (load in dependency order) -->
+  <script type="text/babel" src="./components/Config.jsx"></script>
+  <script type="text/babel" src="./components/Icons.jsx"></script>
+  <script type="text/babel" src="./components/UI.jsx"></script>
+  <script type="text/babel" src="./components/MediaCard.jsx"></script>
+  <script type="text/babel" src="./components/ProfileModal.jsx"></script>
+  <script type="text/babel" src="./components/SearchModal.jsx"></script>
+  <script type="text/babel" src="./components/GlobalSearchModal.jsx"></script>
+  <script type="text/babel" src="./components/Header.jsx"></script>
+  <script type="text/babel" src="./components/AddModal.jsx"></script>
+  <script type="text/babel" src="./components/CalendarView.jsx"></script>
+  <script type="text/babel" src="./components/TripsView.jsx"></script>
+  <script type="text/babel" src="./components/RecipesView.jsx"></script>
+  <script type="text/babel" src="./components/DatesView.jsx"></script>
+  <script type="text/babel" src="./components/TasksView.jsx"></script>
+  <script type="text/babel" src="./components/MediaSectionsView.jsx"></script>
+
+  <!-- Main App -->
   <script type="text/babel" src="./media-tracker.jsx"></script>
 
   <script type="text/babel">
@@ -59,7 +76,7 @@
       const { createRoot } = ReactDOM;
       const root = createRoot(document.getElementById('root'));
       root.render(<MediaTracker />);
-    }, 100);
+    }, 300);
   </script>
 </body>
 </html>
