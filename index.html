@@ -64,9 +64,11 @@
   <!-- GLOBAL CONFIGURATION                          -->
   <!-- ============================================ -->
   <script>
-    // All API calls will be made to this base URL.
-    window.API_BASE_URL = 'https://shared-shelf.vercel.app';
-    
+    // Same-origin API calls: whichever deployment (production or preview)
+    // serves this page also serves /api/*. Leaving this empty makes fetch
+    // calls resolve relative to window.location.origin.
+    window.API_BASE_URL = '';
+
     // TMDB API key (set this to your actual key or leave empty if using your backend)
     window.TMDB_API_KEY = '';
   </script>

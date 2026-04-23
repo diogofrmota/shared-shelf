@@ -5,7 +5,9 @@ const React = window.React;
 // ============================================================================
 
 // Config constants (inline since we can't import from config.js in browser)
-const API_BASE = window.API_BASE_URL || 'https://shared-shelf.vercel.app';
+// Empty string = same-origin, so preview + production deployments each hit
+// their own /api routes instead of falling back to a hardcoded URL.
+const API_BASE = window.API_BASE_URL ?? '';
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
 
 // ============================================================================
