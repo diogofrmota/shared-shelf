@@ -842,7 +842,7 @@ const LoginScreen = ({ onLogin }) => {
         className="w-full max-w-sm bg-slate-900/60 border border-slate-700 rounded-2xl p-8 backdrop-blur-sm"
       >
         <h1 className="text-2xl font-bold text-white text-center mb-1">Shared Shelf</h1>
-        <p className="text-slate-400 text-sm text-center mb-6">Please enter your credentials to login.</p>
+        <p className="text-slate-400 text-sm text-center mb-6">Sign in to your shared space.</p>
 
         <label className="block text-slate-300 text-sm mb-2" htmlFor="login-username">Username</label>
         <input
