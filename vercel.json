@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/auth/:path*",
-      "destination": "/api/auth.js"
+      "destination": "/api/auth"
     }
   ]
 }

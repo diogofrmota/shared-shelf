@@ -21,13 +21,22 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Parse URL to determine endpoint
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const path = url.pathname;
+  // Parse URL to determine endpoint. Depending on how Vercel dispatches the
+  // rewrite, req.url may be the original ("/api/auth/register") or the
+  // rewritten one ("/api/auth"). Fall back to x-forwarded-uri / x-matched-path
+  // and ultimately strip any "/api/auth" prefix so we always end up with the
+  // action segment (e.g. "register", "login", "me").
+  const rawUrl =
+    req.url ||
+    req.headers['x-forwarded-uri'] ||
+    req.headers['x-matched-path'] ||
+    '/';
+  const parsed = new URL(rawUrl, `http://${req.headers.host || 'localhost'}`);
+  const action = parsed.pathname.replace(/^\/api\/auth\/?/, '').split('/')[0];
 
   try {
     // POST /api/auth/register
-    if (path === '/api/auth/register' && req.method === 'POST') {
+    if (action === 'register' && req.method === 'POST') {
       const { email, password, name } = req.body;
       if (!email || !password || !name || password.length < 6 || name.length < 4) {
         return res.status(400).json({ error: 'Invalid input', errors: {} });
@@ -53,7 +62,7 @@ export default async function handler(req, res) {
     }
 
     // POST /api/auth/login
-    if (path === '/api/auth/login' && req.method === 'POST') {
+    if (action === 'login' && req.method === 'POST') {
       const { email, password, rememberMe } = req.body;
       if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
 
@@ -74,7 +83,7 @@ export default async function handler(req, res) {
     }
 
     // GET /api/auth/me
-    if (path === '/api/auth/me' && req.method === 'GET') {
+    if (action === 'me' && req.method === 'GET') {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
       const token = authHeader.split(' ')[1];
@@ -89,7 +98,7 @@ export default async function handler(req, res) {
     }
 
     // POST /api/auth/forgot-password
-    if (path === '/api/auth/forgot-password' && req.method === 'POST') {
+    if (action === 'forgot-password' && req.method === 'POST') {
       const { email } = req.body;
       if (!email) return res.status(400).json({ error: 'Email is required' });
 
@@ -135,7 +144,7 @@ export default async function handler(req, res) {
     }
 
     // POST /api/auth/reset-password
-    if (path === '/api/auth/reset-password' && req.method === 'POST') {
+    if (action === 'reset-password' && req.method === 'POST') {
       const { token, newPassword } = req.body;
       if (!token || !newPassword || newPassword.length < 6) {
         return res.status(400).json({ error: 'Invalid request' });
