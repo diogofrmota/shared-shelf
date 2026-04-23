@@ -173,10 +173,11 @@ In Login Page
 - Task 8 - Add input validation feedback in real-time (e.g., "Username must be at least 4 characters")
 
 Main Dashboard (Post-Login)
-- Task 1 - Add avatar
-- Task 2 - "Add" button should be a global add (+) that lets you quickly add to any category
-- Task 3 - Add a subtle "last synced" indicator or online status dot
-- Task 4 - Add to header a "Profile button" that lets you edit profile
+- Task 1 - Add avatar in profile (*)
+- Task 2 - In Porfile you can set User 1 name, User 2 name, and can add more users (button) (*)
+- Task 2 - "Add" button should be a global add (+) that lets you quickly add to any category (*)
+- Task 3 - Add a subtle "last synced" indicator or online status dot on header (*)
+- Task 4 - Add to header a "Profile button" that lets you edit profile (*)
 
 Navigation
 - Task 1 - 9 tabs is too many for horizontal tabs, do a bottom nav (mobile-first thinking)
@@ -187,15 +188,15 @@ Tasks
 - Task 2 - When adding task - Due date
 - Task 3 - When selecting appears a buttom called "Mark as completed"
 
-Calendar
+Calendar (*)
 - Task 1 - Export to Google Calendar button
 
-Dates
+Dates (*)
 - Task 1 - "Been there" toggle — not just favorites
 - Task 2 - Rating system (1-5 stars) — your own private rating per spot
 - Task 3 - Photo upload
 
-TV Shows
+TV Shows (*)
 - Task 1 - Add progress tracking — "S2 E5" not just Watching/Completed
 
 Missing Features
