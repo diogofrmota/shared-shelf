@@ -35,10 +35,18 @@ function LoginScreen({ onLogin }) {
         }
         break;
       case 'email':
-        if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          newErrors.email = 'Please enter a valid email';
+        if (mode === 'signup') {
+          if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            newErrors.email = 'Please enter a valid email';
+          } else {
+            delete newErrors.email;
+          }
         } else {
-          delete newErrors.email;
+          if (!value || value.length < 1) {
+            newErrors.email = 'Please enter your email or username';
+          } else {
+            delete newErrors.email;
+          }
         }
         break;
       case 'password':
@@ -71,7 +79,7 @@ function LoginScreen({ onLogin }) {
 
   const handleForgotPassword = async () => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setServerError('Please enter your email address above first.');
+      setServerError('Please enter your email address (not username) in the field above to reset your password.');
       return;
     }
     setLoading(true);
@@ -122,7 +130,8 @@ function LoginScreen({ onLogin }) {
 
     const allErrors = {};
     if (mode === 'signup' && name.length < 4) allErrors.name = 'Username must be at least 4 characters';
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) allErrors.email = 'Please enter a valid email';
+    if (mode === 'signup' && (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) allErrors.email = 'Please enter a valid email';
+    if (mode === 'signin' && (!email || email.length < 1)) allErrors.email = 'Please enter your email or username';
     if (password.length < 6) allErrors.password = 'Password must be at least 6 characters';
     if (Object.keys(allErrors).length > 0) {
       setErrors(allErrors);
@@ -224,8 +233,8 @@ function LoginScreen({ onLogin }) {
 
               <div>
                 <input
-                  type="email"
-                  placeholder="Email"
+                  type={mode === 'signup' ? 'email' : 'text'}
+                  placeholder={mode === 'signup' ? 'Email' : 'Email or Username'}
                   value={email}
                   onChange={(e) => handleInput('email', e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"

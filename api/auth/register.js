@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { sql, jwt, bcrypt, JWT_SECRET, JWT_EXPIRY, cors, errResponse } from './_shared.js';
 
 export default async function handler(req, res) {
@@ -11,15 +12,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid input' });
     }
 
-    const existing = await sql`SELECT id FROM users WHERE email = ${email}`;
-    if (existing.rows.length > 0) {
+    const [emailCheck, nameCheck] = await Promise.all([
+      sql`SELECT id FROM users WHERE email = ${email}`,
+      sql`SELECT id FROM users WHERE display_name = ${name}`
+    ]);
+    if (emailCheck.rows.length > 0) {
       return res.status(409).json({ error: 'Email already registered' });
     }
+    if (nameCheck.rows.length > 0) {
+      return res.status(409).json({ error: 'Username already taken' });
+    }
 
+    const id = randomUUID();
     const hash = await bcrypt.hash(password, 10);
     const result = await sql`
-      INSERT INTO users (email, password_hash, display_name)
-      VALUES (${email}, ${hash}, ${name})
+      INSERT INTO users (id, email, password_hash, display_name)
+      VALUES (${id}, ${email}, ${hash}, ${name})
       RETURNING id, email, display_name
     `;
     const user = result.rows[0];

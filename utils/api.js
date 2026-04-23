@@ -171,7 +171,7 @@ const loginUser = async (email, password, rememberMe) => {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, rememberMe })
+      body: JSON.stringify({ login: email, password, rememberMe })
     });
 
     if (!res.ok) {
