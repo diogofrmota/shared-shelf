@@ -1,6 +1,54 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
 
+// simple debounce helper
+function debounce(func, wait) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+// fallback date categories if not defined globally
+const DATE_CATEGORIES = window.DATE_CATEGORIES || [
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'bar', label: 'Bar' },
+  { value: 'brunch', label: 'Brunch' },
+  { value: 'viewpoint', label: 'Viewpoint' },
+  { value: 'other', label: 'Other' },
+];
+
+const DATE_CATEGORY_STYLES = window.DATE_CATEGORY_STYLES || {
+  restaurant: 'text-orange-300 border-orange-500/30 bg-orange-500/10',
+  bar: 'text-purple-300 border-purple-500/30 bg-purple-500/10',
+  brunch: 'text-yellow-300 border-yellow-500/30 bg-yellow-500/10',
+  viewpoint: 'text-green-300 border-green-500/30 bg-green-500/10',
+  other: 'text-slate-300 border-slate-500/30 bg-slate-500/10',
+};
+
+// grab icons from lucide
+const { Star, Trash, MapPin, Link: LinkIcon } = window.lucide;
+
+// Reuse Filter components if defined globally, otherwise define simple ones
+const FilterBar = window.FilterBar || (({ label, children }) => (
+  <div className="flex items-center gap-2 mb-4 flex-wrap">
+    <span className="text-sm text-slate-400 mr-2">{label}</span>
+    {children}
+  </div>
+));
+
+const FilterButton = window.FilterButton || (({ label, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+      isActive ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+    }`}
+  >
+    {label}
+  </button>
+));
+
 // ============================================================================
 // DATES VIEW COMPONENT
 // ============================================================================
@@ -262,7 +310,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
                 className={`p-1 rounded hover:bg-slate-700/50 transition-colors ${place.isFavourite ? 'text-yellow-300' : 'text-slate-400 hover:text-yellow-300'}`}
                 aria-label={place.isFavourite ? 'Remove from favourites' : 'Add to favourites'}
               >
-                <Star size={16} filled={place.isFavourite} />
+                <Star size={16} fill={place.isFavourite ? 'currentColor' : 'none'} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateDate?.(place.id, { beenThere: !place.beenThere }); }}

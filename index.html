@@ -13,6 +13,19 @@
   <!-- Leaflet CSS for maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+  <!-- Fix Leaflet default icon paths -->
+  <script>
+    // Prevent Leaflet 404s for marker icons
+    (function() {
+      var originalInit = L.Icon.Default.prototype._setIconStyles;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      });
+    })();
+  </script>
+
   <style>
     body {
       margin: 0;
@@ -47,7 +60,26 @@
   <!-- Leaflet JS for maps -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- App Components (load in dependency order) -->
+  <!-- ============================================ -->
+  <!-- GLOBAL CONFIGURATION                          -->
+  <!-- ============================================ -->
+  <script>
+    // All API calls will be made to this base URL.
+    window.API_BASE_URL = 'https://shared-shelf.vercel.app';
+    
+    // TMDB API key (set this to your actual key or leave empty if using your backend)
+    window.TMDB_API_KEY = '';
+  </script>
+
+  <!-- ============================================ -->
+  <!-- UTILITY SCRIPTS (load before components)      -->
+  <!-- ============================================ -->
+  <script type="text/babel" src="./utils/api.js"></script>
+  <script type="text/babel" src="./utils/storage.js"></script>
+
+  <!-- ============================================ -->
+  <!-- APP COMPONENTS (load in dependency order)     -->
+  <!-- ============================================ -->
   <script type="text/babel" src="./components/Config.jsx"></script>
   <script type="text/babel" src="./components/Icons.jsx"></script>
   <script type="text/babel" src="./components/UI.jsx"></script>
@@ -67,19 +99,23 @@
   <script type="text/babel" src="./components/ShelfSelector.jsx"></script>
   <script type="text/babel" src="./components/JoinShelfModal.jsx"></script>
 
-  <!-- Main App -->
+  <!-- ============================================ -->
+  <!-- MAIN APP                                      -->
+  <!-- ============================================ -->
   <script type="text/babel" src="./media-tracker.jsx"></script>
 
   <script type="text/babel">
+    // Wait for all scripts to load and transform before rendering
     setTimeout(() => {
       if (typeof MediaTracker === 'undefined') {
-        console.error('MediaTracker component not found');
+        console.error('MediaTracker component not found - check that all scripts loaded correctly');
+        document.getElementById('root').innerHTML = '<div style="color:white;text-align:center;padding:2rem;">Failed to load application. Please check the console for errors.</div>';
         return;
       }
       const { createRoot } = ReactDOM;
       const root = createRoot(document.getElementById('root'));
       root.render(<MediaTracker />);
-    }, 300);
+    }, 500); // Increased timeout to give Babel more time to process all files
   </script>
 </body>
 </html>

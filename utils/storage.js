@@ -1,39 +1,36 @@
-import { STORAGE_CONFIG, API_BASE_URL, FEATURES } from '../config.js';
+// ============================================================================
+// STORAGE HELPERS (global scope, no ES modules)
+// ============================================================================
 
-// Client-side auth management
-const AUTH_STORAGE_KEY = 'media-tracker-auth';
+const API_BASE = window.API_BASE_URL || 'https://shared-shelf.vercel.app';
 
-// Fixed user ID for this household
+// Fixed user ID for this household (fallback)
 const USER_ID = 'diogo-monica-shared';
 
 /**
  * Check if user is authenticated
- * @returns {boolean} Authentication status
  */
-export const isAuthenticated = () => {
-  return localStorage.getItem(AUTH_STORAGE_KEY) === 'true';
+const isAuthenticated = () => {
+  const token = localStorage.getItem('shared-shelf-auth-token');
+  const sessionToken = sessionStorage.getItem('shared-shelf-auth-token');
+  return !!(token || sessionToken);
 };
 
 /**
- * Authenticate user with credentials via API
- * @param {string} username - Username
- * @param {string} password - Password
- * @returns {Promise<boolean>} Authentication success
+ * Authenticate user with credentials via API (legacy simple auth)
  */
-export const authenticate = async (username, password) => {
+const authenticate = async (username, password) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth`, {
+    const response = await fetch(`${API_BASE}/api/auth`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
 
     const data = await response.json();
     
     if (data.authenticated) {
-      localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+      localStorage.setItem('shared-shelf-legacy-auth', 'true');
       return true;
     }
     
@@ -47,136 +44,113 @@ export const authenticate = async (username, password) => {
 /**
  * Logout user
  */
-export const logout = () => {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+const logout = () => {
+  localStorage.removeItem('shared-shelf-auth-token');
+  localStorage.removeItem('shared-shelf-legacy-auth');
+  localStorage.removeItem('shared-shelf-user');
+  sessionStorage.removeItem('shared-shelf-auth-token');
 };
 
 /**
  * Retrieve stored data - tries cloud first, falls back to localStorage
- * @returns {Promise<Object>} Stored data or default schema
  */
-export const getStoredData = async () => {
-  // Try cloud storage first if enabled
-  if (FEATURES.USE_REMOTE_STORAGE) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/data`, {
-        headers: { 'x-user-id': USER_ID }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Cache the cloud data locally for offline access
-        localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
-        return data;
-      }
-    } catch (error) {
-      console.error('Failed to fetch from cloud, falling back to cache:', error);
-    }
+const getStoredData = async () => {
+  // Try cloud storage first
+  try {
+    const response = await fetch(`${API_BASE}/api/data`, {
+      headers: { 'x-user-id': USER_ID }
+    });
     
-    // Fallback to cached cloud data if available
-    const cached = localStorage.getItem('media-tracker-data-cache');
-    if (cached) {
-      try {
-        return JSON.parse(cached);
-      } catch (e) {
-        console.error('Failed to parse cached data:', e);
-      }
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
+      return data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch from cloud, falling back to cache:', error);
+  }
+  
+  // Fallback to cached cloud data
+  const cached = localStorage.getItem('media-tracker-data-cache');
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) {
+      console.error('Failed to parse cached data:', e);
     }
   }
   
-  // Final fallback to localStorage (original behavior)
+  // Final fallback to original localStorage key
   try {
-    const stored = localStorage.getItem(STORAGE_CONFIG.KEY);
-    return stored ? JSON.parse(stored) : { ...STORAGE_CONFIG.SCHEMA };
+    const stored = localStorage.getItem('media-tracker-data');
+    if (stored) return JSON.parse(stored);
   } catch (error) {
     console.error('Error retrieving stored data:', error);
-    return { ...STORAGE_CONFIG.SCHEMA };
   }
+  
+  // Return default schema
+  return {
+    tasks: [],
+    movies: [],
+    tvshows: [],
+    books: [],
+    calendarEvents: [],
+    trips: [],
+    recipes: [],
+    dates: [],
+    profile: {
+      users: [
+        { id: 'user-1', name: 'Diogo', avatar: '', color: '#8b5cf6' },
+        { id: 'user-2', name: 'Mónica', avatar: '', color: '#ec4899' }
+      ]
+    }
+  };
 };
 
 /**
  * Save data to cloud and/or localStorage
- * @param {Object} data - Data to save
- * @returns {Promise<void>}
  */
-export const saveData = async (data) => {
+const saveData = async (data) => {
   // Always save to localStorage as backup
   try {
-    localStorage.setItem(STORAGE_CONFIG.KEY, JSON.stringify(data));
+    localStorage.setItem('media-tracker-data', JSON.stringify(data));
     localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
   
-  // Sync to cloud if enabled
-  if (FEATURES.USE_REMOTE_STORAGE) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': USER_ID
-        },
-        body: JSON.stringify({ data })
-      });
-      
-      if (!response.ok) {
-        console.warn('Failed to sync with cloud, data saved locally only');
-      }
-    } catch (error) {
-      console.error('Error syncing to cloud:', error);
-    }
-  }
-};
-
-/**
- * Clear all stored data (both cloud and local)
- * @returns {Promise<void>}
- */
-export const clearStoredData = async () => {
-  // Clear cloud data if enabled
-  if (FEATURES.USE_REMOTE_STORAGE) {
-    try {
-      await fetch(`${API_BASE_URL}/api/data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': USER_ID
-        },
-        body: JSON.stringify({ data: { ...STORAGE_CONFIG.SCHEMA } })
-      });
-    } catch (error) {
-      console.error('Error clearing cloud data:', error);
-    }
-  }
-  
-  // Clear local data
+  // Sync to cloud
   try {
-    localStorage.removeItem(STORAGE_CONFIG.KEY);
-    localStorage.removeItem('media-tracker-data-cache');
+    const response = await fetch(`${API_BASE}/api/data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': USER_ID
+      },
+      body: JSON.stringify({ data })
+    });
+    
+    if (!response.ok) {
+      console.warn('Failed to sync with cloud, data saved locally only');
+    }
   } catch (error) {
-    console.error('Error clearing stored data:', error);
+    console.error('Error syncing to cloud:', error);
   }
 };
 
 /**
  * Export data as JSON for backup
- * @returns {Promise<string>} JSON string of all data
  */
-export const exportData = async () => {
+const exportData = async () => {
   const data = await getStoredData();
   return JSON.stringify(data, null, 2);
 };
 
 /**
  * Import data from JSON
- * @param {string} jsonString - JSON string to import
- * @returns {Promise<boolean>} Success status
  */
-export const importData = async (jsonString) => {
+const importData = async (jsonString) => {
   try {
     const data = JSON.parse(jsonString);
-    if (data.movies && data.tvshows && data.books) {
+    if (data && typeof data === 'object') {
       await saveData(data);
       return true;
     }
@@ -188,46 +162,24 @@ export const importData = async (jsonString) => {
 };
 
 /**
- * Get the current user ID (for debugging/admin purposes)
- * @returns {string} Current user ID
- */
-export const getCurrentUserId = () => USER_ID;
-
-/**
- * Force sync with cloud (useful when coming back online)
- * @returns {Promise<boolean>} Success status
- */
-export const forceCloudSync = async () => {
-  if (!FEATURES.USE_REMOTE_STORAGE) return false;
-  
-  try {
-    const localData = JSON.parse(localStorage.getItem(STORAGE_CONFIG.KEY) || '{}');
-    const response = await fetch(`${API_BASE_URL}/api/data`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': USER_ID
-      },
-      body: JSON.stringify({ data: localData })
-    });
-    return response.ok;
-  } catch (error) {
-    console.error('Force sync failed:', error);
-    return false;
-  }
-};
-
-/**
  * Check cloud connectivity
- * @returns {Promise<boolean>} True if cloud is reachable
  */
-export const checkCloudConnection = async () => {
-  if (!FEATURES.USE_REMOTE_STORAGE) return false;
-  
+const checkCloudConnection = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/health`);
+    const response = await fetch(`${API_BASE}/api/health`);
     return response.ok;
   } catch {
     return false;
   }
 };
+
+Object.assign(window, {
+  isAuthenticated,
+  authenticate,
+  logout,
+  getStoredData,
+  saveData,
+  exportData,
+  importData,
+  checkCloudConnection
+});

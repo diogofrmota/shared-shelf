@@ -1,6 +1,9 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
+// API base is set globally in index.html
+const API_BASE = window.API_BASE_URL || '/api';
+
 function MediaTracker() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentShelf, setCurrentShelf] = useState(null);
@@ -402,7 +405,7 @@ function defaultShelfData() {
 
 async function fetchUser(token) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) return await res.json().then(d => d.user);

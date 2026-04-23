@@ -1,6 +1,11 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
+// Pull commonly used icons from the global lucide object
+const {
+  CheckSquare, Calendar: CalendarIcon, Utensils, MapPin, ChefHat, Tv, Film, Book, Close
+} = window.lucide;
+
 // ============================================================================
 // GLOBAL ADD MODAL COMPONENT
 // ============================================================================
@@ -389,4 +394,149 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   );
 };
 
-Object.assign(window, { GlobalAddModal, AddModal, EditEventModal });
+// ============================================================================
+// EDIT RECIPE MODAL (minimal)
+// ============================================================================
+
+const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    if (isOpen && recipe) {
+      setFormData({
+        name: recipe.name || '',
+        photo: recipe.photo || '',
+        prepTime: recipe.prepTime || '',
+        link: recipe.link || '',
+        ingredients: recipe.ingredients || '',
+        instructions: recipe.instructions || '',
+      });
+    }
+  }, [isOpen, recipe]);
+
+  if (!isOpen || !recipe) return null;
+
+  const inputCls = "w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500";
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.name) {
+      onSave({ ...recipe, ...formData });
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
+        <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-gradient-to-br from-slate-800 to-slate-900 z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white">Edit Recipe</h2>
+            <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <Close size={24} />
+            </button>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <FormField label="Name" required>
+            <input type="text" className={inputCls} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
+          </FormField>
+          <FormField label="Photo URL">
+            <input type="text" className={inputCls} value={formData.photo} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
+          </FormField>
+          <FormField label="Prep Time">
+            <input type="text" className={inputCls} value={formData.prepTime} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
+          </FormField>
+          <FormField label="Recipe Link">
+            <input type="url" className={inputCls} value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+          </FormField>
+          <FormField label="Ingredients">
+            <textarea rows="4" className={inputCls} value={formData.ingredients} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
+          </FormField>
+          <FormField label="Instructions">
+            <textarea rows="5" className={inputCls} value={formData.instructions} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
+          </FormField>
+          <button type="submit" className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold mt-2">
+            Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// EDIT TRIP MODAL (minimal)
+// ============================================================================
+
+const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    if (isOpen && trip) {
+      setFormData({
+        destination: trip.destination || '',
+        year: trip.year || new Date().getFullYear(),
+        tripType: trip.tripType || 'next',
+        photo: trip.photo || '',
+        accommodation: trip.accommodation || '',
+      });
+    }
+  }, [isOpen, trip]);
+
+  if (!isOpen || !trip) return null;
+
+  const inputCls = "w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500";
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.destination) {
+      onSave({ ...trip, ...formData });
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[130] flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl">
+        <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-gradient-to-br from-slate-800 to-slate-900 z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white">Edit Trip</h2>
+            <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <Close size={24} />
+            </button>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <FormField label="Destination" required>
+            <input type="text" className={inputCls} value={formData.destination} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
+          </FormField>
+          <FormField label="Year">
+            <input type="number" className={inputCls} value={formData.year} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
+          </FormField>
+          <FormField label="Trip Type">
+            <div className="flex gap-2">
+              {['past', 'next'].map(type => (
+                <button key={type} type="button" onClick={() => setFormData({ ...formData, tripType: type })}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${formData.tripType === type ? 'bg-purple-600 border-purple-500 text-white' : 'bg-slate-700/50 border-slate-600 text-slate-400 hover:text-white'}`}>
+                  {type === 'past' ? 'Past Trip' : 'Next Trip'}
+                </button>
+              ))}
+            </div>
+          </FormField>
+          <FormField label="Photo URL">
+            <input type="text" className={inputCls} value={formData.photo} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
+          </FormField>
+          <FormField label="Accommodation URL">
+            <input type="url" className={inputCls} value={formData.accommodation} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
+          </FormField>
+          <button type="submit" className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold mt-2">
+            Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { GlobalAddModal, AddModal, EditEventModal, EditRecipeModal, EditTripModal });

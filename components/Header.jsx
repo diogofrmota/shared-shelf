@@ -1,9 +1,23 @@
 const React = window.React;
 const { useState } = React;
 
-// We'll reuse icons that are already defined (Icons.jsx)
-// Make sure these are available on window or import them.
-// They should already be global from your Icons.jsx file.
+// Grab icons from the lucide global object
+const { Share: ShareIcon, Settings: SettingsIcon, User: UserIcon, Plus } = window.lucide;
+
+// UserAvatar should be defined globally (e.g., in UI.jsx). If not, fallback.
+const UserAvatar = window.UserAvatar || (({ user, size }) => {
+  if (user.avatar) {
+    return <img src={user.avatar} alt={user.name} className={`rounded-full`} style={{ width: size, height: size }} />;
+  }
+  return (
+    <div
+      className={`rounded-full flex items-center justify-center text-white font-bold text-xs`}
+      style={{ width: size, height: size, backgroundColor: user.color || '#7c3aed' }}
+    >
+      {user.name.charAt(0).toUpperCase()}
+    </div>
+  );
+});
 
 const Header = ({
   shelfLogo,

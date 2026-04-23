@@ -1,18 +1,23 @@
-import { API_CONFIG, PLACEHOLDER_IMAGE } from '../config.js';
+const React = window.React;
 
-/**
- * Search for movies and TV shows using TMDB API
- * @param {string} query - Search query
- * @returns {Promise<Array>} Array of movie/TV show objects
- */
-export const searchMovies = async (query) => {
+// ============================================================================
+// API HELPER FUNCTIONS (global scope, no ES modules)
+// ============================================================================
+
+// Config constants (inline since we can't import from config.js in browser)
+const API_BASE = window.API_BASE_URL || 'https://shared-shelf.vercel.app';
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+
+// ============================================================================
+// MEDIA SEARCH FUNCTIONS
+// ============================================================================
+
+const searchMovies = async (query) => {
   try {
-    const { TMDB } = API_CONFIG;
-
-    const url = new URL(`${TMDB.BASE_URL}${TMDB.ENDPOINTS.SEARCH_MULTI}`);
-    url.searchParams.append('api_key', TMDB.API_KEY);
+    const url = new URL('https://api.themoviedb.org/3/search/multi');
+    url.searchParams.append('api_key', window.TMDB_API_KEY || '');
     url.searchParams.append('query', query);
-    url.searchParams.append('include_adult', false);
+    url.searchParams.append('include_adult', 'false');
 
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error('Failed to fetch movies');
@@ -21,29 +26,23 @@ export const searchMovies = async (query) => {
 
     return data.results
       .filter(item => item.media_type === 'movie')
-      .map(item => transformMovieData(item));
+      .map(transformMovieData);
   } catch (error) {
     console.error('Movie search error:', error);
     return [];
   }
 };
 
-export const searchTvShows = async (query) => {
+const searchTvShows = async (query) => {
   try {
-    const { TMDB, JIKAN } = API_CONFIG;
-
-    const tmdbUrl = new URL(`${TMDB.BASE_URL}${TMDB.ENDPOINTS.SEARCH_MULTI}`);
-    tmdbUrl.searchParams.append('api_key', TMDB.API_KEY);
-    tmdbUrl.searchParams.append('query', query);
-    tmdbUrl.searchParams.append('include_adult', false);
-
-    const jikanUrl = new URL(`${JIKAN.BASE_URL}${JIKAN.ENDPOINTS.SEARCH_ANIME}`);
-    jikanUrl.searchParams.append('q', query);
-    jikanUrl.searchParams.append('limit', 10);
+    const url = new URL('https://api.themoviedb.org/3/search/multi');
+    url.searchParams.append('api_key', window.TMDB_API_KEY || '');
+    url.searchParams.append('query', query);
+    url.searchParams.append('include_adult', 'false');
 
     const [tmdbResult, jikanResult] = await Promise.allSettled([
-      fetch(tmdbUrl.toString()).then(r => r.json()),
-      fetch(jikanUrl.toString()).then(r => r.json())
+      fetch(url.toString()).then(r => r.json()),
+      fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=10`).then(r => r.json())
     ]);
 
     const tvResults = tmdbResult.status === 'fulfilled'
@@ -61,57 +60,41 @@ export const searchTvShows = async (query) => {
   }
 };
 
-/**
- * Search for anime using Jikan API
- * @param {string} query - Search query
- * @returns {Promise<Array>} Array of anime objects
- */
-export const searchAnime = async (query) => {
+const searchAnime = async (query) => {
   try {
-    const { JIKAN } = API_CONFIG;
-    const url = new URL(`${JIKAN.BASE_URL}${JIKAN.ENDPOINTS.SEARCH_ANIME}`);
-    url.searchParams.append('q', query);
-    url.searchParams.append('limit', 10);
-
-    const response = await fetch(url.toString());
+    const response = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=10`);
     if (!response.ok) throw new Error('Failed to fetch anime');
 
     const data = await response.json();
-    
-    return data.data.map(item => transformAnimeData(item));
+    return data.data.map(transformAnimeData);
   } catch (error) {
     console.error('Anime search error:', error);
     return [];
   }
 };
 
-/**
- * Search for books using Open Library API
- * @param {string} query - Search query
- * @returns {Promise<Array>} Array of book objects
- */
-export const searchBooks = async (query) => {
+const searchBooks = async (query) => {
   try {
     const url = new URL('https://openlibrary.org/search.json');
     url.searchParams.append('q', query);
-    url.searchParams.append('limit', 20);
+    url.searchParams.append('limit', '20');
     url.searchParams.append('fields', 'key,title,author_name,first_publish_year,cover_i,ratings_average');
 
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error('Failed to fetch books');
 
     const data = await response.json();
-    return (data.docs || []).map(doc => transformBookData(doc));
+    return (data.docs || []).map(transformBookData);
   } catch (error) {
     console.error('Book search error:', error);
     return [];
   }
 };
 
-/**
- * Transform TMDB response to standardized format
- * @private
- */
+// ============================================================================
+// DATA TRANSFORMERS
+// ============================================================================
+
 const transformMovieData = (item) => ({
   id: `tmdb-${item.id}`,
   title: item.title || item.name,
@@ -120,26 +103,20 @@ const transformMovieData = (item) => ({
     : PLACEHOLDER_IMAGE,
   rating: item.vote_average?.toFixed(1) || 'N/A',
   year: item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0] || 'N/A',
-  type: item.media_type === 'movie' ? 'Movie' : 'TV Show'
+  type: item.media_type === 'movie' ? 'Movie' : 'TV Show',
+  category: item.media_type === 'movie' ? 'movies' : 'tvshows'
 });
 
-/**
- * Transform Jikan response to standardized format
- * @private
- */
 const transformAnimeData = (item) => ({
   id: `mal-${item.mal_id}`,
   title: item.title,
   thumbnail: item.images?.jpg?.image_url || PLACEHOLDER_IMAGE,
   rating: item.score?.toFixed(1) || 'N/A',
   year: item.year || 'N/A',
-  type: item.type || 'Anime'
+  type: item.type || 'Anime',
+  category: 'tvshows'
 });
 
-/**
- * Transform Open Library search doc to standardized format
- * @private
- */
 const transformBookData = (doc) => ({
   id: `book-${doc.key?.replace('/works/', '') || Math.random().toString(36).slice(2)}`,
   title: doc.title || 'Unknown Title',
@@ -148,5 +125,161 @@ const transformBookData = (doc) => ({
     : PLACEHOLDER_IMAGE,
   rating: doc.ratings_average ? parseFloat(doc.ratings_average).toFixed(1) : 'N/A',
   year: doc.first_publish_year?.toString() || 'N/A',
-  author: doc.author_name?.[0] || 'Unknown Author'
+  author: doc.author_name?.[0] || 'Unknown Author',
+  category: 'books'
+});
+
+// ============================================================================
+// AUTH FUNCTIONS
+// ============================================================================
+
+const getAuthToken = () => {
+  return localStorage.getItem('shared-shelf-auth-token');
+};
+
+const clearAuthToken = () => {
+  localStorage.removeItem('shared-shelf-auth-token');
+  localStorage.removeItem('shared-shelf-user');
+};
+
+const setAuthToken = (token) => {
+  localStorage.setItem('shared-shelf-auth-token', token);
+};
+
+const getDefaultStatus = (category) => {
+  const defaults = {
+    movies: 'toWatch',
+    tvshows: 'toWatch',
+    books: 'toRead'
+  };
+  return defaults[category] || 'toWatch';
+};
+
+// ============================================================================
+// LOGIN / REGISTER
+// ============================================================================
+
+const loginUser = async (email, password, rememberMe) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (!res.ok) return false;
+    
+    const data = await res.json();
+    if (data.token) {
+      if (rememberMe) {
+        setAuthToken(data.token);
+      } else {
+        sessionStorage.setItem('shared-shelf-auth-token', data.token);
+      }
+      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Login error:', error);
+    return false;
+  }
+};
+
+const registerUser = async (email, password, name) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name })
+    });
+    
+    if (!res.ok) return false;
+    
+    const data = await res.json();
+    if (data.token) {
+      setAuthToken(data.token);
+      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Register error:', error);
+    return false;
+  }
+};
+
+// ============================================================================
+// SHELF DATA FUNCTIONS
+// ============================================================================
+
+const getShelfData = async (shelfId) => {
+  try {
+    const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
+    if (!token) return null;
+
+    const res = await fetch(`${API_BASE}/api/shelves/${shelfId}/data`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching shelf data:', error);
+    
+    // Fallback to localStorage
+    const cached = localStorage.getItem(`shelf-data-${shelfId}`);
+    if (cached) {
+      try { return JSON.parse(cached); } catch (e) {}
+    }
+    return null;
+  }
+};
+
+const saveShelfData = async (shelfId, data) => {
+  // Always save locally as backup
+  try {
+    localStorage.setItem(`shelf-data-${shelfId}`, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error caching shelf data locally:', e);
+  }
+
+  // Try to save to API
+  try {
+    const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
+    if (!token) return false;
+
+    const res = await fetch(`${API_BASE}/api/shelves/${shelfId}/data`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ data })
+    });
+    
+    return res.ok;
+  } catch (error) {
+    console.error('Error saving shelf data to API:', error);
+    return false;
+  }
+};
+
+// ============================================================================
+// EXPORT ALL TO window
+// ============================================================================
+
+Object.assign(window, {
+  searchMovies,
+  searchTvShows,
+  searchAnime,
+  searchBooks,
+  getAuthToken,
+  setAuthToken,
+  clearAuthToken,
+  getDefaultStatus,
+  loginUser,
+  registerUser,
+  getShelfData,
+  saveShelfData
 });

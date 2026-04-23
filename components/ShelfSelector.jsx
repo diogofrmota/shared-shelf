@@ -9,6 +9,8 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, userId, token }) {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
+  const API_BASE = window.API_BASE_URL || '/api';
+
   // Set document title for this view
   useEffect(() => {
     document.title = 'Shared Shelf - Join your Shelf';
@@ -17,7 +19,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, userId, token }) {
   // Fetch user's shelves
   const fetchShelves = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/shelves`, {
+      const res = await fetch(`${API_BASE}/api/shelves`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -44,7 +46,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, userId, token }) {
     if (!createName.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/shelves`, {
+      const res = await fetch(`${API_BASE}/api/shelves`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
