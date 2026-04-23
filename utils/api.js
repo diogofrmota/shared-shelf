@@ -134,16 +134,21 @@ const transformBookData = (doc) => ({
 // ============================================================================
 
 const getAuthToken = () => {
-  return localStorage.getItem('shared-shelf-auth-token');
+  return localStorage.getItem('shared-shelf-auth-token') || sessionStorage.getItem('shared-shelf-auth-token');
 };
 
 const clearAuthToken = () => {
   localStorage.removeItem('shared-shelf-auth-token');
   localStorage.removeItem('shared-shelf-user');
+  sessionStorage.removeItem('shared-shelf-auth-token');
 };
 
-const setAuthToken = (token) => {
-  localStorage.setItem('shared-shelf-auth-token', token);
+const setAuthToken = (token, persist = true) => {
+  if (persist) {
+    localStorage.setItem('shared-shelf-auth-token', token);
+  } else {
+    sessionStorage.setItem('shared-shelf-auth-token', token);
+  }
 };
 
 const getDefaultStatus = (category) => {
@@ -164,25 +169,24 @@ const loginUser = async (email, password, rememberMe) => {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password, rememberMe })
     });
-    
-    if (!res.ok) return false;
-    
-    const data = await res.json();
-    if (data.token) {
-      if (rememberMe) {
-        setAuthToken(data.token);
-      } else {
-        sessionStorage.setItem('shared-shelf-auth-token', data.token);
-      }
-      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
-      return true;
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Login failed');
     }
-    return false;
+
+    const data = await res.json();
+    if (data.token && data.user) {
+      setAuthToken(data.token, !!rememberMe);
+      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
+      return data.user;
+    }
+    return null;
   } catch (error) {
     console.error('Login error:', error);
-    return false;
+    throw error;
   }
 };
 
@@ -193,19 +197,37 @@ const registerUser = async (email, password, name) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, name })
     });
-    
-    if (!res.ok) return false;
-    
-    const data = await res.json();
-    if (data.token) {
-      setAuthToken(data.token);
-      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
-      return true;
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Registration failed');
     }
-    return false;
+
+    const data = await res.json();
+    if (data.token && data.user) {
+      setAuthToken(data.token, true);
+      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
+      return data.user;
+    }
+    return null;
   } catch (error) {
     console.error('Register error:', error);
-    return false;
+    throw error;
+  }
+};
+
+const resetPassword = async (token, newPassword) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword })
+    });
+    const data = await res.json();
+    return { success: res.ok, message: data.message || data.error };
+  } catch (error) {
+    console.error('Reset password error:', error);
+    return { success: false, message: 'Network error occurred.' };
   }
 };
 
@@ -297,6 +319,7 @@ Object.assign(window, {
   loginUser,
   registerUser,
   forgotPassword,
+  resetPassword,
   getShelfData,
   saveShelfData
 });

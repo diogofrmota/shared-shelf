@@ -1,6 +1,11 @@
 import { sql } from '../lib/db.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const APP_URL = process.env.APP_URL || 'https://shared-shelf.vercel.app';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@shared-shelf.vercel.app';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRY = '7d';
@@ -64,71 +69,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // POST /api/auth/google
-    if (path === '/api/auth/google' && req.method === 'POST') {
-      const { idToken, rememberMe } = req.body;
-      // In production, verify idToken with Google library; simplified for now
-      if (!idToken) return res.status(400).json({ error: 'Missing idToken' });
-
-      // Dummy verification - replace with real Google token verification
-      const payload = jwt.decode(idToken);
-      if (!payload || !payload.email) return res.status(400).json({ error: 'Invalid token' });
-
-      const email = payload.email;
-      const name = payload.name || 'Google User';
-      let user = (await sql`SELECT * FROM users WHERE email = ${email}`).rows[0];
-      if (!user) {
-        const insert = await sql`
-          INSERT INTO users (email, google_id, display_name) 
-          VALUES (${email}, ${payload.sub || 'google'}, ${name}) 
-          RETURNING *
-        `;
-        user = insert.rows[0];
-      } else if (!user.google_id) {
-        await sql`UPDATE users SET google_id = ${payload.sub || 'google'} WHERE id = ${user.id}`;
-      }
-
-      const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-        expiresIn: rememberMe ? JWT_EXPIRY_REMEMBER : JWT_EXPIRY
-      });
-      return res.json({
-        token,
-        user: { id: user.id, email: user.email, name: user.display_name }
-      });
-    }
-
-    // POST /api/auth/apple
-    if (path === '/api/auth/apple' && req.method === 'POST') {
-      const { identityToken, rememberMe } = req.body;
-      if (!identityToken) return res.status(400).json({ error: 'Missing identityToken' });
-
-      // Dummy verification
-      const payload = jwt.decode(identityToken);
-      if (!payload || !payload.email) return res.status(400).json({ error: 'Invalid token' });
-
-      const email = payload.email;
-      const name = payload.name || 'Apple User';
-      let user = (await sql`SELECT * FROM users WHERE email = ${email}`).rows[0];
-      if (!user) {
-        const insert = await sql`
-          INSERT INTO users (email, apple_id, display_name) 
-          VALUES (${email}, ${payload.sub || 'apple'}, ${name}) 
-          RETURNING *
-        `;
-        user = insert.rows[0];
-      } else if (!user.apple_id) {
-        await sql`UPDATE users SET apple_id = ${payload.sub || 'apple'} WHERE id = ${user.id}`;
-      }
-
-      const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-        expiresIn: rememberMe ? JWT_EXPIRY_REMEMBER : JWT_EXPIRY
-      });
-      return res.json({
-        token,
-        user: { id: user.id, email: user.email, name: user.display_name }
-      });
-    }
-
     // GET /api/auth/me
     if (path === '/api/auth/me' && req.method === 'GET') {
       const authHeader = req.headers.authorization;
@@ -144,9 +84,68 @@ export default async function handler(req, res) {
       }
     }
 
-    // POST /api/auth/forgot-password (simulated)
+    // POST /api/auth/forgot-password
     if (path === '/api/auth/forgot-password' && req.method === 'POST') {
-      return res.json({ message: 'If the email exists, a reset link has been sent.' });
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: 'Email is required' });
+
+      const userRow = (await sql`SELECT id, display_name FROM users WHERE email = ${email}`).rows[0];
+      if (userRow) {
+        const resetToken = jwt.sign({ userId: userRow.id, purpose: 'password-reset' }, JWT_SECRET, { expiresIn: '1h' });
+        const tokenHash = await bcrypt.hash(resetToken, 8);
+        await sql`
+          INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+          VALUES (${userRow.id}, ${tokenHash}, NOW() + INTERVAL '1 hour')
+          ON CONFLICT (user_id) DO UPDATE SET token_hash = EXCLUDED.token_hash, expires_at = EXCLUDED.expires_at
+        `;
+
+        const resetUrl = `${APP_URL}?reset_token=${encodeURIComponent(resetToken)}`;
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: email,
+          subject: 'Reset your Shared Shelf password',
+          html: `
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+              <h2 style="color:#7c3aed">Shared Shelf</h2>
+              <p>Hi ${userRow.display_name},</p>
+              <p>We received a request to reset your password. Click the button below — the link expires in <strong>1 hour</strong>.</p>
+              <a href="${resetUrl}" style="display:inline-block;margin:24px 0;padding:12px 24px;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+                Reset password
+              </a>
+              <p style="color:#6b7280;font-size:13px">If you didn't request this, you can safely ignore this email.</p>
+            </div>
+          `
+        });
+      }
+
+      return res.json({ message: 'If that email is registered, a password reset link has been sent.' });
+    }
+
+    // POST /api/auth/reset-password
+    if (path === '/api/auth/reset-password' && req.method === 'POST') {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: 'Invalid request' });
+      }
+      let decoded;
+      try {
+        decoded = jwt.verify(token, JWT_SECRET);
+      } catch {
+        return res.status(400).json({ error: 'Reset link has expired or is invalid.' });
+      }
+      if (decoded.purpose !== 'password-reset') {
+        return res.status(400).json({ error: 'Invalid reset token.' });
+      }
+      const row = (await sql`SELECT token_hash FROM password_reset_tokens WHERE user_id = ${decoded.userId}`).rows[0];
+      if (!row) return res.status(400).json({ error: 'Reset link already used or expired.' });
+
+      const valid = await bcrypt.compare(token, row.token_hash);
+      if (!valid) return res.status(400).json({ error: 'Reset link is invalid.' });
+
+      const hash = await bcrypt.hash(newPassword, 10);
+      await sql`UPDATE users SET password_hash = ${hash} WHERE id = ${decoded.userId}`;
+      await sql`DELETE FROM password_reset_tokens WHERE user_id = ${decoded.userId}`;
+      return res.json({ message: 'Password updated successfully. You can now sign in.' });
     }
 
     return res.status(404).json({ error: 'Not found' });
