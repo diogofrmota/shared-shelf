@@ -163,7 +163,7 @@ function LoginScreen({ onLogin }) {
       <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-slate-800">
         <h1 className="text-3xl font-bold text-white mb-2 text-center">Shared Shelf</h1>
         <p className="text-slate-400 text-center mb-8 text-sm">
-          Organize your life, together. Create your shared calendar, mark your favourite dating spots, favourite recipes and track your movies, TV shows and books.
+          Organize your life, together.
         </p>
 
         {/* Reset password form */}

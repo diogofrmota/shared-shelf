@@ -5,9 +5,8 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
   const [shelves, setShelves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [createName, setCreateName] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
+  const [removingShelfId, setRemovingShelfId] = useState('');
   const [error, setError] = useState('');
 
   const API_BASE = window.API_BASE_URL ?? '';
@@ -43,41 +42,37 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
     fetchShelves();
   }, [token]);
 
-  const handleCreateShelf = async (e) => {
-    e.preventDefault();
-    if (!createName.trim()) return;
+  const handleJoinShelf = () => {
+    fetchShelves();
+  };
+
+  const handleRemoveShelf = async (shelf) => {
+    const confirmed = window.confirm(`Do you want to remove "${shelf.name}"?`);
+    if (!confirmed) return;
 
     setError('');
-    setCreating(true);
+    setRemovingShelfId(shelf.id);
 
     try {
-      const res = await fetch(`${API_BASE}/api/shelves`, {
-        method: 'POST',
+      const res = await fetch(`${API_BASE}/api/shelves/${shelf.id}/membership`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: createName.trim() })
+        }
       });
 
       if (res.ok) {
-        const { shelf } = await res.json();
-        setShelves(prev => [...prev, shelf]);
-        setCreateName('');
-        setShowCreateForm(false);
+        setShelves(prev => prev.filter(item => item.id !== shelf.id));
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || data.hint || 'Failed to create shelf');
+        setError(data.error || 'Failed to remove shelf');
       }
     } catch {
       setError('Connection error');
     } finally {
-      setCreating(false);
+      setRemovingShelfId('');
     }
-  };
-
-  const handleJoinShelf = () => {
-    fetchShelves();
   };
 
   const getShelfBadge = (name) => {
@@ -90,36 +85,49 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_30%),radial-gradient(circle_at_right,rgba(244,114,182,0.12),transparent_28%),linear-gradient(160deg,#020617_0%,#0f172a_55%,#111827_100%)] px-6 py-10">
+    <div className="min-h-screen bg-slate-950 px-6 py-10">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex items-start justify-between gap-4">
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-sky-200/70">Shared Shelf</p>
-            <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">Join a Shelve</h1>
-          </div>
-
+        <div className="mb-10 flex items-center justify-between gap-4">
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">Join a Shelve</h1>
           <button
             onClick={onBackToLogin}
-            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+            className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
           >
-            Back to login
+            Logout
           </button>
         </div>
 
         {error && <p className="mb-5 text-sm text-rose-300">{error}</p>}
 
-        <div className="mb-10 flex gap-5 overflow-x-auto pb-4">
+        <div className="mb-8 flex gap-5 overflow-x-auto pb-4">
           {shelves.map(shelf => (
             <div key={shelf.id} className="flex-none">
-              <button
-                onClick={() => onSelectShelf(shelf)}
-                className="group flex h-36 w-36 items-center justify-center rounded-[2rem] border border-white/10 bg-white/5 shadow-[0_20px_60px_rgba(15,23,42,0.45)] backdrop-blur transition hover:-translate-y-1 hover:border-sky-300/40 hover:bg-sky-400/10"
-                title={shelf.name}
-              >
-                <span className="text-4xl font-black uppercase tracking-[0.18em] text-white transition group-hover:text-sky-100">
-                  {getShelfBadge(shelf.name)}
-                </span>
-              </button>
+              <div className="relative">
+                {manageMode && (
+                  <button
+                    onClick={() => handleRemoveShelf(shelf)}
+                    disabled={removingShelfId === shelf.id}
+                    className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-lg text-white transition hover:bg-black disabled:opacity-50"
+                    aria-label={`Remove ${shelf.name}`}
+                  >
+                    X
+                  </button>
+                )}
+                <button
+                  onClick={() => !manageMode && onSelectShelf(shelf)}
+                  disabled={manageMode}
+                  className={`flex h-36 w-36 items-center justify-center rounded-3xl border border-white/10 bg-slate-900 text-white transition ${
+                    manageMode
+                      ? 'cursor-default'
+                      : 'hover:-translate-y-1 hover:border-white/25 hover:bg-slate-800'
+                  }`}
+                  title={shelf.name}
+                >
+                  <span className="text-4xl font-bold uppercase tracking-[0.18em]">
+                    {getShelfBadge(shelf.name)}
+                  </span>
+                </button>
+              </div>
               <p className="mt-3 max-w-36 text-center text-sm font-medium text-slate-200">{shelf.name}</p>
             </div>
           ))}
@@ -128,77 +136,23 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
             <button
               onClick={() => {
                 setError('');
-                setShowCreateForm(prev => !prev);
+                setJoinOpen(true);
               }}
-              className="flex h-36 w-36 items-center justify-center rounded-[2rem] border-2 border-dashed border-white/20 bg-white/4 text-5xl font-light text-slate-300 transition hover:-translate-y-1 hover:border-sky-300/50 hover:bg-white/8 hover:text-white"
-              aria-label="Add Shelve"
+              className="flex h-36 w-36 items-center justify-center rounded-3xl border-2 border-dashed border-white/20 bg-transparent text-5xl font-light text-white transition hover:-translate-y-1 hover:border-white/40 hover:bg-white/5"
+              aria-label="Add or join a shelve"
             >
               +
             </button>
-            <p className="mt-3 text-center text-sm font-medium text-slate-200">Add Shelve</p>
+            <p className="mt-3 text-center text-sm font-medium text-slate-200">Add/ Join a Shelve</p>
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/10 bg-white/6 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.35)] backdrop-blur">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-white">Manage Shelves</h2>
-            <button
-              onClick={() => setJoinOpen(true)}
-              className="rounded-full border border-sky-300/20 bg-sky-400/10 px-4 py-2 text-sm font-medium text-sky-100 transition hover:border-sky-300/40 hover:bg-sky-400/20"
-            >
-              Join with code
-            </button>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <div className="rounded-3xl border border-white/8 bg-slate-950/35 p-5">
-              <p className="mb-2 text-sm font-semibold text-white">Create a new shelve</p>
-              <p className="mb-4 text-sm text-slate-400">
-                Make another shared space for trips, recipes, plans, or anything else.
-              </p>
-
-              {showCreateForm ? (
-                <form onSubmit={handleCreateShelf} className="flex flex-col gap-3 sm:flex-row">
-                  <input
-                    type="text"
-                    placeholder="New shelve name"
-                    value={createName}
-                    onChange={e => setCreateName(e.target.value)}
-                    className="flex-1 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/45"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    disabled={creating}
-                    className="rounded-2xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {creating ? 'Creating...' : 'Create'}
-                  </button>
-                </form>
-              ) : (
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="rounded-2xl border border-white/10 bg-white/6 px-5 py-3 text-sm font-medium text-white transition hover:border-white/20 hover:bg-white/10"
-                >
-                  Open create form
-                </button>
-              )}
-            </div>
-
-            <div className="rounded-3xl border border-white/8 bg-slate-950/35 p-5">
-              <p className="mb-2 text-sm font-semibold text-white">Join an existing shelve</p>
-              <p className="mb-4 text-sm text-slate-400">
-                Use a shelf id and one-time code to enter a shared space someone invited you to.
-              </p>
-              <button
-                onClick={() => setJoinOpen(true)}
-                className="rounded-2xl border border-white/10 bg-white/6 px-5 py-3 text-sm font-medium text-white transition hover:border-white/20 hover:bg-white/10"
-              >
-                Open join form
-              </button>
-            </div>
-          </div>
-        </div>
+        <button
+          onClick={() => setManageMode(prev => !prev)}
+          className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+        >
+          Manage Shelves
+        </button>
       </div>
 
       <JoinShelfModal

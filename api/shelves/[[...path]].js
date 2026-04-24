@@ -158,6 +158,32 @@ export default async function handler(req, res) {
       return res.json({ success: true });
     }
 
+    if (segments.length === 2 && segments[1] === 'membership' && req.method === 'DELETE') {
+      const shelfId = segments[0];
+      const membership = await requireShelfMember(shelfId, userId);
+      if (!membership) return res.status(404).json({ error: 'Shelf not found' });
+
+      await sql`
+        DELETE FROM shelf_members
+        WHERE shelf_id = ${shelfId} AND user_id = ${userId}
+      `;
+
+      const remainingMembers = await sql`
+        SELECT COUNT(*)::int AS count
+        FROM shelf_members
+        WHERE shelf_id = ${shelfId}
+      `;
+
+      if ((remainingMembers.rows[0]?.count || 0) === 0) {
+        await sql`
+          DELETE FROM shelves
+          WHERE id = ${shelfId}
+        `;
+      }
+
+      return res.json({ success: true });
+    }
+
     return res.status(404).json({ error: 'Not found' });
   } catch (error) {
     return errResponse(res, error);
