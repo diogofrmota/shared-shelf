@@ -66,7 +66,8 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
         setCreateName('');
         setShowCreateForm(false);
       } else {
-        setError('Failed to create shelf');
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || data.hint || 'Failed to create shelf');
       }
     } catch {
       setError('Connection error');

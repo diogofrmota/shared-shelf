@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { jwt, JWT_SECRET, cors, errResponse, sql } from '../../lib/auth-shared.js';
 import { initializeDatabase } from '../../lib/db.js';
 
@@ -61,10 +62,11 @@ export default async function handler(req, res) {
       if (req.method === 'POST') {
         const name = req.body?.name?.trim();
         if (!name) return res.status(400).json({ error: 'Name required' });
+        const shelfId = randomUUID();
 
         const created = await sql`
-          INSERT INTO shelves (name, created_by)
-          VALUES (${name}, ${userId})
+          INSERT INTO shelves (id, name, created_by)
+          VALUES (${shelfId}, ${name}, ${userId})
           RETURNING id, name, created_by, created_at
         `;
         const shelf = created.rows[0];
