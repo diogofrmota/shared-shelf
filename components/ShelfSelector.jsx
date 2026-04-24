@@ -1,7 +1,7 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
+function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, currentUser }) {
   const [shelves, setShelves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -9,10 +9,13 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
   const [removingShelfId, setRemovingShelfId] = useState('');
   const [error, setError] = useState('');
   const [activePanel, setActivePanel] = useState('');
-  const [profileImageFailed, setProfileImageFailed] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profileError, setProfileError] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
 
   const API_BASE = window.API_BASE_URL ?? '';
-  const PROFILE_COLORS = ['#ae2012', '#ee9b00', '#0a9396', '#9d4edd'];
 
   useEffect(() => {
     document.title = 'Shared Shelf - Join your Shelf';
@@ -77,42 +80,47 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
   };
 
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
-  const username = currentUser?.username || currentUser?.name || 'User';
-  const profileInitial = (displayName.trim().charAt(0) || 'U').toUpperCase();
-  const profilePhoto = currentUser?.avatar || currentUser?.photo || currentUser?.image || '';
-  const profileColor = PROFILE_COLORS[
-    Array.from(`${currentUser?.id || currentUser?.email || displayName}`).reduce((sum, char) => sum + char.charCodeAt(0), 0) % PROFILE_COLORS.length
-  ];
+  const username = currentUser?.username || 'User';
 
   useEffect(() => {
-    setProfileImageFailed(false);
-  }, [profilePhoto]);
-
-  const renderProfilePhoto = (sizeClass = 'h-7 w-7', textClass = 'text-xs') => {
-    if (profilePhoto && !profileImageFailed) {
-      return (
-        <img
-          src={profilePhoto}
-          alt=""
-          className={`${sizeClass} shrink-0 rounded-full object-cover ring-1 ring-white/25`}
-          onError={() => setProfileImageFailed(true)}
-        />
-      );
+    if (activePanel === 'profile') {
+      setIsEditingProfile(false);
+      setProfileName(displayName);
+      setProfileUsername(username);
+      setProfileError('');
     }
-
-    return (
-      <span
-        className={`${sizeClass} flex shrink-0 items-center justify-center rounded-full font-bold ring-1 ring-white/25 ${textClass}`}
-        style={{ backgroundColor: profileColor, color: '#ffffff' }}
-        aria-hidden="true"
-      >
-        {profileInitial}
-      </span>
-    );
-  };
+  }, [activePanel, currentUser?.id, displayName, username]);
 
   const togglePanel = (panel) => {
     setActivePanel(prev => prev === panel ? '' : panel);
+  };
+
+  const handleProfileSave = async (event) => {
+    event.preventDefault();
+    const nextName = profileName.trim();
+    const nextUsername = profileUsername.trim();
+
+    if (nextName.length < 2) {
+      setProfileError('Name must be at least 2 characters');
+      return;
+    }
+    if (nextUsername.length < 4) {
+      setProfileError('Username must be at least 4 characters');
+      return;
+    }
+
+    setProfileSaving(true);
+    setProfileError('');
+
+    try {
+      const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
+      onUpdateUser?.(updatedUser);
+      setIsEditingProfile(false);
+    } catch (err) {
+      setProfileError(err.message || 'Failed to update profile');
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const CatalogIcon = ({ size = 58 }) => (
@@ -152,43 +160,99 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
           <div className="relative flex shrink-0 items-center gap-3 self-end sm:self-auto">
             <button
               onClick={() => togglePanel('profile')}
-              className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="flex h-10 w-24 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              {renderProfilePhoto()}
               <span>Profile</span>
             </button>
             <button
               onClick={onBackToLogin}
-              className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="flex h-10 w-24 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
             >
               Logout
             </button>
 
             {activePanel === 'profile' && (
               <div className="absolute right-0 top-14 z-20 w-80 rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-black/30">
-                <div className="space-y-3 text-left text-sm">
-                  <div>
-                    <p className="font-bold text-[#031A6B]">Name:</p>
-                    <p className="break-words font-medium text-black">{displayName}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#031A6B]">Username:</p>
-                    <p className="break-words font-medium text-black">{username}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#031A6B]">Email:</p>
-                    <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    className="shelf-profile-action w-full rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold transition hover:bg-[#033860]"
-                    style={{ color: '#ffffff' }}
-                  >
-                    Edit Information
-                  </button>
-                </div>
+                {isEditingProfile ? (
+                  <form className="space-y-4 text-left text-sm" onSubmit={handleProfileSave}>
+                    <div>
+                      <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="profile-name">Name</label>
+                      <input
+                        id="profile-name"
+                        type="text"
+                        value={profileName}
+                        onChange={(event) => setProfileName(event.target.value)}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                        autoComplete="name"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="profile-username">Username</label>
+                      <input
+                        id="profile-username"
+                        type="text"
+                        value={profileUsername}
+                        onChange={(event) => setProfileUsername(event.target.value)}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                        autoComplete="username"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#031A6B]">Email:</p>
+                      <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
+                    </div>
+                    {profileError && <p className="text-sm font-semibold text-[#c1121f]">{profileError}</p>}
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setProfileName(displayName);
+                          setProfileUsername(username);
+                          setProfileError('');
+                        }}
+                        className="flex-1 rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
+                        disabled={profileSaving}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860] disabled:opacity-60"
+                        disabled={profileSaving}
+                      >
+                        {profileSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="space-y-3 text-left text-sm">
+                      <div>
+                        <p className="font-bold text-[#031A6B]">Name:</p>
+                        <p className="break-words font-medium text-black">{displayName}</p>
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#031A6B]">Username:</p>
+                        <p className="break-words font-medium text-black">{username}</p>
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#031A6B]">Email:</p>
+                        <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-6">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(true)}
+                        className="shelf-profile-action w-full rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold transition hover:bg-[#033860]"
+                        style={{ color: '#ffffff' }}
+                      >
+                        Edit Information
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -247,7 +311,11 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
         <div className="flex justify-center">
           <button
             onClick={() => setManageMode(prev => !prev)}
-            className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+            className={`flex h-11 w-28 items-center justify-center rounded-xl border px-5 text-sm font-semibold transition ${
+              manageMode
+                ? 'border-[#ced4da] bg-[#ced4da] text-[#1f2937] hover:bg-[#adb5bd]'
+                : 'border-white/15 bg-white/5 text-white hover:bg-white/10'
+            }`}
           >
             {manageMode ? 'Cancel' : 'Manage'}
           </button>

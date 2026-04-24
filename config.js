@@ -58,7 +58,7 @@ const FILTER_CONFIG = {
 const TAB_CONFIG = {
   TASKS: { id: 'tasks', label: 'Tasks' },
   CALENDAR: { id: 'calendar', label: 'Calendar' },
-  DATES: { id: 'dates', label: 'Dates' },
+  DATES: { id: 'dates', label: 'Date Ideas' },
   TRIPS: { id: 'trips', label: 'Trips' },
   RECIPES: { id: 'recipes', label: 'Recipes' },
   TV_SHOWS: { id: 'tvshows', label: 'TV Shows' },

@@ -27,7 +27,7 @@ function MediaTracker() {
 
   // Replace single activeTab with category + sub-tab
   const [activeCategory, setActiveCategory] = useState('plan');
-  const [activeSubTab, setActiveSubTab] = useState('tasks');
+  const [activeSubTab, setActiveSubTab] = useState('calendar');
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,6 @@ function MediaTracker() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
@@ -131,18 +130,21 @@ function MediaTracker() {
   }, [data, currentShelf]);
 
   const handleLogin = (user) => setCurrentUser(user);
+  const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
     clearAuthToken();
     setCurrentUser(null);
     setCurrentShelf(null);
     setData(null);
-    setShareModalOpen(false);
+    setSettingsModalOpen(false);
+    setAccountModalOpen(false);
   };
   const handleShelfSelect = (shelf) => setCurrentShelf(shelf);
   const handleBackToShelves = () => {
     setCurrentShelf(null);
     setData(null);
-    setShareModalOpen(false);
+    setSettingsModalOpen(false);
+    setAccountModalOpen(false);
   };
 
   const handleCategoryChange = (category, subTab) => {
@@ -219,7 +221,7 @@ function MediaTracker() {
     setAddModalOpen(true);
   };
 
-  // Update shelf settings (logo/name)
+  // Update shelf settings (name)
   const handleSaveShelfSettings = (newSettings) => {
     const previousShelf = currentShelf;
     setCurrentShelf(prev => ({ ...prev, ...newSettings }));
@@ -245,6 +247,7 @@ function MediaTracker() {
         currentUser={currentUser}
         token={getAuthToken()}
         onSelectShelf={handleShelfSelect}
+        onUpdateUser={handleAccountUpdate}
         onBackToLogin={() => {
           clearAuthToken();
           setCurrentUser(null);
@@ -333,7 +336,7 @@ function MediaTracker() {
   const isMediaTab = ['tvshows', 'movies', 'books'].includes(activeSubTab);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="flex min-h-screen flex-col bg-white">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
@@ -349,10 +352,13 @@ function MediaTracker() {
         input[type="time"], input[type="date"] { color-scheme: light; }
         input[type="time"]::-webkit-calendar-picker-indicator,
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.7; }
+        .shelf-content [class~="text-white"] { color: #0f172a !important; }
+        .shelf-content :is([class~="bg-purple-600"], [class~="bg-purple-700"], [class~="bg-red-600"], [class~="bg-red-700"], [class~="bg-black/60"], [class~="bg-black/80"])[class~="text-white"],
+        .shelf-content :is([class~="bg-purple-600"], [class~="bg-purple-700"], [class~="bg-red-600"], [class~="bg-red-700"], [class~="bg-black/60"], [class~="bg-black/80"]) [class~="text-white"],
+        .shelf-content [style*="background-color"] [class~="text-white"] { color: #ffffff !important; }
       `}</style>
 
       <Header
-        shelfLogo={currentShelf.logo}
         shelfName={currentShelf.name}
         onEditShelf={() => setSettingsModalOpen(true)}
         activeCategory={activeCategory}
@@ -360,7 +366,6 @@ function MediaTracker() {
         onCategoryChange={handleCategoryChange}
         onSubTabChange={(sub) => setActiveSubTab(sub)}
         onGlobalAddClick={() => setGlobalAddOpen(true)}
-        onShareClick={() => setShareModalOpen(true)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
         profile={data?.profile}
@@ -370,17 +375,12 @@ function MediaTracker() {
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <main className="shelf-content flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {renderContent()}
-      </div>
+      </main>
 
       {/* Modals */}
       <GlobalSearchModal isOpen={globalSearchOpen} onClose={() => setGlobalSearchOpen(false)} data={data} setActiveTab={(tab) => { /* map old tab to new category/sub */ }} />
-      <ShareShelfModal
-        isOpen={shareModalOpen}
-        onClose={() => setShareModalOpen(false)}
-        shelf={currentShelf}
-      />
       <AddModal
         isOpen={addModalOpen}
         onClose={() => { setAddModalOpen(false); setAddCategory(null); }}
@@ -415,6 +415,7 @@ function MediaTracker() {
         isOpen={accountModalOpen}
         onClose={() => setAccountModalOpen(false)}
         currentUser={currentUser}
+        onSaveAccount={handleAccountUpdate}
         onLogout={handleLogout}
       />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />

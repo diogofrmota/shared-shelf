@@ -61,11 +61,20 @@ const UserAvatar = ({ user, size = 40 }) => {
   );
 };
 
-const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onLogout }) => {
+const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onSaveAccount, onLogout }) => {
   const [users, setUsers] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [name, setName] = useState(shelf?.name || '');
-  const [logo, setLogo] = useState(shelf?.logo || '');
+  const [shareInfo, setShareInfo] = useState(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareError, setShareError] = useState('');
+  const [copiedField, setCopiedField] = useState('');
+  const [regeneratingShare, setRegeneratingShare] = useState(false);
+  const [accountEditing, setAccountEditing] = useState(false);
+  const [accountName, setAccountName] = useState('');
+  const [accountUsername, setAccountUsername] = useState('');
+  const [accountError, setAccountError] = useState('');
+  const [accountSaving, setAccountSaving] = useState(false);
 
   useEffect(() => {
     if (mode === 'profiles' && isOpen) {
@@ -77,9 +86,46 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
   useEffect(() => {
     if (mode === 'settings' && isOpen) {
       setName(shelf?.name || '');
-      setLogo(shelf?.logo || '');
+      setShareInfo(null);
+      setShareError('');
+      setCopiedField('');
     }
   }, [mode, isOpen, shelf]);
+
+  useEffect(() => {
+    if (mode === 'account' && isOpen) {
+      setAccountEditing(false);
+      setAccountName(currentUser?.name || currentUser?.username || currentUser?.email || '');
+      setAccountUsername(currentUser?.username || '');
+      setAccountError('');
+    }
+  }, [mode, isOpen, currentUser?.id, currentUser?.name, currentUser?.username, currentUser?.email]);
+
+  useEffect(() => {
+    if (mode !== 'settings' || !isOpen || !shelf?.id) return;
+
+    let active = true;
+
+    const loadShareInfo = async () => {
+      setShareLoading(true);
+      setShareError('');
+
+      try {
+        const nextShareInfo = await getShelfShareInfo(shelf.id);
+        if (active) setShareInfo(nextShareInfo);
+      } catch (err) {
+        if (active) setShareError(err?.message || 'Failed to load share details');
+      } finally {
+        if (active) setShareLoading(false);
+      }
+    };
+
+    loadShareInfo();
+
+    return () => {
+      active = false;
+    };
+  }, [mode, isOpen, shelf?.id]);
 
   if (!isOpen) return null;
 
@@ -214,59 +260,132 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     );
   }
 
-  // ---------- SETTINGS MODE (shelf logo & name) ----------
+  // ---------- SETTINGS MODE (shelf name & share) ----------
   if (mode === 'settings') {
     const handleSave = () => {
-      onSaveShelf({ name, logo });
+      onSaveShelf({ name: name.trim() || shelf?.name || 'Shared Shelf' });
       onClose();
     };
 
+    const copyValue = async (label, value) => {
+      if (!value) return;
+
+      try {
+        await navigator.clipboard.writeText(value);
+        setCopiedField(label);
+        window.setTimeout(() => setCopiedField(''), 1500);
+      } catch {
+        setCopiedField('');
+      }
+    };
+
+    const handleRegenerate = async () => {
+      if (!shelf?.id) return;
+
+      setRegeneratingShare(true);
+      setShareError('');
+
+      try {
+        const nextShareInfo = await regenerateShelfJoinCode(shelf.id);
+        setShareInfo(nextShareInfo);
+      } catch (err) {
+        setShareError(err?.message || 'Failed to generate a new code');
+      } finally {
+        setRegeneratingShare(false);
+      }
+    };
+
+    const shelfId = shareInfo?.shelfId || shelf?.id || '';
+    const joinCode = shareInfo?.joinCode || '';
+
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-md border border-slate-700 shadow-2xl">
-          <div className="p-6 border-b border-slate-700/50">
+        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/30">
+          <div className="border-b border-slate-200 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <SettingsIcon size={20} className="text-purple-400" />
+              <h2 className="flex items-center gap-2 text-xl font-bold text-[#031A6B]">
+                <SettingsIcon size={20} />
                 Shelf Settings
               </h2>
-              <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <button onClick={onClose} className="rounded-lg p-2 text-[#031A6B] transition-colors hover:bg-[#EAF8FC]">
                 <Close size={20} />
               </button>
             </div>
           </div>
-          <div className="p-5 space-y-4">
+          <div className="space-y-5 p-5">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Shelf Logo URL</label>
-              <input
-                type="url"
-                value={logo}
-                onChange={(e) => setLogo(e.target.value)}
-                placeholder="https://example.com/logo.png"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm"
-              />
-              {logo && (
-                <div className="mt-2 flex justify-center">
-                  <img src={logo} alt="Preview" className="w-16 h-16 rounded-full object-cover border-2 border-slate-600" />
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Shelf Name</label>
+              <label className="mb-1 block text-sm font-bold text-[#031A6B]">Shelf Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Our Shared Shelf"
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
               />
             </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-[#EAF8FC] p-4">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-bold text-[#031A6B]">Share Shelf</h3>
+                  <p className="mt-1 text-sm text-black/70">
+                    Share this shelf ID and one-time code so someone else can join.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRegenerate}
+                  disabled={regeneratingShare || shareLoading}
+                  className="rounded-xl bg-[#031A6B] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#033860] disabled:opacity-60"
+                >
+                  {regeneratingShare ? 'Generating...' : 'Generate New'}
+                </button>
+              </div>
+
+              {shareLoading ? (
+                <p className="py-6 text-center text-sm font-medium text-[#031A6B]">Loading share details...</p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#031A6B]">Shelf ID</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <code className="flex-1 break-all text-sm font-semibold text-black">{shelfId}</code>
+                      <button
+                        type="button"
+                        onClick={() => copyValue('shelfId', shelfId)}
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#031A6B] transition hover:bg-[#EAF8FC]"
+                      >
+                        {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#031A6B]">Join Code</p>
+                    <p className="mt-1 text-xs text-black/60">This code works once, then expires.</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <code className="flex-1 break-all text-lg font-bold tracking-[0.25em] text-black">{joinCode || '--------'}</code>
+                      <button
+                        type="button"
+                        onClick={() => copyValue('joinCode', joinCode)}
+                        disabled={!joinCode}
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#031A6B] transition hover:bg-[#EAF8FC] disabled:opacity-50"
+                      >
+                        {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {shareError && <p className="mt-3 text-sm font-semibold text-[#c1121f]">{shareError}</p>}
+            </div>
           </div>
-          <div className="px-5 pb-5 flex gap-3">
-            <button onClick={onClose} className="flex-1 py-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold transition-colors text-sm">
+          <div className="flex gap-3 px-5 pb-5">
+            <button onClick={onClose} className="flex-1 rounded-xl bg-[#ced4da] py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]">
               Cancel
             </button>
-            <button onClick={handleSave} className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors text-sm shadow-lg shadow-purple-900/30">
+            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#031A6B] py-3 text-sm font-bold text-white transition hover:bg-[#033860]">
               Save Changes
             </button>
           </div>
@@ -277,34 +396,141 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
   // ---------- ACCOUNT MODE (user info & logout) ----------
   if (mode === 'account') {
+    const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
+    const username = currentUser?.username || 'User';
+
+    const handleAccountSave = async (event) => {
+      event.preventDefault();
+      const nextName = accountName.trim();
+      const nextUsername = accountUsername.trim();
+
+      if (nextName.length < 2) {
+        setAccountError('Name must be at least 2 characters');
+        return;
+      }
+      if (nextUsername.length < 4) {
+        setAccountError('Username must be at least 4 characters');
+        return;
+      }
+
+      setAccountSaving(true);
+      setAccountError('');
+
+      try {
+        const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
+        onSaveAccount?.(updatedUser);
+        setAccountEditing(false);
+      } catch (err) {
+        setAccountError(err.message || 'Failed to update profile');
+      } finally {
+        setAccountSaving(false);
+      }
+    };
+
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl">
-          <div className="p-6 border-b border-slate-700/50">
+        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/30">
+          <div className="border-b border-slate-200 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <UserIcon size={20} className="text-purple-400" />
-                Account
+              <h2 className="flex items-center gap-2 text-xl font-bold text-[#031A6B]">
+                <UserIcon size={20} />
+                Profile
               </h2>
-              <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <button onClick={onClose} className="rounded-lg p-2 text-[#031A6B] transition-colors hover:bg-[#EAF8FC]">
                 <Close size={20} />
               </button>
             </div>
           </div>
-          <div className="p-5 space-y-4">
-            <div>
-              <p className="text-slate-300 text-sm">Logged in as</p>
-              <p className="text-white font-semibold">{currentUser?.username || currentUser?.email || 'User'}</p>
-            </div>
-            <button
-              onClick={() => {
-                onLogout();
-                onClose();
-              }}
-              className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors text-sm shadow-lg shadow-red-900/30"
-            >
-              Logout
-            </button>
+          <div className="p-5">
+            {accountEditing ? (
+              <form className="space-y-4 text-left text-sm" onSubmit={handleAccountSave}>
+                <div>
+                  <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="account-name">Name</label>
+                  <input
+                    id="account-name"
+                    type="text"
+                    value={accountName}
+                    onChange={(event) => setAccountName(event.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                    autoComplete="name"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="account-username">Username</label>
+                  <input
+                    id="account-username"
+                    type="text"
+                    value={accountUsername}
+                    onChange={(event) => setAccountUsername(event.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                    autoComplete="username"
+                  />
+                </div>
+                <div>
+                  <p className="font-bold text-[#031A6B]">Email:</p>
+                  <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
+                </div>
+                {accountError && <p className="text-sm font-semibold text-[#c1121f]">{accountError}</p>}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountEditing(false);
+                      setAccountName(displayName);
+                      setAccountUsername(username);
+                      setAccountError('');
+                    }}
+                    className="flex-1 rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
+                    disabled={accountSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860] disabled:opacity-60"
+                    disabled={accountSaving}
+                  >
+                    {accountSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="space-y-3 text-left text-sm">
+                  <div>
+                    <p className="font-bold text-[#031A6B]">Name:</p>
+                    <p className="break-words font-medium text-black">{displayName}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#031A6B]">Username:</p>
+                    <p className="break-words font-medium text-black">{username}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#031A6B]">Email:</p>
+                    <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAccountEditing(true)}
+                    className="flex-1 rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860]"
+                  >
+                    Edit Information
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onLogout();
+                      onClose();
+                    }}
+                    className="flex-1 rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

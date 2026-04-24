@@ -326,6 +326,25 @@ const saveShelfData = async (shelfId, data) => {
   }
 };
 
+const updateAccount = async ({ name, username }) => {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
+    method: 'PATCH',
+    headers: getAuthorizedHeaders(true),
+    body: JSON.stringify({ name, username })
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to update profile');
+  }
+
+  if (payload.user) {
+    localStorage.setItem('shared-shelf-user', JSON.stringify(payload.user));
+  }
+
+  return payload.user;
+};
+
 const getUserShelves = async () => {
   try {
     const res = await fetch(`${API_BASE}/api/shelves`, {
@@ -428,6 +447,7 @@ Object.assign(window, {
   getDefaultStatus,
   loginUser,
   registerUser,
+  updateAccount,
   forgotPassword,
   resetPassword,
   getShelfData,

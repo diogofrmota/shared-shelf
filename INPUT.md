@@ -7,13 +7,30 @@ The application is deployed on Vercel free plan. Using Free Neon Postgresql data
 Users can create accounts and login. Shelves work like a group, where multiple people can join 1 shelve. And you are able to share the shelve code to join or create a new one. Inside you have multiple tabs.
 
 # Problem
-Change the profile button popup box in shelf selection screen. The shelf selection screen is the one that appears after logging in.
+Reverse the colores in the shelf (shelf is the group created where users can share their lists) so they login, select the shelf and then they are inside their shelf. At the moment the header is white and below the header is dark blue. It should be the oposite, dark blue hearder and white background bellow.
+
+In the header it should be
+1. Shelf Name
+2. Calendar
+3. Tasks
+4. Date Ideas (Update to this new name instead of Dates)
+5. Trips
+6. Recipes
+7. Media (Now there will only be a Media tab and inside you will have tvshows subtab, movies subtab and books subtab.)
+
+Then on the right have
+1. add
+2. Settings (now share is inside settings) - inside settings you can only edit shelf name and share shelf. Settings popup ui should follow what it is used in the web app. dont have white text on white background box
+3. Profile (same as shelf selection page)
+4. Logout (same as shelf selection page)
+
+Ui in the shelf page should follow same as used in login and shelf selection page
 
 # What i expect for the output
 
-Instead of the photo be inside the profile popup i want it to be in the profile button just as you have in the shelf group page. where you have a small circle with the profile picture next to profile all in the same button.
-
-And when you click it it has has inside the same info it has at the moment except it no longer has the photo inside, just name, username, email and Edit.
-
-Remove the change password.
-Change the text from "Edit" to "Edit Information" and use the same dark blue as used in the background.
+Update UI shelf colors as requested.
+Dont change colors in login screen and shelf selection screen, i already like it.
+Remove shelf image
+Change back from left to the right
+No longer group in Plan, go and Track media, use it seperate
+remove share button, now it is inside settings
