@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useEffect } = React;
 
 // API base is set globally in index.html
-const API_BASE = window.API_BASE_URL || '/api';
+const API_BASE = window.API_BASE_URL ?? '';
 
 function MediaTracker() {
   const [currentUser, setCurrentUser] = useState(null);

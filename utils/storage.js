@@ -2,7 +2,7 @@
 // STORAGE HELPERS (global scope, no ES modules)
 // ============================================================================
 
-const API_BASE = window.API_BASE_URL || 'https://shared-shelf.vercel.app';
+const API_BASE = window.API_BASE_URL ?? '';
 
 // Fixed user ID for this household (fallback)
 const USER_ID = 'diogo-monica-shared';

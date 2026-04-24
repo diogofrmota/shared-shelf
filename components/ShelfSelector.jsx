@@ -9,7 +9,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, userId, token }) {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
-  const API_BASE = window.API_BASE_URL || '/api';
+  const API_BASE = window.API_BASE_URL ?? '';
 
   // Set document title for this view
   useEffect(() => {

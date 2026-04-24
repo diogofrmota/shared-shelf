@@ -6,13 +6,14 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const API_BASE = window.API_BASE_URL ?? '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/shelves/join`, {
+      const res = await fetch(`${API_BASE}/api/shelves/join`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
