@@ -205,13 +205,13 @@ function LoginScreen({ onLogin }) {
             <div className="flex gap-2 mb-6 bg-slate-800 rounded-lg p-1">
               <button
                 onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 py-2 rounded-md border-2 font-medium transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
+                className={`flex-1 py-2 rounded-md border-2 font-semibold transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 py-2 rounded-md border-2 font-medium transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
+                className={`flex-1 py-2 rounded-md border-2 font-semibold transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
               >
                 Register
               </button>
@@ -283,7 +283,7 @@ function LoginScreen({ onLogin }) {
                 disabled={loading}
                 className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
               >
-                {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+                {loading ? 'Please wait...' : mode === 'signin' ? 'Login' : 'Create Account'}
               </button>
             </form>
           </>

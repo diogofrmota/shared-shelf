@@ -11,10 +11,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
   const [activePanel, setActivePanel] = useState('');
 
   const API_BASE = window.API_BASE_URL ?? '';
-  const PROFILE_COLORS = [
-    '#031A6B', '#033860', '#087CA7', '#004385', '#05B2DC',
-    '#26547C', '#0B3954', '#1D3557', '#006D77', '#2A6F97'
-  ];
+  const PROFILE_COLORS = ['#ae2012', '#ee9b00', '#0a9396', '#9d4edd'];
 
   useEffect(() => {
     document.title = 'Shared Shelf - Join your Shelf';
@@ -102,7 +99,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-center">
         <p className="text-3xl font-semibold text-white sm:text-4xl">
-          Logging in ... Entering your library!
+          Logging in ...
         </p>
       </div>
     );
@@ -112,7 +109,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
     <div className="min-h-screen bg-slate-950 px-6 py-10">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">Your Library - Choose a Shelf to Join</h1>
+          <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">Join your shared space</h1>
           <div className="relative flex shrink-0 items-center gap-3 self-end sm:self-auto">
             <button
               onClick={() => togglePanel('profile')}
@@ -121,61 +118,49 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
               Profile
             </button>
             <button
-              onClick={() => togglePanel('settings')}
+              onClick={onBackToLogin}
               className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              Settings
+              Logout
             </button>
 
             {activePanel === 'profile' && (
-              <div className="absolute right-0 top-12 z-20 w-80 rounded-2xl border border-white/10 bg-slate-900 p-5 shadow-2xl shadow-black/40">
-                <div className="flex items-center gap-4">
+              <div className="absolute right-0 top-12 z-20 w-80 rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-black/30">
+                <div className="flex justify-center">
                   <div
-                    className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-white ring-2 ring-white/20"
+                    className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-3xl font-bold text-white ring-4 ring-slate-100"
                     style={{ backgroundColor: profileColor }}
                     aria-label="Profile photo"
                   >
                     {profileInitial}
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-lg font-bold text-white">{displayName}</p>
-                    <p className="truncate text-sm font-semibold text-slate-300">@{username}</p>
+                </div>
+                <div className="mt-6 space-y-3 text-left text-sm">
+                  <div>
+                    <p className="font-bold text-[#031A6B]">Name:</p>
+                    <p className="break-words font-medium text-black">{displayName}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#031A6B]">Username:</p>
+                    <p className="break-words font-medium text-black">{username}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#031A6B]">Email:</p>
+                    <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
                   </div>
                 </div>
-                <div className="mt-5 space-y-3 text-sm">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Name</p>
-                    <p className="break-words font-medium text-slate-100">{displayName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Username</p>
-                    <p className="break-words font-medium text-slate-100">{username}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
-                    <p className="break-words font-medium text-slate-100">{currentUser?.email || 'No email available'}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activePanel === 'settings' && (
-              <div className="absolute right-0 top-12 z-20 w-80 rounded-2xl border border-white/10 bg-slate-900 p-5 shadow-2xl shadow-black/40">
-                <h2 className="text-lg font-bold text-white">Settings</h2>
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-sm font-semibold text-white">Library management</p>
-                    <p className="mt-1 text-xs text-slate-400">Use Manage your library to remove shelves from your account.</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-sm font-semibold text-white">Account</p>
-                    <p className="mt-1 text-xs text-slate-400">Profile details are shown from your login account.</p>
-                  </div>
+                <div className="mt-6 grid grid-cols-2 gap-3">
                   <button
-                    onClick={onBackToLogin}
-                    className="w-full rounded-xl bg-red-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-800"
+                    type="button"
+                    className="rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860]"
                   >
-                    Logout
+                    Change password
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-xl bg-[#087CA7] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#004385]"
+                  >
+                    Edit
                   </button>
                 </div>
               </div>
@@ -185,7 +170,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
 
         {error && <p className="mb-5 text-sm text-rose-300">{error}</p>}
 
-        <div className="mb-8 flex justify-center">
+        <div className="mb-4 mt-16 flex justify-center sm:mt-20 lg:mt-24">
           <div className="flex max-w-full gap-6 overflow-x-auto pb-4">
             {shelves.map(shelf => (
               <div key={shelf.id} className="flex-none">
@@ -238,7 +223,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token, currentUser }) {
             onClick={() => setManageMode(prev => !prev)}
             className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
           >
-            Manage your library
+            Manage
           </button>
         </div>
       </div>
