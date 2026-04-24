@@ -1,10 +1,7 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-// Pull commonly used icons from the global lucide object
-const {
-  CheckSquare, Calendar: CalendarIcon, Utensils, MapPin, ChefHat, Tv, Film, Book, Close
-} = window.lucide;
+const { CheckSquare, CalendarIcon, Utensils, MapPin, ChefHat, Tv, Film, Book, Close } = window;
 
 // ============================================================================
 // GLOBAL ADD MODAL COMPONENT

@@ -139,6 +139,21 @@ const getAuthToken = () => {
   return localStorage.getItem('shared-shelf-auth-token') || sessionStorage.getItem('shared-shelf-auth-token');
 };
 
+const getAuthorizedHeaders = (includeJson = false) => {
+  const headers = {};
+  const token = getAuthToken();
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  if (includeJson) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  return headers;
+};
+
 const clearAuthToken = () => {
   localStorage.removeItem('shared-shelf-auth-token');
   localStorage.removeItem('shared-shelf-user');
@@ -311,6 +326,93 @@ const saveShelfData = async (shelfId, data) => {
   }
 };
 
+const getUserShelves = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/shelves`, {
+      headers: getAuthorizedHeaders()
+    });
+
+    if (!res.ok) return [];
+    const payload = await res.json();
+    return payload.shelves || [];
+  } catch (error) {
+    console.error('Error fetching shelves:', error);
+    return [];
+  }
+};
+
+const createShelf = async (name) => {
+  const res = await fetch(`${API_BASE}/api/shelves`, {
+    method: 'POST',
+    headers: getAuthorizedHeaders(true),
+    body: JSON.stringify({ name })
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to create shelf');
+  }
+
+  return payload;
+};
+
+const joinShelf = async (shelfId, joinCode) => {
+  const res = await fetch(`${API_BASE}/api/shelves/join`, {
+    method: 'POST',
+    headers: getAuthorizedHeaders(true),
+    body: JSON.stringify({ shelfId, joinCode })
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to join shelf');
+  }
+
+  return payload;
+};
+
+const updateShelf = async (shelfId, updates) => {
+  const res = await fetch(`${API_BASE}/api/shelves/${shelfId}`, {
+    method: 'PATCH',
+    headers: getAuthorizedHeaders(true),
+    body: JSON.stringify(updates)
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to update shelf');
+  }
+
+  return payload.shelf || null;
+};
+
+const getShelfShareInfo = async (shelfId) => {
+  const res = await fetch(`${API_BASE}/api/shelves/${shelfId}/share`, {
+    headers: getAuthorizedHeaders()
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to load shelf share details');
+  }
+
+  return payload;
+};
+
+const regenerateShelfJoinCode = async (shelfId) => {
+  const res = await fetch(`${API_BASE}/api/shelves/${shelfId}/share`, {
+    method: 'POST',
+    headers: getAuthorizedHeaders(true)
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to generate a new join code');
+  }
+
+  return payload;
+};
+
 // ============================================================================
 // EXPORT ALL TO window
 // ============================================================================
@@ -329,5 +431,11 @@ Object.assign(window, {
   forgotPassword,
   resetPassword,
   getShelfData,
-  saveShelfData
+  saveShelfData,
+  getUserShelves,
+  createShelf,
+  joinShelf,
+  updateShelf,
+  getShelfShareInfo,
+  regenerateShelfJoinCode
 });

@@ -27,8 +27,7 @@ const DATE_CATEGORY_STYLES = window.DATE_CATEGORY_STYLES || {
   other: 'text-slate-300 border-slate-500/30 bg-slate-500/10',
 };
 
-// grab icons from lucide
-const { Star, Trash, MapPin, Link: LinkIcon } = window.lucide;
+const { Star, Trash, MapPin, LinkIcon } = window;
 
 // Reuse Filter components if defined globally, otherwise define simple ones
 const FilterBar = window.FilterBar || (({ label, children }) => (

@@ -8,7 +8,6 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const API_BASE = window.API_BASE_URL ?? '';
 
   useEffect(() => {
     if (!isOpen) {
@@ -27,24 +26,16 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/shelves`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: name.trim() })
-      });
+      const created = await createShelf(name.trim());
 
-      if (res.ok) {
-        onJoin();
+      if (created?.shelf) {
+        onJoin(created.shelf);
         onClose();
       } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || data.hint || 'Failed to create shelf');
+        setError('Failed to create shelf');
       }
-    } catch {
-      setError('Connection error');
+    } catch (err) {
+      setError(err?.message || 'Connection error');
     } finally {
       setLoading(false);
     }
@@ -56,24 +47,16 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/shelves/join`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ shelfId: shelfId.trim(), joinCode: code.trim() })
-      });
+      const joined = await joinShelf(shelfId.trim(), code.trim());
 
-      if (res.ok) {
-        onJoin();
+      if (joined?.shelf) {
+        onJoin(joined.shelf);
         onClose();
       } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Invalid code');
+        setError('Invalid code');
       }
-    } catch {
-      setError('Connection error');
+    } catch (err) {
+      setError(err?.message || 'Connection error');
     } finally {
       setLoading(false);
     }
@@ -115,7 +98,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
           <form onSubmit={handleCreate} className="space-y-4">
             <input
               type="text"
-              placeholder="Shelve name"
+              placeholder="Shelf name"
               value={name}
               onChange={e => setName(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"

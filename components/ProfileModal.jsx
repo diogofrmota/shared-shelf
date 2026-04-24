@@ -42,18 +42,29 @@ const UserAvatar = ({ user, size = 40 }) => {
 };
 
 const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onLogout }) => {
+  const [users, setUsers] = useState([]);
+  const [expandedId, setExpandedId] = useState(null);
+  const [name, setName] = useState(shelf?.name || '');
+  const [logo, setLogo] = useState(shelf?.logo || '');
+
+  useEffect(() => {
+    if (mode === 'profiles' && isOpen) {
+      setUsers((profile?.users || []).map(u => ({ ...u })));
+      setExpandedId(null);
+    }
+  }, [mode, isOpen, profile?.users]);
+
+  useEffect(() => {
+    if (mode === 'settings' && isOpen) {
+      setName(shelf?.name || '');
+      setLogo(shelf?.logo || '');
+    }
+  }, [mode, isOpen, shelf]);
+
   if (!isOpen) return null;
 
   // ---------- PROFILES MODE ----------
   if (mode === 'profiles') {
-    const [users, setUsers] = useState([]);
-    const [expandedId, setExpandedId] = useState(null);
-
-    useEffect(() => {
-      setUsers((profile?.users || []).map(u => ({ ...u })));
-      setExpandedId(null);
-    }, [isOpen, profile?.users]);
-
     const updateUser = (id, field, value) =>
       setUsers(prev => prev.map(u => u.id === id ? { ...u, [field]: value } : u));
 
@@ -185,16 +196,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
   // ---------- SETTINGS MODE (shelf logo & name) ----------
   if (mode === 'settings') {
-    const [name, setName] = useState(shelf?.name || '');
-    const [logo, setLogo] = useState(shelf?.logo || '');
-
-    useEffect(() => {
-      if (isOpen) {
-        setName(shelf?.name || '');
-        setLogo(shelf?.logo || '');
-      }
-    }, [isOpen, shelf]);
-
     const handleSave = () => {
       onSaveShelf({ name, logo });
       onClose();

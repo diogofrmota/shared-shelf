@@ -17,22 +17,11 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
 
   const fetchShelves = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/shelves`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setShelves(data.shelves || []);
-        setError('');
-      } else {
-        setError('Failed to load shelves');
-      }
+      const nextShelves = await getUserShelves();
+      setShelves(nextShelves);
+      setError('');
     } catch {
-      setError('Connection error');
+      setError('Failed to load shelves');
     } finally {
       setLoading(false);
     }
@@ -42,7 +31,16 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
     fetchShelves();
   }, [token]);
 
-  const handleJoinShelf = () => {
+  const handleJoinShelf = (shelf) => {
+    if (shelf) {
+      setShelves(prev => {
+        const remaining = prev.filter(item => item.id !== shelf.id);
+        return [shelf, ...remaining];
+      });
+      onSelectShelf(shelf);
+      return;
+    }
+
     fetchShelves();
   };
 
@@ -88,7 +86,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
     <div className="min-h-screen bg-slate-950 px-6 py-10">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 flex items-center justify-between gap-4">
-          <h1 className="text-4xl font-bold text-white sm:text-5xl">Join a Shelve</h1>
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">Choose a Shelf</h1>
           <button
             onClick={onBackToLogin}
             className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
@@ -139,11 +137,11 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, token }) {
                 setJoinOpen(true);
               }}
               className="flex h-36 w-36 items-center justify-center rounded-3xl border-2 border-dashed border-white/20 bg-transparent text-5xl font-light text-white transition hover:-translate-y-1 hover:border-white/40 hover:bg-white/5"
-              aria-label="Add or join a shelve"
+              aria-label="Add or join a shelf"
             >
               +
             </button>
-            <p className="mt-3 text-center text-sm font-medium text-slate-200">Add/ Join a Shelve</p>
+            <p className="mt-3 text-center text-sm font-medium text-slate-200">Add / Join a Shelf</p>
           </div>
         </div>
 

@@ -93,6 +93,16 @@ const LinkIcon = ({ size = 14, className = '' }) => (
   </svg>
 );
 
+const ShareIcon = ({ size = 16, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <circle cx="18" cy="5" r="3"></circle>
+    <circle cx="6" cy="12" r="3"></circle>
+    <circle cx="18" cy="19" r="3"></circle>
+    <path d="M8.59 13.51 15.42 17.49"></path>
+    <path d="M15.41 6.51 8.59 10.49"></path>
+  </svg>
+);
+
 const ThreeDots = ({ size = 16, className = '' }) => (
   <svg width={size} height={size} fill="currentColor" viewBox="0 0 16 16" className={className}>
     <circle cx="8" cy="2" r="1.5" />
@@ -102,7 +112,14 @@ const ThreeDots = ({ size = 16, className = '' }) => (
 );
 
 const Close = ({ size = 24, className = '' }) => (
-  <span className={className}>✕</span>
+  <span className={className} style={{ fontSize: size, lineHeight: 1 }}>x</span>
+);
+
+const SettingsIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
 );
 
 const ChefHat = ({ size = 20, className = '' }) => (
@@ -176,6 +193,6 @@ const WifiOff = ({ size = 16, className = '' }) => (
 
 Object.assign(window, {
   CheckSquare, Search, Plus, Film, Tv, Book, CalendarIcon, MapPin,
-  ChevronLeft, ChevronRight, Trash, LinkIcon, ThreeDots, Close,
-  ChefHat, Utensils, Star, Eye, EyeOff, LogoutIcon, UserIcon, Camera, WifiOff
+  ChevronLeft, ChevronRight, Trash, LinkIcon, ShareIcon, ThreeDots, Close,
+  SettingsIcon, ChefHat, Utensils, Star, Eye, EyeOff, LogoutIcon, UserIcon, Camera, WifiOff
 });

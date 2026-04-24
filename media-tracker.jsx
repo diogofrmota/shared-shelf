@@ -22,6 +22,7 @@ function MediaTracker() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
@@ -116,11 +117,13 @@ function MediaTracker() {
     setCurrentUser(null);
     setCurrentShelf(null);
     setData(null);
+    setShareModalOpen(false);
   };
   const handleShelfSelect = (shelf) => setCurrentShelf(shelf);
   const handleBackToShelves = () => {
     setCurrentShelf(null);
     setData(null);
+    setShareModalOpen(false);
   };
 
   const handleCategoryChange = (category, subTab) => {
@@ -199,8 +202,19 @@ function MediaTracker() {
 
   // Update shelf settings (logo/name)
   const handleSaveShelfSettings = (newSettings) => {
+    const previousShelf = currentShelf;
     setCurrentShelf(prev => ({ ...prev, ...newSettings }));
-    // Optionally, also update data if needed
+
+    updateShelf(currentShelf.id, newSettings)
+      .then((updatedShelf) => {
+        if (updatedShelf) {
+          setCurrentShelf(updatedShelf);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to persist shelf settings:', error);
+        setCurrentShelf(previousShelf);
+      });
   };
 
   if (authLoading) return <LoadingScreen />;
@@ -326,7 +340,7 @@ function MediaTracker() {
         onCategoryChange={handleCategoryChange}
         onSubTabChange={(sub) => setActiveSubTab(sub)}
         onGlobalAddClick={() => setGlobalAddOpen(true)}
-        onShareClick={() => {} /* share modal can be implemented */}
+        onShareClick={() => setShareModalOpen(true)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
         profile={data?.profile}
@@ -342,6 +356,11 @@ function MediaTracker() {
 
       {/* Modals */}
       <GlobalSearchModal isOpen={globalSearchOpen} onClose={() => setGlobalSearchOpen(false)} data={data} setActiveTab={(tab) => { /* map old tab to new category/sub */ }} />
+      <ShareShelfModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        shelf={currentShelf}
+      />
       <AddModal
         isOpen={addModalOpen}
         onClose={() => { setAddModalOpen(false); setAddCategory(null); }}
