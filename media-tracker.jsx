@@ -242,6 +242,7 @@ function MediaTracker() {
     return (
       <ShelfSelector
         userId={currentUser.id}
+        currentUser={currentUser}
         token={getAuthToken()}
         onSelectShelf={handleShelfSelect}
         onBackToLogin={() => {

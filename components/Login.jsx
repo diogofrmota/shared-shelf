@@ -160,9 +160,9 @@ function LoginScreen({ onLogin }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-slate-800">
+      <div className="w-full max-w-md min-h-[34rem] bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-slate-800">
         <img src="assets/logo.png" alt="Shared Shelf" className="h-16 mx-auto mb-2 object-contain" />
-        <p className="text-slate-400 text-center mb-8 text-sm">
+        <p className="text-slate-400 text-center mb-8 text-base font-medium">
           Organize your life, together.
         </p>
 
@@ -202,16 +202,16 @@ function LoginScreen({ onLogin }) {
         {/* Sign in / Register forms */}
         {mode !== 'reset' && (
           <>
-            <div className="flex mb-6 bg-slate-800 rounded-lg p-1">
+            <div className="flex gap-2 mb-6 bg-slate-800 rounded-lg p-1">
               <button
                 onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 py-2 rounded-md font-medium transition ${mode === 'signin' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}
+                className={`flex-1 py-2 rounded-md border-2 font-medium transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 py-2 rounded-md font-medium transition ${mode === 'signup' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}
+                className={`flex-1 py-2 rounded-md border-2 font-medium transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
               >
                 Register
               </button>
