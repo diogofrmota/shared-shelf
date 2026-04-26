@@ -236,43 +236,50 @@ function LoginScreen({ onLogin }) {
     }
   };
 
+  const inputClass = "w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-slate-950 placeholder-slate-500 shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200";
+  const labelClass = "mb-1.5 block text-sm font-bold text-slate-800";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md min-h-[34rem] bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-slate-800">
-        <img src="assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" className="h-16 mx-auto mb-2 object-contain" />
-        <p className="text-slate-400 text-center mb-8 text-base font-medium">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-pink-900 flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md min-h-[34rem] rounded-[1.75rem] border border-white/30 bg-white/95 p-6 shadow-2xl shadow-purple-950/30 backdrop-blur-xl sm:p-8">
+        <img src="assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" width="180" height="64" className="h-16 mx-auto mb-2 object-contain" />
+        <p className="text-slate-600 text-center mb-8 text-base font-medium">
           Organize your life, together.
         </p>
 
         {/* Reset password form */}
         {mode === 'reset' && (
           <form onSubmit={handleResetPassword} className="space-y-4" noValidate>
-            <h2 className="text-white font-semibold text-center mb-2">Set a new password</h2>
+            <h2 className="text-slate-950 font-semibold text-center mb-2">Set a New Password</h2>
             <div>
+              <label className={labelClass} htmlFor="new-password">New Password</label>
               <input
+                id="new-password"
                 type="password"
+                name="new-password"
+                autoComplete="new-password"
                 placeholder="New password"
                 value={newPassword}
                 onChange={(e) => handleInput('newPassword', e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                className={inputClass}
               />
               {errors.newPassword && <p className="text-red-400 text-xs mt-1">{errors.newPassword}</p>}
             </div>
-            {serverError && <p className="text-red-400 text-sm text-center">{serverError}</p>}
-            {serverSuccess && <p className="text-green-400 text-sm text-center">{serverSuccess}</p>}
+            {serverError && <p className="text-red-600 text-sm text-center" aria-live="polite">{serverError}</p>}
+            {serverSuccess && <p className="text-emerald-700 text-sm text-center" aria-live="polite">{serverSuccess}</p>}
             <button
               type="submit"
               disabled={loading}
               className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
             >
-              {loading ? 'Updating...' : 'Update password'}
+              {loading ? 'Updating...' : 'Update Password'}
             </button>
             <button
               type="button"
               onClick={() => { setMode('signin'); setServerError(''); setServerSuccess(''); }}
-              className="w-full text-slate-400 text-sm hover:text-white transition"
+              className="w-full text-slate-600 text-sm hover:text-purple-800 transition"
             >
-              Back to sign in
+              Back To Sign In
             </button>
           </form>
         )}
@@ -280,16 +287,16 @@ function LoginScreen({ onLogin }) {
         {/* Sign in / Register forms */}
         {mode !== 'reset' && (
           <>
-            <div className="flex gap-2 mb-6 bg-slate-800 rounded-lg p-1">
+            <div className="flex gap-2 mb-6 rounded-2xl bg-violet-50 p-1.5">
               <button
                 onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 py-2 rounded-md border-2 font-semibold transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
+                className={`flex-1 rounded-xl border px-3 py-2 font-semibold transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 py-2 rounded-md border-2 font-semibold transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'bg-transparent border-[var(--app-primary)] text-[var(--app-primary)] hover:bg-[var(--app-light-surface-hover)]'}`}
+                className={`flex-1 rounded-xl border px-3 py-2 font-semibold transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
               >
                 Register
               </button>
@@ -299,22 +306,31 @@ function LoginScreen({ onLogin }) {
               {mode === 'signup' && (
                 <>
                   <div>
+                    <label className={labelClass} htmlFor="signup-name">Name</label>
                     <input
+                      id="signup-name"
                       type="text"
+                      name="name"
                       placeholder="Name"
+                      autoComplete="name"
                       value={name}
                       onChange={(e) => handleInput('name', e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className={inputClass}
                     />
                     {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                   </div>
                   <div>
+                    <label className={labelClass} htmlFor="signup-username">Username</label>
                     <input
+                      id="signup-username"
                       type="text"
+                      name="username"
                       placeholder="Username"
+                      autoComplete="username"
+                      spellCheck={false}
                       value={username}
                       onChange={(e) => handleInput('username', e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className={inputClass}
                     />
                     {errors.username && <p className="text-red-400 text-xs mt-1">{errors.username}</p>}
                   </div>
@@ -322,30 +338,39 @@ function LoginScreen({ onLogin }) {
               )}
 
               <div>
+                <label className={labelClass} htmlFor="login-email">{mode === 'signup' ? 'Email' : 'Email Or Username'}</label>
                 <input
+                  id="login-email"
                   type="text"
+                  name={mode === 'signup' ? 'email' : 'username'}
+                  autoComplete={mode === 'signup' ? 'email' : 'username'}
+                  spellCheck={false}
                   placeholder={mode === 'signup' ? 'Email' : 'Email or Username'}
                   value={email}
                   onChange={(e) => handleInput('email', e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  className={inputClass}
                 />
                 {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
               </div>
 
               <div>
+                <label className={labelClass} htmlFor="login-password">Password</label>
                 <input
+                  id="login-password"
                   type="password"
+                  name="password"
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => handleInput('password', e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  className={inputClass}
                 />
                 {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
               </div>
 
               {mode === 'signin' && (
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-slate-300 text-sm">
+                  <label className="flex items-center gap-2 text-slate-700 text-sm">
                     <input
                       type="checkbox"
                       checked={rememberMe}
@@ -356,7 +381,7 @@ function LoginScreen({ onLogin }) {
                   </label>
                   <button
                     type="button"
-                    className="text-purple-400 text-sm hover:underline"
+                    className="text-purple-700 text-sm font-semibold hover:underline"
                     onClick={() => { setForgotEmail(email.includes('@') ? email : ''); setForgotOpen(true); setErrors({}); }}
                     disabled={loading}
                   >
@@ -365,35 +390,40 @@ function LoginScreen({ onLogin }) {
                 </div>
               )}
 
-              {serverError && <p className="text-red-400 text-sm text-center">{serverError}</p>}
-              {serverSuccess && <p className="text-green-400 text-sm text-center">{serverSuccess}</p>}
+              {serverError && <p className="text-red-600 text-sm text-center" aria-live="polite">{serverError}</p>}
+              {serverSuccess && <p className="text-emerald-700 text-sm text-center" aria-live="polite">{serverSuccess}</p>}
 
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
               >
-                {loading ? 'Please wait...' : mode === 'signin' ? 'Login' : 'Create Account'}
+                {loading ? 'Please Wait...' : mode === 'signin' ? 'Login' : 'Create Account'}
               </button>
             </form>
 
             {forgotOpen && (
               <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-4">
-                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-2xl" noValidate>
-                  <h2 className="mb-3 text-center text-lg font-semibold text-white">Reset password</h2>
+                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-2xl border border-purple-100 bg-white p-5 shadow-2xl" noValidate>
+                  <h2 className="mb-3 text-center text-lg font-semibold text-slate-950">Reset Password</h2>
+                  <label className={labelClass} htmlFor="forgot-email">Email</label>
                   <input
+                    id="forgot-email"
                     type="text"
+                    name="email"
+                    autoComplete="email"
+                    spellCheck={false}
                     placeholder="Email"
                     value={forgotEmail}
                     onChange={(event) => { setForgotEmail(event.target.value); setErrors(prev => ({ ...prev, forgotEmail: '' })); }}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+                    className={inputClass}
                   />
                   {errors.forgotEmail && <p className="mt-1 text-xs text-red-400">{errors.forgotEmail}</p>}
                   <div className="mt-4 flex gap-3">
                     <button
                       type="button"
                       onClick={() => { setForgotOpen(false); setErrors({}); }}
-                      className="flex-1 rounded-lg bg-slate-700 py-2 text-sm font-semibold text-white transition hover:bg-slate-600"
+                      className="flex-1 rounded-lg bg-violet-50 py-2 text-sm font-semibold text-purple-900 transition hover:bg-violet-100"
                     >
                       Cancel
                     </button>
@@ -402,7 +432,7 @@ function LoginScreen({ onLogin }) {
                       disabled={loading}
                       className="flex-1 rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
                     >
-                      {loading ? 'Sending...' : 'Send link'}
+                      {loading ? 'Sending...' : 'Send Link'}
                     </button>
                   </div>
                 </form>

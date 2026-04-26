@@ -226,14 +226,19 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   );
 
   if (loading) {
-    return <LoadingScreen label="Logging in ..." />;
+    return <LoadingScreen label="Logging in..." />;
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-6 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-violet-900 to-pink-900 px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">Join your shared space</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">Join Your Shared Space</h1>
+            <p className="mt-2 max-w-2xl text-sm font-medium text-white/75 sm:text-base">
+              Open an existing shelf, create a new one, or join with an invite code.
+            </p>
+          </div>
           <div className="relative flex shrink-0 items-center gap-3 self-end sm:self-auto">
             <button
               onClick={() => togglePanel('profile')}
@@ -337,7 +342,14 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
 
         {error && <p className="mb-5 text-sm text-rose-300">{error}</p>}
 
-        <div className="mb-4 mt-16 flex justify-center sm:mt-20 lg:mt-24">
+        {shelves.length === 0 && !error && (
+          <div className="mx-auto mb-2 max-w-xl rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-white shadow-xl shadow-purple-950/20 backdrop-blur">
+            <p className="text-lg font-bold">No shelves yet</p>
+            <p className="mt-1 text-sm text-white/75">Create a shelf for shared plans, or join one with a shelf ID and code.</p>
+          </div>
+        )}
+
+        <div className={`mb-4 flex justify-center ${shelves.length ? 'mt-16 sm:mt-20 lg:mt-24' : 'mt-8'}`}>
           <div className="flex max-w-full gap-6 overflow-x-auto px-1 pb-4 pt-2">
             {shelves.map(shelf => (
               <div key={shelf.id} className="flex-none">
@@ -355,10 +367,10 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                   <button
                     onClick={() => !manageMode && onSelectShelf(shelf)}
                     disabled={manageMode}
-                    className={`flex h-36 w-36 items-center justify-center rounded-3xl border border-white/10 bg-white text-[#031A6B] shadow-xl shadow-black/20 transition ${
+                    className={`flex h-36 w-36 items-center justify-center rounded-[1.75rem] border border-white/30 bg-white text-[#3B0764] shadow-xl shadow-purple-950/20 transition ${
                       manageMode
                         ? 'cursor-default'
-                        : 'hover:-translate-y-1 hover:border-white/25 hover:bg-slate-100'
+                        : 'hover:-translate-y-1 hover:border-white hover:bg-violet-50'
                     }`}
                     title={shelf.name}
                   >
@@ -386,16 +398,18 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
         </div>
 
         <div className="flex justify-center">
-          <button
-            onClick={() => setManageMode(prev => !prev)}
-            className={`flex h-11 w-28 items-center justify-center rounded-xl border px-5 text-sm font-semibold transition ${
-              manageMode
-                ? 'border-[#ced4da] bg-[#ced4da] text-[#1f2937] hover:bg-[#adb5bd]'
-                : 'border-white/15 bg-white/5 text-white hover:bg-white/10'
-            }`}
-          >
-            {manageMode ? 'Cancel' : 'Manage'}
-          </button>
+          {shelves.length > 0 && (
+            <button
+              onClick={() => setManageMode(prev => !prev)}
+              className={`flex h-11 w-28 items-center justify-center rounded-xl border px-5 text-sm font-semibold transition ${
+                manageMode
+                  ? 'border-white bg-white text-purple-900 hover:bg-violet-50'
+                  : 'border-white/20 bg-white/10 text-white hover:bg-white/15'
+              }`}
+            >
+              {manageMode ? 'Cancel' : 'Manage'}
+            </button>
+          )}
         </div>
       </div>
 

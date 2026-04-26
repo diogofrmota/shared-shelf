@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="description" content="Manage shared shelves for calendar, tasks, locations, trips, recipes, and watchlist">
-  <meta name="theme-color" content="#031A6B">
+  <meta name="theme-color" content="#4C1D95">
   <title>Shared Shelf - Homepage</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
@@ -17,40 +17,51 @@
 
   <style>
     :root {
-      --app-bg: #031A6B;
+      --app-bg: #4C1D95;
       --app-surface: #FFFFFF;
-      --app-surface-soft: rgba(5, 178, 220, 0.12);
-      --app-overlay: rgba(3, 26, 107, 0.78);
-      --app-text: #000000;
-      --app-text-muted: rgba(0, 0, 0, 0.72);
-      --app-text-subtle: rgba(0, 0, 0, 0.62);
-      --app-title: #031A6B;
-      --app-primary: #004385;
-      --app-primary-strong: #033860;
-      --app-accent-cool: #087CA7;
-      --app-accent-bright: #05B2DC;
-      --app-accent-soft: rgba(5, 178, 220, 0.16);
-      --app-accent-cool-soft: rgba(8, 124, 167, 0.16);
-      --app-accent-warm-soft: rgba(0, 67, 133, 0.14);
-      --app-border: #087CA7;
-      --app-border-soft: rgba(3, 56, 96, 0.22);
-      --app-border-faint: rgba(3, 26, 107, 0.12);
+      --app-surface-soft: rgba(236, 72, 153, 0.10);
+      --app-overlay: rgba(43, 14, 86, 0.74);
+      --app-text: #171225;
+      --app-text-muted: rgba(23, 18, 37, 0.74);
+      --app-text-subtle: rgba(23, 18, 37, 0.58);
+      --app-title: #3B0764;
+      --app-primary: #6D28D9;
+      --app-primary-strong: #4C1D95;
+      --app-accent-cool: #7C3AED;
+      --app-accent-bright: #EC4899;
+      --app-accent-soft: rgba(236, 72, 153, 0.14);
+      --app-accent-cool-soft: rgba(124, 58, 237, 0.14);
+      --app-accent-warm-soft: rgba(251, 191, 36, 0.18);
+      --app-border: #A78BFA;
+      --app-border-soft: rgba(76, 29, 149, 0.20);
+      --app-border-faint: rgba(76, 29, 149, 0.10);
       --app-light-surface: #FFFFFF;
-      --app-light-surface-hover: #EAF8FC;
-      --app-on-light: #000000;
+      --app-light-surface-hover: #F5F3FF;
+      --app-on-light: #171225;
       --app-on-accent: #FFFFFF;
-      --app-on-bright: #000000;
+      --app-on-bright: #2E1065;
+      --app-danger: #B91C1C;
+      --app-focus: #F0ABFC;
+      color-scheme: light;
+    }
+
+    html {
+      background: #4C1D95;
+      scroll-behavior: smooth;
     }
 
     body {
       margin: 0;
       padding: 0;
       overflow-x: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(236, 72, 153, 0.22);
       background:
-        radial-gradient(circle at top left, rgba(5, 178, 220, 0.28), transparent 30%),
-        radial-gradient(circle at top right, rgba(8, 124, 167, 0.34), transparent 28%),
-        linear-gradient(180deg, #031A6B 0%, #033860 54%, #004385 100%);
+        radial-gradient(circle at top left, rgba(236, 72, 153, 0.34), transparent 28%),
+        radial-gradient(circle at top right, rgba(167, 139, 250, 0.32), transparent 28%),
+        linear-gradient(135deg, #4C1D95 0%, #581C87 44%, #2E1065 100%);
       color: var(--app-text);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     #root {
@@ -62,7 +73,7 @@
     .leaflet-container {
       height: 100%;
       width: 100%;
-      background: #EAF8FC;
+      background: #F5F3FF;
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -73,13 +84,51 @@
       color: var(--app-title);
     }
 
+    button,
+    input,
+    textarea,
+    select,
+    a {
+      touch-action: manipulation;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    a:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--app-focus);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(124, 58, 237, 0.18);
+    }
+
+    .skip-link {
+      position: fixed;
+      left: 1rem;
+      top: 1rem;
+      z-index: 9999;
+      transform: translateY(-150%);
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--app-title);
+      font-weight: 800;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 18px 40px rgba(24, 16, 48, 0.24);
+      transition: transform 160ms ease;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
     ::selection {
       background: var(--app-accent-bright);
       color: var(--app-on-bright);
     }
 
     [class*="bg-gradient-to-"] {
-      background-image: linear-gradient(135deg, #031A6B 0%, #033860 56%, #004385 100%) !important;
+      background-image: linear-gradient(135deg, #4C1D95 0%, #7C3AED 56%, #EC4899 100%) !important;
       background-color: var(--app-bg) !important;
       color: var(--app-on-accent) !important;
     }
@@ -109,6 +158,8 @@
     }
 
     [class~="bg-white"],
+    [class~="bg-white/90"],
+    [class~="bg-white/95"],
     [class~="bg-white/5"],
     [class~="bg-white/10"],
     [class~="bg-slate-500"],
@@ -380,6 +431,8 @@
 
     :is(
       [class~="bg-white"],
+      [class~="bg-white/90"],
+      [class~="bg-white/95"],
       [class~="bg-white/5"],
       [class~="bg-white/10"],
       [class~="bg-blue-500/10"],
@@ -423,6 +476,8 @@
 
     :is(
       [class~="bg-white"],
+      [class~="bg-white/90"],
+      [class~="bg-white/95"],
       [class~="bg-white/5"],
       [class~="bg-white/10"],
       [class~="bg-purple-500"],
@@ -499,6 +554,10 @@
       color: var(--app-on-light) !important;
     }
 
+    :is([class~="bg-white/90"], [class~="bg-white/95"]) :is(h1, h2, h3, h4, h5, h6, p, label, span) {
+      color: var(--app-on-light) !important;
+    }
+
     :is(
       [class~="bg-purple-500"],
       [class~="bg-purple-600"],
@@ -561,6 +620,7 @@
     textarea,
     select {
       caret-color: var(--app-on-light);
+      color-scheme: light;
     }
 
     input::placeholder,
@@ -659,6 +719,17 @@
     .leaflet-popup-content strong,
     .leaflet-popup-content span {
       color: var(--app-on-light);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>

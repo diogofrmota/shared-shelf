@@ -24,7 +24,7 @@ const formatDateLong = (isoDate) => {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-').map(Number);
   const date = new Date(y, m - 1, d);
-  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y} — ${date.toLocaleDateString(undefined, { weekday: 'long' })}`;
+  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y} - ${date.toLocaleDateString(undefined, { weekday: 'long' })}`;
 };
 
 const buildMonthGrid = (year, month) => {
@@ -108,10 +108,10 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
   const agendaEvents = selectedDate ? (eventsByDate[selectedDate] || []) : monthEvents;
   const agendaTitle = selectedDate
     ? formatDateLong(selectedDate)
-    : `Agenda — ${MONTH_NAMES[viewMonth]} ${viewYear}`;
+    : `Agenda - ${MONTH_NAMES[viewMonth]} ${viewYear}`;
 
   return (
-    <div className="max-w-[60%] mx-auto">
+    <div className="mx-auto w-full max-w-5xl">
       <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

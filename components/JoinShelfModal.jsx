@@ -83,6 +83,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
   };
 
   if (!isOpen) return null;
+  const labelClass = "mb-1.5 block text-sm font-bold text-slate-800";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -116,14 +117,20 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
 
         {mode === 'create' ? (
           <form onSubmit={handleCreate} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Shelf name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
-              required
-            />
+            <div>
+              <label className={labelClass} htmlFor="create-shelf-name">Shelf Name</label>
+              <input
+                id="create-shelf-name"
+                type="text"
+                name="shelf-name"
+                autoComplete="off"
+                placeholder="Weekend plans"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
+                required
+              />
+            </div>
             <div className="join-shelf-sections space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
               <p className="join-shelf-section-title text-sm font-semibold text-white">Shared items</p>
               <div className="grid grid-cols-2 gap-2">
@@ -160,22 +167,36 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
           </form>
         ) : (
           <form onSubmit={handleJoin} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Shelf ID"
-              value={shelfId}
-              onChange={e => setShelfId(e.target.value)}
-              className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Join Code"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
-              required
-            />
+            <div>
+              <label className={labelClass} htmlFor="join-shelf-id">Shelf ID</label>
+              <input
+                id="join-shelf-id"
+                type="text"
+                name="shelf-id"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="Shelf ID"
+                value={shelfId}
+                onChange={e => setShelfId(e.target.value)}
+                className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="join-code">Join Code</label>
+              <input
+                id="join-code"
+                type="text"
+                name="join-code"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="Join Code"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
+                required
+              />
+            </div>
             {error && <p className="join-shelf-error text-sm text-red-400">{error}</p>}
             <div className="flex gap-3">
               <button

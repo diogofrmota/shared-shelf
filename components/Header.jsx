@@ -56,11 +56,11 @@ const Header = ({
     { id: 'books', label: 'Books' }
   ];
 
-  const baseHeaderButton = 'flex h-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10';
+  const baseHeaderButton = 'flex h-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15';
   const fixedHeaderButton = `${baseHeaderButton} w-24`;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/15 bg-[#031A6B] shadow-lg shadow-[#031A6B]/20">
+    <header className="sticky top-0 z-40 border-b border-white/15 bg-gradient-to-r from-purple-950 via-violet-900 to-fuchsia-800 shadow-lg shadow-purple-950/20 backdrop-blur">
       <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
@@ -80,6 +80,7 @@ const Header = ({
                 return (
                   <button
                     key={tab.id}
+                    aria-current={isActive ? 'page' : undefined}
                     onClick={() => {
                       if (tab.id === 'media') {
                         handleTabClick('media', activeCategory === 'media' ? activeSubTab : 'tvshows');
@@ -91,7 +92,7 @@ const Header = ({
                     }}
                     className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
                       isActive
-                        ? 'bg-white text-[#031A6B]'
+                        ? 'bg-white text-[#3B0764] shadow-sm'
                         : 'text-white hover:bg-white/10'
                     }`}
                   >
@@ -105,7 +106,7 @@ const Header = ({
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
             <button
               onClick={onGlobalAddClick}
-              className={`${fixedHeaderButton} bg-white text-[#031A6B] hover:bg-[#EAF8FC]`}
+              className={`${fixedHeaderButton} bg-white text-[#3B0764] hover:bg-violet-50`}
             >
               <Plus size={18} />
               <span className="ml-1.5">Add</span>
@@ -168,7 +169,7 @@ const Header = ({
                   }}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                     activeSubTab === tab.id
-                      ? 'bg-white text-[#031A6B]'
+                      ? 'bg-white text-[#3B0764] shadow-sm'
                       : 'bg-white/5 text-white hover:bg-white/10'
                   }`}
                 >

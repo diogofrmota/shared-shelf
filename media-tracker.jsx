@@ -354,7 +354,7 @@ function MediaTracker() {
     [data?.watchlist, activeSubTab]
   );
 
-  if (authLoading) return <LoadingScreen label="Logging in ..." />;
+  if (authLoading) return <LoadingScreen label="Logging in..." />;
   if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
   if (!currentShelf) {
     return (
@@ -449,7 +449,8 @@ function MediaTracker() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-[#fbfaff]">
+      <a href="#main-content" className="skip-link">Skip To Content</a>
       <style>{`
         * { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
         @keyframes fadeIn {
@@ -488,7 +489,7 @@ function MediaTracker() {
         onLogout={handleLogout}
       />
 
-      <main className="shelf-content flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <main id="main-content" className="shelf-content flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8" tabIndex="-1">
         {renderContent()}
       </main>
 
@@ -548,7 +549,7 @@ function defaultShelfData() {
     profile: {
       users: [
         { id: 'user-1', name: 'Diogo', avatar: '', color: '#031A6B' },
-        { id: 'user-2', name: 'Mónica', avatar: '', color: '#087CA7' }
+        { id: 'user-2', name: 'MÃ³nica', avatar: '', color: '#087CA7' }
       ]
     }
   };

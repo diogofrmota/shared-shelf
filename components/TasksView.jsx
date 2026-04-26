@@ -43,19 +43,19 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     setEditForm({ title: '', description: '' });
   };
 
-  // Movement helpers – operate on the full sortedTasks array
+  // Movement helpers - operate on the full sortedTasks array
   const handleMoveTask = (indexInSorted, direction) => {
     const currentTasks = [...sortedTasks];
     const newIndex = direction === 'up' ? indexInSorted - 1 : indexInSorted + 1;
     if (newIndex < 0 || newIndex >= currentTasks.length) return;
     const task = currentTasks[indexInSorted];
     const targetTask = currentTasks[newIndex];
-    if (task.completed !== targetTask.completed) return; // don’t cross active/completed boundary
+    if (task.completed !== targetTask.completed) return; // don't cross active/completed boundary
     [currentTasks[indexInSorted], currentTasks[newIndex]] = [currentTasks[newIndex], currentTasks[indexInSorted]];
     onReorderTasks?.(currentTasks);
   };
 
-  // Drag & drop – also based on full sorted array
+  // Drag & drop - also based on full sorted array
   const handleDragStart = (e, indexInSorted) => {
     setDraggedIndex(indexInSorted);
     e.dataTransfer.effectAllowed = 'move';
@@ -129,13 +129,16 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
             </div>
           ) : (
             <>
-              <input
-                type="checkbox"
-                checked={task.completed || false}
-                onChange={(e) => { e.stopPropagation(); onToggleTask(task.id); }}
-                onClick={(e) => e.stopPropagation()}
-                className="mt-1 w-4 h-4 rounded border-slate-600 accent-purple-500 cursor-pointer shrink-0"
-              />
+              <label className="mt-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center">
+                <span className="sr-only">Mark task complete</span>
+                <input
+                  type="checkbox"
+                  checked={task.completed || false}
+                  onChange={(e) => { e.stopPropagation(); onToggleTask(task.id); }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-5 w-5 cursor-pointer rounded border-slate-600 accent-purple-500"
+                />
+              </label>
               <div className="flex-1 min-w-0">
                 <p className={`font-semibold leading-snug ${task.completed ? 'text-slate-500 line-through' : 'text-white'}`}>
                   {task.title}
@@ -158,14 +161,14 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     {task.dueDate && (
                       <span className={`text-xs flex items-center gap-1 ${isOverdue ? 'text-red-400' : 'text-slate-400'}`}>
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        {isOverdue ? 'Overdue · ' : ''}{task.dueDate.split('-').reverse().join('/')}
+                        {isOverdue ? 'Overdue - ' : ''}{task.dueDate.split('-').reverse().join('/')}
                       </span>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Action icons – TRIPLED in size */}
+              {/* Task actions */}
               <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
                 {!task.completed && (
                   <>
@@ -175,7 +178,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                       className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700/50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-500"
                       aria-label="Move up"
                     >
-                      <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                     </button>
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'down')}
@@ -183,15 +186,15 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                       className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700/50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-500"
                       aria-label="Move down"
                     >
-                      <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                   </>
                 )}
                 <button onClick={() => handleEditTask(task)} className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700/50 transition-colors" aria-label="Edit task">
-                  <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                 </button>
                 <button onClick={() => onDeleteTask(task.id)} className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-700/50 transition-colors" aria-label="Delete task">
-                  <Trash size={45} />
+                  <Trash size={20} />
                 </button>
               </div>
             </>
@@ -208,7 +211,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
           <h2 className="text-2xl font-bold text-white">Tasks</h2>
           {tasks.length > 0 && (
             <p className="text-slate-400 text-sm mt-0.5">
-              {activeCnt} remaining · {tasks.length - activeCnt} done
+              {activeCnt} remaining - {tasks.length - activeCnt} done
             </p>
           )}
         </div>

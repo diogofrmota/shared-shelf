@@ -12,7 +12,7 @@ The app is intentionally simple on the frontend: React, Babel, Tailwind, Leaflet
 
 The login page is the first screen at `https://shared-shelf.vercel.app/`. It shows the Shared Shelf logo, the tagline "Organize your life, together.", and a centered authentication panel.
 
-Users can click the `Sign In` and `Register` tabs to switch between forms. In `Sign In`, the page shows an `Email or Username` field, a `Password` field, a `Remember me` checkbox, a `Forgot password?` action, and a `Login` button. Submitting a verified account's email or username with the correct password logs the user in and opens the shelf selection page. Checking `Remember me` stores the JWT in `localStorage` for longer-lived access; otherwise the token is stored in `sessionStorage` for the current browser session.
+Users can click the `Sign In` and `Register` tabs to switch between forms. In `Sign In`, the page shows visible labels for `Email or Username` and `Password`, a `Remember me` checkbox, a `Forgot password?` action, and a `Login` button. Submitting a verified account's email or username with the correct password logs the user in and opens the shelf selection page. Checking `Remember me` stores the JWT in `localStorage` for longer-lived access; otherwise the token is stored in `sessionStorage` for the current browser session.
 
 Clicking `Forgot password?` opens a reset-password popup where users enter their email address. If the address belongs to an account, the server creates a one-hour reset token and sends a reset email through Resend when email is configured. The response is intentionally generic so unknown emails are not disclosed.
 
@@ -24,7 +24,7 @@ Login, register, confirmation, and reset errors appear inside the authentication
 
 ### Shelf Selection Page
 
-After login, users land on the shelf selection page titled `Join your shared space`. This page lists the shelves connected to the signed-in account as square shelf tiles with shelf names underneath.
+After login, users land on the shelf selection page titled `Join Your Shared Space`. This page lists the shelves connected to the signed-in account as square shelf tiles with shelf names underneath. When a new user has no shelves yet, an empty state prompts them to create a shelf or join one with a shelf ID and code.
 
 Clicking a shelf tile opens that shelf and loads its shared content. The `Add / Join a Shelf` tile opens a modal with `Create` and `Join` tabs. In `Create`, users enter a shelf name and choose which shared items the shelf should include: `Calendar`, `Tasks`, `Locations`, `Trips`, `Recipes`, and `Watchlist`. Clicking `Create` creates the shelf, adds the user as a member, and opens it. In `Join`, users enter a `Shelf ID` and `Join Code`; clicking `Join` adds the user to that shelf when the code is valid.
 
@@ -48,7 +48,7 @@ The account modal shows the current user's name, username, and email. `Edit Info
 
 ### Shelf Content Views
 
-`Calendar` shows a month grid and agenda. Previous and next arrow buttons change the visible month. `Today` returns to the current month. Clicking a date filters the agenda to that day; clicking the selected day again clears the filter. Clicking an agenda item opens the edit activity modal. The delete icon removes the activity.
+`Calendar` shows a responsive month grid and agenda. Previous and next arrow buttons change the visible month. `Today` returns to the current month. Clicking a date filters the agenda to that day; clicking the selected day again clears the filter. Clicking an agenda item opens the edit activity modal. The delete icon removes the activity.
 
 `Tasks` shows all tasks with filters for `All`, `Active`, and `Completed`. Each task has a completion checkbox, title, optional description, assigned user, and optional due date. Active tasks can be reordered with move buttons or drag and drop. The edit button changes a task into editable title and description fields. The delete button removes the task. Completed tasks are grouped and can be expanded or collapsed in the all view.
 
@@ -62,9 +62,13 @@ The account modal shows the current user's name, username, and email. `Edit Info
 
 The media search modal is used when adding TV shows, movies, or books. It contains a search field, loading and empty states, and result cards. Clicking a result adds it to the current watchlist category with the default status.
 
+### Visual Design
+
+The current UI uses a violet, purple, and pink palette inspired by `assets/ux_ui_color_palette.jpg`, adapted for the app rather than a marketing page. Dark gradient chrome is used for login, shelf selection, and the sticky shelf header, while dense working areas use light cards and readable slate text. Form fields use visible labels, focus rings, and high-contrast surfaces so login, shelf creation/joining, and everyday editing remain readable on mobile and desktop.
+
 ## Design And Architecture
 
-Shared Shelf is designed as a direct app experience rather than a marketing site. The login page uses a compact centered panel so authentication is the only task. The shelf selection page uses large shelf tiles because the main decision is which shared space to enter. The shelf page uses a persistent header so navigation, add actions, settings, account controls, back navigation, logout, and sync state remain visible while users work.
+Shared Shelf is designed as a direct app experience rather than a marketing site. The login page uses a compact centered panel so authentication is the only task. The shelf selection page uses large shelf tiles because the main decision is which shared space to enter, plus a first-use empty state when the account has no shelves. The shelf page uses a persistent high-contrast header so navigation, add actions, settings, account controls, back navigation, logout, and sync state remain visible while users work.
 
 The application uses a CDN-first frontend architecture. `index.html` loads React 18, ReactDOM, Babel Standalone, Tailwind CSS, Leaflet, and Lucide from CDNs, then loads browser-global scripts from `utils/`, `components/`, and `media-tracker.jsx`. Because JSX is transformed in the browser, local frontend edits can be checked with a static server and do not need a bundler or build step.
 

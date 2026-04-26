@@ -21,10 +21,10 @@ const getAvatarTextColor = (backgroundColor) => {
 const FilterButton = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all duration-300 ${
+    className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors duration-200 ${
       isActive
-        ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/30'
-        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:text-white border border-slate-700'
+        ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/20'
+        : 'bg-white text-slate-700 hover:bg-violet-50 hover:text-purple-900 border border-purple-100'
     }`}
   >
     {label}
@@ -43,12 +43,12 @@ const FilterBar = ({ label, children }) => (
 );
 
 const EmptyState = ({ onAddClick }) => (
-  <div className="text-center py-12 sm:py-20">
-    <div className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-slate-800/50 mb-4 sm:mb-6">
+  <div className="rounded-2xl border border-purple-100 bg-white/90 px-6 py-12 text-center shadow-xl shadow-purple-950/5 sm:py-16">
+    <div className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-violet-50 text-purple-700 mb-4 sm:mb-6">
       <Search size={24} />
     </div>
-    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">No items found</h3>
-    <p className="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6">
+    <h3 className="text-lg sm:text-xl font-semibold text-slate-950 mb-2">No items found</h3>
+    <p className="text-sm sm:text-base text-slate-600 mb-4 sm:mb-6">
       Add some items to your list to get started
     </p>
     <button
@@ -73,7 +73,7 @@ const MediaGrid = ({ items, renderItem, emptyComponent }) => (
   </>
 );
 
-const LoadingScreen = ({ label = 'Loading ...' }) => (
+const LoadingScreen = ({ label = 'Loading...' }) => (
   <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
     <div className="text-center">
       <div className="inline-block w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>

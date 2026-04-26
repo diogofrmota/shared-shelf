@@ -74,6 +74,9 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - Build the actual app experience, not a marketing page.
 - Maintain responsive behavior for mobile and desktop.
 - Keep touch targets comfortable and icon-only buttons accessible with labels/titles where appropriate.
+- Preserve the current visual direction unless intentionally redesigning it: a high-contrast violet/pink palette inspired by `assets/ux_ui_color_palette.jpg`, light readable content surfaces, deep gradient app chrome, and clear focus rings.
+- Prefer visible labels for form fields in authentication, joining, settings, and editing flows; placeholders can help but should not be the only cue.
+- Keep body text on light surfaces near slate/black values and reserve white text for dark gradient or primary-action backgrounds.
 - Use existing components and visual conventions before introducing new patterns.
 - Avoid UI text that explains obvious mechanics or implementation details.
 - When adding a new shared item/category, update navigation, add/edit flows, defaults, persistence, and empty states together.
