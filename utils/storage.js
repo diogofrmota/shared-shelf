@@ -4,9 +4,6 @@
 
 const API_BASE = window.API_BASE_URL ?? '';
 
-// Fixed user ID for this household (fallback)
-const USER_ID = 'diogo-monica-shared';
-
 /**
  * Check if user is authenticated
  */
@@ -52,25 +49,11 @@ const logout = () => {
 };
 
 /**
- * Retrieve stored data - tries cloud first, falls back to localStorage
+ * Retrieve stored data from localStorage.
  */
 const getStoredData = async () => {
-  // Try cloud storage first
-  try {
-    const response = await fetch(`${API_BASE}/api/data`, {
-      headers: { 'x-user-id': USER_ID }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
-      return data;
-    }
-  } catch (error) {
-    console.error('Failed to fetch from cloud, falling back to cache:', error);
-  }
-  
-  // Fallback to cached cloud data
+  // Legacy storage is local-only. Current cloud persistence is shelf-scoped
+  // through /api/shelf/:id/data and requires an authenticated shelf member.
   const cached = localStorage.getItem('media-tracker-data-cache');
   if (cached) {
     try { return JSON.parse(cached); } catch (e) {
@@ -113,24 +96,6 @@ const saveData = async (data) => {
     localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
   } catch (error) {
     console.error('Error saving to localStorage:', error);
-  }
-  
-  // Sync to cloud
-  try {
-    const response = await fetch(`${API_BASE}/api/data`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': USER_ID
-      },
-      body: JSON.stringify({ data })
-    });
-    
-    if (!response.ok) {
-      console.warn('Failed to sync with cloud, data saved locally only');
-    }
-  } catch (error) {
-    console.error('Error syncing to cloud:', error);
   }
 };
 

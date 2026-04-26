@@ -1,7 +1,7 @@
-import { sql, jwt, JWT_SECRET, cors, errResponse, ensureUserProfileColumns } from '../../lib/auth-shared.js';
+import { sql, cors, errResponse, ensureUserProfileColumns, verifyJwt } from '../../lib/auth-shared.js';
 
 export default async function handler(req, res) {
-  cors(res);
+  cors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (!['GET', 'PATCH'].includes(req.method)) return res.status(405).json({ error: 'Method not allowed' });
 
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = verifyJwt(token);
     } catch {
       return res.status(401).json({ error: 'Invalid token' });
     }

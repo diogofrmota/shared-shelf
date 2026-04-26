@@ -1,7 +1,7 @@
-import { sql, jwt, bcrypt, JWT_SECRET, JWT_EXPIRY, JWT_EXPIRY_REMEMBER, cors, errResponse, ensureUserProfileColumns } from '../../lib/auth-shared.js';
+import { sql, bcrypt, JWT_EXPIRY, JWT_EXPIRY_REMEMBER, cors, errResponse, ensureUserProfileColumns, signJwt } from '../../lib/auth-shared.js';
 
 export default async function handler(req, res) {
-  cors(res);
+  cors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     const loginValue = `${login}`.trim();
     const result = await sql`
-      SELECT *
+      SELECT id, email, password_hash, display_name, username
       FROM users
       WHERE LOWER(email) = LOWER(${loginValue})
         OR LOWER(COALESCE(username, display_name)) = LOWER(${loginValue})
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+    const token = signJwt({ userId: user.id }, {
       expiresIn: rememberMe ? JWT_EXPIRY_REMEMBER : JWT_EXPIRY
     });
     return res.json({

@@ -161,6 +161,8 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
           <img
             src={item.thumbnail}
             alt={item.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
@@ -260,6 +262,8 @@ const ResultCard = ({ item, category, onAdd }) => (
       <img
         src={item.thumbnail}
         alt={item.title}
+        loading="lazy"
+        decoding="async"
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
     </div>

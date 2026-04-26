@@ -1,5 +1,5 @@
-import { randomUUID } from 'crypto';
-import { jwt, JWT_SECRET, cors, errResponse, sql } from '../../lib/auth-shared.js';
+import { randomBytes, randomUUID } from 'crypto';
+import { cors, errResponse, sql, verifyJwt } from '../../lib/auth-shared.js';
 import { DEFAULT_SHELF_DATA, initializeDatabase, normalizeShelfData, normalizeShelfSections } from '../../lib/db.js';
 
 async function ensureSchema() {
@@ -12,7 +12,7 @@ function getUserIdFromRequest(req) {
 
   try {
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = verifyJwt(token);
     return decoded.userId || null;
   } catch {
     return null;
@@ -52,7 +52,7 @@ async function getShelfSummary(shelfId) {
 }
 
 function generateJoinCode() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
+  return randomBytes(6).toString('base64url').toUpperCase();
 }
 
 async function createJoinCode(shelfId) {
@@ -81,14 +81,14 @@ async function getLatestActiveJoinCode(shelfId) {
 }
 
 export default async function handler(req, res) {
-  cors(res);
+  cors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    await ensureSchema();
-
     const userId = getUserIdFromRequest(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    await ensureSchema();
 
     const segments = getPathSegments(req);
 
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
 
     if (segments.length === 1 && segments[0] === 'join' && req.method === 'POST') {
       const shelfId = req.body?.shelfId?.trim();
-      const joinCode = req.body?.joinCode?.trim();
+      const joinCode = req.body?.joinCode?.trim().toUpperCase();
       if (!shelfId || !joinCode) {
         return res.status(400).json({ error: 'Shelf ID and join code are required' });
       }

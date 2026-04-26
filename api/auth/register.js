@@ -1,12 +1,15 @@
 import { randomUUID } from 'crypto';
-import { sql, jwt, bcrypt, JWT_SECRET, JWT_EXPIRY, cors, errResponse, ensureUserProfileColumns } from '../../lib/auth-shared.js';
+import { sql, bcrypt, JWT_EXPIRY, cors, errResponse, ensureUserProfileColumns, signJwt } from '../../lib/auth-shared.js';
+import { initializeDatabase } from '../../lib/db.js';
 
 export default async function handler(req, res) {
-  cors(res);
+  cors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
+    await initializeDatabase();
+
     const emailValue = `${req.body.email || ''}`.trim();
     const username = `${req.body.username || req.body.name || ''}`.trim();
     const displayName = `${req.body.name || username}`.trim();
@@ -37,7 +40,7 @@ export default async function handler(req, res) {
       RETURNING id, email, display_name, username
     `;
     const user = result.rows[0];
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+    const token = signJwt({ userId: user.id }, { expiresIn: JWT_EXPIRY });
     return res.status(201).json({
       token,
       user: { id: user.id, email: user.email, name: user.display_name, username: user.username }

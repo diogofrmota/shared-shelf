@@ -63,11 +63,36 @@ const DatesLeafletMap = ({ places, focusedId }) => {
   const markersLayerRef = useRef(null);
   const markersRef = useRef(new Map());
   const [mapReady, setMapReady] = useState(false);
+  const [leafletReady, setLeafletReady] = useState(typeof window.L !== 'undefined');
+  const [mapError, setMapError] = useState('');
+
+  useEffect(() => {
+    if (leafletReady) return;
+    let cancelled = false;
+
+    const loadLeaflet = window.loadLeafletAssets || (() => Promise.resolve(window.L));
+    loadLeaflet()
+      .then((L) => {
+        if (cancelled) return;
+        if (L) {
+          setLeafletReady(true);
+        } else {
+          setMapError('Map unavailable');
+        }
+      })
+      .catch((error) => {
+        console.error('Leaflet loading error:', error);
+        if (!cancelled) setMapError('Map unavailable');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [leafletReady]);
 
   // Initialise map once
   useEffect(() => {
-    if (!mapRef.current) return;
-    if (typeof window.L === 'undefined') { console.warn('Leaflet not loaded'); return; }
+    if (!mapRef.current || !leafletReady) return;
 
     const L = window.L;
     if (!mapInstanceRef.current) {
@@ -88,7 +113,7 @@ const DatesLeafletMap = ({ places, focusedId }) => {
         setMapReady(false);
       }
     };
-  }, []);
+  }, [leafletReady]);
 
   // Force resize when the container becomes visible (e.g., after a tab switch)
   useEffect(() => {
@@ -154,7 +179,13 @@ const DatesLeafletMap = ({ places, focusedId }) => {
 
   return (
     <div className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden mb-6" style={{ zIndex: 1 }}>
-      <div ref={mapRef} className="w-full h-[320px] sm:h-[420px] bg-slate-900" style={{ zIndex: 1 }} />
+      <div ref={mapRef} className="w-full h-[320px] sm:h-[420px] bg-slate-900" style={{ zIndex: 1 }}>
+        {!mapReady && (
+          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+            {mapError || 'Loading map...'}
+          </div>
+        )}
+      </div>
       <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-700">© OpenStreetMap contributors</div>
     </div>
   );
@@ -278,7 +309,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
     >
       {place.photo ? (
         <div className="relative w-full h-36 overflow-hidden bg-slate-800">
-          <img src={place.photo} alt={place.name} className="w-full h-full object-cover" />
+          <img src={place.photo} alt={place.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
           <button
             onClick={e => { e.stopPropagation(); onUpdateDate?.(place.id, { photo: null }); }}
             className="absolute top-2 right-2 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"

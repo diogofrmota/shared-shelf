@@ -88,6 +88,8 @@ const UserAvatar = ({ user, size = 32 }) => {
       <img
         src={user.avatar}
         alt={user.name}
+        loading="lazy"
+        decoding="async"
         className="rounded-full object-cover flex-shrink-0"
         style={{ width: size, height: size }}
       />

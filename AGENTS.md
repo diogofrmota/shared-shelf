@@ -51,7 +51,6 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - `api/auth/` - Authentication, account, and password reset routes.
 - `api/shelf/[...path].js` - Consolidated shelf list/create/join/settings/share/data/membership route.
 - `api/search.js`, `api/tvdetails.js`, `api/nominatim.js` - External API proxies.
-- `api/data.js` - Legacy route file; current persistence should use the shelf-scoped catch-all route.
 - `api/setup.js`, `api/health.js` - Database setup and health checks.
 - `lib/db.js` - Database schema initialization and legacy data helpers.
 - `lib/auth-shared.js` - Shared auth helpers, JWT settings, CORS, Resend, profile migration helpers.
@@ -88,7 +87,7 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - Use shared DB/auth helpers instead of duplicating token, CORS, password, or SQL logic.
 - Validate user access to shelves before reading or mutating shelf metadata or shelf data.
 - Owner-only behavior, such as shelf settings updates and share-code regeneration, should check `shelf_members.role`.
-- Treat `api/data.js` as legacy code; prefer shelf-scoped APIs for current persistence behavior.
+- Legacy `/api/data` persistence has been removed; use shelf-scoped APIs for current persistence behavior.
 
 ## Data Model Notes
 
@@ -161,7 +160,7 @@ There are no package scripts or automated tests defined in `package.json` at the
 - `vercel.json` applies `maxDuration: 10` to `api/**/*.js`.
 - Rewrites map `/api/shelf` and `/api/shelf/:path*` into the catch-all shelf route.
 - Required environment variables include `POSTGRES_URL`; `TMDB_API_KEY` is needed for TMDB-backed search/details.
-- Strongly recommended environment variables include `JWT_SECRET` and `NOMINATIM_USER_AGENT`.
+- Required production environment variables include `JWT_SECRET`; `SETUP_TOKEN` is required for production `/api/setup` calls; strongly recommended variables include `NOMINATIM_USER_AGENT`.
 - Optional email variables include `RESEND_API_KEY`, `FROM_EMAIL`, and `APP_URL`.
 - Resend sender domains must be verified before password reset email can be relied on in production.
 

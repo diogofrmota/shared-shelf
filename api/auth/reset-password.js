@@ -1,7 +1,7 @@
-import { sql, jwt, bcrypt, JWT_SECRET, cors, errResponse } from '../../lib/auth-shared.js';
+import { sql, bcrypt, cors, errResponse, verifyJwt } from '../../lib/auth-shared.js';
 
 export default async function handler(req, res) {
-  cors(res);
+  cors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
+      decoded = verifyJwt(token);
     } catch {
       return res.status(400).json({ error: 'Reset link has expired or is invalid.' });
     }

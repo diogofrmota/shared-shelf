@@ -9,6 +9,7 @@ const React = window.React;
 // their own /api routes instead of falling back to a hardcoded URL.
 const API_BASE = window.API_BASE_URL ?? '';
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+const pendingShelfSaves = new Map();
 
 // ============================================================================
 // MEDIA SEARCH FUNCTIONS
@@ -265,38 +266,42 @@ const forgotPassword = async (email) => {
 // SHELF DATA FUNCTIONS
 // ============================================================================
 
-const getShelfData = async (shelfId) => {
+const getCachedShelfData = (shelfId) => {
   try {
-    const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
-    if (!token) return null;
-
-    const res = await fetch(`${API_BASE}/api/shelf/${shelfId}/data`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching shelf data:', error);
-    
-    // Fallback to localStorage
     const cached = localStorage.getItem(`shelf-data-${shelfId}`);
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) {}
-    }
+    return cached ? JSON.parse(cached) : null;
+  } catch (error) {
+    console.error('Error reading cached shelf data:', error);
     return null;
   }
 };
 
-const saveShelfData = async (shelfId, data) => {
-  // Always save locally as backup
+const cacheShelfData = (shelfId, data) => {
   try {
     localStorage.setItem(`shelf-data-${shelfId}`, JSON.stringify(data));
-  } catch (e) {
-    console.error('Error caching shelf data locally:', e);
+  } catch (error) {
+    console.error('Error caching shelf data locally:', error);
   }
+};
 
-  // Try to save to API
+const getShelfData = async (shelfId) => {
+  try {
+    const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
+    if (!token) return getCachedShelfData(shelfId);
+
+    const res = await fetch(`${API_BASE}/api/shelf/${shelfId}/data`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!res.ok) return getCachedShelfData(shelfId);
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching shelf data:', error);
+    return getCachedShelfData(shelfId);
+  }
+};
+
+const persistShelfData = async (shelfId, data) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
     if (!token) return false;
@@ -315,6 +320,29 @@ const saveShelfData = async (shelfId, data) => {
     console.error('Error saving shelf data to API:', error);
     return false;
   }
+};
+
+const saveShelfData = async (shelfId, data, { debounceMs = 700 } = {}) => {
+  cacheShelfData(shelfId, data);
+
+  if (debounceMs <= 0) {
+    return persistShelfData(shelfId, data);
+  }
+
+  const previous = pendingShelfSaves.get(shelfId);
+  if (previous) {
+    clearTimeout(previous.timeoutId);
+    previous.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    const timeoutId = window.setTimeout(async () => {
+      pendingShelfSaves.delete(shelfId);
+      resolve(await persistShelfData(shelfId, data));
+    }, debounceMs);
+
+    pendingShelfSaves.set(shelfId, { timeoutId, resolve });
+  });
 };
 
 const updateAccount = async ({ name, username }) => {
@@ -441,6 +469,7 @@ Object.assign(window, {
   updateAccount,
   forgotPassword,
   resetPassword,
+  getCachedShelfData,
   getShelfData,
   saveShelfData,
   getUserShelves,

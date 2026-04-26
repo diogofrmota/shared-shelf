@@ -37,7 +37,7 @@ const STORAGE_CONFIG = {
 const API_BASE_URL = '';
 
 const FEATURES = {
-  USE_REMOTE_STORAGE: true,
+  USE_REMOTE_STORAGE: false,
   SYNC_ENABLED: true
 };
 
@@ -125,7 +125,6 @@ const API_REQUEST_CONFIG = {
 // AUTHENTICATION
 // ============================================================================
 
-const USER_ID = 'diogo-monica-shared';
 const AUTH_STORAGE_KEY = 'media-tracker-auth';
 
 const isAuthenticated = () => {
@@ -284,24 +283,11 @@ const searchBooks = async (query) => {
 };
 
 const getStoredData = async () => {
-  if (FEATURES.USE_REMOTE_STORAGE) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/data`, {
-        headers: { 'x-user-id': USER_ID }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
-        return data;
-      }
-    } catch (error) {
-      console.error('Failed to fetch from cloud, falling back to cache:', error);
-    }
-    const cached = localStorage.getItem('media-tracker-data-cache');
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) { console.error('Failed to parse cached data:', e); }
-    }
+  const cached = localStorage.getItem('media-tracker-data-cache');
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) { console.error('Failed to parse cached data:', e); }
   }
+
   try {
     const stored = localStorage.getItem(STORAGE_CONFIG.KEY);
     return stored ? JSON.parse(stored) : { ...STORAGE_CONFIG.SCHEMA };
@@ -317,18 +303,6 @@ const saveData = async (data) => {
     localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
   } catch (error) {
     console.error('Error saving to localStorage:', error);
-  }
-  if (FEATURES.USE_REMOTE_STORAGE) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': USER_ID },
-        body: JSON.stringify({ data })
-      });
-      if (!response.ok) console.warn('Failed to sync with cloud, data saved locally only');
-    } catch (error) {
-      console.error('Error syncing to cloud:', error);
-    }
   }
 };
 
@@ -380,7 +354,7 @@ Object.assign(window, {
   STATUS_CONFIG, STATUS_STYLES, STATUS_LABELS, FILTER_CONFIG,
   TAB_CONFIG, DATE_CATEGORIES, DATE_CATEGORY_STYLES,
   MEDIA_TABS, PLACEHOLDER_IMAGE, API_REQUEST_CONFIG,
-  USER_ID, AUTH_STORAGE_KEY,
+  AUTH_STORAGE_KEY,
   isAuthenticated, authenticate, logout,
   transformMovieData, transformAnimeData, transformBookData,
   searchMovies, searchTvShows, searchAnime, searchBooks,

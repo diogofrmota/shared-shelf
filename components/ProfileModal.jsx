@@ -38,6 +38,8 @@ const UserAvatar = ({ user, size = 40 }) => {
         alt={user.name}
         width={size}
         height={size}
+        loading="lazy"
+        decoding="async"
         style={{ width: size, height: size, minWidth: size }}
         className="rounded-full object-cover border-2 border-slate-600 flex-shrink-0"
         onError={() => setImgError(true)}

@@ -20,6 +20,8 @@ const TripCard = ({ trip, onDelete, onEdit }) => (
           src={trip.photo || TRIP_PHOTO_PLACEHOLDER}
           alt={trip.destination}
           onError={(e) => { e.currentTarget.src = TRIP_PHOTO_PLACEHOLDER; }}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover"
         />
       </div>

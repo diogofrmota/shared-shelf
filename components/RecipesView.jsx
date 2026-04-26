@@ -23,6 +23,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
             src={recipe.photo || RECIPE_PHOTO_PLACEHOLDER}
             alt={recipe.name}
             onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
+            decoding="async"
             className="w-full h-full object-cover"
           />
           <button
@@ -108,6 +109,8 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => (
         src={recipe.photo || RECIPE_PHOTO_PLACEHOLDER}
         alt={recipe.name}
         onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
+        loading="lazy"
+        decoding="async"
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
     </div>

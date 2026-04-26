@@ -171,7 +171,7 @@ function LoginScreen({ onLogin }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md min-h-[34rem] bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-slate-800">
-        <img src="assets/logo.png" alt="Shared Shelf" className="h-16 mx-auto mb-2 object-contain" />
+        <img src="assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" className="h-16 mx-auto mb-2 object-contain" />
         <p className="text-slate-400 text-center mb-8 text-base font-medium">
           Organize your life, together.
         </p>

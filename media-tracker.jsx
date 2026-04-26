@@ -1,5 +1,5 @@
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo, useRef } = React;
 
 // API base is set globally in index.html
 const API_BASE = window.API_BASE_URL ?? '';
@@ -136,6 +136,8 @@ function MediaTracker() {
   const [editingTrip, setEditingTrip] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const skipNextSaveRef = useRef(false);
+  const dataEditedAfterLoadRef = useRef(false);
 
   // Online/offline listener
   useEffect(() => {
@@ -193,9 +195,23 @@ function MediaTracker() {
   // Load data when shelf changes
   useEffect(() => {
     if (!currentShelf) return;
+    let cancelled = false;
+
     const loadData = async () => {
       setLoading(true);
+      dataEditedAfterLoadRef.current = false;
+      const cachedShelfData = window.getCachedShelfData?.(currentShelf.id);
+      if (cachedShelfData && !cancelled) {
+        skipNextSaveRef.current = true;
+        setData(normalizeShelfDataForClient(cachedShelfData));
+        setLoading(false);
+      }
+
       const shelfData = await getShelfData(currentShelf.id);
+      if (cancelled) return;
+      if (dataEditedAfterLoadRef.current) return;
+
+      skipNextSaveRef.current = true;
       if (shelfData) {
         setData(normalizeShelfDataForClient(shelfData));
       } else {
@@ -204,13 +220,25 @@ function MediaTracker() {
       setLoading(false);
     };
     loadData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentShelf]);
 
   // Persist data
   useEffect(() => {
     if (!currentShelf || !data) return;
-    saveShelfData(currentShelf.id, data).then(() => setLastSynced(Date.now()));
-  }, [data, currentShelf]);
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+      return;
+    }
+
+    dataEditedAfterLoadRef.current = true;
+    saveShelfData(currentShelf.id, data).then((saved) => {
+      if (saved) setLastSynced(Date.now());
+    });
+  }, [data, currentShelf?.id]);
 
   const handleLogin = (user) => setCurrentUser(user);
   const handleAccountUpdate = (user) => setCurrentUser(user);
@@ -321,6 +349,11 @@ function MediaTracker() {
       });
   };
 
+  const activeMediaItems = useMemo(
+    () => (data?.watchlist || []).filter(item => item.category === activeSubTab),
+    [data?.watchlist, activeSubTab]
+  );
+
   if (authLoading) return <LoadingScreen />;
   if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
   if (!currentShelf) {
@@ -405,7 +438,7 @@ function MediaTracker() {
       return (
         <MediaSectionsView
           activeTab={activeSubTab} // tvshows, movies, books
-          items={(data.watchlist || []).filter(item => item.category === activeSubTab)}
+          items={activeMediaItems}
           onStatusChange={(id, status) => handleStatusChange(activeSubTab, id, status)}
           onAddClick={() => { setAddCategory(activeSubTab); setAddModalOpen(true); }}
           onProgressChange={(id, progress) => handleProgressChange(activeSubTab, id, progress)}
@@ -415,13 +448,9 @@ function MediaTracker() {
     return null;
   };
 
-  const currentView = activeCategory + '/' + activeSubTab;
-  const isMediaTab = ['tvshows', 'movies', 'books'].includes(activeSubTab);
-
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }

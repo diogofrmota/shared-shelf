@@ -6,25 +6,14 @@
   <meta name="description" content="Manage shared shelves for calendar, tasks, locations, trips, recipes, and watchlist">
   <meta name="theme-color" content="#031A6B">
   <title>Shared Shelf - Homepage</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Leaflet CSS for maps -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- Fix Leaflet default icon paths -->
-  <script>
-    // Prevent Leaflet 404s for marker icons
-    (function() {
-      var originalInit = L.Icon.Default.prototype._setIconStyles;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
-    })();
-  </script>
 
   <style>
     :root {
@@ -652,17 +641,14 @@
   <div id="root"></div>
 
   <!-- React and ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 
   <!-- Babel Standalone for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
 
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Leaflet JS for maps -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
 
   <!-- ============================================ -->
   <!-- GLOBAL CONFIGURATION                          -->
@@ -675,6 +661,44 @@
 
     // TMDB API key (set this to your actual key or leave empty if using your backend)
     window.TMDB_API_KEY = '';
+
+    window.loadLeafletAssets = (() => {
+      let loadPromise;
+
+      return () => {
+        if (window.L) return Promise.resolve(window.L);
+        if (loadPromise) return loadPromise;
+
+        loadPromise = new Promise((resolve, reject) => {
+          if (!document.querySelector('link[data-leaflet]')) {
+            const leafletCss = document.createElement('link');
+            leafletCss.rel = 'stylesheet';
+            leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            leafletCss.dataset.leaflet = 'true';
+            document.head.appendChild(leafletCss);
+          }
+
+          const leafletScript = document.createElement('script');
+          leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          leafletScript.async = true;
+          leafletScript.onload = () => {
+            window.L.Icon.Default.mergeOptions({
+              iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+              iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+              shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            });
+            resolve(window.L);
+          };
+          leafletScript.onerror = () => {
+            loadPromise = null;
+            reject(new Error('Failed to load map library'));
+          };
+          document.body.appendChild(leafletScript);
+        });
+
+        return loadPromise;
+      };
+    })();
   </script>
 
   <!-- ============================================ -->
@@ -711,18 +735,28 @@
   <!-- ============================================ -->
   <script type="text/babel" src="./media-tracker.jsx"></script>
 
-  <script type="text/babel">
-    // Wait for all scripts to load and transform before rendering
-    setTimeout(() => {
+  <script>
+    const renderSharedShelf = () => {
       if (typeof MediaTracker === 'undefined') {
+        return false;
+      }
+      const { createRoot } = ReactDOM;
+      const root = createRoot(document.getElementById('root'));
+      root.render(React.createElement(MediaTracker));
+      return true;
+    };
+
+    const waitForApp = (startedAt = performance.now()) => {
+      if (renderSharedShelf()) return;
+      if (performance.now() - startedAt > 3000) {
         console.error('MediaTracker component not found - check that all scripts loaded correctly');
         document.getElementById('root').innerHTML = '<div style="color:white;text-align:center;padding:2rem;">Failed to load application. Please check the console for errors.</div>';
         return;
       }
-      const { createRoot } = ReactDOM;
-      const root = createRoot(document.getElementById('root'));
-      root.render(<MediaTracker />);
-    }, 500); // Increased timeout to give Babel more time to process all files
+      requestAnimationFrame(() => waitForApp(startedAt));
+    };
+
+    waitForApp();
   </script>
 </body>
 </html>

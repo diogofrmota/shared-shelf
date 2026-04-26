@@ -92,7 +92,6 @@ shared-shelf/
 |-- assets/
 |   `-- logo.png                # Login/logo asset
 |-- api/
-|   |-- data.js                 # Legacy route file; current persistence uses shelf/[...path].js
 |   |-- health.js               # Database health check
 |   |-- nominatim.js            # Nominatim proxy for location search
 |   |-- search.js               # TMDB multi-search proxy
@@ -191,7 +190,7 @@ When adding new fields, keep old saved shelf data rendering by adding normalizat
 
 Shelf routes are consolidated through `api/shelf/[...path].js` and the rewrites in `vercel.json` to stay within the Vercel free-plan limit of 12 Serverless Functions per deployment.
 Older databases that still have a `shelves` metadata table are migrated to `shelf_id` by `lib/db.js`; a compatibility view named `shelves` is kept for legacy code paths.
-`api/data.js` remains in the repo as legacy code, but new persistence work should use the shelf-scoped routes.
+Legacy `/api/data` persistence has been removed. Current persistence must use authenticated shelf-scoped routes.
 
 ## Media Status Values
 
@@ -229,7 +228,9 @@ Do not expose secret keys in frontend files. TMDB calls that need a key should g
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `POSTGRES_URL` | Yes | Vercel Postgres/Neon connection used by `@vercel/postgres` |
-| `JWT_SECRET` | Recommended | JWT signing secret; code has a development fallback only |
+| `JWT_SECRET` | Required in production | JWT signing secret. Production requests fail without a non-default value. |
+| `CORS_ORIGINS` | Optional | Comma-separated extra origins allowed to call authenticated APIs. `APP_URL`, the current Vercel URL, and local dev origins are already handled. |
+| `SETUP_TOKEN` | Optional | Required to call `/api/setup` in production. Send it as `X-Setup-Token` or `Authorization: Bearer ...`. |
 | `TMDB_API_KEY` | Required for TMDB search/details | Server-side TMDB API key |
 | `NOMINATIM_USER_AGENT` | Recommended | Identifies the app to Nominatim |
 | `RESEND_API_KEY` | Optional | Enables password reset emails |
