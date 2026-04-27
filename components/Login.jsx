@@ -21,6 +21,7 @@ function LoginScreen({ onLogin, onNavigate }) {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [serverSuccess, setServerSuccess] = useState('');
+  const [linkIssue, setLinkIssue] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleHomeNavigation = (event) => {
@@ -52,10 +53,14 @@ function LoginScreen({ onLogin, onNavigate }) {
             setServerSuccess(result.message || 'Account confirmed. You can now sign in.');
             window.history.replaceState({}, '', window.location.pathname);
           } else {
+            setLinkIssue('confirm');
             setServerError(result.message || 'Confirmation link has expired or is invalid.');
           }
         })
-        .catch(() => setServerError('Something went wrong confirming your account. Please try again.'))
+        .catch(() => {
+          setLinkIssue('confirm');
+          setServerError('Something went wrong confirming your account. Please try again.');
+        })
         .finally(() => setLoading(false));
       return;
     }
@@ -170,6 +175,7 @@ function LoginScreen({ onLogin, onNavigate }) {
     setLoading(true);
     setServerError('');
     setServerSuccess('');
+    setLinkIssue(null);
     try {
       const response = await forgotPassword(forgotEmail);
       if (response.success) {
@@ -202,11 +208,14 @@ function LoginScreen({ onLogin, onNavigate }) {
         setServerSuccess(result.message);
         window.history.replaceState({}, '', window.location.pathname);
         setResetToken(null);
+        setLinkIssue(null);
         setTimeout(() => setMode('signin'), 2000);
       } else {
+        setLinkIssue('reset');
         setServerError(result.message || 'Failed to reset password. The link may have expired.');
       }
     } catch {
+      setLinkIssue('reset');
       setServerError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -217,6 +226,7 @@ function LoginScreen({ onLogin, onNavigate }) {
     e.preventDefault();
     setServerError('');
     setServerSuccess('');
+    setLinkIssue(null);
     setLoading(true);
 
     const allErrors = {};
@@ -303,6 +313,25 @@ function LoginScreen({ onLogin, onNavigate }) {
             </div>
             {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
             {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
+            {linkIssue === 'reset' && (
+              <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#534340]">
+                <p>This reset link may have expired or already been used.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.history.replaceState({}, '', window.location.pathname);
+                    setMode('signin');
+                    setResetToken(null);
+                    setForgotOpen(true);
+                    setServerError('');
+                    setLinkIssue(null);
+                  }}
+                  className="mt-2 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+                >
+                  Request a new link
+                </button>
+              </div>
+            )}
             <button
               type="submit"
               disabled={loading}
@@ -312,7 +341,7 @@ function LoginScreen({ onLogin, onNavigate }) {
             </button>
             <button
               type="button"
-              onClick={() => { setMode('signin'); setServerError(''); setServerSuccess(''); }}
+              onClick={() => { setMode('signin'); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
               className="w-full text-sm font-medium text-[#534340] transition hover:text-[#E63B2E]"
             >
               Back to sign in
@@ -326,14 +355,14 @@ function LoginScreen({ onLogin, onNavigate }) {
             <div className="mb-6 flex gap-1.5 rounded-xl bg-[#FBF2ED] p-1.5">
               <button
                 type="button"
-                onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
+                onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
                 className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signin' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
-                onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); }}
+                onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
                 className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signup' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
               >
                 Register
@@ -432,6 +461,18 @@ function LoginScreen({ onLogin, onNavigate }) {
 
               {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
               {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
+              {linkIssue === 'confirm' && (
+                <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#534340]">
+                  <p>This confirmation link may have expired or already been used.</p>
+                  <button
+                    type="button"
+                    onClick={() => { setMode('signup'); setServerError(''); setLinkIssue(null); }}
+                    className="mt-2 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+                  >
+                    Create a fresh account
+                  </button>
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -452,7 +493,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               {mode === 'signin' ? 'New to Shared Shelf?' : 'Already have an account?'}
               <button
                 type="button"
-                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
+                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
                 className="ml-1 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
               >
                 {mode === 'signin' ? 'Register here' : 'Sign in'}

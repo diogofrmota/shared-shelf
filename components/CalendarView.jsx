@@ -179,7 +179,7 @@ const formatRecurrence = (event) => {
   return `${RECURRENCE_LABELS[recurrence.frequency]}${recurrence.until ? ` until ${formatDateDisplay(recurrence.until)}` : ''}`;
 };
 
-const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
+const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -352,9 +352,25 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
         </div>
 
         {agendaEvents.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#534340]">
-            No activities {selectedDate ? 'for this day' : 'for this month'}.
-          </div>
+          events.length === 0 ? (
+            <EmptyState
+              title="No activities yet"
+              message="Add a plan, reminder, or shared date."
+              actionLabel="Add activity"
+              icon={CalendarIcon}
+              compact
+              onAddClick={onAddClick}
+            />
+          ) : (
+            <EmptyState
+              title={selectedDate ? 'No activities this day' : 'No activities this month'}
+              message="Try another date or add something new."
+              icon={CalendarIcon}
+              compact
+              onAddClick={onAddClick}
+              actionLabel="Add activity"
+            />
+          )
         ) : (
           <ul className="space-y-3">
             {agendaEvents.map(ev => (
@@ -376,9 +392,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         const sourceEvent = ev.sourceEvent || ev;
-                        const isRecurring = Boolean(getEventRecurrence(sourceEvent));
-                        if (isRecurring && !window.confirm('Delete this recurring activity and all of its occurrences?')) return;
-                        onDeleteEvent(sourceEvent.id);
+                        onDeleteEvent(sourceEvent.id, sourceEvent);
                       }}
                       className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       aria-label="Delete event"

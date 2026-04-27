@@ -29,7 +29,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
           />
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 rounded-full bg-white/95 p-2 text-[#410001] shadow-md backdrop-blur transition hover:bg-white"
+            className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-[#410001] shadow-md backdrop-blur transition hover:bg-white"
             aria-label="Close"
           >
             <Close size={18} />
@@ -39,7 +39,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
         <div className="space-y-5 p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h2 className="flex items-center gap-2 text-2xl font-extrabold text-[#410001]">
+              <h2 className="flex items-start gap-2 break-words text-2xl font-extrabold text-[#410001]">
                 <ChefHat size={22} className="shrink-0 text-[#E63B2E]" />
                 <span>{recipe.name}</span>
               </h2>
@@ -50,7 +50,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
             {onEdit && (
               <button
                 onClick={() => { onEdit(recipe); onClose(); }}
-                className="shrink-0 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+                className="min-h-[44px] shrink-0 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
               >
                 ✎ Edit
               </button>
@@ -62,7 +62,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
               href={safeLink}
               target="_blank"
               rel="noreferrer noopener"
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+              className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
             >
               <LinkIcon size={14} />
               View source
@@ -119,15 +119,15 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
         <div className="min-w-0 flex-1">
           <h4 className="flex items-center gap-2 text-base font-bold text-[#410001]">
             <ChefHat size={16} className="shrink-0 text-[#E63B2E]" />
-            <span className="truncate">{recipe.name}</span>
+            <span className="line-clamp-2 min-w-0" title={recipe.name}>{recipe.name}</span>
           </h4>
           {recipe.prepTime && <p className="mt-1 text-sm font-medium text-[#534340]">⏱ {recipe.prepTime}</p>}
         </div>
-        <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
+        <div className="flex items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
           {onEdit && (
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(recipe); }}
-              className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
               aria-label="Edit recipe"
             >
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -135,7 +135,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(recipe.id); }}
-            className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
             aria-label="Delete recipe"
           >
             <Trash size={14} />
@@ -149,7 +149,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
           target="_blank"
           rel="noreferrer noopener"
           onClick={e => e.stopPropagation()}
-          className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]"
+          className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]"
         >
           <LinkIcon size={13} />
           Source
@@ -175,14 +175,14 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
 
   if (!isOpen) return null;
 
-  const fieldCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+  const fieldCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
       <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="flex items-center justify-between border-b border-[#E1D8D4] p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit recipe</h2>
-          <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit recipe">
             <Close size={22} />
           </button>
         </div>
@@ -213,8 +213,8 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
             <textarea value={formData.instructions || ''} className={fieldCls} rows="4" onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
           </div>
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
-            <button type="submit" className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save changes</button>
+            <button type="button" onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
+            <button type="submit" className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save changes</button>
           </div>
         </form>
       </div>
@@ -222,7 +222,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   );
 };
 
-const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe }) => {
+const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
   const [query, setQuery] = useState('');
   const [detailRecipe, setDetailRecipe] = useState(null);
 
@@ -256,9 +256,22 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe }) => {
       </div>
 
       {sorted.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-12 text-center text-sm text-[#534340]">
-          {query ? 'No recipes match your search.' : 'No recipes yet. Add your first one above.'}
-        </div>
+        query ? (
+          <EmptyState
+            title="No recipes match"
+            message="Try another name or ingredient."
+            icon={ChefHat}
+            compact
+          />
+        ) : (
+          <EmptyState
+            title="No recipes yet"
+            message="Save a shared favorite or something new to cook."
+            actionLabel="Add recipe"
+            icon={ChefHat}
+            onAddClick={onAddClick}
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sorted.map(recipe => (

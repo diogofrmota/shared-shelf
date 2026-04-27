@@ -68,11 +68,15 @@ const readAppRoute = (pathname = window.location.pathname) => {
     return { type: 'bug-report', path: '/report-a-bug' };
   }
 
-  return { type: 'home', path: '/' };
+  if (path === '/' || path === '/index.html') {
+    return { type: 'home', path: '/' };
+  }
+
+  return { type: 'not-found', path };
 };
 
-const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report']);
-const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report']);
+const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report', 'not-found']);
+const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report', 'not-found']);
 
 const asArray = (value) => Array.isArray(value) ? value : [];
 
@@ -282,6 +286,7 @@ function MediaTracker() {
   const [authLoading, setAuthLoading] = useState(true);
   const [appRoute, setAppRoute] = useState(() => readAppRoute());
   const [routeLoading, setRouteLoading] = useState(false);
+  const [accessIssue, setAccessIssue] = useState(null);
 
   // Replace single activeTab with category + sub-tab
   const [activeCategory, setActiveCategory] = useState('plan');
@@ -304,10 +309,59 @@ function MediaTracker() {
   const [editingTrip, setEditingTrip] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
+  const initialRouteRef = useRef(readAppRoute());
+  const directShelfHistorySeededRef = useRef(false);
+  const currentUrlRef = useRef(`${window.location.pathname}${window.location.search}`);
+  const appRouteRef = useRef(appRoute);
+  const hasOpenShelfDraftRef = useRef(false);
 
-  const navigateTo = (target, { replace = false } = {}) => {
+  const requestConfirmation = (options, onConfirm) => {
+    setConfirmation({
+      ...options,
+      onConfirm: () => {
+        setConfirmation(null);
+        onConfirm();
+      }
+    });
+  };
+
+  const getItemLabel = (item, fallback) => {
+    const rawLabel = item?.title || item?.name || item?.destination || fallback;
+    return rawLabel ? `"${rawLabel}"` : fallback;
+  };
+
+  const closeShelfOverlays = () => {
+    setGlobalSearchOpen(false);
+    setAddModalOpen(false);
+    setAddCategory(null);
+    setGlobalAddOpen(false);
+    setProfileModalOpen(false);
+    setSettingsModalOpen(false);
+    setAccountModalOpen(false);
+    setEditRecipeModalOpen(false);
+    setEditingRecipe(null);
+    setEditTripModalOpen(false);
+    setEditingTrip(null);
+    setEditEventModalOpen(false);
+    setEditingEvent(null);
+    setConfirmation(null);
+  };
+
+  const shouldWarnBeforeRouteChange = (nextRoute) => (
+    hasOpenShelfDraftRef.current
+    && appRouteRef.current.type === 'shelf'
+    && (nextRoute.type !== 'shelf' || nextRoute.shelfId !== appRouteRef.current.shelfId)
+  );
+
+  const confirmRouteChange = (nextRoute) => {
+    if (!shouldWarnBeforeRouteChange(nextRoute)) return true;
+    return window.confirm('You have an open form or dialog in this shelf. Leave this page and discard anything not saved yet?');
+  };
+
+  const navigateTo = (target, { replace = false, skipPrompt = false } = {}) => {
     let nextPath = '/';
     let nextSearch = '';
     try {
@@ -321,12 +375,21 @@ function MediaTracker() {
     const nextRoute = readAppRoute(nextPath);
     const nextUrl = `${nextRoute.path}${nextSearch}`;
 
-    if (window.location.pathname !== nextRoute.path || window.location.search !== nextSearch) {
-      const method = replace ? 'replaceState' : 'pushState';
-      window.history[method]({}, '', nextUrl);
+    if (!skipPrompt && !confirmRouteChange(nextRoute)) {
+      return false;
     }
 
+    if (window.location.pathname !== nextRoute.path || window.location.search !== nextSearch) {
+      const method = replace ? 'replaceState' : 'pushState';
+      window.history[method]({ appRoutePath: nextRoute.path }, '', nextUrl);
+    }
+
+    if (nextRoute.type !== 'shelf' || nextRoute.shelfId !== appRoute.shelfId) {
+      closeShelfOverlays();
+    }
     setAppRoute(nextRoute);
+    currentUrlRef.current = nextUrl;
+    return true;
   };
 
   // Online/offline listener
@@ -342,7 +405,19 @@ function MediaTracker() {
   }, []);
 
   useEffect(() => {
-    const handlePopState = () => setAppRoute(readAppRoute());
+    const handlePopState = () => {
+      const nextRoute = readAppRoute();
+      const nextUrl = `${window.location.pathname}${window.location.search}`;
+      if (!confirmRouteChange(nextRoute)) {
+        window.history.pushState({ appRoutePath: appRouteRef.current.path }, '', currentUrlRef.current);
+        return;
+      }
+      if (nextRoute.type !== 'shelf' || nextRoute.shelfId !== appRouteRef.current.shelfId) {
+        closeShelfOverlays();
+      }
+      setAppRoute(nextRoute);
+      currentUrlRef.current = nextUrl;
+    };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
@@ -351,7 +426,52 @@ function MediaTracker() {
     if (window.location.pathname !== appRoute.path && !window.location.search) {
       window.history.replaceState({}, '', appRoute.path);
     }
+    setAccessIssue(null);
   }, [appRoute.path]);
+
+  useEffect(() => {
+    appRouteRef.current = appRoute;
+    currentUrlRef.current = `${window.location.pathname}${window.location.search}`;
+  }, [appRoute]);
+
+  useEffect(() => {
+    hasOpenShelfDraftRef.current = Boolean(
+      currentShelf && (
+        addModalOpen
+        || editRecipeModalOpen
+        || editTripModalOpen
+        || editEventModalOpen
+        || settingsModalOpen
+        || profileModalOpen
+        || accountModalOpen
+        || globalAddOpen
+        || globalSearchOpen
+        || confirmation
+      )
+    );
+  }, [
+    currentShelf,
+    addModalOpen,
+    editRecipeModalOpen,
+    editTripModalOpen,
+    editEventModalOpen,
+    settingsModalOpen,
+    profileModalOpen,
+    accountModalOpen,
+    globalAddOpen,
+    globalSearchOpen,
+    confirmation
+  ]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!hasOpenShelfDraftRef.current) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // On mount, try to restore session
   useEffect(() => {
@@ -382,7 +502,11 @@ function MediaTracker() {
         setData(null);
       }
       if (!PUBLIC_ROUTE_TYPES.has(appRoute.type)) {
-        navigateTo('/', { replace: true });
+        setAccessIssue({
+          type: 'unauthorized',
+          title: 'Sign in to keep going',
+          message: 'This part of Shared Shelf is private. Sign in first, then you can open your shelves safely.'
+        });
       }
       return;
     }
@@ -396,6 +520,18 @@ function MediaTracker() {
       return;
     }
 
+    if (
+      appRoute.type === 'shelf'
+      && initialRouteRef.current.type === 'shelf'
+      && !directShelfHistorySeededRef.current
+    ) {
+      directShelfHistorySeededRef.current = true;
+      const currentUrl = `${appRoute.path}${window.location.search || ''}`;
+      window.history.replaceState({ appRoutePath: '/shelf-selection/' }, '', '/shelf-selection/');
+      window.history.pushState({ appRoutePath: appRoute.path }, '', currentUrl);
+      currentUrlRef.current = currentUrl;
+    }
+
     if (STATIC_PUBLIC_ROUTE_TYPES.has(appRoute.type)) {
       setRouteLoading(false);
       return;
@@ -407,6 +543,7 @@ function MediaTracker() {
         setCurrentShelf(null);
         setData(null);
       }
+      closeShelfOverlays();
       return;
     }
 
@@ -427,11 +564,23 @@ function MediaTracker() {
           } else {
             setCurrentShelf(null);
             setData(null);
-            navigateTo('/shelf-selection/', { replace: true });
+            setAccessIssue({
+              type: 'forbidden',
+              title: 'You do not have access to this shelf',
+              message: 'The shelf may have been removed, or your account is not a member of it anymore.'
+            });
           }
         })
         .catch(() => {
-          if (!cancelled) navigateTo('/shelf-selection/', { replace: true });
+          if (!cancelled) {
+            setCurrentShelf(null);
+            setData(null);
+            setAccessIssue({
+              type: 'unrecoverable',
+              title: 'We could not check that shelf',
+              message: 'Shared Shelf could not confirm your access right now. Try again from shelf selection.'
+            });
+          }
         })
         .finally(() => {
           if (!cancelled) setRouteLoading(false);
@@ -444,6 +593,10 @@ function MediaTracker() {
   }, [authLoading, currentUser?.id, appRoute.type, appRoute.shelfId, currentShelf?.id]);
 
   useEffect(() => {
+    if (appRoute.type === 'not-found') {
+      document.title = 'Shared Shelf - Page not found';
+      return;
+    }
     if (appRoute.type === 'privacy') {
       document.title = 'Shared Shelf - Privacy Policy';
       return;
@@ -539,9 +692,8 @@ function MediaTracker() {
     setCurrentUser(null);
     setCurrentShelf(null);
     setData(null);
-    setSettingsModalOpen(false);
-    setAccountModalOpen(false);
-    navigateTo('/', { replace: true });
+    closeShelfOverlays();
+    navigateTo('/', { replace: true, skipPrompt: true });
   };
   const handleShelfSelect = (shelf) => {
     setCurrentShelf(shelf);
@@ -549,11 +701,11 @@ function MediaTracker() {
     navigateTo(`/shelf/${encodeURIComponent(shelf.id)}/`);
   };
   const handleBackToShelves = () => {
+    if (!confirmRouteChange(readAppRoute('/shelf-selection/'))) return;
     setCurrentShelf(null);
     setData(null);
-    setSettingsModalOpen(false);
-    setAccountModalOpen(false);
-    navigateTo('/shelf-selection/');
+    closeShelfOverlays();
+    navigateTo('/shelf-selection/', { skipPrompt: true });
   };
 
   const handleCategoryChange = (category, subTab) => {
@@ -569,7 +721,15 @@ function MediaTracker() {
   };
   const handleStatusChange = (mediaType, id, newStatus) => {
     if (newStatus === 'remove') {
-      setData(prev => ({ ...prev, watchlist: (prev.watchlist || []).filter(i => !(i.category === mediaType && i.id === id)) }));
+      const item = (data?.watchlist || []).find(i => i.category === mediaType && i.id === id);
+      const labelByType = { tvshows: 'TV show', movies: 'movie', books: 'book' };
+      requestConfirmation({
+        title: `Remove ${labelByType[mediaType] || 'item'}?`,
+        message: `${getItemLabel(item, `this ${labelByType[mediaType] || 'item'}`)} will be removed from the shared watchlist.`,
+        confirmLabel: 'Remove'
+      }, () => {
+        setData(prev => ({ ...prev, watchlist: (prev.watchlist || []).filter(i => !(i.category === mediaType && i.id === id)) }));
+      });
     } else {
       setData(prev => ({
         ...prev,
@@ -594,27 +754,58 @@ function MediaTracker() {
   const handleAddEvent = (event) => {
     setData(prev => ({ ...prev, calendarEvents: [...(prev.calendarEvents || []), event] }));
   };
-  const handleDeleteEvent = (id) => {
-    setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.filter(e => e.id !== id) }));
+  const handleDeleteEvent = (id, event = null) => {
+    const sourceEvent = event || (data?.calendarEvents || []).find(e => e.id === id);
+    const isRecurring = Boolean(sourceEvent?.recurrence);
+    requestConfirmation({
+      title: isRecurring ? 'Delete recurring activity?' : 'Delete activity?',
+      message: isRecurring
+        ? `${getItemLabel(sourceEvent, 'This activity')} and all of its occurrences will be deleted from this shelf.`
+        : `${getItemLabel(sourceEvent, 'This activity')} will be deleted from this shelf.`,
+      confirmLabel: 'Delete'
+    }, () => {
+      setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.filter(e => e.id !== id) }));
+    });
   };
   const handleEditEvent = (event) => { setEditingEvent(event); setEditEventModalOpen(true); };
   const handleSaveEvent = (updatedEvent) => {
     setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.map(e => e.id === updatedEvent.id ? updatedEvent : e) }));
   };
   const handleAddTrip = (trip) => setData(prev => ({ ...prev, trips: [...(prev.trips || []), trip] }));
-  const handleDeleteTrip = (id) => setData(prev => ({ ...prev, trips: prev.trips.filter(t => t.id !== id) }));
+  const handleDeleteTrip = (id) => {
+    const trip = (data?.trips || []).find(t => t.id === id);
+    requestConfirmation({
+      title: 'Delete trip?',
+      message: `${getItemLabel(trip, 'This trip')} will be deleted from this shelf.`,
+      confirmLabel: 'Delete'
+    }, () => setData(prev => ({ ...prev, trips: prev.trips.filter(t => t.id !== id) })));
+  };
   const handleEditTrip = (trip) => { setEditingTrip(trip); setEditTripModalOpen(true); };
   const handleSaveTrip = (updatedTrip) => {
     setData(prev => ({ ...prev, trips: prev.trips.map(t => t.id === updatedTrip.id ? updatedTrip : t) }));
   };
   const handleAddRecipe = (recipe) => setData(prev => ({ ...prev, recipes: [...(prev.recipes || []), recipe] }));
-  const handleDeleteRecipe = (id) => setData(prev => ({ ...prev, recipes: prev.recipes.filter(r => r.id !== id) }));
+  const handleDeleteRecipe = (id) => {
+    const recipe = (data?.recipes || []).find(r => r.id === id);
+    requestConfirmation({
+      title: 'Delete recipe?',
+      message: `${getItemLabel(recipe, 'This recipe')} will be deleted from this shelf.`,
+      confirmLabel: 'Delete'
+    }, () => setData(prev => ({ ...prev, recipes: prev.recipes.filter(r => r.id !== id) })));
+  };
   const handleEditRecipe = (recipe) => { setEditingRecipe(recipe); setEditRecipeModalOpen(true); };
   const handleSaveRecipe = (updatedRecipe) => {
     setData(prev => ({ ...prev, recipes: prev.recipes.map(r => r.id === updatedRecipe.id ? updatedRecipe : r) }));
   };
   const handleAddDate = (place) => setData(prev => ({ ...prev, locations: [...(prev.locations || []), place] }));
-  const handleDeleteDate = (id) => setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) }));
+  const handleDeleteDate = (id) => {
+    const place = (data?.locations || []).find(p => p.id === id);
+    requestConfirmation({
+      title: 'Delete location?',
+      message: `${getItemLabel(place, 'This location')} will be deleted from this shelf.`,
+      confirmLabel: 'Delete'
+    }, () => setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) })));
+  };
   const handleToggleFavouriteDate = (id) => {
     setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, isFavourite: !p.isFavourite } : p) }));
   };
@@ -652,7 +843,14 @@ function MediaTracker() {
       })
     }));
   };
-  const handleDeleteTask = (id) => setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) }));
+  const handleDeleteTask = (id) => {
+    const task = (data?.tasks || []).find(t => t.id === id);
+    requestConfirmation({
+      title: 'Delete task?',
+      message: `${getItemLabel(task, 'This task')} will be deleted from this shelf.`,
+      confirmLabel: 'Delete'
+    }, () => setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) })));
+  };
   const handleUpdateTask = (taskId, updatesOrTitle, newDescription) => {
     setData(prev => ({
       ...prev,
@@ -729,11 +927,28 @@ function MediaTracker() {
   };
 
   const activeMediaItems = useMemo(
-    () => (data?.watchlist || []).filter(item => item.category === activeSubTab),
+    () => activeSubTab
+      ? (data?.watchlist || []).filter(item => item.category === activeSubTab)
+      : (data?.watchlist || []),
     [data?.watchlist, activeSubTab]
   );
 
   if (authLoading) return <LoadingScreen label="Loading..." />;
+
+  if (appRoute.type === 'not-found') {
+    return (
+      <FailureScreen
+        eyebrow="404"
+        title="This page is not on the shelf"
+        message="The link may be mistyped, moved, or no longer available. Head back to a known place and keep planning from there."
+        primaryLabel={currentUser ? 'Go to shelves' : 'Go home'}
+        primaryPath={currentUser ? '/shelf-selection/' : '/'}
+        secondaryLabel="Report a bug"
+        secondaryPath="/report-a-bug"
+        onNavigate={navigateTo}
+      />
+    );
+  }
 
   if (appRoute.type === 'privacy') {
     return <PrivacyPolicyPage onNavigate={navigateTo} currentUser={currentUser} />;
@@ -746,6 +961,20 @@ function MediaTracker() {
   }
 
   if (!currentUser) {
+    if (accessIssue?.type === 'unauthorized') {
+      return (
+        <FailureScreen
+          eyebrow="Private page"
+          title={accessIssue.title}
+          message={accessIssue.message}
+          primaryLabel="Sign in"
+          primaryPath="/login"
+          secondaryLabel="Go home"
+          secondaryPath="/"
+          onNavigate={navigateTo}
+        />
+      );
+    }
     if (appRoute.type === 'login') {
       return <LoginScreen onLogin={handleLogin} onNavigate={navigateTo} />;
     }
@@ -758,6 +987,20 @@ function MediaTracker() {
   }
 
   if (routeLoading) return <LoadingScreen label="Loading..." />;
+  if (accessIssue) {
+    return (
+      <FailureScreen
+        eyebrow={accessIssue.type === 'forbidden' ? 'Access denied' : 'App error'}
+        title={accessIssue.title || 'We could not open this shelf'}
+        message={accessIssue.message || 'Shared Shelf could not finish this request. Try again from a safe place.'}
+        primaryLabel="Go to shelves"
+        primaryPath="/shelf-selection/"
+        secondaryLabel="Report a bug"
+        secondaryPath="/report-a-bug"
+        onNavigate={navigateTo}
+      />
+    );
+  }
   if (!currentShelf) {
     return (
       <ShelfSelector
@@ -766,10 +1009,7 @@ function MediaTracker() {
         token={getAuthToken()}
         onSelectShelf={handleShelfSelect}
         onUpdateUser={handleAccountUpdate}
-        onBackToLogin={() => {
-          clearAuthToken();
-          setCurrentUser(null);
-        }}
+        onBackToLogin={handleLogout}
       />
     );
   }
@@ -920,6 +1160,16 @@ function MediaTracker() {
       />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
       <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />
+      <ConfirmationDialog
+        isOpen={Boolean(confirmation)}
+        title={confirmation?.title || 'Are you sure?'}
+        message={confirmation?.message || 'This action cannot be undone.'}
+        confirmLabel={confirmation?.confirmLabel || 'Confirm'}
+        cancelLabel={confirmation?.cancelLabel || 'Cancel'}
+        tone={confirmation?.tone || 'danger'}
+        onConfirm={confirmation?.onConfirm}
+        onCancel={() => setConfirmation(null)}
+      />
     </div>
   );
 }

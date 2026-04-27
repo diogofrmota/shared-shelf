@@ -41,7 +41,8 @@ const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
           <h2 className="text-lg font-extrabold text-[#410001]">What are you adding?</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            aria-label="Close add menu"
           >
             <Close size={20} />
           </button>
@@ -51,7 +52,7 @@ const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
             <button
               key={id}
               onClick={() => onSelect(id)}
-              className="group flex flex-col items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:bg-[#FFF8F5] hover:shadow-md"
+              className="group flex min-h-[96px] flex-col items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:bg-[#FFF8F5] hover:shadow-md"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
                 <Icon size={20} />
@@ -88,7 +89,7 @@ const FormField = ({ label, required, children }) => (
   </div>
 );
 
-const inputCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const selectCls = inputCls;
 
 const createTripItemId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -237,7 +238,7 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
 
   return (
     <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-      <label className="flex items-center gap-2 text-sm font-bold text-[#410001]">
+      <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#410001]">
         <input
           type="checkbox"
           checked={isRecurring}
@@ -286,7 +287,7 @@ const TripListSection = ({ title, actionLabel, rows, emptyRow, children, onChang
         <button
           type="button"
           onClick={() => onChange([...visibleRows, emptyRow()])}
-          className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#410001] transition hover:border-[#FFB4A9] hover:text-[#E63B2E]"
+          className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#410001] transition hover:border-[#FFB4A9] hover:text-[#E63B2E]"
         >
           {actionLabel}
         </button>
@@ -298,7 +299,7 @@ const TripListSection = ({ title, actionLabel, rows, emptyRow, children, onChang
             <button
               type="button"
               onClick={() => removeRow(row.id)}
-              className="mt-2 text-xs font-bold text-[#857370] transition hover:text-[#C1121F]"
+              className="mt-2 min-h-[44px] rounded-lg px-2 text-xs font-bold text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
             >
               Remove {index + 1}
             </button>
@@ -371,7 +372,7 @@ const TripPlanningFields = ({ formData, setFormData }) => (
       onChange={(packingList) => setFormData({ ...formData, packingList })}
     >
       {(row, updateRow) => (
-        <div className="flex items-center gap-2">
+        <div className="flex min-h-[44px] items-center gap-2">
           <input
             type="checkbox"
             checked={Boolean(row.packed)}
@@ -470,7 +471,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
       <div className={`max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30 ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'}`}>
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">{getModalTitle()}</h2>
-          <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close add modal">
             <Close size={22} />
           </button>
         </div>
@@ -485,13 +486,13 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                 <textarea rows="3" placeholder="Optional details…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </FormField>
               <FormField label="Assign to">
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {(profile?.users || [{ id: 'user-1', name: 'User 1', color: '#E63B2E' }, { id: 'user-2', name: 'User 2', color: '#8C4F45' }]).map(u => (
                     <button
                       key={u.id}
                       type="button"
                       onClick={() => setFormData({ ...formData, assignedTo: formData.assignedTo === u.id ? null : u.id })}
-                      className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition ${
+                      className={`flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition ${
                         formData.assignedTo === u.id
                           ? 'border-transparent text-white'
                           : 'border-[#E1D8D4] bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
@@ -501,7 +502,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: u.color }}>
                         {u.name.charAt(0)}
                       </span>
-                      {u.name}
+                      <span className="truncate" title={u.name}>{u.name}</span>
                     </button>
                   ))}
                 </div>
@@ -543,7 +544,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                 <div className="flex gap-2">
                   {['past', 'next'].map(type => (
                     <button key={type} type="button" onClick={() => setFormData({ ...formData, tripType: type })}
-                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition ${
+                      className={`min-h-[44px] flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition ${
                         (formData.tripType || 'next') === type
                           ? 'border-[#E63B2E] bg-[#E63B2E] text-white'
                           : 'border-[#E1D8D4] bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
@@ -616,7 +617,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                 <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
               <FormField label="Favourite">
-                <label className="flex items-center gap-2 pt-1 text-sm font-medium text-[#534340]">
+                <label className="flex min-h-[44px] items-center gap-2 pt-1 text-sm font-medium text-[#534340]">
                   <input type="checkbox" onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
                   Mark as favourite
                 </label>
@@ -624,7 +625,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             </>
           )}
 
-          <button type="submit" className="mt-2 w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             {getModalTitle()}
           </button>
         </form>
@@ -672,7 +673,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
       <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit activity</h2>
-          <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit activity">
             <Close size={22} />
           </button>
         </div>
@@ -698,7 +699,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
             <textarea rows="3" className={inputCls} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
           </FormField>
 
-          <button type="submit" className="mt-2 w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             Save changes
           </button>
         </form>
@@ -742,7 +743,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
       <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit recipe</h2>
-          <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit recipe">
             <Close size={22} />
           </button>
         </div>
@@ -765,7 +766,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           <FormField label="Instructions">
             <textarea rows="5" className={inputCls} value={formData.instructions} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
           </FormField>
-          <button type="submit" className="mt-2 w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             Save changes
           </button>
         </form>
@@ -814,7 +815,7 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit trip</h2>
-          <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit trip">
             <Close size={22} />
           </button>
         </div>
@@ -830,7 +831,7 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
             <div className="flex gap-2">
               {['past', 'next'].map(type => (
                 <button key={type} type="button" onClick={() => setFormData({ ...formData, tripType: type })}
-                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition ${
+                  className={`min-h-[44px] flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition ${
                     formData.tripType === type
                       ? 'border-[#E63B2E] bg-[#E63B2E] text-white'
                       : 'border-[#E1D8D4] bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
@@ -846,7 +847,7 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
           <FormField label="Accommodation URL">
             <input type="url" className={inputCls} value={formData.accommodation} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
           </FormField>
-          <button type="submit" className="mt-2 w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             Save changes
           </button>
         </form>

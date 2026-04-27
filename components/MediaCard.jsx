@@ -49,7 +49,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
     onClose();
   };
 
-  const selectCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
+  const selectCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
@@ -61,9 +61,9 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
           <div className="mb-4 flex items-center justify-between">
             <div className="mr-3 min-w-0 flex-1">
               <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
-              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]">{item.title}</h3>
+              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]" title={item.title}>{item.title}</h3>
             </div>
-            <button onClick={onClose} className="shrink-0 rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
               <Close size={20} />
             </button>
           </div>
@@ -119,7 +119,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
 
               <button
                 onClick={handleSave}
-                className="w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
+                className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
               >
                 Save progress
               </button>
@@ -147,7 +147,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 
   const clampedCurrentPage = totalPages ? Math.min(currentPage, totalPages) : currentPage;
   const progressPercent = totalPages ? Math.round((clampedCurrentPage / totalPages) * 100) : null;
-  const numberInputCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
+  const numberInputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
 
   const handleCurrentPageChange = (value) => {
     const nextPage = Math.max(0, Math.floor(Number(value) || 0));
@@ -180,9 +180,9 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
           <div className="mb-4 flex items-center justify-between">
             <div className="mr-3 min-w-0 flex-1">
               <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
-              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]">{item.title}</h3>
+              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]" title={item.title}>{item.title}</h3>
             </div>
-            <button onClick={onClose} className="shrink-0 rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
               <Close size={20} />
             </button>
           </div>
@@ -228,7 +228,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 
             <button
               onClick={handleSave}
-              className="w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
+              className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
             >
               Save progress
             </button>
@@ -289,11 +289,11 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
         </div>
 
         <div className="space-y-1.5 p-2 sm:p-3">
-          <h3 className="line-clamp-2 text-xs font-bold leading-tight text-[#410001] sm:text-sm">
+          <h3 className="line-clamp-2 text-xs font-bold leading-tight text-[#410001] sm:text-sm" title={item.title}>
             {item.title}
           </h3>
           {item.author && (
-            <p className="text-[11px] font-medium text-[#534340]">{item.author}</p>
+            <p className="truncate text-[11px] font-medium text-[#534340]" title={item.author}>{item.author}</p>
           )}
           {pageLabel && (
             <p className="text-[11px] font-semibold text-[#8C4F45]">{pageLabel}</p>
@@ -309,7 +309,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
                 aria-label="Options"
               >
                 <ThreeDots size={14} />
@@ -326,7 +326,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
                           onStatusChange(item.id, status);
                           setShowMenu(false);
                         }}
-                        className="block w-full px-3 py-2 text-left text-sm text-[#410001] transition hover:bg-[#FFF8F5]"
+                        className="block min-h-[44px] w-full px-3 py-2 text-left text-sm text-[#410001] transition hover:bg-[#FFF8F5]"
                       >
                         {formatStatusLabel(status)}
                       </button>
@@ -336,7 +336,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
                         onStatusChange(item.id, 'remove');
                         setShowMenu(false);
                       }}
-                      className="block w-full border-t border-[#E1D8D4] px-3 py-2 text-left text-sm font-semibold text-[#C1121F] transition hover:bg-[#FFDAD4]"
+                      className="block min-h-[44px] w-full border-t border-[#E1D8D4] px-3 py-2 text-left text-sm font-semibold text-[#C1121F] transition hover:bg-[#FFDAD4]"
                     >
                       Remove
                     </button>
@@ -358,7 +358,8 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
           {(isWatchingTvShow || isBook) && (
             <button
               onClick={() => setShowProgressModal(true)}
-              className="mt-1 flex w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
+              className="mt-1 flex min-h-[44px] w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
+              title={progressLabel || 'Set progress'}
             >
               <span className="truncate text-[11px] font-bold text-[#E63B2E]">
                 {progressLabel || 'Set progress…'}
@@ -409,11 +410,11 @@ const ResultCard = ({ item, category, onAdd }) => {
         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
       />
     </div>
-    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-[rgba(65,0,1,0.9)] via-[rgba(65,0,1,0.5)] to-transparent p-2 opacity-0 transition duration-300 group-hover:opacity-100 sm:p-3">
-      <h3 className="line-clamp-2 text-xs font-bold leading-tight text-white sm:text-sm">
+    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-[rgba(65,0,1,0.9)] via-[rgba(65,0,1,0.5)] to-transparent p-2 opacity-100 transition duration-300 sm:p-3 sm:opacity-0 sm:group-hover:opacity-100">
+      <h3 className="line-clamp-2 text-xs font-bold leading-tight text-white sm:text-sm" title={item.title}>
         {item.title}
       </h3>
-      {item.author && <p className="mt-0.5 text-[11px] font-medium text-white/80">{item.author}</p>}
+      {item.author && <p className="mt-0.5 truncate text-[11px] font-medium text-white/80" title={item.author}>{item.author}</p>}
       {pageLabel && (
         <p className="mt-0.5 text-[11px] font-semibold text-white/80">{pageLabel}</p>
       )}

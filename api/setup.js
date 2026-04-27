@@ -1,5 +1,5 @@
 import { initializeDatabase } from '../lib/db.js';
-import { cors, IS_PRODUCTION } from '../lib/auth-shared.js';
+import { assertSafeProductionJwtSecret, cors, IS_PRODUCTION, errResponse } from '../lib/auth-shared.js';
 import { timingSafeEqual } from 'crypto';
 
 function getSetupToken(req) {
@@ -15,9 +15,11 @@ function isSetupAuthorized(req) {
 
   const expected = process.env.SETUP_TOKEN || '';
   const provided = getSetupToken(req);
-  if (!expected || !provided || expected.length !== provided.length) return false;
+  const expectedBuffer = Buffer.from(expected);
+  const providedBuffer = Buffer.from(provided);
+  if (!expected || !provided || expectedBuffer.length !== providedBuffer.length) return false;
 
-  return timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  return timingSafeEqual(providedBuffer, expectedBuffer);
 }
 
 export default async function handler(req, res) {
@@ -31,10 +33,16 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  const success = await initializeDatabase();
-  if (success) {
-    res.status(200).json({ message: 'Database initialized successfully!' });
-  } else {
-    res.status(500).json({ error: 'Failed to initialize database.' });
+  try {
+    assertSafeProductionJwtSecret();
+
+    const success = await initializeDatabase();
+    if (success) {
+      return res.status(200).json({ message: 'Database initialized successfully!' });
+    }
+
+    return res.status(500).json({ error: 'Failed to initialize database.' });
+  } catch (error) {
+    return errResponse(res, error);
   }
 }

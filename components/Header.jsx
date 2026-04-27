@@ -58,7 +58,7 @@ const Header = ({
         <button
           type="button"
           onClick={onBackToShelves}
-          className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:opacity-90"
+          className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:opacity-90 sm:max-w-xs"
           title="Back to your shelves"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/25 sm:h-10 sm:w-10">
@@ -68,7 +68,7 @@ const Header = ({
             <span className="truncate text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">
               Shared Shelf
             </span>
-            <span className="truncate text-xs font-medium text-[#534340] sm:text-sm">
+            <span className="truncate text-xs font-medium text-[#534340] sm:text-sm" title={shelfName || 'Your shelf'}>
               {shelfName || 'Your shelf'}
             </span>
           </span>
@@ -87,7 +87,7 @@ const Header = ({
                   if (tab.id === 'media') handleTabClick('media', null);
                   else handleTabClick(tab.category, tab.id);
                 }}
-                className={`relative inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${
+                className={`relative inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${
                   isActive
                     ? 'text-[#E63B2E]'
                     : 'text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
@@ -105,7 +105,7 @@ const Header = ({
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={onSettingsClick}
-            className="hidden h-10 w-10 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
+            className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
             title="Shelf settings"
             aria-label="Shelf settings"
           >
@@ -114,7 +114,7 @@ const Header = ({
 
           <button
             onClick={onAccountClick}
-            className="hidden h-10 w-10 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
+            className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
             title="Profile"
             aria-label="Profile"
           >
@@ -126,7 +126,7 @@ const Header = ({
             <button
               type="button"
               onClick={() => setMenuOpen(prev => !prev)}
-              className="flex h-10 items-center gap-1.5 rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+              className="flex h-11 items-center gap-1.5 rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
@@ -153,7 +153,7 @@ const Header = ({
                           if (tab.id === 'media') handleTabClick('media', null);
                           else handleTabClick(tab.category, tab.id);
                         }}
-                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                        className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                           isActive
                             ? 'bg-[#FFDAD4] text-[#E63B2E]'
                             : 'text-[#410001] hover:bg-[#FFF8F5]'
@@ -169,7 +169,7 @@ const Header = ({
                   <button
                     role="menuitem"
                     onClick={() => { onSettingsClick?.(); setMenuOpen(false); }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
                     Shelf settings
@@ -177,7 +177,7 @@ const Header = ({
                   <button
                     role="menuitem"
                     onClick={() => { onAccountClick?.(); setMenuOpen(false); }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <UserIcon size={18} />
                     Profile
@@ -186,7 +186,7 @@ const Header = ({
                     <button
                       role="menuitem"
                       onClick={() => { onBackToShelves?.(); setMenuOpen(false); }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
                       Back to shelves

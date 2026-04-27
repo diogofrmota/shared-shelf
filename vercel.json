@@ -57,6 +57,10 @@
     {
       "source": "/report-a-bug/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }

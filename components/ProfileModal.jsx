@@ -62,7 +62,7 @@ const UserAvatar = ({ user, size = 40 }) => {
   );
 };
 
-const inputCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
 const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onSaveAccount, onLogout, onBackToShelves }) => {
@@ -88,6 +88,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
   const [accountUsername, setAccountUsername] = useState('');
   const [accountError, setAccountError] = useState('');
   const [accountSaving, setAccountSaving] = useState(false);
+  const [confirmRegenerateShare, setConfirmRegenerateShare] = useState(false);
 
   useEffect(() => {
     if (mode === 'profiles' && isOpen) {
@@ -103,6 +104,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
       setShareInfo(null);
       setShareError('');
       setCopiedField('');
+      setConfirmRegenerateShare(false);
     }
   }, [mode, isOpen, shelf]);
 
@@ -176,7 +178,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 </h2>
                 <p className="mt-0.5 text-xs text-[#534340]">Manage who uses this shared shelf.</p>
               </div>
-              <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profiles">
                 <Close size={20} />
               </button>
             </div>
@@ -190,7 +192,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     <UserAvatar user={user} size={48} />
                     <button
                       onClick={() => setExpandedId(expandedId === user.id ? null : user.id)}
-                      className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#A9372C]"
+                      className="absolute -bottom-3 -right-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#A9372C]"
                       title="Customize"
                     >
                       <Camera size={10} />
@@ -211,7 +213,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   {users.length > 1 && (
                     <button
                       onClick={() => removeUser(user.id)}
-                      className="flex-shrink-0 rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       title="Remove"
                     >
                       <Trash size={15} />
@@ -239,7 +241,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                             key={color}
                             onClick={() => updateUser(user.id, 'color', color)}
                             style={{ background: color }}
-                            className={`h-7 w-7 rounded-full transition ${user.color === color ? 'ring-2 ring-[#E63B2E] ring-offset-2 ring-offset-white scale-110' : 'hover:scale-105'}`}
+                            className={`h-11 w-11 rounded-full transition ${user.color === color ? 'ring-2 ring-[#E63B2E] ring-offset-2 ring-offset-white scale-110' : 'hover:scale-105'}`}
                             aria-label={`Choose color ${color}`}
                           />
                         ))}
@@ -252,7 +254,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
             <button
               onClick={addUser}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#E1D8D4] py-3 text-sm font-bold text-[#534340] transition hover:border-[#E63B2E] hover:text-[#E63B2E]"
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#E1D8D4] py-3 text-sm font-bold text-[#534340] transition hover:border-[#E63B2E] hover:text-[#E63B2E]"
             >
               <Plus size={16} />
               Add another person
@@ -260,7 +262,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
           </div>
 
           <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
-            <button onClick={onClose} className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
+            <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
             <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
@@ -325,7 +327,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
               <SettingsIcon size={20} className="text-[#E63B2E]" />
               Shelf settings
             </h2>
-            <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+            <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close settings">
               <Close size={20} />
             </button>
           </div>
@@ -344,9 +346,9 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
             <div>
               <p className={labelCls}>Shared items</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {sectionOptions.map(section => (
-                  <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
+                  <label key={section.id} className="flex min-h-[44px] items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
                     <input
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
@@ -360,7 +362,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
             </div>
 
             <div className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
-              <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="text-base font-extrabold text-[#410001]">Share shelf</h3>
                   <p className="mt-1 text-sm text-[#534340]">
@@ -369,9 +371,9 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 </div>
                 <button
                   type="button"
-                  onClick={handleRegenerate}
+                  onClick={() => setConfirmRegenerateShare(true)}
                   disabled={regeneratingShare || shareLoading}
-                  className="rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
                 >
                   {regeneratingShare ? 'Generating...' : 'New code'}
                 </button>
@@ -383,12 +385,12 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 <div className="space-y-3">
                   <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf ID</p>
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                       <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shelfId}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('shelfId', shelfId)}
-                        className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
+                        className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                       >
                         {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
                       </button>
@@ -398,13 +400,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
                     <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                       <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#241A18]">{joinCode || '--------'}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('joinCode', joinCode)}
                         disabled={!joinCode}
-                        className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
+                        className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
                       >
                         {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
                       </button>
@@ -417,13 +419,26 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
             </div>
           </div>
           <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
-            <button onClick={onClose} className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
+            <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+            <button onClick={handleSave} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
               Save changes
             </button>
           </div>
+          <ConfirmationDialog
+            isOpen={confirmRegenerateShare}
+            title="Generate new join code?"
+            message="The current join code will stop working. Anyone you invite will need the new code."
+            confirmLabel="Generate code"
+            cancelLabel="Keep current code"
+            tone="primary"
+            onConfirm={() => {
+              setConfirmRegenerateShare(false);
+              handleRegenerate();
+            }}
+            onCancel={() => setConfirmRegenerateShare(false)}
+          />
         </div>
       </div>
     );
@@ -470,7 +485,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 <UserIcon size={20} className="text-[#E63B2E]" />
                 Profile
               </h2>
-              <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profile">
                 <Close size={20} />
               </button>
             </div>
@@ -514,14 +529,14 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                       setAccountUsername(username);
                       setAccountError('');
                     }}
-                    className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                     disabled={accountSaving}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                    className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
                     disabled={accountSaving}
                   >
                     {accountSaving ? 'Saving...' : 'Save'}
@@ -535,9 +550,9 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     {initials}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-base font-extrabold text-[#410001]">{displayName}</p>
-                    <p className="truncate text-xs font-medium text-[#534340]">{username}</p>
-                    {currentUser?.email && <p className="truncate text-xs text-[#857370]">{currentUser.email}</p>}
+                    <p className="truncate text-base font-extrabold text-[#410001]" title={displayName}>{displayName}</p>
+                    <p className="truncate text-xs font-medium text-[#534340]" title={username}>{username}</p>
+                    {currentUser?.email && <p className="truncate text-xs text-[#857370]" title={currentUser.email}>{currentUser.email}</p>}
                   </div>
                 </div>
 
@@ -545,7 +560,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   <button
                     type="button"
                     onClick={() => setAccountEditing(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+                    className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
                   >
                     Edit profile
                   </button>
@@ -553,7 +568,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     <button
                       type="button"
                       onClick={() => { onBackToShelves(); onClose(); }}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       Back to shelves
                     </button>
@@ -561,7 +576,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   <button
                     type="button"
                     onClick={() => { onLogout(); onClose(); }}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                    className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                   >
                     <LogoutIcon size={16} />
                     Log out

@@ -27,80 +27,7 @@ Requirements:
 Verify by checking the auth email link generation paths and any public route references.
 Keep AGENTS.md and README.md updated.
 
-## Prompt 2: Public Homepage, Login Route, Changelog, Footer, Legal Links, Support, And Bug Reporting
-
-Improve the public-facing entry experience for Shared Shelf. Get context at readme and agents.md
-
-Requirements:
-
-- The root homepage should be a real public homepage, not the direct login screen.
-- Explain clearly what Shared Shelf is, who it is for, how private shelves work, and the main app features.
-- Add obvious calls to action for signing in and creating an account.
-- Move the authentication and registering experience to `/login`.
-- Keep the signed-in app experience smooth for returning users.
-- Add a release notes or changelog section near the bottom of the homepage.
-- Add a global footer where appropriate with `© [Year] Shared Shelf` on the left.
-- Add footer links for `Privacy Policy`, `Terms of Service`, and `Report a Bug`.
-- Use `/privacy-policy` and `/terms-of-service` as the legal page URLs.
-- Add a simple bug report flow, such as a bug report page at `/report-a-bug`.
-
-Keep the app lightweight and consistent with the existing CDN/global React architecture.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 3: Privacy Policy And Terms Of Service Pages
-
-Add public legal pages for Shared Shelf.
-
-Requirements:
-
-- Create a Privacy Policy page at `/privacy-policy`.
-- Explain what user data is stored, including account data and shelf content.
-- Explain how private shelf sharing works, including shelf IDs, join codes, members, and visibility.
-- Explain how users can request account or data deletion.
-- Explain localStorage/sessionStorage usage, including remembered sessions and offline shelf cache.
-- Create a Terms of Service page at `/terms-of-service`.
-- Include basic acceptable-use terms, user responsibilities, account security expectations, app availability limitations, and content ownership language.
-- Link both pages from the footer.
-
-Use clear, simple language and keep the pages visually consistent with the app. Add a note if legal text should be reviewed before public launch.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 4: Protect Setup Route And Production Configuration
-
-Review and harden the production setup route and environment configuration.
-
-Requirements:
-
-- Confirm `/api/setup` is protected in production and cannot run without a setup token.
-- Do not hardcode setup tokens or secrets in the repository.
-- Document that the setup token is stored as the `SETUP_TOKEN` environment variable in Vercel.
-- Verify the setup token is accepted through the expected request header or bearer token path.
-- Confirm production also requires a strong `JWT_SECRET`.
-- Update README or deployment notes if the behavior is unclear.
-
-Important: if a real setup token is provided during the task, treat it as a secret and do not commit it to any file.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 5: Auth Rate Limiting, Login Lockout, And Safer Login Errors
-
-Harden authentication against brute-force and enumeration attacks.
-
-Requirements:
-
-- Add rate limiting to `/api/auth/login`.
-- Add rate limiting to `/api/auth/register`.
-- Add rate limiting to `/api/auth/forgot-password`.
-- Add abuse protection for email confirmation attempts.
-- Add abuse protection for shelf join-code attempts if it fits the existing shelf API route.
-- Add temporary account lockout after about five consecutive failed login attempts.
-- Make login errors clearer for real users while avoiding account enumeration.
-- Keep forgot-password responses generic so unknown emails are not disclosed.
-- Keep implementation compatible with Vercel serverless functions and the existing database setup.
-
-Update database initialization or migrations if tracking failed login attempts requires new fields. Verify the behavior manually or with focused tests if tests are added.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 6: Confirmation And Reset Link Error Messages
+## Prompt 2: Confirmation And Reset Link Error Messages
 
 Improve the user experience for account confirmation and password reset links.
 
@@ -116,9 +43,8 @@ Requirements:
 - Avoid leaking sensitive account existence details.
 
 Verify direct URL flows for confirmation and reset tokens.
-Keep AGENTS.md and README.md updated.
 
-## Prompt 7: Account Settings - Change Password, Change Email, Username Availability
+## Prompt 3: Account Settings - Change Password, Change Email, Username Availability
 
 Improve signed-in account management.
 
@@ -137,7 +63,7 @@ Requirements:
 Preserve existing profile editing behavior for name and username.
 Keep AGENTS.md and README.md updated.
 
-## Prompt 8: Transactional Emails And Welcome Email
+## Prompt 4: Transactional Emails And Welcome Email
 
 Improve production email quality for Shared Shelf.
 
@@ -152,97 +78,8 @@ Requirements:
 - Keep required account/security emails functional even if users opt out of non-essential email.
 
 Use the existing Resend integration and avoid exposing email API keys to the frontend.
-Keep AGENTS.md and README.md updated.
 
-## Prompt 9: Shelf Ownership, Member List, Permissions, Sharing UI, And Section Disable Warnings
-
-Improve shelf sharing and permissions.
-
-Requirements:
-
-- Add a member list visible to shelf members showing who else is in the shelf.
-- In shelf settings, show usernames and roles. Roles are `Owner` and `Member`.
-- Allow owners to remove members from a shelf.
-- Allow owners to transfer ownership to another member before leaving.
-- Ensure owner-only actions are enforced server-side, not only hidden in the UI.
-- Add share-code expiration messaging so users understand codes are one-time and expire after seven days.
-- Add copied-link sharing that includes both shelf ID and join code in a user-friendly format.
-- Add warnings before disabling a shelf section that already contains data.
-- Keep legacy shelf data rendering and existing sharing behavior working.
-
-Prefer extending `api/shelf/[...path].js` instead of adding new serverless function files.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 10: Destructive Action Confirmations And Undo
-
-Make destructive actions safer across the app.
-
-Requirements:
-
-- Add explicit confirmation or brief undo for deleting a shelf.
-- Add explicit confirmation or brief undo for removing shelf membership or leaving a shelf.
-- Add explicit confirmation or brief undo for deleting tasks, calendar events, locations, trips, recipes, movies, TV shows, and books.
-- Add explicit confirmation before regenerating share codes.
-- Use consistent wording and visual style across confirmation dialogs or undo toasts.
-- Make sure confirmations work well on mobile and are keyboard accessible.
-- Do not make routine non-destructive actions slower.
-
-Preserve current localStorage fallback and shelf data persistence behavior.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 11: Empty States For All Shelf Sections
-
-Add friendly empty states throughout the app.
-
-Requirements:
-
-- Add an empty state for Tasks when there are no tasks.
-- Add an empty state for Calendar when there are no events.
-- Add an empty state for Locations when there are no saved locations.
-- Add an empty state for Trips when there are no trips.
-- Add an empty state for Recipes when there are no recipes.
-- Add an empty state for Watchlist when there are no media items.
-- Add empty states for Movies, TV Shows, and Books individually.
-- Each empty state should include a concise message and a natural add action where appropriate.
-- Keep text useful but not overly explanatory.
-- Ensure empty states render well on mobile and desktop.
-
-Match the existing visual style and app structure.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 12: Friendly Error Pages And Global Error Boundary
-
-Improve app failure handling.
-
-Requirements:
-
-- Add a global React error boundary around the app shell so JavaScript crashes show a friendly fallback instead of a blank white screen.
-- Add a friendly 404 page or state for unknown routes.
-- Add a friendly unauthorized page or state for access denied cases.
-- Add friendly expired-link handling if not already covered by confirmation/reset flows.
-- Add a generic error screen for unrecoverable app errors.
-- Include a route back to a safe place, such as homepage, login, shelf selection, or support.
-- Avoid exposing stack traces or implementation details to users.
-
-Verify by simulating an unknown route and at least one frontend render failure if practical.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 13: Back Navigation Consistency
-
-Make browser back navigation behave sensibly across the app.
-
-Requirements:
-
-- Review navigation between homepage, login, shelf selection, shelves, and shelf sections.
-- Browser back should work sensibly from a shelf back to shelf selection.
-- Direct links to shelf routes should restore session and load the correct shelf when possible.
-- Back navigation should not accidentally log users out or lose unsaved state without warning.
-- Update URL handling only as much as needed for predictable behavior.
-
-Preserve the current shelf selection and shelf loading flows.
-Keep AGENTS.md and README.md updated.
-
-## Prompt 14: Branding Assets And Metadata
+## Prompt 5: Branding Assets And Metadata
 
 Add consistent public branding assets. Get context at readme and agents.md  
 
@@ -254,24 +91,6 @@ Requirements:
 - Add app title and description metadata.
 
 Use existing assets where possible before adding new ones.
-Keep AGENTS.md and README.md updated.
-
-# Prompt 15: Improve Mobile Usability
-
-Audit and improve mobile usability. Get context at readme and agents.md  
-
-Requirements:
-
-- Check shelf settings, profile modal, add/edit modals, and media progress controls on mobile.
-- Verify all important interactive elements have touch targets of at least 44px where possible.
-- Fix awkward wrapping, cramped controls, or overlapping content.
-- Add text truncation and overflow handling for long shelf names.
-- Add text truncation and overflow handling for long recipe titles.
-- Add text truncation and overflow handling for long task descriptions.
-- Add text truncation and overflow handling for long media titles.
-- Add text truncation and overflow handling for long usernames and locations.
-- Ensure truncated text still has a way to be understood where needed, such as full text in detail views or titles.
-
 Keep AGENTS.md and README.md updated.
 
 ## Later

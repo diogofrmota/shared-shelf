@@ -7,12 +7,14 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState('');
   const [copiedField, setCopiedField] = useState('');
+  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !shelf?.id) {
       setShareInfo(null);
       setError('');
       setCopiedField('');
+      setConfirmRegenerate(false);
       return;
     }
 
@@ -74,7 +76,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Close share modal"
           >
             <Close size={18} />
@@ -83,7 +85,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
 
         <div className="mb-4 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf</p>
-          <p className="mt-1 text-lg font-extrabold text-[#410001]">{shelf.name}</p>
+          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={shelf.name}>{shelf.name}</p>
         </div>
 
         {loading ? (
@@ -92,11 +94,11 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
           <div className="space-y-3">
             <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
               <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf ID</p>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.shelfId || shelf.id}</code>
                 <button
                   onClick={() => copyValue('shelfId', shareInfo?.shelfId || shelf.id)}
-                  className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
+                  className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                 >
                   {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
                 </button>
@@ -110,20 +112,20 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
                   <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
                 </div>
                 <button
-                  onClick={handleRegenerate}
+                  onClick={() => setConfirmRegenerate(true)}
                   disabled={regenerating}
-                  className="rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-50"
+                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-50"
                 >
                   {regenerating ? 'Generating...' : 'New code'}
                 </button>
               </div>
 
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#241A18]">{shareInfo?.joinCode || '--------'}</code>
                 <button
                   onClick={() => shareInfo?.joinCode && copyValue('joinCode', shareInfo.joinCode)}
                   disabled={!shareInfo?.joinCode}
-                  className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
+                  className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
                 >
                   {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
                 </button>
@@ -133,6 +135,19 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
             {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
           </div>
         )}
+        <ConfirmationDialog
+          isOpen={confirmRegenerate}
+          title="Generate new join code?"
+          message="The current join code will stop working. Anyone you invite will need the new code."
+          confirmLabel="Generate code"
+          cancelLabel="Keep current code"
+          tone="primary"
+          onConfirm={() => {
+            setConfirmRegenerate(false);
+            handleRegenerate();
+          }}
+          onCancel={() => setConfirmRegenerate(false)}
+        />
       </div>
     </div>
   );

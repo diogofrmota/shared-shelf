@@ -34,6 +34,8 @@ Signed-in users who navigate to `/login` are redirected to `/shelf-selection/`.
 
 `/privacy-policy` and `/terms-of-service` render simple, readable legal pages with the global header and footer. They are reachable from the footer on every public page. `/report-a-bug` renders a short bug report form with title, description, optional steps to reproduce, and optional reply email. Submitting the form opens the user's email client with the report pre-filled and also offers a `Copy report` button so the user can paste the report somewhere else if a mail client is unavailable.
 
+Unknown routes render a friendly in-app 404 with links back to the homepage or shelf selection. Private routes opened without a session show a sign-in prompt, and shelf access failures show an access-denied state with a route back to shelf selection.
+
 ### Shelf Selection Page
 
 After login, users land on the shelf selection page at `/shelf-selection/`, titled `Join Your Shared Space`. This page lists the shelves connected to the signed-in account as square shelf tiles with shelf names underneath. When a new user has no shelves yet, an empty state prompts them to create a shelf or join one with a shelf ID and code.
@@ -85,6 +87,8 @@ The application uses a CDN-first frontend architecture. `index.html` loads React
 The backend uses Vercel Serverless Functions. Auth routes live under `api/auth/`; most shelf behavior is consolidated into `api/shelf/[...path].js` and reached through rewrites in `vercel.json`. This keeps the deployment within the Vercel free-plan limit of 12 serverless function files.
 
 Authentication is JWT-based. Passwords are hashed with `bcryptjs`; login accepts either email or username plus password. Session duration is controlled by the `rememberMe` flag: normal sessions use the standard JWT expiry, and remembered sessions use a longer expiry. Account registration creates `email_verified = false` and stores a hashed email-confirmation token in `email_verification_tokens`. The `/api/auth/confirm-email` route verifies the JWT purpose, compares the token against the stored hash, marks the account as verified, and consumes the token. Login rejects unverified users.
+
+Authentication and invite flows use database-backed rate limiting so protection survives Vercel serverless cold starts and multiple function instances. Login, registration, password reset, email confirmation, and shelf join-code attempts are throttled by IP and relevant identifier. User records also track consecutive failed login attempts and temporarily lock sign-in after about five failed password attempts.
 
 Password reset follows a similar token pattern. `/api/auth/forgot-password` stores one hashed reset token per user in `password_reset_tokens` and emails a reset link. `/api/auth/reset-password` verifies the reset JWT purpose, compares the token hash, updates the password hash, and consumes the token.
 
@@ -181,6 +185,7 @@ The single-page app handles client-side routing via `window.history` and `vercel
 | `/report-a-bug` | Bug report form that opens the user's email client with the report pre-filled. | Public |
 | `/shelf-selection/` | Authenticated shelf list, create/join, manage, and profile. | Signed in |
 | `/shelf/<shelf-id>/` | Authenticated shelf workspace. | Signed in |
+| Any other path | Friendly 404 page with safe navigation links. | Public |
 
 Unauthenticated visits to authenticated routes are redirected to `/`.
 
@@ -190,6 +195,7 @@ Current shared-shelf data is stored by shelf:
 
 - `users`: account records with email, username, display name, password hash, and optional provider IDs.
 - `email_verification_tokens`: one active confirmation token per unverified user.
+- `auth_rate_limits`: short-lived request counters for login, registration, password reset, confirmation, and shelf join abuse protection.
 - `shelf_id`: shelf metadata such as unique shelf ID, name, owner, logo, enabled shared items, and timestamps.
 - `shelf_members`: user-to-shelf membership and role.
 - `shelf_join_codes`: one-time join codes that expire after seven days.
@@ -272,7 +278,7 @@ When adding new fields, keep old saved shelf data rendering by adding normalizat
 | `POST /api/shelf/:id/data` | Save shelf JSON data |
 | `DELETE /api/shelf/:id/membership` | Leave/remove shelf membership for current user |
 | `GET /api/health` | Database health check |
-| `GET /api/setup` | Initialize database schema |
+| `GET`/`POST /api/setup` | Initialize database schema. In production this requires `SETUP_TOKEN`. |
 | `GET /api/search` | Authenticated TMDB search proxy |
 | `GET /api/tvdetails` | Authenticated TMDB TV details proxy |
 | `GET /api/nominatim` | Authenticated OpenStreetMap Nominatim search proxy |
@@ -317,9 +323,9 @@ Do not expose secret keys in frontend files. TMDB calls that need a key should g
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `POSTGRES_URL` | Yes | Vercel Postgres/Neon connection used by `@vercel/postgres` |
-| `JWT_SECRET` | Required in production | JWT signing secret. Production requests fail without a non-default value. |
+| `JWT_SECRET` | Required in production | Strong random JWT signing secret. Production requests fail without a non-default value of at least 32 characters. |
 | `CORS_ORIGINS` | Optional | Comma-separated extra origins allowed to call authenticated APIs. `APP_URL`, the current Vercel URL, and local dev origins are already handled. |
-| `SETUP_TOKEN` | Optional | Required to call `/api/setup` in production. Send it as `X-Setup-Token` or `Authorization: Bearer ...`. |
+| `SETUP_TOKEN` | Required in production for setup | Secret token stored as a Vercel environment variable. Required to call `/api/setup` in production. Send it as `X-Setup-Token` or `Authorization: Bearer ...`. |
 | `TMDB_API_KEY` | Required for TMDB search/details | Server-side TMDB API key |
 | `NOMINATIM_USER_AGENT` | Recommended | Identifies the app to Nominatim |
 | `RESEND_API_KEY` | Required for production account confirmation | Enables account confirmation and password reset emails |
@@ -348,6 +354,30 @@ http://127.0.0.1:5173/index.html
 
 Static serving is enough to inspect frontend rendering, but authenticated flows and cloud persistence require the Vercel API environment and Postgres variables.
 
+## Production Setup
+
+Before running `/api/setup` in production, configure these Vercel environment variables:
+
+- `POSTGRES_URL` for the Neon/Postgres database connection.
+- `JWT_SECRET` as a strong random value of at least 32 characters. Do not use the local development fallback or a short placeholder.
+- `SETUP_TOKEN` as a separate strong random secret used only to authorize database setup.
+
+Do not commit real values for `JWT_SECRET`, `SETUP_TOKEN`, database URLs, or API keys to the repository.
+
+Production `/api/setup` accepts either supported token path:
+
+```powershell
+curl -X POST https://your-app.vercel.app/api/setup -H "X-Setup-Token: <setup-token>"
+```
+
+or:
+
+```powershell
+curl -X POST https://your-app.vercel.app/api/setup -H "Authorization: Bearer <setup-token>"
+```
+
+Without a matching setup token, production `/api/setup` returns `403 Forbidden`. With a valid setup token but an unsafe `JWT_SECRET`, setup refuses to initialize the database until the production JWT secret is fixed.
+
 Useful manual checks after UI or data changes:
 
 - Public homepage at `/` renders with hero, features, calls to action, and release notes when signed out.
@@ -367,6 +397,8 @@ There are no package scripts or automated tests currently defined in `package.js
 ## Security Notes
 
 All shelf APIs require a valid bearer JWT. Listing shelves is scoped to memberships, shelf settings updates require the current user to be an owner, share-code regeneration requires the current user to be an owner, and shelf data reads/writes require membership in that shelf. If an owner leaves a shelf that still has members, the oldest remaining member is promoted so owner-only controls remain available.
+
+Login responses use generic invalid-credential errors for unknown accounts or wrong passwords, while still giving actionable messages for verified users who are locked out or have not confirmed their email. Forgot-password responses remain generic so unknown email addresses are not disclosed.
 
 The TMDB and Nominatim proxy routes also require a valid bearer JWT before they call upstream services. This keeps API-key-backed and server-side proxy behavior limited to signed-in users without adding new Vercel function files.
 

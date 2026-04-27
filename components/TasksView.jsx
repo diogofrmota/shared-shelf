@@ -169,7 +169,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 rows="2"
               />
               <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                <label className="flex items-center gap-2 text-sm font-bold text-[#410001]">
+                <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#410001]">
                   <input
                     type="checkbox"
                     checked={editForm.isRecurring}
@@ -203,13 +203,13 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 )}
               </div>
               <div className="flex gap-2">
-                <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save</button>
-                <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} className="rounded-lg border border-[#E1D8D4] bg-white px-4 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
+                <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="min-h-[44px] rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save</button>
+                <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-4 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
               </div>
             </div>
           ) : (
             <>
-              <label className="mt-0.5 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center">
+              <label className="mt-0.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
                 <span className="sr-only">{taskIsRecurring ? 'Mark current recurring task occurrence complete' : 'Mark task complete'}</span>
                 <input
                   type="checkbox"
@@ -220,22 +220,22 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 />
               </label>
               <div className="min-w-0 flex-1">
-                <p className={`font-bold leading-snug ${task.completed ? 'text-[#857370] line-through' : 'text-[#410001]'}`}>
+                <p className={`line-clamp-2 font-bold leading-snug ${task.completed ? 'text-[#857370] line-through' : 'text-[#410001]'}`} title={task.title}>
                   {task.title}
                 </p>
                 {task.description && (
-                  <p className={`mt-1 whitespace-pre-wrap text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#534340]'}`}>
+                  <p className={`mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#534340]'}`} title={task.description}>
                     {task.description}
                   </p>
                 )}
                 {(assignedUser || task.dueDate) && (
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     {assignedUser && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold" style={{ color: assignedUser.color }}>
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-xs font-bold" style={{ color: assignedUser.color }} title={assignedUser.name}>
                         <span className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: assignedUser.color }}>
                           {assignedUser.name.charAt(0)}
                         </span>
-                        {assignedUser.name}
+                        <span className="truncate">{assignedUser.name}</span>
                       </span>
                     )}
                     {task.dueDate && (
@@ -262,13 +262,13 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 )}
               </div>
 
-              <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100" onClick={e => e.stopPropagation()}>
+              <div className="flex shrink-0 flex-col items-center gap-1 opacity-100 transition sm:flex-row sm:opacity-0 sm:group-hover:opacity-100" onClick={e => e.stopPropagation()}>
                 {!task.completed && (
                   <>
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'up')}
                       disabled={indexInSorted === 0 || sortedTasks[indexInSorted - 1]?.completed}
-                      className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                       aria-label="Move up"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
@@ -276,17 +276,17 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'down')}
                       disabled={indexInSorted === sortedTasks.length - 1 || sortedTasks[indexInSorted + 1]?.completed}
-                      className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                       aria-label="Move down"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                   </>
                 )}
-                <button onClick={() => handleEditTask(task)} className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Edit task">
+                <button onClick={() => handleEditTask(task)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Edit task">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                 </button>
-                <button onClick={() => onDeleteTask(task.id)} className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]" aria-label="Delete task">
+                <button onClick={() => onDeleteTask(task.id)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]" aria-label="Delete task">
                   <Trash size={16} />
                 </button>
               </div>
@@ -316,7 +316,13 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
       </div>
 
       {tasks.length === 0 ? (
-        <EmptyState onAddClick={onAddClick} />
+        <EmptyState
+          title="No tasks yet"
+          message="Capture the next shared to-do."
+          actionLabel="Add task"
+          icon={CheckSquare}
+          onAddClick={onAddClick}
+        />
       ) : (
         <>
           {filter !== 'completed' && activeTasks.length === 0 && (
@@ -340,7 +346,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 <>
                   <button
                     onClick={() => setShowCompleted(!showCompleted)}
-                    className="flex w-full items-center justify-between rounded-2xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#410001]"
+                    className="flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#410001]"
                   >
                     <span>Completed ({completedTasks.length})</span>
                     <svg

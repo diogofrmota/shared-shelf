@@ -1,4 +1,23 @@
-import { sql, bcrypt, APP_URL, FROM_EMAIL, getResend, cors, errResponse, IS_PRODUCTION, escapeHtml, signJwt, validateEmail } from '../../lib/auth-shared.js';
+import {
+  sql,
+  bcrypt,
+  APP_URL,
+  FROM_EMAIL,
+  consumeRateLimit,
+  getClientIp,
+  getResend,
+  cors,
+  errResponse,
+  IS_PRODUCTION,
+  escapeHtml,
+  normalizeRateLimitKey,
+  rateLimitResponse,
+  signJwt,
+  validateEmail
+} from '../../lib/auth-shared.js';
+
+const FORGOT_PASSWORD_RATE_LIMIT = { limit: 5, windowSeconds: 60 * 60 };
+const FORGOT_PASSWORD_IP_RATE_LIMIT = { limit: 25, windowSeconds: 60 * 60 };
 
 export default async function handler(req, res) {
   cors(req, res);
@@ -11,6 +30,28 @@ export default async function handler(req, res) {
     if (emailError) return res.status(400).json({ error: emailError });
 
     const emailValue = `${email}`.trim();
+    const ip = getClientIp(req);
+    const [emailLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        scope: 'auth-forgot-password-email',
+        key: `${ip}:${normalizeRateLimitKey(emailValue)}`,
+        ...FORGOT_PASSWORD_RATE_LIMIT
+      }),
+      consumeRateLimit({
+        scope: 'auth-forgot-password-ip',
+        key: ip,
+        ...FORGOT_PASSWORD_IP_RATE_LIMIT
+      })
+    ]);
+
+    if (!emailLimit.allowed || !ipLimit.allowed) {
+      return rateLimitResponse(
+        res,
+        !emailLimit.allowed ? emailLimit : ipLimit,
+        'Too many password reset requests. Please wait and try again later.'
+      );
+    }
+
     const userRow = (await sql`SELECT id, display_name FROM users WHERE LOWER(email) = LOWER(${emailValue})`).rows[0];
     if (userRow) {
       const resetToken = signJwt({ userId: userRow.id, purpose: 'password-reset' }, { expiresIn: '1h' });

@@ -1,5 +1,18 @@
-import { sql, bcrypt, cors, errResponse, verifyJwt } from '../../lib/auth-shared.js';
+import {
+  sql,
+  bcrypt,
+  consumeRateLimit,
+  cors,
+  errResponse,
+  getClientIp,
+  normalizeRateLimitKey,
+  rateLimitResponse,
+  verifyJwt
+} from '../../lib/auth-shared.js';
 import { initializeDatabase } from '../../lib/db.js';
+
+const CONFIRM_EMAIL_RATE_LIMIT = { limit: 8, windowSeconds: 15 * 60 };
+const CONFIRM_EMAIL_IP_RATE_LIMIT = { limit: 30, windowSeconds: 15 * 60 };
 
 export default async function handler(req, res) {
   cors(req, res);
@@ -11,6 +24,29 @@ export default async function handler(req, res) {
 
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'Confirmation token is required' });
+
+    const ip = getClientIp(req);
+    const tokenKey = normalizeRateLimitKey(String(token).slice(0, 48));
+    const [tokenLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        scope: 'auth-confirm-email-token',
+        key: `${ip}:${tokenKey}`,
+        ...CONFIRM_EMAIL_RATE_LIMIT
+      }),
+      consumeRateLimit({
+        scope: 'auth-confirm-email-ip',
+        key: ip,
+        ...CONFIRM_EMAIL_IP_RATE_LIMIT
+      })
+    ]);
+
+    if (!tokenLimit.allowed || !ipLimit.allowed) {
+      return rateLimitResponse(
+        res,
+        !tokenLimit.allowed ? tokenLimit : ipLimit,
+        'Too many confirmation attempts. Please wait and try again later.'
+      );
+    }
 
     let decoded;
     try {

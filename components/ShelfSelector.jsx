@@ -14,6 +14,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   const [profileUsername, setProfileUsername] = useState('');
   const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
+  const [pendingShelfRemoval, setPendingShelfRemoval] = useState(null);
   const profileRef = useRef(null);
 
   const API_BASE = window.API_BASE_URL ?? '';
@@ -61,12 +62,10 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
     fetchShelves();
   };
 
-  const handleRemoveShelf = async (shelf) => {
-    const confirmed = window.confirm(`Do you want to remove "${shelf.name}"?`);
-    if (!confirmed) return;
-
+  const removeShelfMembership = async (shelf) => {
     setError('');
     setRemovingShelfId(shelf.id);
+    setPendingShelfRemoval(null);
 
     try {
       const res = await fetch(`${API_BASE}/api/shelf/${shelf.id}/membership`, {
@@ -88,6 +87,10 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
     } finally {
       setRemovingShelfId('');
     }
+  };
+
+  const handleRemoveShelf = (shelf) => {
+    setPendingShelfRemoval(shelf);
   };
 
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
@@ -215,24 +218,24 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
             <button
               type="button"
               onClick={() => setProfileOpen(prev => !prev)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFDAD4] text-sm font-bold text-[#410001] shadow-sm transition hover:bg-[#FFB4A9] sm:w-auto sm:gap-2 sm:px-3"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FFDAD4] text-sm font-bold text-[#410001] shadow-sm transition hover:bg-[#FFB4A9] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Account"
               aria-haspopup="menu"
               aria-expanded={profileOpen}
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E63B2E] text-xs font-bold text-white">{userInitial}</span>
-              <span className="hidden text-[#410001] sm:inline">{displayName.split(' ')[0]}</span>
+              <span className="hidden truncate text-[#410001] sm:inline" title={displayName}>{displayName.split(' ')[0]}</span>
             </button>
 
             {profileOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
               >
                 <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
-                  <p className="mt-1 truncate text-base font-bold text-[#410001]">{displayName}</p>
-                  <p className="truncate text-xs text-[#534340]">{currentUser?.email || username}</p>
+                  <p className="mt-1 truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
+                  <p className="truncate text-xs text-[#534340]" title={currentUser?.email || username}>{currentUser?.email || username}</p>
                 </div>
 
                 {isEditingProfile ? (
@@ -269,14 +272,14 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                           setProfileUsername(username);
                           setProfileError('');
                         }}
-                        className="flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                         disabled={profileSaving}
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                        className="min-h-[44px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
                         disabled={profileSaving}
                       >
                         {profileSaving ? 'Saving...' : 'Save'}
@@ -288,7 +291,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                     <button
                       type="button"
                       onClick={() => setIsEditingProfile(true)}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <UserIcon size={18} />
                       Edit profile
@@ -296,7 +299,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                     <button
                       type="button"
                       onClick={() => { setProfileOpen(false); onBackToLogin?.(); }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
                       Log out
@@ -331,7 +334,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
             <button
               type="button"
               onClick={() => { setError(''); setJoinOpen(true); }}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
             >
               <Plus size={16} />
               Create or join
@@ -340,7 +343,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               <button
                 type="button"
                 onClick={() => setManageMode(prev => !prev)}
-                className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
+                className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
                   manageMode
                     ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#410001]'
                     : 'border-[#E1D8D4] bg-white text-[#410001] hover:bg-[#FFF8F5]'
@@ -365,7 +368,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
             <button
               type="button"
               onClick={() => { setError(''); setJoinOpen(true); }}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+              className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
             >
               <Plus size={16} />
               Create your first shelf
@@ -383,7 +386,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                     <button
                       onClick={() => handleRemoveShelf(shelf)}
                       disabled={removingShelfId === shelf.id}
-                      className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[#C1121F] text-white shadow-md transition hover:bg-[#A80F1A] disabled:opacity-50"
+                      className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#C1121F] text-white shadow-md transition hover:bg-[#A80F1A] disabled:opacity-50"
                       aria-label={`Remove ${shelf.name}`}
                     >
                       <TrashCanIcon />
@@ -392,7 +395,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                   <button
                     onClick={() => !manageMode && onSelectShelf(shelf)}
                     disabled={manageMode}
-                    className="block w-full text-left"
+                    className="block min-h-[44px] w-full text-left"
                   >
                     <div
                       className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[#A9372C] via-[#E63B2E] to-[#8C4F45] text-white"
@@ -403,7 +406,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                       </span>
                     </div>
                     <div className="p-5">
-                      <h3 className="truncate text-lg font-extrabold text-[#410001]">{shelf.name}</h3>
+                      <h3 className="line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={shelf.name}>{shelf.name}</h3>
                       <div className="mt-3 flex items-center justify-between">
                         <MemberStack members={shelfMembers} />
                         <span className="rounded-full bg-[#FFDAD4] px-2.5 py-0.5 text-xs font-bold text-[#410001]">
@@ -437,6 +440,15 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
         onClose={() => setJoinOpen(false)}
         onJoin={handleJoinShelf}
         token={token}
+      />
+      <ConfirmationDialog
+        isOpen={Boolean(pendingShelfRemoval)}
+        title="Remove shelf?"
+        message={`This removes "${pendingShelfRemoval?.name || 'this shelf'}" from your account. Other members can keep using it if they still have access.`}
+        confirmLabel={removingShelfId ? 'Removing...' : 'Remove shelf'}
+        cancelLabel="Keep shelf"
+        onConfirm={() => pendingShelfRemoval && removeShelfMembership(pendingShelfRemoval)}
+        onCancel={() => setPendingShelfRemoval(null)}
       />
     </div>
   );

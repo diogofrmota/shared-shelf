@@ -216,7 +216,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
             onMouseEnter={() => setHover(n)}
             onMouseLeave={() => setHover(0)}
             onClick={() => onUpdateDate?.(place.id, { starRating: rating === n ? 0 : n })}
-            className={`text-base transition ${n <= (hover || rating) ? 'text-[#FFB300]' : 'text-[#D8C2BE] hover:text-[#FBD08A]'}`}
+            className={`flex h-11 w-11 items-center justify-center text-base transition ${n <= (hover || rating) ? 'text-[#FFB300]' : 'text-[#D8C2BE] hover:text-[#FBD08A]'}`}
             aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
           >★</button>
         ))}
@@ -238,7 +238,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
           <img src={safePhoto} alt={place.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           <button
             onClick={e => { e.stopPropagation(); onUpdateDate?.(place.id, { photo: null }); }}
-            className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-[#410001] opacity-0 shadow-sm transition group-hover:opacity-100"
+            className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#410001] opacity-100 shadow-sm transition sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Remove photo"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -247,7 +247,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
       ) : (
         <button
           onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }}
-          className="flex h-10 w-full items-center justify-center gap-1.5 border-b border-[#E1D8D4] text-xs font-semibold text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+          className="flex min-h-[44px] w-full items-center justify-center gap-1.5 border-b border-[#E1D8D4] text-xs font-semibold text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           Add photo
@@ -259,17 +259,17 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="truncate text-base font-bold text-[#410001]">{place.name}</h4>
+              <h4 className="min-w-0 flex-1 truncate text-base font-bold text-[#410001]" title={place.name}>{place.name}</h4>
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleFavourite(place.id); }}
-                className={`rounded p-1 transition ${place.isFavourite ? 'text-[#FFB300]' : 'text-[#857370] hover:text-[#FFB300]'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded transition ${place.isFavourite ? 'text-[#FFB300]' : 'text-[#857370] hover:text-[#FFB300]'}`}
                 aria-label={place.isFavourite ? 'Remove from favourites' : 'Add to favourites'}
               >
                 <Star size={16} filled={place.isFavourite} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateDate?.(place.id, { beenThere: !place.beenThere }); }}
-                className={`rounded p-1 text-base transition ${place.beenThere ? 'text-[#2F855A]' : 'text-[#857370] hover:text-[#2F855A]'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded text-base transition ${place.beenThere ? 'text-[#2F855A]' : 'text-[#857370] hover:text-[#2F855A]'}`}
                 aria-label={place.beenThere ? 'Mark as not visited' : 'Mark as visited'}
                 title={place.beenThere ? 'Visited' : 'Mark as visited'}
               >✅</button>
@@ -284,10 +284,10 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
             <div className="mt-2"><StarRating /></div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+          <div className="flex shrink-0 items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(place.id); }}
-              className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
               aria-label="Delete place"
             >
               <Trash size={16} />
@@ -295,22 +295,22 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
           </div>
         </div>
 
-        {place.address && <p className="mt-2 text-sm text-[#534340]">{place.address}</p>}
-        {place.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-[#534340]">{place.notes}</p>}
+        {place.address && <p className="mt-2 line-clamp-2 break-words text-sm text-[#534340]" title={place.address}>{place.address}</p>}
+        {place.notes && <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words text-sm text-[#534340]" title={place.notes}>{place.notes}</p>}
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
           {safeLink && (
-            <a href={safeLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
+            <a href={safeLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
               <LinkIcon size={14} /> Link
             </a>
           )}
           {mapsLink && (
-            <a href={mapsLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
+            <a href={mapsLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
               <MapPin size={14} /> Map
             </a>
           )}
           {safePhoto && (
-            <button onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#534340] transition hover:text-[#410001]">
+            <button onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#534340] transition hover:text-[#410001]">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               Change photo
             </button>
@@ -321,7 +321,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
   );
 };
 
-const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate }) => {
+const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onAddClick }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [onlyFavourites, setOnlyFavourites] = useState(false);
   const [onlyVisited, setOnlyVisited] = useState(false);
@@ -358,11 +358,22 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate }) =
       </FilterBar>
 
       {sorted.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-12 text-center text-sm text-[#534340]">
-          {places.length === 0
-            ? 'No places yet. Add a restaurant, bar, coffee spot, or brunch place above.'
-            : 'No places match the current filter.'}
-        </div>
+        places.length === 0 ? (
+          <EmptyState
+            title="No locations yet"
+            message="Save restaurants, views, and places to try."
+            actionLabel="Add location"
+            icon={MapPin}
+            onAddClick={onAddClick}
+          />
+        ) : (
+          <EmptyState
+            title="No locations match"
+            message="Adjust the filters to see more saved places."
+            icon={MapPin}
+            compact
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map(place => (

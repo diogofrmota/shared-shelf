@@ -5,11 +5,15 @@ import {
   APP_URL,
   FROM_EMAIL,
   IS_PRODUCTION,
+  consumeRateLimit,
   cors,
   errResponse,
   ensureUserProfileColumns,
   escapeHtml,
+  getClientIp,
   getResend,
+  normalizeRateLimitKey,
+  rateLimitResponse,
   signJwt,
   validateDisplayName,
   validateEmail,
@@ -17,6 +21,9 @@ import {
   validateUsername
 } from '../../lib/auth-shared.js';
 import { initializeDatabase } from '../../lib/db.js';
+
+const REGISTER_RATE_LIMIT = { limit: 5, windowSeconds: 60 * 60 };
+const REGISTER_IP_RATE_LIMIT = { limit: 20, windowSeconds: 60 * 60 };
 
 export default async function handler(req, res) {
   cors(req, res);
@@ -37,6 +44,28 @@ export default async function handler(req, res) {
       validateEmail(emailValue) ||
       validatePassword(password);
     if (inputError) return res.status(400).json({ error: inputError });
+
+    const ip = getClientIp(req);
+    const [emailLimit, ipLimit] = await Promise.all([
+      consumeRateLimit({
+        scope: 'auth-register-email',
+        key: `${ip}:${normalizeRateLimitKey(emailValue)}`,
+        ...REGISTER_RATE_LIMIT
+      }),
+      consumeRateLimit({
+        scope: 'auth-register-ip',
+        key: ip,
+        ...REGISTER_IP_RATE_LIMIT
+      })
+    ]);
+
+    if (!emailLimit.allowed || !ipLimit.allowed) {
+      return rateLimitResponse(
+        res,
+        !emailLimit.allowed ? emailLimit : ipLimit,
+        'Too many account creation attempts. Please wait and try again later.'
+      );
+    }
 
     await ensureUserProfileColumns();
 

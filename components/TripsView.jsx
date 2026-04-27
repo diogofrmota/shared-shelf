@@ -262,7 +262,7 @@ const TripDetailModal = ({ trip, onClose, onEdit }) => {
   );
 };
 
-const TripsView = ({ trips, onDeleteTrip, onEditTrip }) => {
+const TripsView = ({ trips, onDeleteTrip, onEditTrip, onAddClick }) => {
   const [selectedTrip, setSelectedTrip] = useState(null);
   const today = new Date();
   const sorted = [...trips].sort((a, b) => getTripSortValue(a) - getTripSortValue(b));
@@ -271,6 +271,16 @@ const TripsView = ({ trips, onDeleteTrip, onEditTrip }) => {
 
   return (
     <div className="space-y-10 animate-fade-in">
+      {trips.length === 0 && (
+        <EmptyState
+          title="No trips yet"
+          message="Start a shared plan for the next getaway."
+          actionLabel="Add trip"
+          icon={MapPin}
+          onAddClick={onAddClick}
+        />
+      )}
+
       <section>
         <header className="mb-4 flex items-center justify-between gap-3">
           <div>
@@ -278,17 +288,17 @@ const TripsView = ({ trips, onDeleteTrip, onEditTrip }) => {
             <p className="mt-1 text-sm text-[#534340]">Upcoming adventures to look forward to.</p>
           </div>
         </header>
-        {upcoming.length === 0 ? (
+        {upcoming.length === 0 && trips.length > 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#534340]">
             No upcoming trips yet. Start planning your next adventure.
           </div>
-        ) : (
+        ) : upcoming.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {upcoming.map(trip => (
               <TripCard key={trip.id} trip={trip} onDelete={onDeleteTrip} onEdit={onEditTrip} onOpen={setSelectedTrip} />
             ))}
           </div>
-        )}
+        ) : null}
       </section>
 
       <section>
@@ -296,17 +306,17 @@ const TripsView = ({ trips, onDeleteTrip, onEditTrip }) => {
           <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Past trips</h2>
           <p className="mt-1 text-sm text-[#534340]">Memories and archived itineraries.</p>
         </header>
-        {past.length === 0 ? (
+        {past.length === 0 && trips.length > 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#534340]">
             No past trips yet.
           </div>
-        ) : (
+        ) : past.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {past.map(trip => (
               <TripCard key={trip.id} trip={trip} onDelete={onDeleteTrip} onEdit={onEditTrip} onOpen={setSelectedTrip} />
             ))}
           </div>
-        )}
+        ) : null}
       </section>
 
       <TripDetailModal trip={selectedTrip} onClose={() => setSelectedTrip(null)} onEdit={onEditTrip} />

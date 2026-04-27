@@ -35,6 +35,27 @@ const MEDIA_TYPE_LABELS = {
   books: 'Book'
 };
 
+const MEDIA_TYPE_EMPTY_COPY = {
+  tvshows: {
+    title: 'No TV shows yet',
+    message: 'Add a series to track what you are watching.',
+    actionLabel: 'Add TV show',
+    icon: Tv
+  },
+  movies: {
+    title: 'No movies yet',
+    message: 'Save films to watch, finish, or remember.',
+    actionLabel: 'Add movie',
+    icon: Film
+  },
+  books: {
+    title: 'No books yet',
+    message: 'Build a shared reading list.',
+    actionLabel: 'Add book',
+    icon: Book
+  }
+};
+
 const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect }) => {
   if (!activeTab) {
     return (
@@ -43,13 +64,21 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Media tracker</h2>
           <p className="mt-1 text-sm text-[#534340]">Keep track of what you're watching and reading.</p>
         </div>
+        {items.length === 0 && (
+          <EmptyState
+            title="No watchlist items yet"
+            message="Choose a category to add the first movie, show, or book."
+            icon={Film}
+            compact
+          />
+        )}
         <div className="grid gap-4 sm:grid-cols-3">
           {MEDIA_TYPE_TILES.map(({ id, label, icon: Icon, description }) => (
             <button
               key={id}
               type="button"
               onClick={() => onMediaTypeSelect?.(id)}
-              className="group flex flex-col items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#410001] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
+              className="group flex min-h-[44px] flex-col items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#410001] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
             >
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
                 <Icon size={26} />
@@ -68,6 +97,12 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
   const sections = MEDIA_SECTIONS[activeTab] || [];
   const addLabel = MEDIA_TYPE_LABELS[activeTab] || 'Item';
   const tileLabel = MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist';
+  const emptyCopy = MEDIA_TYPE_EMPTY_COPY[activeTab] || {
+    title: `No ${tileLabel.toLowerCase()} yet`,
+    message: 'Add the first shared pick.',
+    actionLabel: `Add ${addLabel.toLowerCase()}`,
+    icon: Film
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -76,7 +111,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           <button
             type="button"
             onClick={() => onMediaTypeSelect?.(null)}
-            className="rounded-lg border border-[#E1D8D4] bg-white p-2 text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1D8D4] bg-white text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Back to media types"
           >
             <ChevronLeft size={18} />
@@ -86,14 +121,22 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         <button
           type="button"
           onClick={onAddClick}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
         >
           <Plus size={18} />
           Add {addLabel}
         </button>
       </div>
 
-      {sections.map(section => {
+      {items.length === 0 ? (
+        <EmptyState
+          title={emptyCopy.title}
+          message={emptyCopy.message}
+          actionLabel={emptyCopy.actionLabel}
+          icon={emptyCopy.icon}
+          onAddClick={onAddClick}
+        />
+      ) : sections.map(section => {
         const sectionItems = items.filter(item => item.status === section.status);
         return (
           <section key={section.status}>
@@ -104,9 +147,12 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
               </span>
             </div>
             {sectionItems.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-[#E1D8D4] bg-white py-6 text-center text-sm italic text-[#857370]">
-                Nothing here yet.
-              </p>
+              <EmptyState
+                title={`No ${section.title.toLowerCase()} items`}
+                message={`Move items here when they are ${section.title.toLowerCase()}.`}
+                icon={emptyCopy.icon}
+                compact
+              />
             ) : (
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 sm:gap-4">
                 {sectionItems.map(item => (

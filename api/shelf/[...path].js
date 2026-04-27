@@ -1,6 +1,18 @@
 import { randomBytes, randomUUID } from 'crypto';
-import { cors, errResponse, getUserIdFromRequest, sql } from '../../lib/auth-shared.js';
+import {
+  consumeRateLimit,
+  cors,
+  errResponse,
+  getClientIp,
+  getUserIdFromRequest,
+  normalizeRateLimitKey,
+  rateLimitResponse,
+  sql
+} from '../../lib/auth-shared.js';
 import { DEFAULT_SHELF_DATA, initializeDatabase, normalizeShelfData, normalizeShelfSections } from '../../lib/db.js';
+
+const JOIN_CODE_RATE_LIMIT = { limit: 10, windowSeconds: 15 * 60 };
+const JOIN_CODE_IP_RATE_LIMIT = { limit: 60, windowSeconds: 15 * 60 };
 
 async function ensureSchema() {
   await initializeDatabase();
@@ -200,6 +212,28 @@ export default async function handler(req, res) {
       const joinCode = req.body?.joinCode?.trim().toUpperCase();
       if (!shelfId || !joinCode) {
         return res.status(400).json({ error: 'Shelf ID and join code are required' });
+      }
+
+      const ip = getClientIp(req);
+      const [joinLimit, ipLimit] = await Promise.all([
+        consumeRateLimit({
+          scope: 'shelf-join-code',
+          key: `${userId}:${normalizeRateLimitKey(shelfId)}:${ip}`,
+          ...JOIN_CODE_RATE_LIMIT
+        }),
+        consumeRateLimit({
+          scope: 'shelf-join-code-ip',
+          key: ip,
+          ...JOIN_CODE_IP_RATE_LIMIT
+        })
+      ]);
+
+      if (!joinLimit.allowed || !ipLimit.allowed) {
+        return rateLimitResponse(
+          res,
+          !joinLimit.allowed ? joinLimit : ipLimit,
+          'Too many join-code attempts. Please wait a few minutes and try again.'
+        );
       }
 
       const existingMember = await requireShelfMember(shelfId, userId);

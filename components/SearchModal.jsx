@@ -66,7 +66,7 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
             <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">Search {getCategoryName(category)}</h2>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
               aria-label="Close"
             >
               <Close size={22} />
