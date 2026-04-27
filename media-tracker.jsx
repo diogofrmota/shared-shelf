@@ -480,10 +480,10 @@ function MediaTracker() {
             setAddCategory(activeSubTab);
             setAddModalOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#e63b2e] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-red-950/10 transition hover:bg-[#a9372c]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
         >
-          <Plus size={18} />
-          <Icon size={18} />
+          <Plus size={16} />
+          <Icon size={16} />
           Add {action.label}
         </button>
       </div>
@@ -608,28 +608,8 @@ function MediaTracker() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fbf2ed]">
-      <a href="#main-content" className="skip-link">Skip To Content</a>
-      <style>{`
-        * { font-family: 'Manrope', system-ui, sans-serif; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Epilogue', system-ui, sans-serif; }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 248, 245, 0.8); }
-        ::-webkit-scrollbar-thumb { background: rgba(230, 59, 46, 0.55); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(169, 55, 44, 0.82); }
-        input[type="time"], input[type="date"] { color-scheme: light; }
-        input[type="time"]::-webkit-calendar-picker-indicator,
-        input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.7; }
-        .shelf-content [class~="text-white"] { color: #0f172a !important; }
-        .shelf-content :is([class~="bg-purple-600"], [class~="bg-purple-700"], [class~="bg-red-600"], [class~="bg-red-700"], [class~="bg-black/60"], [class~="bg-black/80"])[class~="text-white"],
-        .shelf-content :is([class~="bg-purple-600"], [class~="bg-purple-700"], [class~="bg-red-600"], [class~="bg-red-700"], [class~="bg-black/60"], [class~="bg-black/80"]) [class~="text-white"],
-        .shelf-content [style*="background-color"] [class~="text-white"] { color: #ffffff !important; }
-      `}</style>
+    <div className="flex min-h-screen flex-col bg-[#FBF2ED]">
+      <a href="#main-content" className="skip-link">Skip to content</a>
 
       <Header
         shelfName={currentShelf.name}
@@ -640,11 +620,16 @@ function MediaTracker() {
         onSubTabChange={(sub) => setActiveSubTab(sub)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
+        onBackToShelves={handleBackToShelves}
         enabledSections={getEnabledSections(currentShelf)}
         profile={data?.profile}
       />
 
-      <main id="main-content" className="shelf-content flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8" tabIndex="-1">
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
+        tabIndex="-1"
+      >
         {renderPageAddButton()}
         {renderContent()}
       </main>

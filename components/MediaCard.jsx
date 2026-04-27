@@ -10,8 +10,8 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
   const isAnime = item.id.startsWith('mal-');
 
   const [loading, setLoading] = useState(true);
-  const [seasons, setSeasons] = useState(null);   // array of { season_number, episode_count }
-  const [totalEpisodes, setTotalEpisodes] = useState(null); // for anime
+  const [seasons, setSeasons] = useState(null);
+  const [totalEpisodes, setTotalEpisodes] = useState(null);
   const [currentSeason, setCurrentSeason] = useState(item.progress?.currentSeason || 1);
   const [currentEpisode, setCurrentEpisode] = useState(item.progress?.currentEpisode || 1);
 
@@ -23,7 +23,6 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
         const details = await fetchTvDetails(tmdbId);
         if (details?.seasons?.length) {
           setSeasons(details.seasons);
-          // If we already have saved progress, restore selectors
           setCurrentSeason(item.progress?.currentSeason || 1);
           setCurrentEpisode(item.progress?.currentEpisode || 1);
         }
@@ -38,7 +37,6 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
     load();
   }, [item.id]);
 
-  // Number of episodes in the current season (null = unknown)
   const episodeCount = isTmdb && seasons
     ? (seasons.find(s => s.season_number === currentSeason)?.episode_count || null)
     : totalEpisodes;
@@ -51,33 +49,32 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
     onClose();
   };
 
-  const selectCls = "w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-purple-500 text-sm";
+  const selectCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
         onClick={e => e.stopPropagation()}
       >
         <div className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="min-w-0 flex-1 mr-3">
-              <p className="text-xs text-purple-400 font-semibold uppercase tracking-wide mb-1">Progress</p>
-              <h3 className="font-bold text-white text-sm line-clamp-2">{item.title}</h3>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="mr-3 min-w-0 flex-1">
+              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
+              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]">{item.title}</h3>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white shrink-0">
+            <button onClick={onClose} className="shrink-0 rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
               <Close size={20} />
             </button>
           </div>
 
           {loading ? (
-            <div className="py-6 text-center text-slate-400 text-sm">Loading show info…</div>
+            <div className="py-6 text-center text-sm text-[#534340]">Loading show info…</div>
           ) : (
             <div className="space-y-4">
-              {/* Season selector — only for TMDB shows with season data */}
               {isTmdb && seasons && seasons.length > 0 && (
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Season</label>
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Season</label>
                   <select
                     value={currentSeason}
                     onChange={e => {
@@ -96,9 +93,8 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
                 </div>
               )}
 
-              {/* Episode selector */}
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Episode</label>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Episode</label>
                 {episodeCount ? (
                   <select
                     value={currentEpisode}
@@ -123,9 +119,9 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
 
               <button
                 onClick={handleSave}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors text-sm"
+                className="w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
               >
-                Save Progress
+                Save progress
               </button>
             </div>
           )}
@@ -156,85 +152,83 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
 
   return (
     <>
-      <div className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-900/20">
-        <div className="aspect-2/3 overflow-hidden bg-slate-900 rounded-t-xl">
+      <div className="group relative overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10">
+        <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
           <img
             src={item.thumbnail}
             alt={item.title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         </div>
 
-        <div className="p-2 sm:p-3 md:p-4 space-y-1 sm:space-y-2">
-          <div>
-            <h3 className="font-semibold text-white text-xs sm:text-sm line-clamp-2 leading-tight mb-1">
-              {item.title}
-            </h3>
-            {item.author && (
-              <p className="text-xs sm:text-xs text-slate-400">{item.author}</p>
-            )}
+        <div className="space-y-1.5 p-2 sm:p-3">
+          <h3 className="line-clamp-2 text-xs font-bold leading-tight text-[#410001] sm:text-sm">
+            {item.title}
+          </h3>
+          {item.author && (
+            <p className="text-[11px] font-medium text-[#534340]">{item.author}</p>
+          )}
 
-            <div className="flex items-start justify-between mt-1 sm:mt-2">
-              <div className="flex items-center flex-wrap gap-x-1 gap-y-0.5 text-xs text-slate-400 min-w-0">
-                <span className="flex items-center gap-1">⭐ {item.rating}</span>
-                <span>•</span>
-                <span>{item.year}</span>
-              </div>
-
-              <div className="relative">
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
-                >
-                  <ThreeDots size={16} />
-                </button>
-
-                {showMenu && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 mb-2 bottom-full w-48 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-20">
-                      {statusOptions.map(status => (
-                        <button
-                          key={status}
-                          onClick={() => {
-                            onStatusChange(item.id, status);
-                            setShowMenu(false);
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-700 transition-colors"
-                        >
-                          {formatStatusLabel(status)}
-                        </button>
-                      ))}
-                      <button
-                        onClick={() => {
-                          onStatusChange(item.id, 'remove');
-                          setShowMenu(false);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-slate-700 transition-colors border-t border-slate-700 mt-1"
-                      >
-                        Remove from list
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+          <div className="flex items-start justify-between">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-medium text-[#534340]">
+              <span className="flex items-center gap-0.5">⭐ {item.rating}</span>
+              <span>·</span>
+              <span>{item.year}</span>
             </div>
 
-            {/* Progress tracker — only for TV shows in Watching */}
-            {isWatchingTvShow && (
+            <div className="relative">
               <button
-                onClick={() => setShowProgressModal(true)}
-                className="mt-2 w-full flex items-center justify-between gap-1 px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-lg transition-colors group/prog"
+                onClick={() => setShowMenu(!showMenu)}
+                className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+                aria-label="Options"
               >
-                <span className="text-xs text-blue-300 font-medium truncate">
-                  {progressLabel || 'Set progress…'}
-                </span>
-                <span className="text-blue-400 opacity-60 group-hover/prog:opacity-100 transition-opacity text-xs shrink-0">✎</span>
+                <ThreeDots size={14} />
               </button>
-            )}
+
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                  <div className="absolute bottom-full right-0 z-20 mb-2 w-44 overflow-hidden rounded-lg border border-[#E1D8D4] bg-white py-1 shadow-xl shadow-[#410001]/15">
+                    {statusOptions.map(status => (
+                      <button
+                        key={status}
+                        onClick={() => {
+                          onStatusChange(item.id, status);
+                          setShowMenu(false);
+                        }}
+                        className="block w-full px-3 py-2 text-left text-sm text-[#410001] transition hover:bg-[#FFF8F5]"
+                      >
+                        {formatStatusLabel(status)}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => {
+                        onStatusChange(item.id, 'remove');
+                        setShowMenu(false);
+                      }}
+                      className="block w-full border-t border-[#E1D8D4] px-3 py-2 text-left text-sm font-semibold text-[#C1121F] transition hover:bg-[#FFDAD4]"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
+          {isWatchingTvShow && (
+            <button
+              onClick={() => setShowProgressModal(true)}
+              className="mt-1 flex w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
+            >
+              <span className="truncate text-[11px] font-bold text-[#E63B2E]">
+                {progressLabel || 'Set progress…'}
+              </span>
+              <span className="shrink-0 text-[10px] text-[#A9372C] opacity-70">✎</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -255,29 +249,27 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
 
 const ResultCard = ({ item, category, onAdd }) => (
   <div
-    className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl overflow-hidden border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-900/20 cursor-pointer"
+    className="group relative cursor-pointer overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
     onClick={() => onAdd({ ...item, category })}
   >
-    <div className="aspect-2/3 overflow-hidden bg-slate-900">
+    <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
       <img
         src={item.thumbnail}
         alt={item.title}
         loading="lazy"
         decoding="async"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
       />
     </div>
-    <div className="p-2 sm:p-3 space-y-1 sm:space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent flex flex-col justify-end">
-      <div>
-        <h3 className="font-semibold text-white text-xs sm:text-sm line-clamp-2 leading-tight mb-1">
-          {item.title}
-        </h3>
-        {item.author && <p className="text-xs text-slate-400">{item.author}</p>}
-        <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2 text-xs text-slate-400">
-          <span className="flex items-center gap-1">⭐ {item.rating}</span>
-          <span>•</span>
-          <span>{item.year}</span>
-        </div>
+    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-[rgba(65,0,1,0.9)] via-[rgba(65,0,1,0.5)] to-transparent p-2 opacity-0 transition duration-300 group-hover:opacity-100 sm:p-3">
+      <h3 className="line-clamp-2 text-xs font-bold leading-tight text-white sm:text-sm">
+        {item.title}
+      </h3>
+      {item.author && <p className="mt-0.5 text-[11px] font-medium text-white/80">{item.author}</p>}
+      <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-white/85 sm:gap-2">
+        <span className="flex items-center gap-0.5">⭐ {item.rating}</span>
+        <span>·</span>
+        <span>{item.year}</span>
       </div>
     </div>
   </div>

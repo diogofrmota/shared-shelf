@@ -47,7 +47,6 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
 
     try {
       const created = await createShelf(name.trim(), selectedSections);
-
       if (created?.shelf) {
         onJoin(created.shelf);
         onClose();
@@ -68,7 +67,6 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
 
     try {
       const joined = await joinShelf(shelfId.trim(), code.trim());
-
       if (joined?.shelf) {
         onJoin(joined.shelf);
         onClose();
@@ -83,33 +81,36 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
   };
 
   if (!isOpen) return null;
-  const labelClass = "mb-1.5 block text-sm font-bold text-slate-800";
+
+  const inputCls = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+  const labelCls = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="join-shelf-modal w-full max-w-sm rounded-3xl border border-white/10 bg-slate-900 p-6">
-        <div className="mb-4 flex gap-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30">
+        <div className="mb-5">
+          <h2 className="text-xl font-extrabold text-[#410001]">
+            {mode === 'create' ? 'Create a shelf' : 'Join a shelf'}
+          </h2>
+          <p className="mt-1 text-sm text-[#534340]">
+            {mode === 'create'
+              ? 'Start a new shared space and pick what you want to track.'
+              : 'Enter the shelf ID and one-time join code from a shelf owner.'}
+          </p>
+        </div>
+
+        <div className="mb-5 flex gap-1.5 rounded-xl bg-[#FBF2ED] p-1.5">
           <button
             type="button"
-            onClick={() => {
-              setMode('create');
-              setError('');
-            }}
-            className={`join-shelf-tab flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ${
-              mode === 'create' ? 'join-shelf-tab-active bg-white text-slate-950' : 'bg-white/5 text-white'
-            }`}
+            onClick={() => { setMode('create'); setError(''); }}
+            className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'create' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
           >
             Create
           </button>
           <button
             type="button"
-            onClick={() => {
-              setMode('join');
-              setError('');
-            }}
-            className={`join-shelf-tab flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ${
-              mode === 'join' ? 'join-shelf-tab-active bg-white text-slate-950' : 'bg-white/5 text-white'
-            }`}
+            onClick={() => { setMode('join'); setError(''); }}
+            className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'join' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
           >
             Join
           </button>
@@ -118,7 +119,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
         {mode === 'create' ? (
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className={labelClass} htmlFor="create-shelf-name">Shelf Name</label>
+              <label className={labelCls} htmlFor="create-shelf-name">Shelf name</label>
               <input
                 id="create-shelf-name"
                 type="text"
@@ -127,48 +128,48 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
                 placeholder="Weekend plans"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
+                className={inputCls}
                 required
               />
             </div>
-            <div className="join-shelf-sections space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
-              <p className="join-shelf-section-title text-sm font-semibold text-white">Shared items</p>
+            <div>
+              <p className={labelCls}>Shared items</p>
               <div className="grid grid-cols-2 gap-2">
                 {sectionOptions.map(section => (
-                  <label key={section.id} className="join-shelf-section-option flex items-center gap-2 rounded-xl bg-slate-800 px-3 py-2 text-sm text-white">
+                  <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
                     <input
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
                       onChange={() => toggleSection(section.id)}
-                      className="join-shelf-checkbox accent-white"
+                      className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
                     />
                     <span>{section.label}</span>
                   </label>
                 ))}
               </div>
             </div>
-            {error && <p className="join-shelf-error text-sm text-red-400">{error}</p>}
-            <div className="flex gap-3">
+            {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
+            <div className="flex gap-3 pt-1">
               <button
                 type="button"
                 onClick={onClose}
-                className="join-shelf-secondary flex-1 rounded-xl bg-white/5 py-3 text-white"
+                className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="join-shelf-primary flex-1 rounded-xl bg-white py-3 font-medium text-slate-950 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
               >
-                {loading ? 'Creating...' : 'Create'}
+                {loading ? 'Creating...' : 'Create shelf'}
               </button>
             </div>
           </form>
         ) : (
           <form onSubmit={handleJoin} className="space-y-4">
             <div>
-              <label className={labelClass} htmlFor="join-shelf-id">Shelf ID</label>
+              <label className={labelCls} htmlFor="join-shelf-id">Shelf ID</label>
               <input
                 id="join-shelf-id"
                 type="text"
@@ -178,40 +179,40 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
                 placeholder="Shelf ID"
                 value={shelfId}
                 onChange={e => setShelfId(e.target.value)}
-                className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
+                className={inputCls}
                 required
               />
             </div>
             <div>
-              <label className={labelClass} htmlFor="join-code">Join Code</label>
+              <label className={labelCls} htmlFor="join-code">Join code</label>
               <input
                 id="join-code"
                 type="text"
                 name="join-code"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="Join Code"
+                placeholder="Join code"
                 value={code}
                 onChange={e => setCode(e.target.value)}
-                className="join-shelf-input w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-3 text-white outline-none"
+                className={inputCls}
                 required
               />
             </div>
-            {error && <p className="join-shelf-error text-sm text-red-400">{error}</p>}
-            <div className="flex gap-3">
+            {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
+            <div className="flex gap-3 pt-1">
               <button
                 type="button"
                 onClick={onClose}
-                className="join-shelf-secondary flex-1 rounded-xl bg-white/5 py-3 text-white"
+                className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="join-shelf-primary flex-1 rounded-xl bg-white py-3 font-medium text-slate-950 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
               >
-                {loading ? 'Joining...' : 'Join'}
+                {loading ? 'Joining...' : 'Join shelf'}
               </button>
             </div>
           </form>

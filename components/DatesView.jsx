@@ -1,7 +1,6 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
 
-// simple debounce helper
 function debounce(func, wait) {
   let timeout;
   return (...args) => {
@@ -10,7 +9,6 @@ function debounce(func, wait) {
   };
 }
 
-// fallback date categories if not defined globally
 const DATE_CATEGORIES = window.DATE_CATEGORIES || [
   { value: 'restaurant', label: 'Restaurant' },
   { value: 'bar', label: 'Bar' },
@@ -20,33 +18,17 @@ const DATE_CATEGORIES = window.DATE_CATEGORIES || [
 ];
 
 const DATE_CATEGORY_STYLES = window.DATE_CATEGORY_STYLES || {
-  restaurant: 'bg-white text-slate-950 border-white/10',
-  bar: 'bg-white text-slate-950 border-white/10',
-  brunch: 'bg-white text-slate-950 border-white/10',
-  viewpoint: 'bg-white text-slate-950 border-white/10',
-  other: 'bg-white text-slate-950 border-white/10',
+  restaurant: 'bg-[#FFDAD4] text-[#410001] border-[#FFB4A9]',
+  bar: 'bg-[#FFDAD4] text-[#410001] border-[#FFB4A9]',
+  brunch: 'bg-[#FFDAD4] text-[#410001] border-[#FFB4A9]',
+  viewpoint: 'bg-[#FFDAD4] text-[#410001] border-[#FFB4A9]',
+  other: 'bg-[#FFDAD4] text-[#410001] border-[#FFB4A9]',
 };
 
 const { Star, Trash, MapPin, LinkIcon } = window;
 
-// Reuse Filter components if defined globally, otherwise define simple ones
-const FilterBar = window.FilterBar || (({ label, children }) => (
-  <div className="flex items-center gap-2 mb-4 flex-wrap">
-    <span className="text-sm text-slate-400 mr-2">{label}</span>
-    {children}
-  </div>
-));
-
-const FilterButton = window.FilterButton || (({ label, isActive, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-      isActive ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-    }`}
-  >
-    {label}
-  </button>
-));
+const FilterBar = window.FilterBar;
+const FilterButton = window.FilterButton;
 
 // ============================================================================
 // DATES VIEW COMPONENT
@@ -74,23 +56,17 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     loadLeaflet()
       .then((L) => {
         if (cancelled) return;
-        if (L) {
-          setLeafletReady(true);
-        } else {
-          setMapError('Map unavailable');
-        }
+        if (L) setLeafletReady(true);
+        else setMapError('Map unavailable');
       })
       .catch((error) => {
         console.error('Leaflet loading error:', error);
         if (!cancelled) setMapError('Map unavailable');
       });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [leafletReady]);
 
-  // Initialise map once
   useEffect(() => {
     if (!mapRef.current || !leafletReady) return;
 
@@ -115,14 +91,13 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     };
   }, [leafletReady]);
 
-  // Force resize when the container becomes visible (e.g., after a tab switch)
   useEffect(() => {
     if (!mapInstanceRef.current || !mapReady) return;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           mapInstanceRef.current.invalidateSize();
-          observer.disconnect(); // only needed once
+          observer.disconnect();
         }
       });
     }, { threshold: 0.1 });
@@ -130,7 +105,6 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     return () => observer.disconnect();
   }, [mapReady]);
 
-  // Update markers and fit bounds – invalidate size first
   useEffect(() => {
     if (!mapReady || !mapInstanceRef.current || !markersLayerRef.current) return;
     const L = window.L;
@@ -153,7 +127,7 @@ const DatesLeafletMap = ({ places, focusedId }) => {
             <strong>${place.name}</strong><br/>
             <span style="text-transform:capitalize;">${getDateCategoryLabel(place.category)}</span><br/>
             ${place.address ? `<span>${place.address}</span><br/>` : ''}
-            ${place.link ? `<a href="${place.link}" target="_blank" rel="noreferrer noopener" style="color:#8C4F45;">Open link</a>` : ''}
+            ${place.link ? `<a href="${place.link}" target="_blank" rel="noreferrer noopener" style="color:#E63B2E;">Open link</a>` : ''}
           </div>
         `;
         const marker = L.marker(latLng).bindPopup(popupContent).addTo(layerGroup);
@@ -162,12 +136,11 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     });
 
     if (hasMarkers) {
-      map.invalidateSize();        // ensure the map knows its real size
+      map.invalidateSize();
       map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
     }
   }, [places, mapReady]);
 
-  // Focus on a specific marker
   useEffect(() => {
     if (!mapReady || !mapInstanceRef.current || !focusedId) return;
     const marker = markersRef.current.get(focusedId);
@@ -178,77 +151,15 @@ const DatesLeafletMap = ({ places, focusedId }) => {
   }, [focusedId, mapReady]);
 
   return (
-    <div className="bg-slate-900/50 border border-slate-700 rounded-2xl overflow-hidden mb-6" style={{ zIndex: 1 }}>
-      <div ref={mapRef} className="w-full h-[320px] sm:h-[420px] bg-slate-900" style={{ zIndex: 1 }}>
+    <div className="mb-5 overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm" style={{ zIndex: 1 }}>
+      <div ref={mapRef} className="h-[320px] w-full bg-[#FFDAD4] sm:h-[420px]" style={{ zIndex: 1 }}>
         {!mapReady && (
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+          <div className="flex h-full items-center justify-center text-sm font-medium text-[#534340]">
             {mapError || 'Loading map...'}
           </div>
         )}
       </div>
-      <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-700">© OpenStreetMap contributors</div>
-    </div>
-  );
-};
-
-const NominatimAddressSearch = ({ onSelect, placeholder = "Search for an address..." }) => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim()) { setResults([]); return; }
-
-    const fetchPlaces = debounce(async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/nominatim?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        setResults(data);
-        setShowResults(true);
-      } catch (err) {
-        console.error('Nominatim search error', err);
-      } finally {
-        setLoading(false);
-      }
-    }, 300);
-
-    fetchPlaces();
-  }, [query]);
-
-  return (
-    <div className="relative">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => setShowResults(true)}
-        onBlur={() => setTimeout(() => setShowResults(false), 200)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 bg-white border border-white/10 rounded-lg text-slate-950 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
-      />
-      {loading && (
-        <div className="absolute z-10 bg-slate-800 border border-slate-700 rounded-lg p-2 mt-1 w-full text-slate-400 text-sm">Searching...</div>
-      )}
-      {showResults && results.length > 0 && (
-        <ul className="absolute z-10 bg-slate-800 border border-slate-700 rounded-lg mt-1 max-h-60 overflow-auto w-full shadow-lg">
-          {results.map((place) => (
-            <li
-              key={place.place_id}
-              className="px-4 py-2 hover:bg-slate-700 cursor-pointer text-white text-sm border-b border-slate-700 last:border-b-0 transition-colors"
-              onClick={() => {
-                onSelect({ lat: parseFloat(place.lat), lng: parseFloat(place.lon), displayName: place.display_name, address: place.display_name });
-                setQuery('');
-                setResults([]);
-                setShowResults(false);
-              }}
-            >
-              {place.display_name}
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="border-t border-[#E1D8D4] px-4 py-2 text-xs text-[#857370]">© OpenStreetMap contributors</div>
     </div>
   );
 };
@@ -294,7 +205,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
             onMouseEnter={() => setHover(n)}
             onMouseLeave={() => setHover(0)}
             onClick={() => onUpdateDate?.(place.id, { starRating: rating === n ? 0 : n })}
-            className={`text-base transition-colors ${n <= (hover || rating) ? 'text-yellow-400' : 'text-slate-600 hover:text-yellow-300'}`}
+            className={`text-base transition ${n <= (hover || rating) ? 'text-[#FFB300]' : 'text-[#D8C2BE] hover:text-[#FBD08A]'}`}
             aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
           >★</button>
         ))}
@@ -304,55 +215,57 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
 
   return (
     <div
-      className={`bg-slate-900/50 border rounded-2xl overflow-hidden transition-colors cursor-pointer group ${isFocused ? 'border-purple-500 shadow-lg shadow-purple-900/30' : 'border-slate-700 hover:border-purple-500/50'}`}
+      className={`group cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
+        isFocused
+          ? 'border-[#E63B2E] shadow-md shadow-[#E63B2E]/15'
+          : 'border-[#E1D8D4] hover:border-[#FFB4A9] hover:shadow-md'
+      }`}
       onClick={() => onFocus(place.id)}
     >
       {place.photo ? (
-        <div className="relative w-full h-36 overflow-hidden bg-slate-800">
-          <img src={place.photo} alt={place.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+        <div className="relative h-36 w-full overflow-hidden bg-[#FFDAD4]">
+          <img src={place.photo} alt={place.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           <button
             onClick={e => { e.stopPropagation(); onUpdateDate?.(place.id, { photo: null }); }}
-            className="absolute top-2 right-2 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-[#410001] opacity-0 shadow-sm transition group-hover:opacity-100"
             aria-label="Remove photo"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
       ) : (
         <button
           onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }}
-          className="w-full h-10 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 transition-colors border-b border-slate-800"
+          className="flex h-10 w-full items-center justify-center gap-1.5 border-b border-[#E1D8D4] text-xs font-semibold text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           Add photo
         </button>
       )}
       <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
 
-      <div className="p-4 sm:p-5">
+      <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            {/* Title + favourite star + visited check */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-lg font-bold text-white truncate">{place.name}</h4>
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="truncate text-base font-bold text-[#410001]">{place.name}</h4>
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleFavourite(place.id); }}
-                className={`p-1 rounded hover:bg-slate-700/50 transition-colors ${place.isFavourite ? 'text-yellow-300' : 'text-slate-400 hover:text-yellow-300'}`}
+                className={`rounded p-1 transition ${place.isFavourite ? 'text-[#FFB300]' : 'text-[#857370] hover:text-[#FFB300]'}`}
                 aria-label={place.isFavourite ? 'Remove from favourites' : 'Add to favourites'}
               >
-                <Star size={16} fill={place.isFavourite ? 'currentColor' : 'none'} />
+                <Star size={16} filled={place.isFavourite} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onUpdateDate?.(place.id, { beenThere: !place.beenThere }); }}
-                className={`p-1 rounded hover:bg-slate-700/50 transition-colors text-base ${place.beenThere ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+                className={`rounded p-1 text-base transition ${place.beenThere ? 'text-[#2F855A]' : 'text-[#857370] hover:text-[#2F855A]'}`}
                 aria-label={place.beenThere ? 'Mark as not visited' : 'Mark as visited'}
                 title={place.beenThere ? 'Visited' : 'Mark as visited'}
               >✅</button>
             </div>
 
-            {/* Category tag only (no "pinned") */}
-            <div className="mt-1">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-medium capitalize ${categoryStyle}`}>
+            <div className="mt-1.5">
+              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-bold capitalize ${categoryStyle}`}>
                 {getDateCategoryLabel(place.category)}
               </span>
             </div>
@@ -360,11 +273,10 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
             <div className="mt-2"><StarRating /></div>
           </div>
 
-          {/* Delete button – appears on hover */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(place.id); }}
-              className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700/50 transition-opacity opacity-0 group-hover:opacity-100"
+              className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
               aria-label="Delete place"
             >
               <Trash size={16} />
@@ -372,23 +284,23 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
           </div>
         </div>
 
-        {place.address && <p className="text-sm text-slate-300 mt-2">{place.address}</p>}
-        {place.notes && <p className="text-sm text-slate-400 mt-2 whitespace-pre-wrap">{place.notes}</p>}
+        {place.address && <p className="mt-2 text-sm text-[#534340]">{place.address}</p>}
+        {place.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-[#534340]">{place.notes}</p>}
 
-        <div className="mt-3 flex items-center gap-3 flex-wrap">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           {place.link && (
-            <a href={place.link} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm text-purple-300 hover:text-purple-200 transition-colors break-all">
+            <a href={place.link} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
               <LinkIcon size={14} /> Link
             </a>
           )}
           {mapsLink && (
-            <a href={mapsLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm text-purple-300 hover:text-purple-200 transition-colors">
-              <MapPin size={14} /> Open in OpenStreetMap
+            <a href={mapsLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
+              <MapPin size={14} /> Map
             </a>
           )}
           {place.photo && (
-            <button onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }} className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            <button onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#534340] transition hover:text-[#410001]">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               Change photo
             </button>
           )}
@@ -417,7 +329,12 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate }) =
   });
 
   return (
-    <div>
+    <div className="space-y-5 animate-fade-in">
+      <div>
+        <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Locations</h2>
+        <p className="mt-1 text-sm text-[#534340]">Restaurants, bars, viewpoints, and places worth saving.</p>
+      </div>
+
       <DatesLeafletMap places={filtered} focusedId={focusedId} />
 
       <FilterBar label="Filter:">
@@ -430,13 +347,13 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate }) =
       </FilterBar>
 
       {sorted.length === 0 ? (
-        <div className="text-center py-12 text-slate-500 bg-slate-900/30 border border-slate-800 rounded-2xl">
+        <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-12 text-center text-sm text-[#534340]">
           {places.length === 0
-            ? 'No places yet. Add a restaurant, bar, coffee spot, or brunch place above!'
+            ? 'No places yet. Add a restaurant, bar, coffee spot, or brunch place above.'
             : 'No places match the current filter.'}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map(place => (
             <DateCard
               key={place.id}

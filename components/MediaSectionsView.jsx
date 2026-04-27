@@ -7,26 +7,26 @@ const { Plus, Tv, Film, Book } = window;
 
 const MEDIA_SECTIONS = {
   movies: [
-    { status: 'watching',      title: 'WATCHING' },
-    { status: 'plan-to-watch', title: 'PLANNED TO WATCH' },
-    { status: 'completed',     title: 'COMPLETED' }
+    { status: 'watching',      title: 'Watching' },
+    { status: 'plan-to-watch', title: 'Planned to watch' },
+    { status: 'completed',     title: 'Completed' }
   ],
   tvshows: [
-    { status: 'watching',      title: 'WATCHING' },
-    { status: 'plan-to-watch', title: 'PLANNED TO WATCH' },
-    { status: 'completed',     title: 'COMPLETED' }
+    { status: 'watching',      title: 'Watching' },
+    { status: 'plan-to-watch', title: 'Planned to watch' },
+    { status: 'completed',     title: 'Completed' }
   ],
   books: [
-    { status: 'reading',       title: 'READING' },
-    { status: 'plan-to-read',  title: 'TO BE READ' },
-    { status: 'read',          title: 'READ' }
+    { status: 'reading',       title: 'Reading' },
+    { status: 'plan-to-read',  title: 'To be read' },
+    { status: 'read',          title: 'Read' }
   ]
 };
 
 const MEDIA_TYPE_TILES = [
-  { id: 'tvshows', label: 'TV Shows', icon: Tv },
-  { id: 'movies', label: 'Movies', icon: Film },
-  { id: 'books', label: 'Books', icon: Book }
+  { id: 'tvshows', label: 'TV Shows', icon: Tv, description: 'Series, miniseries, and shows you follow.' },
+  { id: 'movies', label: 'Movies', icon: Film, description: 'Films you have watched, planned, or want to revisit.' },
+  { id: 'books', label: 'Books', icon: Book, description: 'Reading lists and books in progress.' }
 ];
 
 const MEDIA_TYPE_LABELS = {
@@ -38,19 +38,26 @@ const MEDIA_TYPE_LABELS = {
 const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect }) => {
   if (!activeTab) {
     return (
-      <div className="animate-fade-in">
+      <div className="space-y-5 animate-fade-in">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Media tracker</h2>
+          <p className="mt-1 text-sm text-[#534340]">Keep track of what you're watching and reading.</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          {MEDIA_TYPE_TILES.map(({ id, label, icon: Icon }) => (
+          {MEDIA_TYPE_TILES.map(({ id, label, icon: Icon, description }) => (
             <button
               key={id}
               type="button"
               onClick={() => onMediaTypeSelect?.(id)}
-              className="group flex aspect-square flex-col items-center justify-center gap-4 rounded-xl border border-[#e1d8d4] bg-white text-[#410001] shadow-sm transition hover:-translate-y-1 hover:border-[#e63b2e] hover:shadow-lg hover:shadow-red-950/10 focus:outline-none focus:ring-2 focus:ring-[#ffb4a9] focus:ring-offset-2"
+              className="group flex flex-col items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#410001] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
             >
-              <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#ffdad4] text-[#e63b2e] transition group-hover:bg-[#e63b2e] group-hover:text-white">
-                <Icon size={30} />
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
+                <Icon size={26} />
               </span>
-              <span className="text-lg font-extrabold">{label}</span>
+              <div>
+                <p className="text-lg font-extrabold">{label}</p>
+                <p className="mt-1 text-sm font-medium text-[#534340]">{description}</p>
+              </div>
             </button>
           ))}
         </div>
@@ -60,39 +67,54 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
 
   const sections = MEDIA_SECTIONS[activeTab] || [];
   const addLabel = MEDIA_TYPE_LABELS[activeTab] || 'Item';
+  const tileLabel = MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist';
 
   return (
-    <div className="space-y-10 animate-fade-in">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold text-[#410001]">{MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist'}</h2>
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onMediaTypeSelect?.(null)}
+            className="rounded-lg border border-[#E1D8D4] bg-white p-2 text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            aria-label="Back to media types"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">{tileLabel}</h2>
+        </div>
         <button
           type="button"
           onClick={onAddClick}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#e63b2e] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-red-950/10 transition hover:bg-[#a9372c]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
         >
           <Plus size={18} />
           Add {addLabel}
         </button>
       </div>
+
       {sections.map(section => {
         const sectionItems = items.filter(item => item.status === section.status);
         return (
-          <div key={section.status}>
-            <div className="mb-5 border-b border-[#e1d8d4] pb-3">
-              <h2 className="text-2xl font-extrabold text-[#410001] uppercase tracking-widest">
-                {section.title}
-              </h2>
+          <section key={section.status}>
+            <div className="mb-3 flex items-baseline justify-between border-b border-[#E1D8D4] pb-2">
+              <h3 className="text-lg font-extrabold text-[#410001] sm:text-xl">{section.title}</h3>
+              <span className="text-xs font-semibold text-[#534340]">
+                {sectionItems.length} {sectionItems.length === 1 ? 'item' : 'items'}
+              </span>
             </div>
             {sectionItems.length === 0 ? (
-              <p className="text-slate-600 text-sm py-2 italic">Nothing here yet.</p>
+              <p className="rounded-xl border border-dashed border-[#E1D8D4] bg-white py-6 text-center text-sm italic text-[#857370]">
+                Nothing here yet.
+              </p>
             ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-10 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 sm:gap-4">
                 {sectionItems.map(item => (
                   <MediaCard key={item.id} item={item} onStatusChange={onStatusChange} onProgressChange={onProgressChange} />
                 ))}
               </div>
             )}
-          </div>
+          </section>
         );
       })}
     </div>

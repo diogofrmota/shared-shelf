@@ -178,7 +178,6 @@ function LoginScreen({ onLogin }) {
       const result = await resetPassword(resetToken, newPassword);
       if (result.success) {
         setServerSuccess(result.message);
-        // Strip token from URL without reloading
         window.history.replaceState({}, '', window.location.pathname);
         setResetToken(null);
         setTimeout(() => setMode('signin'), 2000);
@@ -236,21 +235,26 @@ function LoginScreen({ onLogin }) {
     }
   };
 
-  const inputClass = "w-full rounded-lg border border-[#e1d8d4] bg-[#fbf2ed] px-4 py-3 text-[#241a18] placeholder-[#857370] shadow-sm transition focus:border-[#e63b2e] focus:ring-4 focus:ring-[#ffdad4]";
-  const labelClass = "mb-1.5 block text-sm font-bold text-[#241a18]";
+  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
+  const labelClass = "mb-1.5 block text-sm font-bold text-[#241A18]";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#a9372c] via-[#e63b2e] to-[#8c4f45] flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md min-h-[34rem] rounded-xl border border-[#e1d8d4]/70 bg-[#fff8f5] p-6 shadow-2xl shadow-red-950/20 sm:p-8">
-        <img src="/assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" width="180" height="64" className="h-16 mx-auto mb-2 object-contain" />
-        <p className="text-[#534340] text-center mb-8 text-base font-medium">
-          Organize your life, together.
-        </p>
+    <div className="app-auth-bg flex min-h-screen items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md rounded-2xl border border-white/40 bg-[#FFF8F5] p-7 shadow-[0_24px_60px_rgba(65,0,1,0.32)] sm:p-9 animate-scale-in">
+        <div className="mb-7 flex flex-col items-center text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/30">
+            <Tv size={26} />
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">Shared Shelf</h1>
+          <p className="mt-2 text-sm font-medium text-[#534340]">
+            Organize your life, together.
+          </p>
+        </div>
 
         {/* Reset password form */}
         {mode === 'reset' && (
           <form onSubmit={handleResetPassword} className="space-y-4" noValidate>
-            <h2 className="text-slate-950 font-semibold text-center mb-2">Set a New Password</h2>
+            <h2 className="mb-2 text-center text-lg font-semibold text-[#410001]">Set a new password</h2>
             <div>
               <label className={labelClass} htmlFor="new-password">New Password</label>
               <input
@@ -263,23 +267,23 @@ function LoginScreen({ onLogin }) {
                 onChange={(e) => handleInput('newPassword', e.target.value)}
                 className={inputClass}
               />
-              {errors.newPassword && <p className="text-red-400 text-xs mt-1">{errors.newPassword}</p>}
+              {errors.newPassword && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.newPassword}</p>}
             </div>
-            {serverError && <p className="text-red-600 text-sm text-center" aria-live="polite">{serverError}</p>}
-            {serverSuccess && <p className="text-emerald-700 text-sm text-center" aria-live="polite">{serverSuccess}</p>}
+            {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
+            {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#e63b2e] hover:bg-[#a9372c] disabled:opacity-50 text-white font-semibold rounded-lg transition"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3 font-semibold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
             >
               {loading ? 'Updating...' : 'Update Password'}
             </button>
             <button
               type="button"
               onClick={() => { setMode('signin'); setServerError(''); setServerSuccess(''); }}
-              className="w-full text-[#534340] text-sm hover:text-[#e63b2e] transition"
+              className="w-full text-sm font-medium text-[#534340] transition hover:text-[#E63B2E]"
             >
-              Back To Sign In
+              Back to sign in
             </button>
           </form>
         )}
@@ -287,16 +291,18 @@ function LoginScreen({ onLogin }) {
         {/* Sign in / Register forms */}
         {mode !== 'reset' && (
           <>
-            <div className="flex gap-2 mb-6 rounded-xl bg-[#fbf2ed] p-1.5">
+            <div className="mb-6 flex gap-1.5 rounded-xl bg-[#FBF2ED] p-1.5">
               <button
+                type="button"
                 onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 rounded-lg border px-3 py-2 font-semibold transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signin' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
               >
                 Sign In
               </button>
               <button
+                type="button"
                 onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 rounded-lg border px-3 py-2 font-semibold transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signup' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
               >
                 Register
               </button>
@@ -311,13 +317,13 @@ function LoginScreen({ onLogin }) {
                       id="signup-name"
                       type="text"
                       name="name"
-                      placeholder="Name"
+                      placeholder="Your name"
                       autoComplete="name"
                       value={name}
                       onChange={(e) => handleInput('name', e.target.value)}
                       className={inputClass}
                     />
-                    {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+                    {errors.name && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.name}</p>}
                   </div>
                   <div>
                     <label className={labelClass} htmlFor="signup-username">Username</label>
@@ -332,80 +338,100 @@ function LoginScreen({ onLogin }) {
                       onChange={(e) => handleInput('username', e.target.value)}
                       className={inputClass}
                     />
-                    {errors.username && <p className="text-red-400 text-xs mt-1">{errors.username}</p>}
+                    {errors.username && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.username}</p>}
                   </div>
                 </>
               )}
 
               <div>
-                <label className={labelClass} htmlFor="login-email">{mode === 'signup' ? 'Email' : 'Email Or Username'}</label>
+                <label className={labelClass} htmlFor="login-email">{mode === 'signup' ? 'Email' : 'Email or Username'}</label>
                 <input
                   id="login-email"
                   type="text"
                   name={mode === 'signup' ? 'email' : 'username'}
                   autoComplete={mode === 'signup' ? 'email' : 'username'}
                   spellCheck={false}
-                  placeholder={mode === 'signup' ? 'Email' : 'Email or Username'}
+                  placeholder={mode === 'signup' ? 'you@example.com' : 'Email or username'}
                   value={email}
                   onChange={(e) => handleInput('email', e.target.value)}
                   className={inputClass}
                 />
-                {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                {errors.email && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.email}</p>}
               </div>
 
               <div>
-                <label className={labelClass} htmlFor="login-password">Password</label>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label className="text-sm font-bold text-[#241A18]" htmlFor="login-password">Password</label>
+                  {mode === 'signin' && (
+                    <button
+                      type="button"
+                      className="text-xs font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+                      onClick={() => { setForgotEmail(email.includes('@') ? email : ''); setForgotOpen(true); setErrors({}); }}
+                      disabled={loading}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <input
                   id="login-password"
                   type="password"
                   name="password"
                   autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                  placeholder="Password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => handleInput('password', e.target.value)}
                   className={inputClass}
                 />
-                {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
+                {errors.password && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.password}</p>}
               </div>
 
               {mode === 'signin' && (
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-slate-700 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded accent-[#e63b2e]"
-                    />
-                    Remember me
-                  </label>
-                  <button
-                    type="button"
-                    className="text-[#e63b2e] text-sm font-semibold hover:underline"
-                    onClick={() => { setForgotEmail(email.includes('@') ? email : ''); setForgotOpen(true); setErrors({}); }}
-                    disabled={loading}
-                  >
-                    Forgot password?
-                  </button>
-                </div>
+                <label className="flex items-center gap-2 text-sm font-medium text-[#534340]">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                  />
+                  Remember me
+                </label>
               )}
 
-              {serverError && <p className="text-red-600 text-sm text-center" aria-live="polite">{serverError}</p>}
-              {serverSuccess && <p className="text-emerald-700 text-sm text-center" aria-live="polite">{serverSuccess}</p>}
+              {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
+              {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-[#e63b2e] hover:bg-[#a9372c] disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3.5 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
               >
-                {loading ? 'Please Wait...' : mode === 'signin' ? 'Login' : 'Create Account'}
+                {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create account'}
+                {!loading && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                )}
               </button>
             </form>
 
+            <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
+              {mode === 'signin' ? 'New to Shared Shelf?' : 'Already have an account?'}
+              <button
+                type="button"
+                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
+                className="ml-1 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+              >
+                {mode === 'signin' ? 'Register here' : 'Sign in'}
+              </button>
+            </p>
+
             {forgotOpen && (
-              <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-4">
-                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-xl border border-[#e1d8d4] bg-[#fff8f5] p-5 shadow-2xl" noValidate>
-                  <h2 className="mb-3 text-center text-lg font-semibold text-slate-950">Reset Password</h2>
+              <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl" noValidate>
+                  <h2 className="mb-3 text-center text-lg font-bold text-[#410001]">Reset password</h2>
+                  <p className="mb-4 text-center text-sm text-[#534340]">We'll send a reset link to your email.</p>
                   <label className={labelClass} htmlFor="forgot-email">Email</label>
                   <input
                     id="forgot-email"
@@ -413,26 +439,26 @@ function LoginScreen({ onLogin }) {
                     name="email"
                     autoComplete="email"
                     spellCheck={false}
-                    placeholder="Email"
+                    placeholder="you@example.com"
                     value={forgotEmail}
                     onChange={(event) => { setForgotEmail(event.target.value); setErrors(prev => ({ ...prev, forgotEmail: '' })); }}
                     className={inputClass}
                   />
-                  {errors.forgotEmail && <p className="mt-1 text-xs text-red-400">{errors.forgotEmail}</p>}
+                  {errors.forgotEmail && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.forgotEmail}</p>}
                   <div className="mt-4 flex gap-3">
                     <button
                       type="button"
                       onClick={() => { setForgotOpen(false); setErrors({}); }}
-                      className="flex-1 rounded-lg bg-[#fbf2ed] py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#f5e7e2]"
+                      className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FBF2ED]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 rounded-lg bg-[#e63b2e] py-2 text-sm font-semibold text-white transition hover:bg-[#a9372c] disabled:opacity-50"
+                      className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-50"
                     >
-                      {loading ? 'Sending...' : 'Send Link'}
+                      {loading ? 'Sending...' : 'Send link'}
                     </button>
                   </div>
                 </form>
