@@ -5,7 +5,7 @@ const { useState, useEffect } = React;
 // PROFILE / SETTINGS / ACCOUNT MODAL
 // ============================================================================
 
-const AVATAR_COLORS = ['#031A6B', '#033860', '#087CA7', '#004385', '#05B2DC'];
+const AVATAR_COLORS = ['#E63B2E', '#A9372C', '#8C4F45', '#8C4F45', '#FFB4A9'];
 
 const getAvatarTextColor = (backgroundColor) => {
   if (!backgroundColor || !/^#([0-9a-f]{6})$/i.test(backgroundColor)) {
@@ -325,29 +325,29 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
         <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/30">
           <div className="border-b border-slate-200 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-[#031A6B]">
+              <h2 className="flex items-center gap-2 text-xl font-bold text-[#E63B2E]">
                 <SettingsIcon size={20} />
                 Shelf Settings
               </h2>
-              <button onClick={onClose} className="rounded-lg p-2 text-[#031A6B] transition-colors hover:bg-[#EAF8FC]">
+              <button onClick={onClose} className="rounded-lg p-2 text-[#E63B2E] transition-colors hover:bg-[#FFF8F5]">
                 <Close size={20} />
               </button>
             </div>
           </div>
           <div className="space-y-5 p-5">
             <div>
-              <label className="mb-1 block text-sm font-bold text-[#031A6B]">Shelf Name</label>
+              <label className="mb-1 block text-sm font-bold text-[#E63B2E]">Shelf Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Our Shared Shelf"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-black outline-none transition focus:border-[#E63B2E]"
               />
             </div>
 
             <div>
-              <p className="mb-2 text-sm font-bold text-[#031A6B]">Shared Items</p>
+              <p className="mb-2 text-sm font-bold text-[#E63B2E]">Shared Items</p>
               <div className="grid grid-cols-2 gap-2">
                 {sectionOptions.map(section => (
                   <label key={section.id} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-black">
@@ -355,7 +355,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
                       onChange={() => toggleSection(section.id)}
-                      className="accent-[#031A6B]"
+                      className="accent-[#E63B2E]"
                     />
                     <span>{section.label}</span>
                   </label>
@@ -363,10 +363,10 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-[#EAF8FC] p-4">
+            <div className="rounded-2xl border border-slate-200 bg-[#FFF8F5] p-4">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-[#031A6B]">Share Shelf</h3>
+                  <h3 className="text-base font-bold text-[#E63B2E]">Share Shelf</h3>
                   <p className="mt-1 text-sm text-black/70">
                     Share this shelf ID and one-time code so someone else can join.
                   </p>
@@ -375,24 +375,24 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   type="button"
                   onClick={handleRegenerate}
                   disabled={regeneratingShare || shareLoading}
-                  className="rounded-xl bg-[#031A6B] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#033860] disabled:opacity-60"
+                  className="rounded-xl bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
                 >
                   {regeneratingShare ? 'Generating...' : 'Generate New'}
                 </button>
               </div>
 
               {shareLoading ? (
-                <p className="py-6 text-center text-sm font-medium text-[#031A6B]">Loading share details...</p>
+                <p className="py-6 text-center text-sm font-medium text-[#E63B2E]">Loading share details...</p>
               ) : (
                 <div className="space-y-3">
                   <div className="rounded-xl border border-slate-200 bg-white p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-[#031A6B]">Shelf ID</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf ID</p>
                     <div className="mt-2 flex items-center gap-2">
                       <code className="flex-1 break-all text-sm font-semibold text-black">{shelfId}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('shelfId', shelfId)}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#031A6B] transition hover:bg-[#EAF8FC]"
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                       >
                         {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
                       </button>
@@ -400,7 +400,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   </div>
 
                   <div className="rounded-xl border border-slate-200 bg-white p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-[#031A6B]">Join Code</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join Code</p>
                     <p className="mt-1 text-xs text-black/60">This code works once, then expires.</p>
                     <div className="mt-2 flex items-center gap-2">
                       <code className="flex-1 break-all text-lg font-bold tracking-[0.25em] text-black">{joinCode || '--------'}</code>
@@ -408,7 +408,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                         type="button"
                         onClick={() => copyValue('joinCode', joinCode)}
                         disabled={!joinCode}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#031A6B] transition hover:bg-[#EAF8FC] disabled:opacity-50"
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
                       >
                         {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
                       </button>
@@ -424,7 +424,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
             <button onClick={onClose} className="flex-1 rounded-xl bg-[#ced4da] py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]">
               Cancel
             </button>
-            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#031A6B] py-3 text-sm font-bold text-white transition hover:bg-[#033860]">
+            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white transition hover:bg-[#A9372C]">
               Save Changes
             </button>
           </div>
@@ -487,11 +487,11 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
         <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/30">
           <div className="border-b border-slate-200 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-[#031A6B]">
+              <h2 className="flex items-center gap-2 text-xl font-bold text-[#E63B2E]">
                 <UserIcon size={20} />
                 Profile
               </h2>
-              <button onClick={onClose} className="rounded-lg p-2 text-[#031A6B] transition-colors hover:bg-[#EAF8FC]">
+              <button onClick={onClose} className="rounded-lg p-2 text-[#E63B2E] transition-colors hover:bg-[#FFF8F5]">
                 <Close size={20} />
               </button>
             </div>
@@ -500,29 +500,29 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
             {accountEditing ? (
               <form className="space-y-4 text-left text-sm" onSubmit={handleAccountSave}>
                 <div>
-                  <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="account-name">Name</label>
+                  <label className="mb-1 block font-bold text-[#E63B2E]" htmlFor="account-name">Name</label>
                   <input
                     id="account-name"
                     type="text"
                     value={accountName}
                     onChange={(event) => setAccountName(event.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#E63B2E]"
                     autoComplete="name"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="account-username">Username</label>
+                  <label className="mb-1 block font-bold text-[#E63B2E]" htmlFor="account-username">Username</label>
                   <input
                     id="account-username"
                     type="text"
                     value={accountUsername}
                     onChange={(event) => setAccountUsername(event.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#E63B2E]"
                     autoComplete="username"
                   />
                 </div>
                 <div>
-                  <p className="font-bold text-[#031A6B]">Email:</p>
+                  <p className="font-bold text-[#E63B2E]">Email:</p>
                   <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
                 </div>
                 {accountError && <p className="text-sm font-semibold text-[#c1121f]">{accountError}</p>}
@@ -542,7 +542,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860] disabled:opacity-60"
+                    className="flex-1 rounded-xl bg-[#E63B2E] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
                     disabled={accountSaving}
                   >
                     {accountSaving ? 'Saving...' : 'Save'}
@@ -553,15 +553,15 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
               <>
                 <div className="space-y-3 text-left text-sm">
                   <div>
-                    <p className="font-bold text-[#031A6B]">Name:</p>
+                    <p className="font-bold text-[#E63B2E]">Name:</p>
                     <p className="break-words font-medium text-black">{displayName}</p>
                   </div>
                   <div>
-                    <p className="font-bold text-[#031A6B]">Username:</p>
+                    <p className="font-bold text-[#E63B2E]">Username:</p>
                     <p className="break-words font-medium text-black">{username}</p>
                   </div>
                   <div>
-                    <p className="font-bold text-[#031A6B]">Email:</p>
+                    <p className="font-bold text-[#E63B2E]">Email:</p>
                     <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
                   </div>
                 </div>
@@ -569,7 +569,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   <button
                     type="button"
                     onClick={() => setAccountEditing(true)}
-                    className="w-full rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860]"
+                    className="w-full rounded-xl bg-[#E63B2E] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#A9372C]"
                   >
                     Edit Information
                   </button>
@@ -579,7 +579,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                       onBackToShelves?.();
                       onClose();
                     }}
-                    className="w-full rounded-xl bg-[#EAF8FC] px-3 py-3 text-sm font-bold text-[#031A6B] transition hover:bg-[#d9f1f8]"
+                    className="w-full rounded-xl bg-[#FFF8F5] px-3 py-3 text-sm font-bold text-[#E63B2E] transition hover:bg-[#FBF2ED]"
                   >
                     Back
                   </button>

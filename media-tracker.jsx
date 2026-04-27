@@ -6,20 +6,20 @@ const { Plus, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, Book } = win
 const API_BASE = window.API_BASE_URL ?? '';
 const DEFAULT_SHELF_SECTIONS = ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist'];
 const LEGACY_PROFILE_COLOR_MAP = {
-  '#c1071e': '#031A6B',
-  '#dedede': '#087CA7',
-  '#8b5cf6': '#004385',
-  '#ec4899': '#05B2DC',
-  '#ff6f61': '#087CA7',
-  '#2fb7aa': '#05B2DC',
-  '#f7b267': '#033860',
-  '#7c83fd': '#004385',
-  '#ff9f9f': '#05B2DC'
+  '#c1071e': '#E63B2E',
+  '#dedede': '#8C4F45',
+  '#8b5cf6': '#A9372C',
+  '#ec4899': '#FFB4A9',
+  '#ff6f61': '#E63B2E',
+  '#2fb7aa': '#8C4F45',
+  '#f7b267': '#A9372C',
+  '#7c83fd': '#8C4F45',
+  '#ff9f9f': '#FFB4A9'
 };
 
 const normalizeProfileUsers = (users = []) => users.map((user, index) => ({
   ...user,
-  color: LEGACY_PROFILE_COLOR_MAP[user.color] || user.color || (index % 2 === 0 ? '#031A6B' : '#087CA7')
+  color: LEGACY_PROFILE_COLOR_MAP[user.color] || user.color || (index % 2 === 0 ? '#E63B2E' : '#8C4F45')
 }));
 
 const getEnabledSections = (shelf) => (
@@ -480,7 +480,7 @@ function MediaTracker() {
             setAddCategory(activeSubTab);
             setAddModalOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#031A6B] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-purple-950/15 transition hover:bg-[#033860]"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#e63b2e] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-red-950/10 transition hover:bg-[#a9372c]"
         >
           <Plus size={18} />
           <Icon size={18} />
@@ -608,19 +608,20 @@ function MediaTracker() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fbfaff]">
+    <div className="flex min-h-screen flex-col bg-[#fbf2ed]">
       <a href="#main-content" className="skip-link">Skip To Content</a>
       <style>{`
-        * { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+        * { font-family: 'Manrope', system-ui, sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Epilogue', system-ui, sans-serif; }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.18); }
-        ::-webkit-scrollbar-thumb { background: rgba(5, 178, 220, 0.55); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.82); }
+        ::-webkit-scrollbar-track { background: rgba(255, 248, 245, 0.8); }
+        ::-webkit-scrollbar-thumb { background: rgba(230, 59, 46, 0.55); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(169, 55, 44, 0.82); }
         input[type="time"], input[type="date"] { color-scheme: light; }
         input[type="time"]::-webkit-calendar-picker-indicator,
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.7; }
@@ -704,8 +705,8 @@ function defaultShelfData() {
     watchlist: [],
     profile: {
       users: [
-        { id: 'user-1', name: 'Diogo', avatar: '', color: '#031A6B' },
-        { id: 'user-2', name: 'MÃ³nica', avatar: '', color: '#087CA7' }
+        { id: 'user-1', name: 'Diogo', avatar: '', color: '#E63B2E' },
+        { id: 'user-2', name: 'MÃ³nica', avatar: '', color: '#8C4F45' }
       ]
     }
   };

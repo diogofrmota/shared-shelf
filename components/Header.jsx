@@ -28,16 +28,21 @@ const Header = ({
     : ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist']);
   const visibleNavTabs = navTabs.filter(tab => tab.id === 'media' ? enabledSet.has('watchlist') : enabledSet.has(tab.id));
 
-  const headerButton = 'flex h-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white transition hover:bg-white/15 sm:px-4';
+  const headerButton = 'flex h-10 items-center justify-center rounded-lg border border-stone-200 bg-white px-3 text-sm font-semibold text-[#410001] transition hover:bg-[#fff8f5] hover:text-[#e63b2e] sm:px-4';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/15 bg-gradient-to-r from-purple-950 via-violet-900 to-fuchsia-800 shadow-lg shadow-purple-950/20 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-stone-200 bg-[#fdfbf7]/95 shadow-sm backdrop-blur">
       <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
-            <h1 className="max-w-full truncate text-left text-xl font-bold text-white lg:max-w-[220px]">
-              {shelfName || 'Shared Shelf'}
-            </h1>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e63b2e] text-white shadow-sm">
+                <Tv size={18} />
+              </span>
+              <h1 className="max-w-full truncate text-left text-xl font-bold text-[#410001] lg:max-w-[220px]">
+                {shelfName || 'Shared Shelf'}
+              </h1>
+            </div>
 
             <nav className="flex flex-wrap items-center gap-2">
               {visibleNavTabs.map(tab => {
@@ -58,8 +63,8 @@ const Header = ({
                     }}
                     className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
                       isActive
-                        ? 'bg-white text-[#3B0764] shadow-sm'
-                        : 'text-white hover:bg-white/10'
+                        ? 'border-b-2 border-[#e63b2e] bg-[#fff8f5] text-[#e63b2e]'
+                        : 'text-[#534340] hover:bg-[#fff8f5] hover:text-[#e63b2e]'
                     }`}
                   >
                     <Icon size={16} />

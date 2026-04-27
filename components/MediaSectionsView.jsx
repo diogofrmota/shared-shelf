@@ -45,9 +45,9 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
               key={id}
               type="button"
               onClick={() => onMediaTypeSelect?.(id)}
-              className="group flex aspect-square flex-col items-center justify-center gap-4 rounded-2xl border border-purple-100 bg-white text-[#031A6B] shadow-xl shadow-purple-950/5 transition hover:-translate-y-1 hover:border-[#05B2DC] hover:shadow-purple-950/15 focus:outline-none focus:ring-2 focus:ring-[#05B2DC] focus:ring-offset-2"
+              className="group flex aspect-square flex-col items-center justify-center gap-4 rounded-xl border border-[#e1d8d4] bg-white text-[#410001] shadow-sm transition hover:-translate-y-1 hover:border-[#e63b2e] hover:shadow-lg hover:shadow-red-950/10 focus:outline-none focus:ring-2 focus:ring-[#ffb4a9] focus:ring-offset-2"
             >
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EAF8FC] text-[#031A6B] transition group-hover:bg-[#031A6B] group-hover:text-white">
+              <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#ffdad4] text-[#e63b2e] transition group-hover:bg-[#e63b2e] group-hover:text-white">
                 <Icon size={30} />
               </span>
               <span className="text-lg font-extrabold">{label}</span>
@@ -64,11 +64,11 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
   return (
     <div className="space-y-10 animate-fade-in">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold text-white">{MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist'}</h2>
+        <h2 className="text-2xl font-bold text-[#410001]">{MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist'}</h2>
         <button
           type="button"
           onClick={onAddClick}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#031A6B] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-purple-950/15 transition hover:bg-[#033860]"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#e63b2e] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-red-950/10 transition hover:bg-[#a9372c]"
         >
           <Plus size={18} />
           Add {addLabel}
@@ -78,8 +78,8 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         const sectionItems = items.filter(item => item.status === section.status);
         return (
           <div key={section.status}>
-            <div className="mb-5 border-b border-slate-800 pb-3">
-              <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest">
+            <div className="mb-5 border-b border-[#e1d8d4] pb-3">
+              <h2 className="text-2xl font-extrabold text-[#410001] uppercase tracking-widest">
                 {section.title}
               </h2>
             </div>

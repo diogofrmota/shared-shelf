@@ -62,7 +62,7 @@ The media search modal is used when adding TV shows, movies, or books. It contai
 
 ### Visual Design
 
-The current UI uses a violet, purple, and pink palette inspired by `assets/ux_ui_color_palette.jpg`, adapted for the app rather than a marketing page. Dark gradient chrome is used for login, shelf selection, and the sticky shelf header, while dense working areas use light cards and readable slate text. Form fields use visible labels, focus rings, and high-contrast surfaces so login, shelf creation/joining, and everyday editing remain readable on mobile and desktop.
+The current UI uses a warm red editorial palette based on the `/new_ui` references: vibrant red accents (`#E63B2E`), soft cream/off-white surfaces, Epilogue headings, and Manrope body text. The login screen keeps immersive red app chrome, while shelf selection and shelf workspaces use light editorial canvases with readable brown/slate text, compact top navigation, visible form labels, and warm focus rings.
 
 ## Design And Architecture
 

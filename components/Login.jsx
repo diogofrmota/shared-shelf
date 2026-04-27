@@ -236,14 +236,14 @@ function LoginScreen({ onLogin }) {
     }
   };
 
-  const inputClass = "w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-slate-950 placeholder-slate-500 shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200";
-  const labelClass = "mb-1.5 block text-sm font-bold text-slate-800";
+  const inputClass = "w-full rounded-lg border border-[#e1d8d4] bg-[#fbf2ed] px-4 py-3 text-[#241a18] placeholder-[#857370] shadow-sm transition focus:border-[#e63b2e] focus:ring-4 focus:ring-[#ffdad4]";
+  const labelClass = "mb-1.5 block text-sm font-bold text-[#241a18]";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-pink-900 flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md min-h-[34rem] rounded-[1.75rem] border border-white/30 bg-white/95 p-6 shadow-2xl shadow-purple-950/30 backdrop-blur-xl sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#a9372c] via-[#e63b2e] to-[#8c4f45] flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md min-h-[34rem] rounded-xl border border-[#e1d8d4]/70 bg-[#fff8f5] p-6 shadow-2xl shadow-red-950/20 sm:p-8">
         <img src="/assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" width="180" height="64" className="h-16 mx-auto mb-2 object-contain" />
-        <p className="text-slate-600 text-center mb-8 text-base font-medium">
+        <p className="text-[#534340] text-center mb-8 text-base font-medium">
           Organize your life, together.
         </p>
 
@@ -270,14 +270,14 @@ function LoginScreen({ onLogin }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+              className="w-full py-3 bg-[#e63b2e] hover:bg-[#a9372c] disabled:opacity-50 text-white font-semibold rounded-lg transition"
             >
               {loading ? 'Updating...' : 'Update Password'}
             </button>
             <button
               type="button"
               onClick={() => { setMode('signin'); setServerError(''); setServerSuccess(''); }}
-              className="w-full text-slate-600 text-sm hover:text-purple-800 transition"
+              className="w-full text-[#534340] text-sm hover:text-[#e63b2e] transition"
             >
               Back To Sign In
             </button>
@@ -287,16 +287,16 @@ function LoginScreen({ onLogin }) {
         {/* Sign in / Register forms */}
         {mode !== 'reset' && (
           <>
-            <div className="flex gap-2 mb-6 rounded-2xl bg-violet-50 p-1.5">
+            <div className="flex gap-2 mb-6 rounded-xl bg-[#fbf2ed] p-1.5">
               <button
                 onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 rounded-xl border px-3 py-2 font-semibold transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
+                className={`flex-1 rounded-lg border px-3 py-2 font-semibold transition ${mode === 'signin' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); }}
-                className={`flex-1 rounded-xl border px-3 py-2 font-semibold transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
+                className={`flex-1 rounded-lg border px-3 py-2 font-semibold transition ${mode === 'signup' ? 'bg-[var(--app-primary)] border-[var(--app-primary)] !text-white shadow-sm' : 'border-transparent bg-transparent text-[var(--app-primary)] hover:bg-white'}`}
               >
                 Register
               </button>
@@ -375,13 +375,13 @@ function LoginScreen({ onLogin }) {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded accent-purple-600"
+                      className="rounded accent-[#e63b2e]"
                     />
                     Remember me
                   </label>
                   <button
                     type="button"
-                    className="text-purple-700 text-sm font-semibold hover:underline"
+                    className="text-[#e63b2e] text-sm font-semibold hover:underline"
                     onClick={() => { setForgotEmail(email.includes('@') ? email : ''); setForgotOpen(true); setErrors({}); }}
                     disabled={loading}
                   >
@@ -396,7 +396,7 @@ function LoginScreen({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                className="w-full py-3 bg-[#e63b2e] hover:bg-[#a9372c] disabled:opacity-50 text-white font-semibold rounded-lg transition"
               >
                 {loading ? 'Please Wait...' : mode === 'signin' ? 'Login' : 'Create Account'}
               </button>
@@ -404,7 +404,7 @@ function LoginScreen({ onLogin }) {
 
             {forgotOpen && (
               <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-4">
-                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-2xl border border-purple-100 bg-white p-5 shadow-2xl" noValidate>
+                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-xl border border-[#e1d8d4] bg-[#fff8f5] p-5 shadow-2xl" noValidate>
                   <h2 className="mb-3 text-center text-lg font-semibold text-slate-950">Reset Password</h2>
                   <label className={labelClass} htmlFor="forgot-email">Email</label>
                   <input
@@ -423,14 +423,14 @@ function LoginScreen({ onLogin }) {
                     <button
                       type="button"
                       onClick={() => { setForgotOpen(false); setErrors({}); }}
-                      className="flex-1 rounded-lg bg-violet-50 py-2 text-sm font-semibold text-purple-900 transition hover:bg-violet-100"
+                      className="flex-1 rounded-lg bg-[#fbf2ed] py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#f5e7e2]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
+                      className="flex-1 rounded-lg bg-[#e63b2e] py-2 text-sm font-semibold text-white transition hover:bg-[#a9372c] disabled:opacity-50"
                     >
                       {loading ? 'Sending...' : 'Send Link'}
                     </button>

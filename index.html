@@ -4,49 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="description" content="Manage shared shelves for calendar, tasks, locations, trips, recipes, and watchlist">
-  <meta name="theme-color" content="#4C1D95">
+  <meta name="theme-color" content="#E63B2E">
   <title>Shared Shelf - Homepage</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     :root {
-      --app-bg: #4C1D95;
+      --app-bg: #E63B2E;
       --app-surface: #FFFFFF;
-      --app-surface-soft: rgba(236, 72, 153, 0.10);
-      --app-overlay: rgba(43, 14, 86, 0.74);
-      --app-text: #171225;
-      --app-text-muted: rgba(23, 18, 37, 0.74);
-      --app-text-subtle: rgba(23, 18, 37, 0.58);
-      --app-title: #3B0764;
-      --app-primary: #6D28D9;
-      --app-primary-strong: #4C1D95;
-      --app-accent-cool: #7C3AED;
-      --app-accent-bright: #EC4899;
-      --app-accent-soft: rgba(236, 72, 153, 0.14);
-      --app-accent-cool-soft: rgba(124, 58, 237, 0.14);
-      --app-accent-warm-soft: rgba(251, 191, 36, 0.18);
-      --app-border: #A78BFA;
-      --app-border-soft: rgba(76, 29, 149, 0.20);
-      --app-border-faint: rgba(76, 29, 149, 0.10);
+      --app-surface-soft: rgba(230, 59, 46, 0.10);
+      --app-surface-warm: #FFF8F5;
+      --app-surface-tint: #FBF2ED;
+      --app-overlay: rgba(65, 0, 1, 0.62);
+      --app-text: #241A18;
+      --app-text-muted: rgba(36, 26, 24, 0.76);
+      --app-text-subtle: rgba(36, 26, 24, 0.58);
+      --app-title: #410001;
+      --app-primary: #E63B2E;
+      --app-primary-strong: #A9372C;
+      --app-accent-cool: #8C4F45;
+      --app-accent-bright: #FFB4A9;
+      --app-accent-soft: rgba(230, 59, 46, 0.12);
+      --app-accent-cool-soft: rgba(140, 79, 69, 0.14);
+      --app-accent-warm-soft: rgba(251, 208, 119, 0.22);
+      --app-border: #D8C2BE;
+      --app-border-soft: rgba(133, 115, 112, 0.24);
+      --app-border-faint: rgba(133, 115, 112, 0.12);
       --app-light-surface: #FFFFFF;
-      --app-light-surface-hover: #F5F3FF;
-      --app-on-light: #171225;
+      --app-light-surface-hover: #FFF8F5;
+      --app-on-light: #241A18;
       --app-on-accent: #FFFFFF;
-      --app-on-bright: #2E1065;
+      --app-on-bright: #410001;
       --app-danger: #B91C1C;
-      --app-focus: #F0ABFC;
+      --app-focus: #FFB4A9;
       color-scheme: light;
     }
 
     html {
-      background: #4C1D95;
+      background: var(--app-surface-warm);
       scroll-behavior: smooth;
     }
 
@@ -55,13 +57,13 @@
       padding: 0;
       overflow-x: hidden;
       touch-action: manipulation;
-      -webkit-tap-highlight-color: rgba(236, 72, 153, 0.22);
+      -webkit-tap-highlight-color: rgba(230, 59, 46, 0.18);
       background:
-        radial-gradient(circle at top left, rgba(236, 72, 153, 0.34), transparent 28%),
-        radial-gradient(circle at top right, rgba(167, 139, 250, 0.32), transparent 28%),
-        linear-gradient(135deg, #4C1D95 0%, #581C87 44%, #2E1065 100%);
+        radial-gradient(circle at top left, rgba(255, 180, 169, 0.28), transparent 30%),
+        radial-gradient(circle at top right, rgba(251, 208, 119, 0.20), transparent 28%),
+        linear-gradient(135deg, #FFF8F5 0%, #FBF2ED 52%, #F5E7E2 100%);
       color: var(--app-text);
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     #root {
@@ -73,10 +75,11 @@
     .leaflet-container {
       height: 100%;
       width: 100%;
-      background: #F5F3FF;
+      background: #FFF8F5;
     }
 
     h1, h2, h3, h4, h5, h6 {
+      font-family: 'Epilogue', system-ui, sans-serif;
       color: var(--app-title) !important;
     }
 
@@ -100,7 +103,7 @@
     [tabindex]:focus-visible {
       outline: 3px solid var(--app-focus);
       outline-offset: 3px;
-      box-shadow: 0 0 0 6px rgba(124, 58, 237, 0.18);
+      box-shadow: 0 0 0 6px rgba(230, 59, 46, 0.14);
     }
 
     .skip-link {
@@ -128,7 +131,7 @@
     }
 
     [class*="bg-gradient-to-"] {
-      background-image: linear-gradient(135deg, #4C1D95 0%, #7C3AED 56%, #EC4899 100%) !important;
+      background-image: linear-gradient(135deg, #A9372C 0%, #E63B2E 56%, #8C4F45 100%) !important;
       background-color: var(--app-bg) !important;
       color: var(--app-on-accent) !important;
     }
@@ -629,16 +632,16 @@
     }
 
     #root .shelf-add-tile {
-      color: #FFFFFF !important;
-      border-color: rgba(255, 255, 255, 0.9) !important;
-      background: transparent !important;
+      color: var(--app-primary) !important;
+      border-color: var(--app-primary) !important;
+      background: #FFFFFF !important;
     }
 
     #root .shelf-add-tile:hover {
-      color: #FFFFFF !important;
-      border-color: rgba(255, 255, 255, 0.95) !important;
-      background: rgba(255, 255, 255, 0.12) !important;
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24) !important;
+      color: var(--app-primary-strong) !important;
+      border-color: var(--app-primary-strong) !important;
+      background: var(--app-surface-warm) !important;
+      box-shadow: 0 16px 32px rgba(65, 0, 1, 0.12) !important;
     }
 
     #root .join-shelf-modal {
@@ -648,12 +651,12 @@
     }
 
     #root .join-shelf-tab {
-      background: #EAF8FC !important;
-      color: #031A6B !important;
+      background: var(--app-surface-warm) !important;
+      color: var(--app-title) !important;
     }
 
     #root .join-shelf-tab-active {
-      background: #031A6B !important;
+      background: var(--app-primary) !important;
       color: #FFFFFF !important;
     }
 
@@ -669,7 +672,7 @@
     }
 
     #root .join-shelf-section-title {
-      color: #031A6B !important;
+      color: var(--app-title) !important;
     }
 
     #root .join-shelf-section-option {
@@ -679,28 +682,28 @@
     }
 
     #root .join-shelf-section-option:hover {
-      background: #EAF8FC !important;
+      background: var(--app-surface-warm) !important;
       border-color: rgba(3, 26, 107, 0.25) !important;
     }
 
     #root .join-shelf-checkbox {
-      accent-color: #031A6B !important;
+      accent-color: var(--app-primary) !important;
     }
 
     #root .join-shelf-secondary {
-      background: #EAF8FC !important;
-      color: #031A6B !important;
+      background: var(--app-surface-warm) !important;
+      color: var(--app-title) !important;
     }
 
     #root .join-shelf-primary,
     #root .shelf-profile-action {
-      background: #031A6B !important;
+      background: var(--app-primary) !important;
       color: #FFFFFF !important;
     }
 
     #root .join-shelf-primary:hover,
     #root .shelf-profile-action:hover {
-      background: #033860 !important;
+      background: var(--app-primary-strong) !important;
       color: #FFFFFF !important;
     }
 

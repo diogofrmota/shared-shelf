@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shared Shelf - Login</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;600;700;900&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#e1d8d4",
+                    "on-error": "#ffffff",
+                    "on-surface": "#241a18",
+                    "inverse-surface": "#392e2b",
+                    "secondary-container": "#ffdad4",
+                    "inverse-on-surface": "#fbf2ed",
+                    "primary-fixed": "#ffdad4",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#f0e6e1",
+                    "inverse-primary": "#ffb4a9",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#f4e0db",
+                    "secondary-fixed": "#ffdad4",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#ffffff",
+                    "on-tertiary-fixed": "#241a18",
+                    "surface-tint": "#e63b2e",
+                    "surface-container-highest": "#e1d8d4",
+                    "on-secondary-container": "#410001",
+                    "tertiary-fixed-dim": "#e1d8d4",
+                    "tertiary": "#8c4f45",
+                    "outline": "#857370",
+                    "on-secondary-fixed": "#410001",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#6f3b33",
+                    "surface-bright": "#fff8f5",
+                    "on-surface-variant": "#534340",
+                    "primary-fixed-dim": "#ffb4a9",
+                    "tertiary-container": "#e63b2e",
+                    "on-secondary-fixed-variant": "#930006",
+                    "surface-container": "#f5ebe6",
+                    "on-background": "#241a18",
+                    "on-primary-fixed": "#410001",
+                    "secondary-fixed-dim": "#ffb4a9",
+                    "tertiary-fixed": "#ffdad4",
+                    "on-primary-container": "#410001",
+                    "primary-container": "#e63b2e",
+                    "surface-container-low": "#fbf2ed",
+                    "surface-dim": "#e1d8d4",
+                    "surface": "#fff8f5",
+                    "on-primary-fixed-variant": "#930006",
+                    "background": "#fff8f5",
+                    "secondary": "#a9372c",
+                    "primary": "#e63b2e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.5rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "container-max": "1280px",
+                    "gutter": "24px",
+                    "sm": "12px",
+                    "lg": "48px",
+                    "xl": "80px",
+                    "md": "24px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Manrope"],
+                    "headline-xl": ["Epilogue"],
+                    "label-md": ["Manrope"],
+                    "headline-md": ["Epilogue"],
+                    "body-sm": ["Manrope"],
+                    "body-md": ["Manrope"],
+                    "headline-lg": ["Epilogue"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-xl": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen w-full relative overflow-hidden bg-[#e63b2e] selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Background App Chrome Layer -->
+<div class="absolute inset-0 z-0">
+<!-- Deep warm red gradient base -->
+<div class="absolute inset-0 bg-gradient-to-br from-[#a9372c] via-[#e63b2e] to-[#8c4f45] opacity-95"></div>
+<!-- Warm ambient glows -->
+<div class="absolute top-[-15%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-secondary-container mix-blend-screen filter blur-[120px] opacity-20"></div>
+<div class="absolute bottom-[-10%] left-[-15%] w-[50vw] h-[50vw] rounded-full bg-tertiary-container mix-blend-multiply filter blur-[100px] opacity-30"></div>
+</div>
+<!-- Clean Canvas Content Area -->
+<main class="relative z-10 min-h-screen flex items-center justify-center p-6 w-full">
+<div class="w-full max-w-md bg-surface rounded-xl p-lg shadow-[0px_8px_30px_rgba(230,59,46,0.15)] ring-1 ring-outline-variant/30 flex flex-col items-center">
+<!-- Brand Header -->
+<div class="text-center mb-10 w-full">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-surface-container-low text-primary mb-6 shadow-sm">
+<span class="material-symbols-outlined text-4xl fill">menu_book</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-[#241a18] tracking-tight mb-2">Shared Shelf</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Sign in to your culinary space</p>
+</div>
+<!-- Login Form -->
+<form class="w-full space-y-6">
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface" for="username">Email or Username</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-xl">person</span>
+</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline/60 focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-secondary-container focus:ring-offset-2 focus:ring-offset-surface transition-all duration-200" id="username" name="username" placeholder="Enter your email" required="" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="block font-label-md text-label-md text-on-surface" for="password">Password</label>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-container rounded-sm" href="#">Forgot Password?</a>
+</div>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-xl">lock</span>
+</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline/60 focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-secondary-container focus:ring-offset-2 focus:ring-offset-surface transition-all duration-200" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<button class="w-full py-4 mt-4 bg-primary hover:bg-[#a9372c] active:bg-[#410001] text-on-primary font-label-md text-label-md rounded-lg shadow-[0px_4px_12px_rgba(230,59,46,0.3)] hover:shadow-[0px_6px_16px_rgba(230,59,46,0.4)] transition-all duration-200 focus:outline-none focus:ring-[3px] focus:ring-secondary-container focus:ring-offset-2 focus:ring-offset-surface" type="submit">
+                    Sign In
+                </button>
+</form>
+<!-- Registration Link -->
+<div class="mt-8 pt-6 border-t border-outline-variant/30 w-full text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    New to Shared Shelf? 
+                    <a class="font-label-md text-label-md text-primary hover:text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-container rounded-sm ml-1" href="#">Register here</a>
+</p>
+</div>
+</div>
+</main>
+</body></html>

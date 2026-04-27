@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shared Shelf - Media Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#e1d8d4",
+                    "on-error": "#ffffff",
+                    "on-surface": "#201a19",
+                    "inverse-surface": "#362f2d",
+                    "secondary-container": "#ffdad5",
+                    "inverse-on-surface": "#fbeee9",
+                    "primary-fixed": "#ffdad5",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#f5e7e2",
+                    "inverse-primary": "#ffb4a9",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#f4ddda",
+                    "secondary-fixed": "#ffdad5",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#271d00",
+                    "on-tertiary-fixed": "#271d00",
+                    "surface-tint": "#e63b2e",
+                    "surface-container-highest": "#f0e1dd",
+                    "on-secondary-container": "#410001",
+                    "tertiary-fixed-dim": "#e8c349",
+                    "tertiary": "#715d00",
+                    "outline": "#857370",
+                    "on-secondary-fixed": "#410001",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#554600",
+                    "surface-bright": "#fff8f5",
+                    "on-surface-variant": "#534341",
+                    "primary-fixed-dim": "#ffb4a9",
+                    "tertiary-container": "#ffe264",
+                    "on-secondary-fixed-variant": "#930006",
+                    "surface-container": "#fbf2ed",
+                    "on-background": "#201a19",
+                    "on-primary-fixed": "#410001",
+                    "secondary-fixed-dim": "#e7bdb7",
+                    "tertiary-fixed": "#ffdf9c",
+                    "on-primary-container": "#410001",
+                    "primary-container": "#930006",
+                    "surface-container-low": "#fff1ec",
+                    "surface-dim": "#e1d8d4",
+                    "surface": "#fff8f5",
+                    "on-primary-fixed-variant": "#930006",
+                    "background": "#fff8f5",
+                    "secondary": "#a94239",
+                    "primary": "#e63b2e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "8px",
+                    "lg": "12px",
+                    "xl": "16px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "container-max": "1280px",
+                    "gutter": "24px",
+                    "sm": "12px",
+                    "lg": "48px",
+                    "xl": "80px",
+                    "md": "24px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Manrope"],
+                    "headline-xl": ["Epilogue"],
+                    "label-md": ["Manrope"],
+                    "headline-md": ["Epilogue"],
+                    "body-sm": ["Manrope"],
+                    "body-md": ["Manrope"],
+                    "headline-lg": ["Epilogue"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-xl": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["28px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(230, 59, 46, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-surface antialiased bg-gradient-to-br from-surface-container-low to-surface-bright">
+<!-- TopAppBar (Style based on COMPONENTS_27) -->
+<nav class="fixed top-0 w-full z-50 bg-[#FDFBF7] border-b border-stone-200">
+<div class="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
+<!-- Logo -->
+<div class="flex items-center gap-3 active:scale-95 transition-transform duration-150 cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-[#E63B2E]/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#E63B2E]" style="font-variation-settings: 'FILL' 1;">book_2</span>
+</div>
+<h1 class="text-xl font-bold tracking-tighter text-stone-900 font-['Epilogue']">Shared Shelf</h1>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-8 font-['Epilogue'] tracking-tight text-sm font-medium h-full">
+<a class="text-stone-500 hover:text-[#E63B2E] transition-colors duration-200" href="#">Browse</a>
+<a class="text-stone-500 hover:text-[#E63B2E] transition-colors duration-200" href="#">Journal</a>
+<a class="text-stone-500 hover:text-[#E63B2E] transition-colors duration-200" href="#">Boutique</a>
+<a class="text-[#E63B2E] border-b-2 border-[#E63B2E] pb-1" href="#">Media Tracker</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<button class="p-2 text-stone-500 hover:text-[#E63B2E] transition-colors duration-200 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border border-stone-200 cursor-pointer active:scale-95 transition-transform">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaaY1jKWgZfp3i5j_CujzUpIfDt1_3r4la5684MvCuIHxsJDyq4RpZqHODyHqOrsVnKuedH9ySDKMzvZAwogW5oYUwPp6pfdUQrpB4tcM66xj_1gw7F1N2JRfXAl-i_7loWFfPgPpoWH4e5tAj3hRxEm87lFfY4ntWgckzvl6ObDzQFKwr5fFYellVMFHEoqYqG-o2ChLZ6wXtYNKh8-Tn80BzeKdSmPYYZ1Y4fko9E5cMHV_LAXs2-darwNkLWTnTipmp-4_AYNk"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex flex-col min-h-screen pt-20">
+<div class="flex-1 p-6 md:p-lg max-w-container-max mx-auto w-full">
+<!-- Page Header & Search -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+<div>
+<h2 class="font-headline-xl text-primary mb-2">Media Tracker</h2>
+<p class="font-body-md text-on-surface-variant">Keep track of what you're watching and reading.</p>
+</div>
+<div class="flex gap-4 w-full md:w-auto items-center">
+<div class="w-full md:w-80 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-highest border border-outline-variant rounded-full py-3 pl-12 pr-4 font-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm placeholder:text-outline/70" placeholder="Search to add movies..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary rounded-full py-3 px-6 flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-md shrink-0 font-label-md active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                    New Entry
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Movies Section -->
+<section class="glass-panel rounded-xl p-6 shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">movie</span>
+                        Movies
+                    </h3>
+<span class="text-xs font-label-md bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full">12 Plan</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Movie Card 1 -->
+<div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer border border-surface-variant flex flex-col h-full">
+<div class="aspect-[2/3] w-full overflow-hidden relative">
+<img alt="Movie Poster" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="dramatic cinematic shot of an astronaut in space with glowing neon lights and deep space background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGCJ3DUpg6qC1uj6E2Mj4AmgfiFQo-XGdc9kWDJCKdkv-KEqWeBEKUWS0p4-bnJoIDZN6Re1V16bbJDXOz_8C_9A4_EmmAvTB-7EA6YnTVJOGpQ9geeb0jEE0zGpEjyePZhx45ga0Omp6WIgQ_OBMqU9xcddLDAvj2NvMuX359DiK9bUFEbkh8xSbM8aS9Mt1PNXShMutESJVGWYH4AKb1sfsk2N5-Q_fSmegYNCBq9UnAHPNvG116epLn1-2_QyMW-zYYib48HP8"/>
+<div class="absolute top-2 right-2 bg-stone-900/80 text-white text-[10px] font-bold px-2 py-1 rounded-full backdrop-blur-md">Plan to Watch</div>
+</div>
+<div class="p-3 flex-grow bg-white">
+<h4 class="font-headline-sm text-on-surface text-sm font-bold truncate">Interstellar Journey</h4>
+<p class="font-body-sm text-xs text-on-surface-variant mt-1">Sci-Fi • 2023</p>
+</div>
+</div>
+<!-- Movie Card 2 -->
+<div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer border border-surface-variant flex flex-col h-full">
+<div class="aspect-[2/3] w-full overflow-hidden relative">
+<img alt="Movie Poster" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="vintage aesthetic film reel on a dark background with dramatic moody lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2HfsZINTbLg8frUgkG-KASqrBk-eoJVciEXqnig9fvGf0lKmZL8ena3t888uPPCybtbEuFAj_TqyIkqqc5Ut0vUBdxc635WgELVC9j9zwMZWl7shTWiHlQ1t44E1EkFx8JqrHVubdxvTrwtUWt8K_qFFwWpxNenJpmZDcaKw1FIXZPsWAK2UpQGBtOaiRAjAcF0zjesPy4x8m-fVPYS98ePEFYvlijD4_dN4WrTNdZ1ku0-ivUp6R9_D_EDHe1qeNUbn7JmdyIYQ"/>
+<div class="absolute top-2 right-2 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded-full backdrop-blur-md">Watching</div>
+</div>
+<div class="p-3 flex-grow bg-white">
+<h4 class="font-headline-sm text-on-surface text-sm font-bold truncate">The Director's Cut</h4>
+<p class="font-body-sm text-xs text-on-surface-variant mt-1">Drama • 2024</p>
+</div>
+</div>
+</div>
+</section>
+<!-- TV Shows Section -->
+<section class="glass-panel rounded-xl p-6 shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">live_tv</span>
+                        TV Shows
+                    </h3>
+<span class="text-xs font-label-md bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full">3 Active</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- TV Show List Item 1 -->
+<div class="flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all border border-surface-variant">
+<div class="w-20 shrink-0 aspect-[3/4]">
+<img alt="TV Show Poster" class="w-full h-full object-cover" data-alt="dark moody urban street scene at night with neon signs reflecting in puddles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJC7VtR43Cfo9ccn4C40EoZLQaAqGGV2jQ-tcgUBBh63AvKBGpdj1SWlRXjokkR8Nsdddc8VXoOLMAtLW3Xtd-Ld2eFST6U3sz9g0rwxAXDNehfgULbL5wbylW7jk4ISRHYWc5zvEkjbf2QPLsjuDhPjJec9rDMKMdglxfui9_1iaXR-7XB7Y5pAGXOK2cYlwrSQMo052Z_uFmumCmdhLEqSwZGEj9LApgBh4HYv9yP6P9rhmEeamICuiOnKbjP4K5lw9U1CwMzoo"/>
+</div>
+<div class="p-3 flex flex-col justify-center flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-sm text-sm font-bold text-on-surface">Neon City</h4>
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+</div>
+<p class="font-body-sm text-xs text-on-surface-variant mt-1">S2 E4 • Watching</p>
+<div class="w-full bg-surface-variant h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary h-full w-[40%]"></div>
+</div>
+</div>
+</div>
+<!-- TV Show List Item 2 -->
+<div class="flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all border border-surface-variant">
+<div class="w-20 shrink-0 aspect-[3/4]">
+<img alt="TV Show Poster" class="w-full h-full object-cover" data-alt="vast medieval fantasy landscape with castles and misty mountains in the distance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxq6h1hpgZHMumyPXMHmY6eBDD4w57afFgIX6EcUlPdqYYPLGFDXbBrvueyEnpyCdWxQ_tmjwInzRlx6VIWdC8vD0kUV96k7ZqbEp1C9C07zm3BcOGIVlDcNWqLrZbVOjVMojEGWXWeGya_3cKv16TJstU5FRmOZwCMuOapoSzhifTtqsDuw12dvEONv7eqN86XGonpbYqVQMhuEwjEybLBQElsvq-CxLd0w3QZ56stBnzozrw0KvDkKnwokPVkIO4IFxiWUiMbmE"/>
+</div>
+<div class="p-3 flex flex-col justify-center flex-grow">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-sm text-sm font-bold text-on-surface">Realm of Kings</h4>
+<span class="material-symbols-outlined text-stone-400 text-sm">schedule</span>
+</div>
+<p class="font-body-sm text-xs text-on-surface-variant mt-1">S1 E1 • Plan to Watch</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Books Section -->
+<section class="glass-panel rounded-xl p-6 shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">menu_book</span>
+                        Books
+                    </h3>
+<span class="text-xs font-label-md bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full">5 Reading</span>
+</div>
+<div class="relative w-full h-[320px] rounded-lg overflow-hidden group cursor-pointer shadow-md">
+<img alt="Book Cover" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="close up of an open antique book with warm golden sunlight hitting the aged pages" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAZk_2PCGwKIHyqtRfALzTgUsfj_0V7YEqMhnhs72_iUe8KcfuNI0ttg3_g2Jm6xK5H3ypHRysv8KSSo-Fj3jUjVxB2xXKKT124EL_lhKqeaVL6TTeCcbx8BgZUYzC0aboVD2LXgOWFXyMhiETmnIr9hDT0qp5UjXq1sUoa0DvuPtIE1gKxY-er_LBzfWWbp0quhtiS85Z0ifsKv_QQTH4RtUXy6pbBM-2pPr5uyyxGJ6j_vu-qtVT0ArLaJ0BNzITzn0m3Jsdstk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#201a19]/90 via-[#201a19]/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 right-0 p-4">
+<div class="bg-white/20 backdrop-blur-md w-fit px-2 py-1 rounded text-[10px] font-bold text-white mb-2 uppercase tracking-wider">Currently Reading</div>
+<h4 class="font-headline-md text-white mb-1">The Architecture of Light</h4>
+<p class="font-body-sm text-white/80">Page 142 of 350</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

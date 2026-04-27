@@ -144,7 +144,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
     { bg: '#ffb703', border: '#d78d00', text: '#3d2b00' },
     { bg: '#b8f2c2', border: '#64b874', text: '#0f3d1c' },
     { bg: '#f7a8b8', border: '#ce6477', text: '#4a1020' },
-    { bg: '#cdb4db', border: '#9775aa', text: '#32133f' },
+    { bg: '#ffdad4', border: '#ffb4a9', text: '#410001' },
     { bg: '#90dbf4', border: '#38a9c9', text: '#063949' },
     { bg: '#fdd85d', border: '#d4a21a', text: '#3a2c05' },
     { bg: '#a7c957', border: '#6f9230', text: '#24340d' }
@@ -230,57 +230,58 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-violet-900 to-pink-900 px-4 py-8 sm:px-6 sm:py-10">
+    <div className="min-h-screen bg-[#fbf2ed] px-4 py-8 text-[#241a18] sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-10 flex flex-col gap-5 rounded-xl border border-[#e1d8d4] bg-[#fff8f5] px-5 py-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">Join Your Shared Space</h1>
-            <p className="mt-2 max-w-2xl text-sm font-medium text-white/75 sm:text-base">
+            <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.16em] text-[#e63b2e]">Shared Shelf</p>
+            <h1 className="text-2xl font-bold text-[#410001] sm:text-3xl lg:text-4xl">Your Shelves</h1>
+            <p className="mt-2 max-w-2xl text-sm font-medium text-[#534340] sm:text-base">
               Open an existing shelf, create a new one, or join with an invite code.
             </p>
           </div>
           <div className="relative flex shrink-0 items-center gap-3 self-end sm:self-auto">
             <button
               onClick={() => togglePanel('profile')}
-              className="flex h-10 w-24 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="flex h-10 w-24 items-center justify-center rounded-lg border border-[#e1d8d4] bg-white px-4 text-sm font-semibold text-[#410001] transition hover:bg-[#fbf2ed]"
             >
               <span>Profile</span>
             </button>
             <button
               onClick={onBackToLogin}
-              className="flex h-10 w-24 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="flex h-10 w-24 items-center justify-center rounded-lg border border-[#e1d8d4] bg-white px-4 text-sm font-semibold text-[#410001] transition hover:bg-[#fbf2ed]"
             >
               Logout
             </button>
 
             {activePanel === 'profile' && (
-              <div className="absolute right-0 top-14 z-20 w-80 rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-black/30">
+              <div className="absolute right-0 top-14 z-20 w-80 rounded-xl border border-[#e1d8d4] bg-white p-5 shadow-2xl shadow-red-950/10">
                 {isEditingProfile ? (
                   <form className="space-y-4 text-left text-sm" onSubmit={handleProfileSave}>
                     <div>
-                      <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="profile-name">Name</label>
+                      <label className="mb-1 block font-bold text-[#410001]" htmlFor="profile-name">Name</label>
                       <input
                         id="profile-name"
                         type="text"
                         value={profileName}
                         onChange={(event) => setProfileName(event.target.value)}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                        className="w-full rounded-lg border border-[#e1d8d4] bg-[#fbf2ed] px-3 py-2 text-[#241a18] outline-none transition focus:border-[#e63b2e]"
                         autoComplete="name"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-bold text-[#031A6B]" htmlFor="profile-username">Username</label>
+                      <label className="mb-1 block font-bold text-[#410001]" htmlFor="profile-username">Username</label>
                       <input
                         id="profile-username"
                         type="text"
                         value={profileUsername}
                         onChange={(event) => setProfileUsername(event.target.value)}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#031A6B]"
+                        className="w-full rounded-lg border border-[#e1d8d4] bg-[#fbf2ed] px-3 py-2 text-[#241a18] outline-none transition focus:border-[#e63b2e]"
                         autoComplete="username"
                       />
                     </div>
                     <div>
-                      <p className="font-bold text-[#031A6B]">Email:</p>
+                      <p className="font-bold text-[#410001]">Email:</p>
                       <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
                     </div>
                     {profileError && <p className="text-sm font-semibold text-[#c1121f]">{profileError}</p>}
@@ -300,7 +301,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860] disabled:opacity-60"
+                        className="flex-1 rounded-lg bg-[#e63b2e] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#a9372c] disabled:opacity-60"
                         disabled={profileSaving}
                       >
                         {profileSaving ? 'Saving...' : 'Save'}
@@ -311,15 +312,15 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                   <>
                     <div className="space-y-3 text-left text-sm">
                       <div>
-                        <p className="font-bold text-[#031A6B]">Name:</p>
+                        <p className="font-bold text-[#410001]">Name:</p>
                         <p className="break-words font-medium text-black">{displayName}</p>
                       </div>
                       <div>
-                        <p className="font-bold text-[#031A6B]">Username:</p>
+                        <p className="font-bold text-[#410001]">Username:</p>
                         <p className="break-words font-medium text-black">{username}</p>
                       </div>
                       <div>
-                        <p className="font-bold text-[#031A6B]">Email:</p>
+                        <p className="font-bold text-[#410001]">Email:</p>
                         <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
                       </div>
                     </div>
@@ -327,7 +328,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                       <button
                         type="button"
                         onClick={() => setIsEditingProfile(true)}
-                        className="shelf-profile-action w-full rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold transition hover:bg-[#033860]"
+                        className="shelf-profile-action w-full rounded-lg bg-[#e63b2e] px-3 py-3 text-sm font-bold transition hover:bg-[#a9372c]"
                         style={{ color: '#ffffff' }}
                       >
                         Edit Information
@@ -343,9 +344,9 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
         {error && <p className="mb-5 text-sm text-rose-300">{error}</p>}
 
         {shelves.length === 0 && !error && (
-          <div className="mx-auto mb-2 max-w-xl rounded-2xl border border-white/20 bg-white/10 p-5 text-center text-white shadow-xl shadow-purple-950/20 backdrop-blur">
+          <div className="mx-auto mb-2 max-w-xl rounded-xl border border-[#e1d8d4] bg-white p-5 text-center text-[#241a18] shadow-sm">
             <p className="text-lg font-bold">No shelves yet</p>
-            <p className="mt-1 text-sm text-white/75">Create a shelf for shared plans, or join one with a shelf ID and code.</p>
+            <p className="mt-1 text-sm text-[#534340]">Create a shelf for shared plans, or join one with a shelf ID and code.</p>
           </div>
         )}
 
@@ -367,17 +368,17 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                   <button
                     onClick={() => !manageMode && onSelectShelf(shelf)}
                     disabled={manageMode}
-                    className={`flex h-36 w-36 items-center justify-center rounded-[1.75rem] border border-white/30 bg-white text-[#3B0764] shadow-xl shadow-purple-950/20 transition ${
+                    className={`flex h-36 w-36 items-center justify-center rounded-xl border border-[#e1d8d4] bg-white text-[#410001] shadow-sm transition ${
                       manageMode
                         ? 'cursor-default'
-                        : 'hover:-translate-y-1 hover:border-white hover:bg-violet-50'
+                        : 'hover:-translate-y-1 hover:border-[#e63b2e] hover:bg-[#fff8f5] hover:shadow-lg hover:shadow-red-950/10'
                     }`}
                     title={shelf.name}
                   >
                     <AvatarCluster shelf={shelf} />
                   </button>
                 </div>
-                <p className="mt-3 max-w-36 text-center text-base font-bold text-slate-100">{shelf.name}</p>
+                <p className="mt-3 max-w-36 text-center text-base font-bold text-[#410001]">{shelf.name}</p>
               </div>
             ))}
 
@@ -387,12 +388,12 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                   setError('');
                   setJoinOpen(true);
                 }}
-                className="shelf-add-tile flex h-36 w-36 items-center justify-center rounded-3xl border-2 border-dashed border-white bg-transparent text-5xl font-light text-white transition hover:-translate-y-1"
+                className="shelf-add-tile flex h-36 w-36 items-center justify-center rounded-xl border-2 border-dashed border-[#e63b2e] bg-white text-5xl font-light text-[#e63b2e] transition hover:-translate-y-1 hover:bg-[#fff8f5]"
                 aria-label="Add or join a shelf"
               >
                 +
               </button>
-              <p className="mt-3 text-center text-base font-bold text-slate-100">Add / Join a Shelf</p>
+              <p className="mt-3 text-center text-base font-bold text-[#410001]">Add / Join a Shelf</p>
             </div>
           </div>
         </div>
@@ -403,8 +404,8 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               onClick={() => setManageMode(prev => !prev)}
               className={`flex h-11 w-28 items-center justify-center rounded-xl border px-5 text-sm font-semibold transition ${
                 manageMode
-                  ? 'border-white bg-white text-purple-900 hover:bg-violet-50'
-                  : 'border-white/20 bg-white/10 text-white hover:bg-white/15'
+                  ? 'border-[#e63b2e] bg-white text-[#410001] hover:bg-[#fff8f5]'
+                  : 'border-[#e1d8d4] bg-white text-[#410001] hover:bg-[#fff8f5]'
               }`}
             >
               {manageMode ? 'Cancel' : 'Manage'}
