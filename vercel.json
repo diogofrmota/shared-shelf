@@ -13,6 +13,18 @@
     {
       "source": "/api/shelf/:path*",
       "destination": "/api/shelf/[...path]?path=:path*"
+    },
+    {
+      "source": "/shelf-selection",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/shelf-selection/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/shelf/:path*",
+      "destination": "/index.html"
     }
   ]
 }

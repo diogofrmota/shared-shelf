@@ -1,79 +1,47 @@
 const React = window.React;
-const { useState } = React;
 
-const { SettingsIcon, UserIcon, Plus, LogoutIcon, ChevronRight } = window;
+const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film } = window;
 
 const Header = ({
   shelfName,
   activeCategory,
   activeSubTab,
   onCategoryChange,
-  onGlobalAddClick,
   onSettingsClick,
   onAccountClick,
-  enabledSections,
-  isOnline,
-  lastSynced,
-  onBackToShelves,
-  onLogout
+  enabledSections
 }) => {
-  const [mediaSubTabsOpen, setMediaSubTabsOpen] = useState(true);
-
   const handleTabClick = (category, subTab) => {
     onCategoryChange(category, subTab);
   };
 
-  const formatLastSynced = (timestamp) => {
-    if (!timestamp) return null;
-
-    const diff = Date.now() - timestamp;
-    if (diff < 60000) return 'just now';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-    return `${Math.floor(diff / 86400000)}d ago`;
-  };
-
-  const syncLabel = isOnline
-    ? (lastSynced ? `Synced ${formatLastSynced(lastSynced)}` : 'Online')
-    : 'Offline';
-
   const navTabs = [
-    { id: 'calendar', label: 'Calendar', category: 'plan' },
-    { id: 'tasks', label: 'Tasks', category: 'plan' },
-    { id: 'locations', label: 'Locations', category: 'go' },
-    { id: 'trips', label: 'Trips', category: 'go' },
-    { id: 'recipes', label: 'Recipes', category: 'go' },
-    { id: 'media', label: 'Watchlist', category: 'media' }
+    { id: 'calendar', label: 'Calendar', category: 'plan', icon: CalendarIcon },
+    { id: 'tasks', label: 'Tasks', category: 'plan', icon: CheckSquare },
+    { id: 'locations', label: 'Locations', category: 'go', icon: MapPin },
+    { id: 'trips', label: 'Trips', category: 'go', icon: Film },
+    { id: 'recipes', label: 'Recipes', category: 'go', icon: ChefHat },
+    { id: 'media', label: 'Watchlist', category: 'media', icon: Tv }
   ];
   const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
     ? enabledSections
     : ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist']);
   const visibleNavTabs = navTabs.filter(tab => tab.id === 'media' ? enabledSet.has('watchlist') : enabledSet.has(tab.id));
 
-  const mediaTabs = [
-    { id: 'tvshows', label: 'TV Shows' },
-    { id: 'movies', label: 'Movies' },
-    { id: 'books', label: 'Books' }
-  ];
-
-  const baseHeaderButton = 'flex h-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15';
-  const fixedHeaderButton = `${baseHeaderButton} w-24`;
+  const headerButton = 'flex h-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 px-3 text-sm font-semibold text-white transition hover:bg-white/15 sm:px-4';
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/15 bg-gradient-to-r from-purple-950 via-violet-900 to-fuchsia-800 shadow-lg shadow-purple-950/20 backdrop-blur">
       <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
-            <button
-              onClick={onSettingsClick}
-              className="max-w-full truncate text-left text-xl font-bold text-white transition hover:text-[#05B2DC] lg:max-w-[220px]"
-              title="Edit shelf name"
-            >
+            <h1 className="max-w-full truncate text-left text-xl font-bold text-white lg:max-w-[220px]">
               {shelfName || 'Shared Shelf'}
-            </button>
+            </h1>
 
             <nav className="flex flex-wrap items-center gap-2">
               {visibleNavTabs.map(tab => {
+                const Icon = tab.icon;
                 const isActive = tab.id === 'media'
                   ? activeCategory === 'media'
                   : activeCategory === tab.category && activeSubTab === tab.id;
@@ -83,19 +51,18 @@ const Header = ({
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => {
                       if (tab.id === 'media') {
-                        handleTabClick('media', activeCategory === 'media' ? activeSubTab : 'tvshows');
-                        setMediaSubTabsOpen(prev => activeCategory === 'media' ? !prev : true);
+                        handleTabClick('media', null);
                       } else {
                         handleTabClick(tab.category, tab.id);
-                        setMediaSubTabsOpen(false);
                       }
                     }}
-                    className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
+                    className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
                       isActive
                         ? 'bg-white text-[#3B0764] shadow-sm'
                         : 'text-white hover:bg-white/10'
                     }`}
                   >
+                    <Icon size={16} />
                     {tab.label}
                   </button>
                 );
@@ -105,16 +72,8 @@ const Header = ({
 
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
             <button
-              onClick={onGlobalAddClick}
-              className={`${fixedHeaderButton} bg-white text-[#3B0764] hover:bg-violet-50`}
-            >
-              <Plus size={18} />
-              <span className="ml-1.5">Add</span>
-            </button>
-
-            <button
               onClick={onSettingsClick}
-              className={fixedHeaderButton}
+              className={headerButton}
               title="Shelf settings"
             >
               <SettingsIcon size={16} />
@@ -123,61 +82,13 @@ const Header = ({
 
             <button
               onClick={onAccountClick}
-              className={fixedHeaderButton}
+              className={headerButton}
               title="Profile"
             >
               <UserIcon size={16} />
               <span className="ml-1.5">Profile</span>
             </button>
-
-            <button
-              onClick={onLogout}
-              className={fixedHeaderButton}
-              title="Logout"
-            >
-              <LogoutIcon size={16} />
-              <span className="ml-1.5">Logout</span>
-            </button>
-
-            {shelfName && (
-              <button
-                onClick={onBackToShelves}
-                className={`${fixedHeaderButton} order-last lg:order-none`}
-                title="Back to shelves"
-              >
-                <span>Back</span>
-                <ChevronRight size={16} className="ml-1.5" />
-              </button>
-            )}
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 pb-3 text-xs text-white/70">
-          <span className="inline-flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${isOnline ? 'bg-[#05B2DC]' : 'bg-white/40'}`} />
-            <span>{syncLabel}</span>
-          </span>
-
-          {activeCategory === 'media' && mediaSubTabsOpen && (
-            <div className="flex flex-wrap items-center gap-2">
-              {mediaTabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    handleTabClick('media', tab.id);
-                    setMediaSubTabsOpen(true);
-                  }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    activeSubTab === tab.id
-                      ? 'bg-white text-[#3B0764] shadow-sm'
-                      : 'bg-white/5 text-white hover:bg-white/10'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </header>

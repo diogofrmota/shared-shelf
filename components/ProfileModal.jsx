@@ -63,7 +63,7 @@ const UserAvatar = ({ user, size = 40 }) => {
   );
 };
 
-const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onSaveAccount, onLogout }) => {
+const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onSaveAccount, onLogout, onBackToShelves }) => {
   const sectionOptions = [
     { id: 'calendar', label: 'Calendar' },
     { id: 'tasks', label: 'Tasks' },
@@ -565,13 +565,23 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
                   </div>
                 </div>
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-col gap-3">
                   <button
                     type="button"
                     onClick={() => setAccountEditing(true)}
-                    className="flex-1 rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860]"
+                    className="w-full rounded-xl bg-[#031A6B] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#033860]"
                   >
                     Edit Information
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onBackToShelves?.();
+                      onClose();
+                    }}
+                    className="w-full rounded-xl bg-[#EAF8FC] px-3 py-3 text-sm font-bold text-[#031A6B] transition hover:bg-[#d9f1f8]"
+                  >
+                    Back
                   </button>
                   <button
                     type="button"
@@ -579,7 +589,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                       onLogout();
                       onClose();
                     }}
-                    className="flex-1 rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
+                    className="w-full rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
                   >
                     Logout
                   </button>

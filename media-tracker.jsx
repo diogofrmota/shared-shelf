@@ -1,5 +1,6 @@
 const React = window.React;
 const { useState, useEffect, useMemo, useRef } = React;
+const { Plus, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, Book } = window;
 
 // API base is set globally in index.html
 const API_BASE = window.API_BASE_URL ?? '';
@@ -28,9 +29,28 @@ const getEnabledSections = (shelf) => (
 );
 
 const sectionToView = (section) => {
-  if (section === 'watchlist') return { category: 'media', subTab: 'tvshows' };
+  if (section === 'watchlist') return { category: 'media', subTab: null };
   if (section === 'calendar' || section === 'tasks') return { category: 'plan', subTab: section };
   return { category: 'go', subTab: section };
+};
+
+const readAppRoute = (pathname = window.location.pathname) => {
+  const path = pathname || '/';
+  const shelfMatch = path.match(/^\/shelf\/([^/]+)\/?$/);
+
+  if (shelfMatch) {
+    return {
+      type: 'shelf',
+      shelfId: decodeURIComponent(shelfMatch[1]),
+      path: `/shelf/${shelfMatch[1]}/`
+    };
+  }
+
+  if (/^\/shelf-selection\/?$/.test(path)) {
+    return { type: 'selection', path: '/shelf-selection/' };
+  }
+
+  return { type: 'home', path: '/' };
 };
 
 const asArray = (value) => Array.isArray(value) ? value : [];
@@ -114,6 +134,8 @@ function MediaTracker() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentShelf, setCurrentShelf] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [appRoute, setAppRoute] = useState(() => readAppRoute());
+  const [routeLoading, setRouteLoading] = useState(false);
 
   // Replace single activeTab with category + sub-tab
   const [activeCategory, setActiveCategory] = useState('plan');
@@ -139,6 +161,18 @@ function MediaTracker() {
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
 
+  const navigateTo = (path, { replace = false } = {}) => {
+    const nextRoute = readAppRoute(path);
+    const nextUrl = nextRoute.path;
+
+    if (window.location.pathname !== nextUrl || window.location.search) {
+      const method = replace ? 'replaceState' : 'pushState';
+      window.history[method]({}, '', nextUrl);
+    }
+
+    setAppRoute(nextRoute);
+  };
+
   // Online/offline listener
   useEffect(() => {
     const setOnline = () => setIsOnline(true);
@@ -150,6 +184,18 @@ function MediaTracker() {
       window.removeEventListener('offline', setOffline);
     };
   }, []);
+
+  useEffect(() => {
+    const handlePopState = () => setAppRoute(readAppRoute());
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (!window.location.search && window.location.pathname !== appRoute.path) {
+      window.history.replaceState({}, '', appRoute.path);
+    }
+  }, [appRoute.path]);
 
   // On mount, try to restore session
   useEffect(() => {
@@ -169,6 +215,72 @@ function MediaTracker() {
       setAuthLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (!currentUser) {
+      setRouteLoading(false);
+      if (currentShelf) {
+        setCurrentShelf(null);
+        setData(null);
+      }
+      if (appRoute.type !== 'home') {
+        navigateTo('/', { replace: true });
+      }
+      return;
+    }
+
+    if (appRoute.type === 'home') {
+      if (currentShelf) {
+        setCurrentShelf(null);
+        setData(null);
+      }
+      navigateTo('/shelf-selection/', { replace: true });
+      return;
+    }
+
+    if (appRoute.type === 'selection') {
+      setRouteLoading(false);
+      if (currentShelf) {
+        setCurrentShelf(null);
+        setData(null);
+      }
+      return;
+    }
+
+    if (appRoute.type === 'shelf') {
+      if (currentShelf?.id === appRoute.shelfId) {
+        setRouteLoading(false);
+        return;
+      }
+
+      let cancelled = false;
+      setRouteLoading(true);
+      getUserShelves()
+        .then((shelves) => {
+          if (cancelled) return;
+          const matchingShelf = shelves.find((shelf) => shelf.id === appRoute.shelfId);
+          if (matchingShelf) {
+            setCurrentShelf(matchingShelf);
+          } else {
+            setCurrentShelf(null);
+            setData(null);
+            navigateTo('/shelf-selection/', { replace: true });
+          }
+        })
+        .catch(() => {
+          if (!cancelled) navigateTo('/shelf-selection/', { replace: true });
+        })
+        .finally(() => {
+          if (!cancelled) setRouteLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [authLoading, currentUser?.id, appRoute.type, appRoute.shelfId, currentShelf?.id]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -240,7 +352,10 @@ function MediaTracker() {
     });
   }, [data, currentShelf?.id]);
 
-  const handleLogin = (user) => setCurrentUser(user);
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+    navigateTo('/shelf-selection/');
+  };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
     clearAuthToken();
@@ -249,13 +364,19 @@ function MediaTracker() {
     setData(null);
     setSettingsModalOpen(false);
     setAccountModalOpen(false);
+    navigateTo('/', { replace: true });
   };
-  const handleShelfSelect = (shelf) => setCurrentShelf(shelf);
+  const handleShelfSelect = (shelf) => {
+    setCurrentShelf(shelf);
+    setData(null);
+    navigateTo(`/shelf/${encodeURIComponent(shelf.id)}/`);
+  };
   const handleBackToShelves = () => {
     setCurrentShelf(null);
     setData(null);
     setSettingsModalOpen(false);
     setAccountModalOpen(false);
+    navigateTo('/shelf-selection/');
   };
 
   const handleCategoryChange = (category, subTab) => {
@@ -332,6 +453,43 @@ function MediaTracker() {
     setAddModalOpen(true);
   };
 
+  const addActionByTab = {
+    calendar: { label: 'Activity', icon: CalendarIcon },
+    tasks: { label: 'Task', icon: CheckSquare },
+    locations: { label: 'Location', icon: MapPin },
+    trips: { label: 'Trip', icon: Film },
+    recipes: { label: 'Recipe', icon: ChefHat },
+    tvshows: { label: 'TV Show', icon: Tv },
+    movies: { label: 'Movie', icon: Film },
+    books: { label: 'Book', icon: Book }
+  };
+
+  const renderPageAddButton = () => {
+    if (activeCategory === 'media') return null;
+
+    const action = addActionByTab[activeSubTab];
+    if (!action) return null;
+
+    const Icon = action.icon;
+
+    return (
+      <div className="mb-4 flex justify-end">
+        <button
+          type="button"
+          onClick={() => {
+            setAddCategory(activeSubTab);
+            setAddModalOpen(true);
+          }}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#031A6B] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-purple-950/15 transition hover:bg-[#033860]"
+        >
+          <Plus size={18} />
+          <Icon size={18} />
+          Add {action.label}
+        </button>
+      </div>
+    );
+  };
+
   // Update shelf settings (name)
   const handleSaveShelfSettings = (newSettings) => {
     const previousShelf = currentShelf;
@@ -354,7 +512,7 @@ function MediaTracker() {
     [data?.watchlist, activeSubTab]
   );
 
-  if (authLoading) return <LoadingScreen label="Logging in..." />;
+  if (authLoading || routeLoading) return <LoadingScreen label="Logging in..." />;
   if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
   if (!currentShelf) {
     return (
@@ -442,6 +600,7 @@ function MediaTracker() {
           onStatusChange={(id, status) => handleStatusChange(activeSubTab, id, status)}
           onAddClick={() => { setAddCategory(activeSubTab); setAddModalOpen(true); }}
           onProgressChange={(id, progress) => handleProgressChange(activeSubTab, id, progress)}
+          onMediaTypeSelect={(subTab) => setActiveSubTab(subTab)}
         />
       );
     }
@@ -478,18 +637,14 @@ function MediaTracker() {
         activeSubTab={activeSubTab}
         onCategoryChange={handleCategoryChange}
         onSubTabChange={(sub) => setActiveSubTab(sub)}
-        onGlobalAddClick={() => setGlobalAddOpen(true)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
         enabledSections={getEnabledSections(currentShelf)}
         profile={data?.profile}
-        isOnline={isOnline}
-        lastSynced={lastSynced}
-        onBackToShelves={handleBackToShelves}
-        onLogout={handleLogout}
       />
 
       <main id="main-content" className="shelf-content flex-1 max-w-8xl mx-auto w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8" tabIndex="-1">
+        {renderPageAddButton()}
         {renderContent()}
       </main>
 
@@ -531,6 +686,7 @@ function MediaTracker() {
         currentUser={currentUser}
         onSaveAccount={handleAccountUpdate}
         onLogout={handleLogout}
+        onBackToShelves={handleBackToShelves}
       />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
       <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />
@@ -566,4 +722,3 @@ async function fetchUser(token) {
 }
 
 window.MediaTracker = MediaTracker;
-

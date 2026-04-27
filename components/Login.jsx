@@ -242,7 +242,7 @@ function LoginScreen({ onLogin }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-pink-900 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md min-h-[34rem] rounded-[1.75rem] border border-white/30 bg-white/95 p-6 shadow-2xl shadow-purple-950/30 backdrop-blur-xl sm:p-8">
-        <img src="assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" width="180" height="64" className="h-16 mx-auto mb-2 object-contain" />
+        <img src="/assets/logo.png" alt="Shared Shelf" decoding="async" fetchPriority="high" width="180" height="64" className="h-16 mx-auto mb-2 object-contain" />
         <p className="text-slate-600 text-center mb-8 text-base font-medium">
           Organize your life, together.
         </p>

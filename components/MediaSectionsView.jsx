@@ -1,4 +1,5 @@
 const React = window.React;
+const { Plus, Tv, Film, Book } = window;
 
 // ============================================================================
 // MEDIA SECTIONS VIEW COMPONENT
@@ -22,10 +23,57 @@ const MEDIA_SECTIONS = {
   ]
 };
 
-const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange }) => {
+const MEDIA_TYPE_TILES = [
+  { id: 'tvshows', label: 'TV Shows', icon: Tv },
+  { id: 'movies', label: 'Movies', icon: Film },
+  { id: 'books', label: 'Books', icon: Book }
+];
+
+const MEDIA_TYPE_LABELS = {
+  tvshows: 'TV Show',
+  movies: 'Movie',
+  books: 'Book'
+};
+
+const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect }) => {
+  if (!activeTab) {
+    return (
+      <div className="animate-fade-in">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {MEDIA_TYPE_TILES.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onMediaTypeSelect?.(id)}
+              className="group flex aspect-square flex-col items-center justify-center gap-4 rounded-2xl border border-purple-100 bg-white text-[#031A6B] shadow-xl shadow-purple-950/5 transition hover:-translate-y-1 hover:border-[#05B2DC] hover:shadow-purple-950/15 focus:outline-none focus:ring-2 focus:ring-[#05B2DC] focus:ring-offset-2"
+            >
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EAF8FC] text-[#031A6B] transition group-hover:bg-[#031A6B] group-hover:text-white">
+                <Icon size={30} />
+              </span>
+              <span className="text-lg font-extrabold">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const sections = MEDIA_SECTIONS[activeTab] || [];
+  const addLabel = MEDIA_TYPE_LABELS[activeTab] || 'Item';
+
   return (
     <div className="space-y-10 animate-fade-in">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold text-white">{MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist'}</h2>
+        <button
+          type="button"
+          onClick={onAddClick}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#031A6B] px-4 py-3 text-sm font-bold text-[#ffffff] shadow-lg shadow-purple-950/15 transition hover:bg-[#033860]"
+        >
+          <Plus size={18} />
+          Add {addLabel}
+        </button>
+      </div>
       {sections.map(section => {
         const sectionItems = items.filter(item => item.status === section.status);
         return (

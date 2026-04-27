@@ -24,7 +24,7 @@ Login, register, confirmation, and reset errors appear inside the authentication
 
 ### Shelf Selection Page
 
-After login, users land on the shelf selection page titled `Join Your Shared Space`. This page lists the shelves connected to the signed-in account as square shelf tiles with shelf names underneath. When a new user has no shelves yet, an empty state prompts them to create a shelf or join one with a shelf ID and code.
+After login, users land on the shelf selection page at `/shelf-selection/`, titled `Join Your Shared Space`. This page lists the shelves connected to the signed-in account as square shelf tiles with shelf names underneath. When a new user has no shelves yet, an empty state prompts them to create a shelf or join one with a shelf ID and code.
 
 Clicking a shelf tile opens that shelf and loads its shared content. The `Add / Join a Shelf` tile opens a modal with `Create` and `Join` tabs. In `Create`, users enter a shelf name and choose which shared items the shelf should include: `Calendar`, `Tasks`, `Locations`, `Trips`, `Recipes`, and `Watchlist`. Clicking `Create` creates the shelf, adds the user as a member, and opens it. In `Join`, users enter a `Shelf ID` and `Join Code`; clicking `Join` adds the user to that shelf when the code is valid.
 
@@ -34,13 +34,11 @@ The `Profile` button opens a profile panel showing the account name, username, a
 
 ### Shelf Page
 
-The shelf page is the main workspace for a selected shelf. It has a sticky blue header and a content area that changes based on the selected shelf section.
+The shelf page at `/shelf/<shelf-id>/` is the main workspace for a selected shelf. It has a sticky blue header and a content area that changes based on the selected shelf section.
 
-The header shows the shelf name on the left. Clicking the shelf name opens shelf settings. Next to it are section tabs for the enabled shared items. `Calendar`, `Tasks`, `Locations`, `Trips`, and `Recipes` open their matching views. `Watchlist` opens the media area and reveals sub-tabs for `TV Shows`, `Movies`, and `Books`. The active tab is highlighted.
+The header shows the shelf name on the left, followed by icon-labeled tabs for the enabled shared items. `Calendar`, `Tasks`, `Locations`, `Trips`, and `Recipes` open their matching views. `Watchlist` opens a media chooser with three square options for `TV Shows`, `Movies`, and `Books`; selecting one opens that specific watchlist. The active tab is highlighted.
 
-On the right side of the header, `Add` opens the global add chooser. `Settings` opens shelf settings. `Profile` opens the account modal. `Logout` clears the session and returns to login. `Back` returns to the shelf selection page without logging out. The sync indicator shows whether the app is online/offline and, when available, when the shelf last synced.
-
-The global add chooser asks what the user is adding. It shows only categories enabled for the current shelf. Selecting `Task`, `Activity`, `Location`, `Trip`, or `Recipe` opens a form for that item. Selecting `TV Show`, `Movie`, or `Book` opens the media search modal. Saved changes update the shelf JSON document and are cached locally as fallback data.
+On the right side of the header, `Settings` opens shelf settings and `Profile` opens the account modal. Adding content is done from the body of the current section with an add button for that shelf item. The profile modal shows the account name, username, and email, then provides `Edit Information`, `Back`, and `Logout` actions in a vertical stack. `Back` returns to the shelf selection page without logging out.
 
 Shelf settings let users edit the shelf name, enable or disable shared item sections, and manage sharing. The share panel shows the shelf ID and current one-time join code, with `Copy` buttons for each. `Generate New` creates a fresh join code. `Save Changes` persists shelf name and shared-item settings; `Cancel` closes without saving local edits.
 
