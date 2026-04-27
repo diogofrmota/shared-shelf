@@ -52,8 +52,27 @@ const readAppRoute = (pathname = window.location.pathname) => {
     return { type: 'selection', path: '/shelf-selection/' };
   }
 
+  if (/^\/login\/?$/.test(path)) {
+    return { type: 'login', path: '/login' };
+  }
+
+  if (/^\/privacy-policy\/?$/.test(path)) {
+    return { type: 'privacy', path: '/privacy-policy' };
+  }
+
+  if (/^\/terms-of-service\/?$/.test(path)) {
+    return { type: 'terms', path: '/terms-of-service' };
+  }
+
+  if (/^\/report-a-bug\/?$/.test(path)) {
+    return { type: 'bug-report', path: '/report-a-bug' };
+  }
+
   return { type: 'home', path: '/' };
 };
+
+const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report']);
+const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report']);
 
 const asArray = (value) => Array.isArray(value) ? value : [];
 
@@ -288,11 +307,21 @@ function MediaTracker() {
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
 
-  const navigateTo = (path, { replace = false } = {}) => {
-    const nextRoute = readAppRoute(path);
-    const nextUrl = nextRoute.path;
+  const navigateTo = (target, { replace = false } = {}) => {
+    let nextPath = '/';
+    let nextSearch = '';
+    try {
+      const parsed = new URL(target, window.location.origin);
+      nextPath = parsed.pathname;
+      nextSearch = parsed.search || '';
+    } catch {
+      nextPath = typeof target === 'string' ? target : '/';
+    }
 
-    if (window.location.pathname !== nextUrl || window.location.search) {
+    const nextRoute = readAppRoute(nextPath);
+    const nextUrl = `${nextRoute.path}${nextSearch}`;
+
+    if (window.location.pathname !== nextRoute.path || window.location.search !== nextSearch) {
       const method = replace ? 'replaceState' : 'pushState';
       window.history[method]({}, '', nextUrl);
     }
@@ -319,7 +348,7 @@ function MediaTracker() {
   }, []);
 
   useEffect(() => {
-    if (!window.location.search && window.location.pathname !== appRoute.path) {
+    if (window.location.pathname !== appRoute.path && !window.location.search) {
       window.history.replaceState({}, '', appRoute.path);
     }
   }, [appRoute.path]);
@@ -352,18 +381,23 @@ function MediaTracker() {
         setCurrentShelf(null);
         setData(null);
       }
-      if (appRoute.type !== 'home') {
+      if (!PUBLIC_ROUTE_TYPES.has(appRoute.type)) {
         navigateTo('/', { replace: true });
       }
       return;
     }
 
-    if (appRoute.type === 'home') {
+    if (appRoute.type === 'home' || appRoute.type === 'login') {
       if (currentShelf) {
         setCurrentShelf(null);
         setData(null);
       }
       navigateTo('/shelf-selection/', { replace: true });
+      return;
+    }
+
+    if (STATIC_PUBLIC_ROUTE_TYPES.has(appRoute.type)) {
+      setRouteLoading(false);
       return;
     }
 
@@ -410,14 +444,30 @@ function MediaTracker() {
   }, [authLoading, currentUser?.id, appRoute.type, appRoute.shelfId, currentShelf?.id]);
 
   useEffect(() => {
+    if (appRoute.type === 'privacy') {
+      document.title = 'Shared Shelf - Privacy Policy';
+      return;
+    }
+    if (appRoute.type === 'terms') {
+      document.title = 'Shared Shelf - Terms of Service';
+      return;
+    }
+    if (appRoute.type === 'bug-report') {
+      document.title = 'Shared Shelf - Report a Bug';
+      return;
+    }
+    if (appRoute.type === 'login') {
+      document.title = 'Shared Shelf - Sign in';
+      return;
+    }
     if (!currentUser) {
-      document.title = 'Shared Shelf - Homepage';
+      document.title = 'Shared Shelf - Plan together';
     } else if (!currentShelf) {
       document.title = 'Shared Shelf - Join your Shelf';
     } else {
       document.title = `Shared Shelf - ${currentShelf.name}`;
     }
-  }, [currentUser, currentShelf]);
+  }, [appRoute.type, currentUser, currentShelf]);
 
   useEffect(() => {
     if (!currentShelf) return;
@@ -683,8 +733,31 @@ function MediaTracker() {
     [data?.watchlist, activeSubTab]
   );
 
-  if (authLoading || routeLoading) return <LoadingScreen label="Logging in..." />;
-  if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
+  if (authLoading) return <LoadingScreen label="Loading..." />;
+
+  if (appRoute.type === 'privacy') {
+    return <PrivacyPolicyPage onNavigate={navigateTo} currentUser={currentUser} />;
+  }
+  if (appRoute.type === 'terms') {
+    return <TermsOfServicePage onNavigate={navigateTo} currentUser={currentUser} />;
+  }
+  if (appRoute.type === 'bug-report') {
+    return <BugReportPage onNavigate={navigateTo} currentUser={currentUser} />;
+  }
+
+  if (!currentUser) {
+    if (appRoute.type === 'login') {
+      return <LoginScreen onLogin={handleLogin} onNavigate={navigateTo} />;
+    }
+    return <HomePage onNavigate={navigateTo} />;
+  }
+
+  // Signed-in users on public landing routes are on their way to /shelf-selection/.
+  if (appRoute.type === 'home' || appRoute.type === 'login') {
+    return <LoadingScreen label="Loading..." />;
+  }
+
+  if (routeLoading) return <LoadingScreen label="Loading..." />;
   if (!currentShelf) {
     return (
       <ShelfSelector

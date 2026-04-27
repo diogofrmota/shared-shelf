@@ -8,19 +8,31 @@ The app is intentionally simple on the frontend: React, Babel, Tailwind, Leaflet
 
 ## User Experience
 
+### Public Homepage
+
+The root URL `https://shared-shelf.vercel.app/` is the public homepage. It introduces Shared Shelf to people who have not signed in, with a hero section, an explanation of what the app is, who it is for, how private shelves work, a feature overview for calendar, tasks, locations, trips, recipes, and watchlist, and clear `Sign in` and `Create account` calls to action that link to `/login`. A release notes section near the bottom of the homepage lists the most recent app updates. Returning users who already have a remembered session are redirected from `/` to `/shelf-selection/` automatically, so the app experience stays smooth for signed-in users.
+
+A global footer is rendered on the homepage, login screen, legal pages, and bug report page. It shows `© [Year] Shared Shelf` on the left and links to `Privacy Policy` (`/privacy-policy`), `Terms of Service` (`/terms-of-service`), and `Report a Bug` (`/report-a-bug`).
+
 ### Login Page
 
-The login page is the first screen at `https://shared-shelf.vercel.app/`. It shows the Shared Shelf logo, the tagline "Organize your life, together.", and a centered authentication panel.
+The login page is at `/login`. It shows the Shared Shelf logo, the tagline "Organize your life, together.", a `Back to homepage` link, and a centered authentication panel.
 
-Users can click the `Sign In` and `Register` tabs to switch between forms. In `Sign In`, the page shows visible labels for `Email or Username` and `Password`, a `Remember me` checkbox, a `Forgot password?` action, and a `Login` button. Submitting a verified account's email or username with the correct password logs the user in and opens the shelf selection page. Checking `Remember me` stores the JWT in `localStorage` for longer-lived access; otherwise the token is stored in `sessionStorage` for the current browser session.
+Users can click the `Sign In` and `Register` tabs to switch between forms. Visiting `/login?mode=signup` opens the page directly on the `Register` tab; the `mode` query parameter is consumed and removed on first render. In `Sign In`, the page shows visible labels for `Email or Username` and `Password`, a `Remember me` checkbox, a `Forgot password?` action, and a `Login` button. Submitting a verified account's email or username with the correct password logs the user in and opens the shelf selection page. Checking `Remember me` stores the JWT in `localStorage` for longer-lived access; otherwise the token is stored in `sessionStorage` for the current browser session.
 
 Clicking `Forgot password?` opens a reset-password popup where users enter their email address. If the address belongs to an account, the server creates a one-hour reset token and sends a reset email through Resend when email is configured. The response is intentionally generic so unknown emails are not disclosed.
 
 In `Register`, the page shows `Name`, `Username`, `Email`, and `Password` fields plus a `Create Account` button. The form validates the same rules as the API: name is required, 20 characters or fewer, and letters/spaces only; username is required, unique, 20 characters or fewer, and letters/numbers only; email must include `@`; password must include at least five letters and at least one number. Special characters are allowed in passwords. Creating an account does not log the user in. Instead, the server creates an unverified account, stores a hashed confirmation token, and sends a confirmation email. Users can sign in only after opening the confirmation link.
 
-If the page is opened with a reset token in the URL, it switches to the reset-password form. Users can enter a new password, click `Update password`, and then return to sign in. `Back to sign in` leaves the reset form without changing the password. If the page is opened with a confirmation token in the URL, it confirms the account and then prompts the user to sign in.
+If `/login` is opened with a reset token in the URL, it switches to the reset-password form. Users can enter a new password, click `Update password`, and then return to sign in. `Back to sign in` leaves the reset form without changing the password. If `/login` is opened with a confirmation token in the URL, it confirms the account and then prompts the user to sign in.
 
 Login, register, confirmation, and reset errors appear inside the authentication panel or popup. Messages are specific enough to help users fix input, such as a missing password number, invalid credentials, an already-used username, or an unconfirmed account.
+
+Signed-in users who navigate to `/login` are redirected to `/shelf-selection/`.
+
+### Legal Pages and Bug Report
+
+`/privacy-policy` and `/terms-of-service` render simple, readable legal pages with the global header and footer. They are reachable from the footer on every public page. `/report-a-bug` renders a short bug report form with title, description, optional steps to reproduce, and optional reply email. Submitting the form opens the user's email client with the report pre-filled and also offers a `Copy report` button so the user can paste the report somewhere else if a mail client is unavailable.
 
 ### Shelf Selection Page
 
@@ -66,7 +78,7 @@ The current UI uses a warm red editorial palette based on the `/new_ui` referenc
 
 ## Design And Architecture
 
-Shared Shelf is designed as a direct app experience rather than a marketing site. The login page uses a compact centered panel so authentication is the only task. The shelf selection page uses large shelf tiles because the main decision is which shared space to enter, plus a first-use empty state when the account has no shelves. The shelf page uses a persistent high-contrast header so navigation, add actions, settings, account controls, back navigation, logout, and sync state remain visible while users work.
+Shared Shelf has a public landing page at `/` for new visitors and a focused app experience for signed-in users. The homepage explains what the app is, who it is for, how private shelves work, the main features, and the latest changelog entries. The login page at `/login` uses a compact centered panel so authentication is the only task. The shelf selection page uses large shelf tiles because the main decision is which shared space to enter, plus a first-use empty state when the account has no shelves. The shelf page uses a persistent high-contrast header so navigation, add actions, settings, account controls, back navigation, logout, and sync state remain visible while users work. A shared footer renders on the homepage, login, legal, and bug report pages with copyright on the left and footer links on the right.
 
 The application uses a CDN-first frontend architecture. `index.html` loads React 18, ReactDOM, Babel Standalone, Tailwind CSS, Leaflet, and Lucide from CDNs, then loads browser-global scripts from `utils/`, `components/`, and `media-tracker.jsx`. Because JSX is transformed in the browser, local frontend edits can be checked with a static server and do not need a bundler or build step.
 
@@ -124,15 +136,19 @@ shared-shelf/
 |       `-- [...path].js        # Shelf list/create/join/settings/share/data/membership catch-all route
 |-- components/
 |   |-- AddModal.jsx            # Global add modal and edit modals
+|   |-- BugReport.jsx           # /report-a-bug page with bug report form
 |   |-- CalendarView.jsx        # Calendar month/agenda view
 |   |-- Config.jsx              # Browser-global constants and legacy helpers
 |   |-- DatesView.jsx           # Location cards, filters, Nominatim search helpers, map
+|   |-- Footer.jsx              # Global footer with copyright and legal links
 |   |-- FormRenderer.jsx        # Shared form rendering helper
 |   |-- GlobalSearchModal.jsx   # Library-wide search modal
 |   |-- Header.jsx              # In-shelf navigation/header
+|   |-- HomePage.jsx            # Public homepage with hero, features, CTAs, and release notes
 |   |-- Icons.jsx               # Icon wrappers exposed globally
 |   |-- JoinShelfModal.jsx      # Create/join shelf modal
-|   |-- Login.jsx               # Sign in/register/reset UI
+|   |-- LegalPages.jsx          # /privacy-policy and /terms-of-service pages
+|   |-- Login.jsx               # /login sign in/register/reset UI
 |   |-- MediaCard.jsx           # Media item card and TV show progress modal
 |   |-- MediaSectionsView.jsx   # Media status sections
 |   |-- ProfileModal.jsx        # Shelf settings, sharing, profiles, account modal modes
@@ -151,6 +167,22 @@ shared-shelf/
 |   `-- storage.js              # Legacy cloud/localStorage fallback helpers
 `-- skills/                     # Local agent skill references; not part of app runtime
 ```
+
+## Frontend Routes
+
+The single-page app handles client-side routing via `window.history` and `vercel.json` rewrites that map all known paths to `index.html`.
+
+| Path | Purpose | Auth |
+| --- | --- | --- |
+| `/` | Public homepage with intro, features, CTAs, and release notes. Signed-in users are redirected to `/shelf-selection/`. | Public |
+| `/login` | Sign in, register, forgot password, password reset, and account confirmation flows. Accepts `?mode=signup` to open on the register tab, `?reset_token=...` for password reset, and `?confirm_token=...` for account confirmation. Signed-in users are redirected to `/shelf-selection/`. | Public |
+| `/privacy-policy` | Static privacy policy page. | Public |
+| `/terms-of-service` | Static terms of service page. | Public |
+| `/report-a-bug` | Bug report form that opens the user's email client with the report pre-filled. | Public |
+| `/shelf-selection/` | Authenticated shelf list, create/join, manage, and profile. | Signed in |
+| `/shelf/<shelf-id>/` | Authenticated shelf workspace. | Signed in |
+
+Unauthenticated visits to authenticated routes are redirected to `/`.
 
 ## Data Model
 
@@ -318,6 +350,11 @@ Static serving is enough to inspect frontend rendering, but authenticated flows 
 
 Useful manual checks after UI or data changes:
 
+- Public homepage at `/` renders with hero, features, calls to action, and release notes when signed out.
+- Returning users are redirected from `/` to `/shelf-selection/` automatically.
+- `/login` renders the sign-in form by default and opens on the register tab when visited as `/login?mode=signup`.
+- `/privacy-policy`, `/terms-of-service`, and `/report-a-bug` render with the global footer.
+- Submitting the bug report form opens the system email client with a pre-filled message.
 - Login, registration, email confirmation, remembered session restore, forgot-password popup, and password reset screens render.
 - Shelf list, create, join, share-code, profile, settings, and leave/manage flows still work.
 - Add/edit/delete flows work for the touched shelf section.
