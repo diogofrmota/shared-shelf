@@ -44,6 +44,141 @@ const isoDateFromParts = (year, month, day) => {
   return `${year}-${mm}-${dd}`;
 };
 
+const parseIsoDate = (isoDate) => {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return date;
+};
+
+const formatIsoDate = (date) => isoDateFromParts(date.getFullYear(), date.getMonth(), date.getDate());
+
+const addDays = (date, days) => {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+};
+
+const daysBetween = (startDate, endDate) => Math.round((endDate - startDate) / 86400000);
+
+const addMonthsClamped = (startDate, monthsToAdd) => {
+  const targetMonth = startDate.getMonth() + monthsToAdd;
+  const target = new Date(startDate.getFullYear(), targetMonth, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(startDate.getDate(), lastDay));
+  return target;
+};
+
+const addYearsClamped = (startDate, yearsToAdd) => {
+  const target = new Date(startDate.getFullYear() + yearsToAdd, startDate.getMonth(), 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(startDate.getDate(), lastDay));
+  return target;
+};
+
+const RECURRENCE_LABELS = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  yearly: 'Yearly'
+};
+
+const getEventRecurrence = (event = {}) => {
+  const rawFrequency = event.recurrence?.frequency || event.recurrence || event.repeat || 'none';
+  const frequency = RECURRENCE_LABELS[rawFrequency] ? rawFrequency : 'none';
+  if (frequency === 'none') return null;
+  return {
+    frequency,
+    until: event.recurrence?.until || event.recurrenceUntil || ''
+  };
+};
+
+const getOccurrenceStep = (startDate, frequency, index) => {
+  if (frequency === 'daily') return addDays(startDate, index);
+  if (frequency === 'weekly') return addDays(startDate, index * 7);
+  if (frequency === 'monthly') return addMonthsClamped(startDate, index);
+  if (frequency === 'yearly') return addYearsClamped(startDate, index);
+  return startDate;
+};
+
+const getInitialOccurrenceIndex = (startDate, lowerBound, frequency) => {
+  const diffDays = Math.max(0, daysBetween(startDate, lowerBound));
+  if (frequency === 'daily') return diffDays;
+  if (frequency === 'weekly') return Math.floor(diffDays / 7);
+  if (frequency === 'monthly') {
+    return Math.max(0, (lowerBound.getFullYear() - startDate.getFullYear()) * 12 + lowerBound.getMonth() - startDate.getMonth() - 1);
+  }
+  if (frequency === 'yearly') return Math.max(0, lowerBound.getFullYear() - startDate.getFullYear() - 1);
+  return 0;
+};
+
+const createOccurrence = (event, occurrenceStart, durationDays, recurrence) => {
+  const occurrenceEnd = addDays(occurrenceStart, durationDays);
+  const occurrenceStartIso = formatIsoDate(occurrenceStart);
+  const occurrenceEndIso = formatIsoDate(occurrenceEnd);
+
+  return {
+    ...event,
+    date: occurrenceStartIso,
+    startDate: occurrenceStartIso,
+    endDate: occurrenceEndIso,
+    recurrence,
+    isRecurringOccurrence: Boolean(recurrence),
+    sourceEvent: event,
+    occurrenceDate: occurrenceStartIso,
+    occurrenceKey: `${event.id || event.title}-${occurrenceStartIso}`
+  };
+};
+
+const expandEventOccurrences = (event, rangeStartIso, rangeEndIso) => {
+  const eventStartIso = event.startDate || event.date;
+  const eventStart = parseIsoDate(eventStartIso);
+  if (!eventStart) return [];
+
+  const eventEnd = parseIsoDate(event.endDate || eventStartIso) || eventStart;
+  const durationDays = Math.max(0, daysBetween(eventStart, eventEnd));
+  const rangeStart = parseIsoDate(rangeStartIso);
+  const rangeEnd = parseIsoDate(rangeEndIso);
+  if (!rangeStart || !rangeEnd) return [];
+
+  const recurrence = getEventRecurrence(event);
+  if (!recurrence) {
+    if (eventStart <= rangeEnd && eventEnd >= rangeStart) {
+      return [createOccurrence(event, eventStart, durationDays, null)];
+    }
+    return [];
+  }
+
+  const recurrenceUntil = parseIsoDate(recurrence.until);
+  const seriesEnd = recurrenceUntil && recurrenceUntil < rangeEnd ? recurrenceUntil : rangeEnd;
+  if (eventStart > seriesEnd) return [];
+
+  const lowerBound = addDays(rangeStart, -durationDays);
+  const occurrences = [];
+  let index = getInitialOccurrenceIndex(eventStart, lowerBound, recurrence.frequency);
+  let guard = 0;
+
+  while (guard < 450) {
+    const occurrenceStart = getOccurrenceStep(eventStart, recurrence.frequency, index);
+    const occurrenceEnd = addDays(occurrenceStart, durationDays);
+    if (occurrenceStart > seriesEnd) break;
+    if (occurrenceEnd >= rangeStart && occurrenceStart <= rangeEnd) {
+      occurrences.push(createOccurrence(event, occurrenceStart, durationDays, recurrence));
+    }
+    index += 1;
+    guard += 1;
+  }
+
+  return occurrences;
+};
+
+const formatRecurrence = (event) => {
+  const recurrence = getEventRecurrence(event);
+  if (!recurrence) return '';
+  return `${RECURRENCE_LABELS[recurrence.frequency]}${recurrence.until ? ` until ${formatDateDisplay(recurrence.until)}` : ''}`;
+};
+
 const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -51,14 +186,18 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const cells = buildMonthGrid(viewYear, viewMonth);
+  const todayIso = isoDateFromParts(today.getFullYear(), today.getMonth(), today.getDate());
+  const monthStart = isoDateFromParts(viewYear, viewMonth, 1);
+  const monthEnd = isoDateFromParts(viewYear, viewMonth, new Date(viewYear, viewMonth + 1, 0).getDate());
+  const visibleOccurrences = events.flatMap(ev => expandEventOccurrences(ev, monthStart, monthEnd));
 
-  const eventsByDate = events.reduce((acc, ev) => {
+  const eventsByDate = visibleOccurrences.reduce((acc, ev) => {
     const start = ev.startDate || ev.date;
     const end = ev.endDate || start;
     const cur = new Date(start + 'T00:00:00');
     const endD = new Date(end + 'T00:00:00');
     while (cur <= endD) {
-      const iso = cur.toISOString().split('T')[0];
+      const iso = formatIsoDate(cur);
       if (!acc[iso]) acc[iso] = [];
       acc[iso].push(ev);
       cur.setDate(cur.getDate() + 1);
@@ -67,7 +206,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
   }, {});
 
   Object.keys(eventsByDate).forEach(d => {
-    eventsByDate[d].sort((a, b) => (a.startHour || '').localeCompare(b.startHour || ''));
+    eventsByDate[d].sort((a, b) => (a.startHour || a.time || '').localeCompare(b.startHour || b.time || ''));
   });
 
   const goPrev = () => {
@@ -88,21 +227,12 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
     setSelectedDate(null);
   };
 
-  const todayIso = isoDateFromParts(today.getFullYear(), today.getMonth(), today.getDate());
-  const monthStart = isoDateFromParts(viewYear, viewMonth, 1);
-  const monthEnd = isoDateFromParts(viewYear, viewMonth, new Date(viewYear, viewMonth + 1, 0).getDate());
-
-  const monthEvents = events
-    .filter(ev => {
-      const start = ev.startDate || ev.date;
-      const end = ev.endDate || start;
-      return start <= monthEnd && end >= monthStart;
-    })
+  const monthEvents = visibleOccurrences
     .sort((a, b) => {
       const aStart = a.startDate || a.date;
       const bStart = b.startDate || b.date;
       if (aStart !== bStart) return aStart.localeCompare(bStart);
-      return (a.startHour || '').localeCompare(b.startHour || '');
+      return (a.startHour || a.time || '').localeCompare(b.startHour || b.time || '');
     });
 
   const agendaEvents = selectedDate ? (eventsByDate[selectedDate] || []) : monthEvents;
@@ -183,11 +313,12 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
                 <div className="mt-1 hidden flex-1 space-y-0.5 overflow-hidden sm:block">
                   {dayEvents.slice(0, 2).map(ev => (
                     <div
-                      key={ev.id}
+                      key={ev.occurrenceKey || ev.id}
                       className="truncate rounded bg-[#FFDAD4] px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#410001]"
-                      title={ev.title}
+                      title={[ev.title, formatRecurrence(ev)].filter(Boolean).join(' - ')}
                     >
                       {(ev.startHour || ev.time) && <span className="mr-1 font-bold">{ev.startHour || ev.time}</span>}
+                      {ev.isRecurringOccurrence && <span className="mr-1 font-black">R</span>}
                       {ev.title}
                     </div>
                   ))}
@@ -228,8 +359,8 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
           <ul className="space-y-3">
             {agendaEvents.map(ev => (
               <li
-                key={ev.id}
-                onClick={() => onEditEvent(ev)}
+                key={ev.occurrenceKey || ev.id}
+                onClick={() => onEditEvent(ev.sourceEvent || ev)}
                 className="group flex cursor-pointer gap-3 rounded-xl border border-[#E1D8D4] bg-white p-3 shadow-sm transition hover:border-[#E63B2E]/40 hover:shadow-md sm:p-4"
               >
                 <div className="flex min-w-[64px] flex-col items-center justify-center rounded-lg bg-[#FFDAD4] px-2 py-1.5 text-[#410001]">
@@ -242,7 +373,13 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
                   <div className="flex items-start justify-between gap-2">
                     <h4 className="truncate font-bold text-[#410001]">{ev.title}</h4>
                     <button
-                      onClick={(e) => { e.stopPropagation(); onDeleteEvent(ev.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const sourceEvent = ev.sourceEvent || ev;
+                        const isRecurring = Boolean(getEventRecurrence(sourceEvent));
+                        if (isRecurring && !window.confirm('Delete this recurring activity and all of its occurrences?')) return;
+                        onDeleteEvent(sourceEvent.id);
+                      }}
                       className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       aria-label="Delete event"
                     >
@@ -253,6 +390,9 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
                     <p className="mt-0.5 text-sm font-medium text-[#534340]">
                       {ev.time ? ev.time : `${formatTime(ev.startHour)}${ev.startHour && ev.endHour ? ' – ' : ''}${formatTime(ev.endHour)}`}
                     </p>
+                  )}
+                  {formatRecurrence(ev) && (
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#857370]">{formatRecurrence(ev)}</p>
                   )}
                   {ev.description && <p className="mt-2 whitespace-pre-wrap text-sm text-[#534340]">{ev.description}</p>}
                 </div>

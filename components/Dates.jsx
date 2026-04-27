@@ -48,7 +48,13 @@ export const DatesSection = ({ locations = [], onAddLocation }) => {
       
       {/* List of saved locations */}
       <div className="space-y-2">
-        {dateLocations.map(loc => (
+        {dateLocations.map(loc => {
+          const lat = Number(loc.lat);
+          const lng = Number(loc.lng);
+          const mapUrl = Number.isFinite(lat) && Number.isFinite(lng)
+            ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`
+            : '';
+          return (
           <div key={loc.id} className="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
             <div>
               <span className="text-white">{loc.name}</span>
@@ -56,16 +62,17 @@ export const DatesSection = ({ locations = [], onAddLocation }) => {
                 <p className="text-xs text-slate-400 mt-1">{loc.fullAddress}</p>
               )}
             </div>
-            <a 
-              href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=15/${loc.lat}/${loc.lng}`}
+            {mapUrl && <a 
+              href={mapUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-purple-400 hover:text-purple-300 text-sm"
             >
               View Map ↗
-            </a>
+            </a>}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

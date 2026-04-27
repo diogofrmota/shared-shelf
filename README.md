@@ -46,13 +46,13 @@ The account modal shows the current user's name, username, and email. `Edit Info
 
 ### Shelf Content Views
 
-`Calendar` shows a responsive month grid and agenda. Previous and next arrow buttons change the visible month. `Today` returns to the current month. Clicking a date filters the agenda to that day; clicking the selected day again clears the filter. Clicking an agenda item opens the edit activity modal. The delete icon removes the activity.
+`Calendar` shows a responsive month grid and agenda. Previous and next arrow buttons change the visible month. `Today` returns to the current month. Clicking a date filters the agenda to that day; clicking the selected day again clears the filter. Activities can repeat daily, weekly, monthly, or yearly, with an optional repeat-until date. Recurring activities render as occurrences in the month grid and agenda. Clicking any occurrence opens the edit activity modal for the whole series, and deleting a recurring occurrence confirms that the whole series will be removed.
 
-`Tasks` shows all tasks with filters for `All`, `Active`, and `Completed`. Each task has a completion checkbox, title, optional description, assigned user, and optional due date. Active tasks can be reordered with move buttons or drag and drop. The edit button changes a task into editable title and description fields. The delete button removes the task. Completed tasks are grouped and can be expanded or collapsed in the all view.
+`Tasks` shows all tasks with filters for `All`, `Active`, and `Completed`. Each task has a completion checkbox, title, optional description, assigned user, optional due date, and optional recurrence. Recurring tasks can repeat daily, weekly, monthly, or yearly. Checking a recurring task records the current occurrence as done and keeps the task active, with a clear repeat badge and last-done status in the list. Active tasks can be reordered with move buttons or drag and drop. The edit button changes a task into editable title, description, and recurrence fields. The delete button removes the task. Completed non-recurring tasks are grouped and can be expanded or collapsed in the all view.
 
 `Locations` shows a Leaflet map, category filters, favourite and visited filters, and location cards. Location cards can focus the map marker, toggle favourite, mark visited, set a star rating, add/change/remove a photo, open a saved website link, open the place in OpenStreetMap, or delete the place.
 
-`Trips` separates `Next Trips` and `Past Trips`. Each trip card shows a destination, year, optional photo, and optional accommodation link. Hover actions allow editing or deleting a trip. Editing opens a form for trip type, destination, year, photo URL, and accommodation URL.
+`Trips` separates `Next Trips` and `Past Trips`. Each trip card keeps a readable summary with destination, trip dates or year, optional photo, optional accommodation link, and compact counts for itinerary, bookings, and packing progress. Clicking a card opens a trip detail view with itinerary items, booking links, notes, and packing list details. Adding or editing a trip supports start and end dates, itinerary rows, booking information for accommodation, transport, reservations, trip notes, packing items, photo URL, and legacy accommodation URL.
 
 `Recipes` includes a search field for recipe name or ingredient. Recipe cards show the recipe photo, name, prep time, and source link when available. Clicking a recipe opens its detail modal with ingredients and instructions. The detail modal can close or open edit mode. Hover actions on cards allow editing or deleting.
 
@@ -169,10 +169,48 @@ The shelf JSON document can contain:
 
 ```json
 {
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "task-...",
+      "title": "",
+      "description": "",
+      "assignedTo": null,
+      "dueDate": null,
+      "completed": false,
+      "recurrence": { "frequency": "weekly" },
+      "lastCompletedAt": null,
+      "completionCount": 0
+    }
+  ],
   "locations": [],
-  "calendarEvents": [],
-  "trips": [],
+  "calendarEvents": [
+    {
+      "id": "event-...",
+      "title": "",
+      "date": "2026-04-27",
+      "startDate": "2026-04-27",
+      "endDate": "2026-04-27",
+      "time": "",
+      "description": "",
+      "recurrence": { "frequency": "weekly", "until": "2026-06-30" }
+    }
+  ],
+  "trips": [
+    {
+      "id": "trip-...",
+      "destination": "",
+      "year": 2026,
+      "tripType": "next",
+      "startDate": "",
+      "endDate": "",
+      "photo": "",
+      "accommodation": "",
+      "itinerary": [],
+      "bookings": [],
+      "notes": "",
+      "packingList": []
+    }
+  ],
   "recipes": [],
   "watchlist": [],
   "profile": { "users": [] }
@@ -203,9 +241,9 @@ When adding new fields, keep old saved shelf data rendering by adding normalizat
 | `DELETE /api/shelf/:id/membership` | Leave/remove shelf membership for current user |
 | `GET /api/health` | Database health check |
 | `GET /api/setup` | Initialize database schema |
-| `GET /api/search` | TMDB search proxy |
-| `GET /api/tvdetails` | TMDB TV details proxy |
-| `GET /api/nominatim` | OpenStreetMap Nominatim search proxy |
+| `GET /api/search` | Authenticated TMDB search proxy |
+| `GET /api/tvdetails` | Authenticated TMDB TV details proxy |
+| `GET /api/nominatim` | Authenticated OpenStreetMap Nominatim search proxy |
 
 Shelf routes are consolidated through `api/shelf/[...path].js` and the rewrites in `vercel.json` to stay within the Vercel free-plan limit of 12 Serverless Functions per deployment.
 Older databases that still have a `shelves` metadata table are migrated to `shelf_id` by `lib/db.js`; a compatibility view named `shelves` is kept for legacy code paths.
@@ -229,7 +267,7 @@ Books:
 | `reading` | Reading |
 | `read` | Read |
 
-Calendar events, trips, tasks, locations, and recipes use their own fields instead of media statuses.
+Calendar events, trips, tasks, locations, and recipes use their own fields instead of media statuses. Calendar event recurrence is optional; `recurrence.frequency` can be `daily`, `weekly`, `monthly`, or `yearly`, and `recurrence.until` may be blank for an open-ended series. Editing or deleting recurring events currently applies to the whole series. Task recurrence is optional as `recurrence: { "frequency": "daily" | "weekly" | "monthly" | "yearly" }`. Recurring task completion stores `lastCompletedAt` and increments `completionCount`; recurring tasks stay active instead of moving into the completed group. Trips are normalized on load so older saved trips without `startDate`, `endDate`, `itinerary`, `bookings`, `notes`, or `packingList` still render with safe defaults.
 
 ## External APIs
 
@@ -288,6 +326,16 @@ Useful manual checks after UI or data changes:
 - `index.html` loads without console errors.
 
 There are no package scripts or automated tests currently defined in `package.json`. If scripts or tests are added, document them here.
+
+## Security Notes
+
+All shelf APIs require a valid bearer JWT. Listing shelves is scoped to memberships, shelf settings updates require the current user to be an owner, share-code regeneration requires the current user to be an owner, and shelf data reads/writes require membership in that shelf. If an owner leaves a shelf that still has members, the oldest remaining member is promoted so owner-only controls remain available.
+
+The TMDB and Nominatim proxy routes also require a valid bearer JWT before they call upstream services. This keeps API-key-backed and server-side proxy behavior limited to signed-in users without adding new Vercel function files.
+
+Shelf JSON is normalized on read and write. Stored user text is rendered through React text nodes where possible, URL fields are limited to safe `http`/`https` links, image fields are limited to `http`/`https` images or base64 `data:image` values, and Leaflet popup HTML escapes saved place names/addresses before binding the popup.
+
+Sessions are JWT-based and sent with the `Authorization` header. With `Remember me` enabled, the token is stored in `localStorage` so it survives browser restarts until JWT expiry. Without `Remember me`, the token is stored in `sessionStorage`, which usually clears when the tab or browser session ends. This app does not use HttpOnly cookies, so a successful XSS bug could read the token from browser storage; the current mitigation is to avoid raw HTML rendering and strip unsafe stored URLs.
 
 ## Implementation Notes
 

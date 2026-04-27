@@ -11,13 +11,43 @@ const API_BASE = window.API_BASE_URL ?? '';
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
 const pendingShelfSaves = new Map();
 
+const safeExternalUrl = (value) => {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw) return '';
+
+  try {
+    const url = new URL(raw, window.location.origin);
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+  } catch {
+    return '';
+  }
+};
+
+const safeImageUrl = (value, fallback = '') => {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw) return fallback;
+  if (/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw;
+  return safeExternalUrl(raw) || fallback;
+};
+
+const escapeHtml = (value = '') =>
+  String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+
 // ============================================================================
 // MEDIA SEARCH FUNCTIONS
 // ============================================================================
 
 const searchMovies = async (query) => {
   try {
-    const response = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, {
+      headers: getAuthorizedHeaders()
+    });
     if (!response.ok) throw new Error('Failed to fetch movies');
 
     const data = await response.json();
@@ -34,7 +64,10 @@ const searchMovies = async (query) => {
 const searchTvShows = async (query) => {
   try {
     const [tmdbResult, jikanResult] = await Promise.allSettled([
-      fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`).then(r => r.json()),
+      fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, { headers: getAuthorizedHeaders() }).then(r => {
+        if (!r.ok) throw new Error('Failed to fetch TV shows');
+        return r.json();
+      }),
       fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=10`).then(r => r.json())
     ]);
 
@@ -471,6 +504,9 @@ Object.assign(window, {
   searchTvShows,
   searchAnime,
   searchBooks,
+  safeExternalUrl,
+  safeImageUrl,
+  escapeHtml,
   getAuthToken,
   setAuthToken,
   clearAuthToken,

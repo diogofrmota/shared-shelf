@@ -12,7 +12,7 @@ I need to complete the external production setup for Shared Shelf before code ch
 
 Do not change application files for this task. Give me a checklist of what I need to verify in Vercel, Resend, and DNS.
 
-## Prompt 2: Configure The App For `sharedshelf.dev`
+## Prompt 1: Configure The App For `sharedshelf.dev`
 
 I bought the domain `sharedshelf.dev`. Update the web app so production links consistently use this public domain.
 
@@ -25,10 +25,11 @@ Requirements:
 - Do not expose any secret values in frontend files.
 
 Verify by checking the auth email link generation paths and any public route references.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 3: Public Homepage, Login Route, Changelog, Footer, Legal Links, Support, And Bug Reporting
+## Prompt 2: Public Homepage, Login Route, Changelog, Footer, Legal Links, Support, And Bug Reporting
 
-Improve the public-facing entry experience for Shared Shelf.
+Improve the public-facing entry experience for Shared Shelf. Get context at readme and agents.md
 
 Requirements:
 
@@ -44,8 +45,9 @@ Requirements:
 - Add a simple bug report flow, such as a bug report page at `/report-a-bug`.
 
 Keep the app lightweight and consistent with the existing CDN/global React architecture.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 4: Privacy Policy And Terms Of Service Pages
+## Prompt 3: Privacy Policy And Terms Of Service Pages
 
 Add public legal pages for Shared Shelf.
 
@@ -61,8 +63,9 @@ Requirements:
 - Link both pages from the footer.
 
 Use clear, simple language and keep the pages visually consistent with the app. Add a note if legal text should be reviewed before public launch.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 5: Protect Setup Route And Production Configuration
+## Prompt 4: Protect Setup Route And Production Configuration
 
 Review and harden the production setup route and environment configuration.
 
@@ -76,8 +79,9 @@ Requirements:
 - Update README or deployment notes if the behavior is unclear.
 
 Important: if a real setup token is provided during the task, treat it as a secret and do not commit it to any file.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 6: Auth Rate Limiting, Login Lockout, And Safer Login Errors
+## Prompt 5: Auth Rate Limiting, Login Lockout, And Safer Login Errors
 
 Harden authentication against brute-force and enumeration attacks.
 
@@ -94,8 +98,9 @@ Requirements:
 - Keep implementation compatible with Vercel serverless functions and the existing database setup.
 
 Update database initialization or migrations if tracking failed login attempts requires new fields. Verify the behavior manually or with focused tests if tests are added.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 7: Confirmation And Reset Link Error Messages
+## Prompt 6: Confirmation And Reset Link Error Messages
 
 Improve the user experience for account confirmation and password reset links.
 
@@ -111,8 +116,9 @@ Requirements:
 - Avoid leaking sensitive account existence details.
 
 Verify direct URL flows for confirmation and reset tokens.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 8: Account Settings - Change Password, Change Email, Username Availability
+## Prompt 7: Account Settings - Change Password, Change Email, Username Availability
 
 Improve signed-in account management.
 
@@ -129,8 +135,9 @@ Requirements:
 - Update auth/profile API routes using existing shared auth helpers.
 
 Preserve existing profile editing behavior for name and username.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 9: Transactional Emails And Welcome Email
+## Prompt 8: Transactional Emails And Welcome Email
 
 Improve production email quality for Shared Shelf.
 
@@ -145,8 +152,9 @@ Requirements:
 - Keep required account/security emails functional even if users opt out of non-essential email.
 
 Use the existing Resend integration and avoid exposing email API keys to the frontend.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 10: Shelf Ownership, Member List, Permissions, Sharing UI, And Section Disable Warnings
+## Prompt 9: Shelf Ownership, Member List, Permissions, Sharing UI, And Section Disable Warnings
 
 Improve shelf sharing and permissions.
 
@@ -163,8 +171,9 @@ Requirements:
 - Keep legacy shelf data rendering and existing sharing behavior working.
 
 Prefer extending `api/shelf/[...path].js` instead of adding new serverless function files.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 11: Destructive Action Confirmations And Undo
+## Prompt 10: Destructive Action Confirmations And Undo
 
 Make destructive actions safer across the app.
 
@@ -179,8 +188,9 @@ Requirements:
 - Do not make routine non-destructive actions slower.
 
 Preserve current localStorage fallback and shelf data persistence behavior.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 12: Empty States For All Shelf Sections
+## Prompt 11: Empty States For All Shelf Sections
 
 Add friendly empty states throughout the app.
 
@@ -198,8 +208,9 @@ Requirements:
 - Ensure empty states render well on mobile and desktop.
 
 Match the existing visual style and app structure.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 13: Friendly Error Pages And Global Error Boundary
+## Prompt 12: Friendly Error Pages And Global Error Boundary
 
 Improve app failure handling.
 
@@ -214,10 +225,40 @@ Requirements:
 - Avoid exposing stack traces or implementation details to users.
 
 Verify by simulating an unknown route and at least one frontend render failure if practical.
+Keep AGENTS.md and README.md updated.
 
-## Prompt 14: Mobile Comfort And Text Overflow QA Fixes
+## Prompt 13: Back Navigation Consistency
 
-Audit and improve mobile usability.
+Make browser back navigation behave sensibly across the app.
+
+Requirements:
+
+- Review navigation between homepage, login, shelf selection, shelves, and shelf sections.
+- Browser back should work sensibly from a shelf back to shelf selection.
+- Direct links to shelf routes should restore session and load the correct shelf when possible.
+- Back navigation should not accidentally log users out or lose unsaved state without warning.
+- Update URL handling only as much as needed for predictable behavior.
+
+Preserve the current shelf selection and shelf loading flows.
+Keep AGENTS.md and README.md updated.
+
+## Prompt 14: Branding Assets And Metadata
+
+Add consistent public branding assets. Get context at readme and agents.md  
+
+Requirements:
+
+- Add or verify the app favicon.
+- Add consistent logo usage across public pages, login, shelf selection, and shelf pages.
+- Add social preview metadata for shared links.
+- Add app title and description metadata.
+
+Use existing assets where possible before adding new ones.
+Keep AGENTS.md and README.md updated.
+
+# Prompt 15: Improve Mobile Usability
+
+Audit and improve mobile usability. Get context at readme and agents.md  
 
 Requirements:
 
@@ -231,109 +272,7 @@ Requirements:
 - Add text truncation and overflow handling for long usernames and locations.
 - Ensure truncated text still has a way to be understood where needed, such as full text in detail views or titles.
 
-Run a local static server and visually verify the most important screens on mobile and desktop.
-
-## Prompt 15: Back Navigation Consistency
-
-Make browser back navigation behave sensibly across the app.
-
-Requirements:
-
-- Review navigation between homepage, login, shelf selection, shelves, and shelf sections.
-- Browser back should work sensibly from a shelf back to shelf selection.
-- Direct links to shelf routes should restore session and load the correct shelf when possible.
-- Back navigation should not accidentally log users out or lose unsaved state without warning.
-- Update URL handling only as much as needed for predictable behavior.
-
-Preserve the current shelf selection and shelf loading flows.
-
-## Prompt 16: Security And Privacy API Review
-
-Review and harden API security.
-
-Requirements:
-
-- Review all API routes for authentication checks.
-- Review all shelf API behavior for shelf membership checks.
-- Confirm owner-only actions are enforced server-side.
-- Validate user access before reading or mutating shelf metadata.
-- Validate user access before reading or mutating shelf data.
-- Review JWT storage and document the localStorage/sessionStorage tradeoff for "Remember me".
-- Check user-provided URLs, names, descriptions, notes, recipe fields, and location data for XSS or unsafe rendering risks.
-- Add focused fixes for any security issues found.
-
-Remember on the free-plan of Vercel there is a limit of 12 Serverless Functions per deployment.
-Keep changes scoped and document any remaining risks.
-
-## Prompt 17: Branding Assets And Metadata
-
-Add consistent public branding assets.
-
-Requirements:
-
-- Add or verify the app favicon.
-- Add consistent logo usage across public pages, login, shelf selection, and shelf pages.
-- Add social preview metadata for shared links.
-- Add app title and description metadata.
-
-Use existing assets where possible before adding new ones.
-
-## Prompt 18: Recurring Tasks
-
-Add recurring task support.
-
-Requirements:
-
-- In the task add/edit flow, add a checkbox for marking a task as recurring.
-- Add recurrence options, with a check box that can be checked when the task is recurring.
-- Display recurring status clearly in the task list.
-- Ensure task completion behavior is clear for recurring tasks.
-- Update persistence and local cache behavior.
-
-Keep the first version simple and compatible with the current tasks UI.
-
-## Prompt 19: Recurring Calendar Events
-
-Add recurring calendar event support.
-
-Requirements:
-
-- Add recurring event fields to the calendar event add/edit flow.
-- Support a simple first version, such as daily, weekly, monthly, or yearly recurrence.
-- Render recurring events in the month grid and agenda.
-- Make editing and deleting recurring events understandable to users.
-
-Keep the implementation lightweight and well-scoped.
-
-## Prompt 20: Trip Itinerary, Bookings, Dates, Notes, And Packing Lists
-
-Expand trips into a more useful travel planning section.
-
-Requirements:
-
-- Add trip start and end dates.
-- Add itinerary items for each trip.
-- Add booking information such as accommodation, transport, or reservation links.
-- Add trip notes.
-- Add a packing list for each trip.
-- Update trip add/edit/detail UI so the new fields are usable on mobile and desktop.
-- Keep the trip cards readable and avoid overcrowding them.
-
-Add normalization defaults for older trips.
-
-## Prompt 21: Book Progress Tracking
-
-Add progress tracking for books in the watchlist.
-
-Requirements:
-
-- Add progress fields for books, such as current page and total pages.
-- Add UI for editing book progress.
-- Show progress on book cards or in a detail/progress modal.
-- Ensure book statuses still work: `plan-to-read`, `reading`, and `read`.
-- Prevent invalid progress values, such as negative pages or current page greater than total pages.
-
-Keep movie and TV show behavior unchanged except where shared watchlist code must be adjusted safely.
+Keep AGENTS.md and README.md updated.
 
 ## Later
 

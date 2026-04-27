@@ -19,6 +19,8 @@ const LEGACY_PROFILE_COLOR_MAP = {
 
 const normalizeProfileUsers = (users = []) => users.map((user, index) => ({
   ...user,
+  name: user.name || '',
+  avatar: window.safeImageUrl?.(user.avatar) || '',
   color: LEGACY_PROFILE_COLOR_MAP[user.color] || user.color || (index % 2 === 0 ? '#E63B2E' : '#8C4F45')
 }));
 
@@ -55,6 +57,89 @@ const readAppRoute = (pathname = window.location.pathname) => {
 
 const asArray = (value) => Array.isArray(value) ? value : [];
 
+const normalizeCalendarEvent = (event = {}) => {
+  const startDate = event.startDate || event.date || '';
+  const endDate = event.endDate || startDate;
+  const frequency = event.recurrence?.frequency || event.recurrence || event.repeat || 'none';
+  const recurrence = ['daily', 'weekly', 'monthly', 'yearly'].includes(frequency)
+    ? {
+      frequency,
+      until: event.recurrence?.until || event.recurrenceUntil || ''
+    }
+    : null;
+
+  return {
+    ...event,
+    date: startDate,
+    startDate,
+    endDate,
+    recurrence
+  };
+};
+
+const normalizeTaskRecurrence = (task = {}) => {
+  const frequency = task.recurrence?.frequency || task.recurrence || task.repeat || task.recurrenceFrequency || 'none';
+  if (!['daily', 'weekly', 'monthly', 'yearly'].includes(frequency)) return null;
+  return { frequency };
+};
+
+const normalizeTask = (task = {}) => {
+  const recurrence = normalizeTaskRecurrence(task);
+
+  return {
+    ...task,
+    description: task.description || '',
+    assignedTo: task.assignedTo || null,
+    dueDate: task.dueDate || null,
+    completed: recurrence ? false : Boolean(task.completed),
+    recurrence,
+    lastCompletedAt: task.lastCompletedAt || null,
+    completionCount: Number(task.completionCount || 0)
+  };
+};
+
+const normalizeTripListItems = (items, mapItem) => asArray(items)
+  .filter(item => item !== null && item !== undefined && item !== '')
+  .map((item, index) => mapItem(item, index));
+
+const normalizeTrip = (trip = {}) => {
+  const startDate = trip.startDate || trip.date || '';
+  const endDate = trip.endDate || startDate || '';
+
+  return {
+    ...trip,
+    startDate,
+    endDate,
+    itinerary: normalizeTripListItems(trip.itinerary, (item, index) => ({
+      id: item.id || `itinerary-${index}`,
+      date: item.date || '',
+      time: item.time || '',
+      title: item.title || item.name || '',
+      notes: item.notes || item.description || ''
+    })),
+    bookings: normalizeTripListItems(trip.bookings, (item, index) => ({
+      id: item.id || `booking-${index}`,
+      type: item.type || 'reservation',
+      title: item.title || item.name || '',
+      link: window.safeExternalUrl?.(item.link || item.url) || '',
+      notes: item.notes || item.description || ''
+    })),
+    notes: trip.notes || '',
+    photo: window.safeImageUrl?.(trip.photo) || '',
+    accommodation: window.safeExternalUrl?.(trip.accommodation) || '',
+    packingList: normalizeTripListItems(trip.packingList || trip.packing, (item, index) => {
+      if (typeof item === 'string') {
+        return { id: `packing-${index}`, text: item, packed: false };
+      }
+      return {
+        id: item.id || `packing-${index}`,
+        text: item.text || item.name || '',
+        packed: Boolean(item.packed)
+      };
+    }).filter(item => item.text)
+  };
+};
+
 const normalizeMediaCategory = (item = {}, fallbackCategory = '') => {
   const category = String(item.category || fallbackCategory || '').toLowerCase();
   const type = String(item.type || '').toLowerCase();
@@ -79,6 +164,23 @@ const normalizeWatchlistStatus = (item = {}, category) => {
   return 'plan-to-watch';
 };
 
+const normalizeBookProgress = (item = {}) => {
+  const rawProgress = item.progress && typeof item.progress === 'object' ? item.progress : {};
+  const totalPages = Math.max(0, Math.floor(Number(
+    rawProgress.totalPages ?? item.totalPages ?? item.pages ?? item.pageCount ?? 0
+  ) || 0));
+  const currentPage = Math.max(0, Math.floor(Number(
+    rawProgress.currentPage ?? item.currentPage ?? 0
+  ) || 0));
+  const clampedCurrentPage = totalPages ? Math.min(currentPage, totalPages) : currentPage;
+
+  if (!totalPages && !clampedCurrentPage) return null;
+  return {
+    currentPage: clampedCurrentPage,
+    totalPages: totalPages || null
+  };
+};
+
 const normalizeWatchlistItem = (item, fallbackCategory) => {
   const category = normalizeMediaCategory(item, fallbackCategory);
   const typeByCategory = {
@@ -86,14 +188,20 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
     tvshows: 'Tv Show',
     books: 'Book'
   };
+  const bookProgress = category === 'books' ? normalizeBookProgress(item) : null;
 
   return {
     ...item,
     category,
+    title: item.title || item.name || '',
+    thumbnail: window.safeImageUrl?.(item.thumbnail || item.image || item.photo) || '',
     type: typeByCategory[category],
     totalPages: category === 'books'
-      ? Number(item.totalPages || item.pages || item.pageCount || 0) || null
+      ? bookProgress?.totalPages || Number(item.totalPages || item.pages || item.pageCount || 0) || null
       : item.totalPages,
+    progress: category === 'books'
+      ? bookProgress
+      : item.progress,
     status: normalizeWatchlistStatus(item, category)
   };
 };
@@ -117,11 +225,27 @@ const normalizeShelfDataForClient = (shelfData = {}) => {
   addWatchlistItems(raw.books, 'books');
 
   const migrated = {
-    calendarEvents: asArray(raw.calendarEvents),
-    tasks: asArray(raw.tasks),
-    locations: asArray(raw.locations).length ? asArray(raw.locations) : asArray(raw.dates),
-    trips: asArray(raw.trips),
-    recipes: asArray(raw.recipes),
+    calendarEvents: asArray(raw.calendarEvents).map(normalizeCalendarEvent),
+    tasks: asArray(raw.tasks).map(normalizeTask),
+    locations: (asArray(raw.locations).length ? asArray(raw.locations) : asArray(raw.dates)).map(location => ({
+      ...location,
+      name: location?.name || '',
+      address: location?.address || '',
+      notes: location?.notes || '',
+      link: window.safeExternalUrl?.(location?.link || location?.url) || '',
+      photo: window.safeImageUrl?.(location?.photo) || '',
+      lat: Number.isFinite(Number(location?.lat)) ? Number(location.lat) : null,
+      lng: Number.isFinite(Number(location?.lng)) ? Number(location.lng) : null
+    })),
+    trips: asArray(raw.trips).map(normalizeTrip),
+    recipes: asArray(raw.recipes).map(recipe => ({
+      ...recipe,
+      name: recipe?.name || '',
+      photo: window.safeImageUrl?.(recipe?.photo) || '',
+      link: window.safeExternalUrl?.(recipe?.link || recipe?.url) || '',
+      ingredients: recipe?.ingredients || '',
+      instructions: recipe?.instructions || ''
+    })),
     watchlist: Array.from(watchlistByKey.values()),
     profile: raw.profile || defaultShelfData().profile
   };
@@ -406,7 +530,15 @@ function MediaTracker() {
   const handleProgressChange = (mediaType, id, progress) => {
     setData(prev => ({
       ...prev,
-      watchlist: (prev.watchlist || []).map(i => i.category === mediaType && i.id === id ? { ...i, progress } : i)
+      watchlist: (prev.watchlist || []).map(i => (
+        i.category === mediaType && i.id === id
+          ? normalizeWatchlistItem({
+            ...i,
+            totalPages: mediaType === 'books' ? progress?.totalPages : i.totalPages,
+            progress
+          }, mediaType)
+          : i
+      ))
     }));
   };
   const handleAddEvent = (event) => {
@@ -439,13 +571,49 @@ function MediaTracker() {
   const handleUpdateDate = (id, updates) => {
     setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...updates } : p) }));
   };
-  const handleAddTask = (task) => setData(prev => ({ ...prev, tasks: [...(prev.tasks || []), task] }));
-  const handleToggleTask = (id) => {
-    setData(prev => ({ ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t) }));
+  const handleAddTask = (task) => setData(prev => ({ ...prev, tasks: [...(prev.tasks || []), normalizeTask(task)] }));
+  const handleToggleTask = (id, checked) => {
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => {
+        if (t.id !== id) return t;
+        if (t.recurrence) {
+          if (checked === false) {
+            return {
+              ...t,
+              completed: false,
+              lastCompletedAt: null,
+              completionCount: Math.max(0, Number(t.completionCount || 0) - 1)
+            };
+          }
+          return {
+            ...t,
+            completed: false,
+            lastCompletedAt: new Date().toISOString(),
+            completionCount: Number(t.completionCount || 0) + 1
+          };
+        }
+        const completed = typeof checked === 'boolean' ? checked : !t.completed;
+        return {
+          ...t,
+          completed,
+          completedAt: completed ? new Date().toISOString() : null
+        };
+      })
+    }));
   };
   const handleDeleteTask = (id) => setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) }));
-  const handleUpdateTask = (taskId, newTitle, newDescription) => {
-    setData(prev => ({ ...prev, tasks: prev.tasks.map(t => t.id === taskId ? { ...t, title: newTitle, description: newDescription } : t) }));
+  const handleUpdateTask = (taskId, updatesOrTitle, newDescription) => {
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => {
+        if (t.id !== taskId) return t;
+        const updates = typeof updatesOrTitle === 'object'
+          ? updatesOrTitle
+          : { title: updatesOrTitle, description: newDescription };
+        return normalizeTask({ ...t, ...updates });
+      })
+    }));
   };
   const handleReorderTasks = (reorderedTasks) => setData(prev => ({ ...prev, tasks: reorderedTasks }));
   const handleSaveProfile = (profileData) => setData(prev => ({ ...prev, profile: profileData }));

@@ -54,9 +54,11 @@ export const LeafletMap = ({ center, markers = [], onMapClick, height = '400px' 
 
     markersLayer.current.clearLayers();
     markers.forEach((marker) => {
-      if (marker.lat && marker.lng) {
-        const m = L.marker([marker.lat, marker.lng]).addTo(markersLayer.current);
-        if (marker.popup) m.bindPopup(marker.popup);
+      const lat = Number(marker.lat);
+      const lng = Number(marker.lng);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const m = L.marker([lat, lng]).addTo(markersLayer.current);
+        if (marker.popup) m.bindPopup(window.escapeHtml?.(marker.popup) || '');
       }
     });
   }, [markers]);

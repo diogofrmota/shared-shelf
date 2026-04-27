@@ -40,7 +40,7 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - `components/TasksView.jsx` - Task list, editing, completion, assignment display, and reordering.
 - `components/DatesView.jsx` - Date ideas, Nominatim search, categories, favorites, links, and map.
 - `components/Dates.jsx`, `components/LeafletMap.jsx`, `components/NominatimSearch.jsx` - Alternate ES-module date/location components; not loaded by `index.html`.
-- `components/TripsView.jsx` - Upcoming/past trip cards and editing.
+- `components/TripsView.jsx` - Upcoming/past trip cards and trip detail view.
 - `components/RecipesView.jsx` - Recipe list, search, detail, and editing.
 - `components/MediaSectionsView.jsx`, `components/MediaCard.jsx`, `components/SearchModal.jsx`, `components/GlobalSearchModal.jsx` - Media display, search, add, statuses, and TV show progress.
 - `components/ProfileModal.jsx`, `components/ShareShelfModal.jsx`, `components/JoinShelfModal.jsx` - Shelf settings, account/profile, sharing, and join/create flows.
@@ -91,6 +91,9 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - Validate user access to shelves before reading or mutating shelf metadata or shelf data.
 - Owner-only behavior, such as shelf settings updates and share-code regeneration, should check `shelf_members.role`.
 - Legacy `/api/data` persistence has been removed; use shelf-scoped APIs for current persistence behavior.
+- TMDB and Nominatim proxy routes should require a bearer JWT because they expose server-side proxy capacity and, for TMDB, a server-held API key.
+- User-provided URL fields should be normalized to safe `http`/`https` links before storage/rendering. Image fields should be limited to safe `http`/`https` URLs or known image data URLs. Escape saved text before passing it into non-React HTML sinks such as Leaflet popups.
+- JWTs are intentionally stored in browser storage: `localStorage` for remembered sessions and `sessionStorage` otherwise. Treat XSS prevention as the main protection for those tokens because they are not HttpOnly cookies.
 
 ## Data Model Notes
 
@@ -113,6 +116,12 @@ shared calendar, tasks, locations, trips, recipes, and watchlist (movies, TV sho
 - `recipes`
 - `watchlist`
 - `profile`
+
+Calendar events can include optional recurrence as `recurrence: { frequency, until }`, where frequency is `daily`, `weekly`, `monthly`, or `yearly`, and `until` can be blank for an open-ended series. The first recurrence version edits and deletes the whole series, so keep occurrence rendering derived from the base event rather than duplicating generated occurrences into saved data.
+
+Tasks can include optional recurrence as `recurrence: { frequency }`, where frequency is `daily`, `weekly`, `monthly`, or `yearly`. Recurring task completion stores occurrence metadata such as `lastCompletedAt` and `completionCount`; it should keep the task active instead of moving it into the completed task group.
+
+Trips can include `startDate`, `endDate`, `itinerary`, `bookings`, `notes`, and `packingList`. Normalize missing trip fields at load/render time so older trips with only destination/year/accommodation data remain usable.
 
 Watchlist can be:
 

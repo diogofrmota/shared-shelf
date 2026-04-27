@@ -132,6 +132,114 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
 };
 
 // ============================================================================
+// BOOK PROGRESS MODAL
+// ============================================================================
+
+const BookProgressModal = ({ item, onClose, onSave }) => {
+  const initialTotalPages = Math.max(0, Math.floor(Number(item.progress?.totalPages ?? item.totalPages ?? 0) || 0));
+  const initialCurrentPage = Math.min(
+    Math.max(0, Math.floor(Number(item.progress?.currentPage ?? 0) || 0)),
+    initialTotalPages || Number.MAX_SAFE_INTEGER
+  );
+
+  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
+
+  const clampedCurrentPage = totalPages ? Math.min(currentPage, totalPages) : currentPage;
+  const progressPercent = totalPages ? Math.round((clampedCurrentPage / totalPages) * 100) : null;
+  const numberInputCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
+
+  const handleCurrentPageChange = (value) => {
+    const nextPage = Math.max(0, Math.floor(Number(value) || 0));
+    setCurrentPage(totalPages ? Math.min(nextPage, totalPages) : nextPage);
+  };
+
+  const handleTotalPagesChange = (value) => {
+    const nextTotal = Math.max(0, Math.floor(Number(value) || 0));
+    setTotalPages(nextTotal);
+    setCurrentPage(page => nextTotal ? Math.min(page, nextTotal) : page);
+  };
+
+  const handleSave = () => {
+    const normalizedTotalPages = totalPages || null;
+    const normalizedCurrentPage = normalizedTotalPages ? Math.min(currentPage, normalizedTotalPages) : currentPage;
+    onSave({
+      currentPage: normalizedCurrentPage,
+      totalPages: normalizedTotalPages
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="mr-3 min-w-0 flex-1">
+              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
+              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]">{item.title}</h3>
+            </div>
+            <button onClick={onClose} className="shrink-0 rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+              <Close size={20} />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Current page</label>
+              <input
+                type="number"
+                min="0"
+                max={totalPages || undefined}
+                value={currentPage}
+                onChange={e => handleCurrentPageChange(e.target.value)}
+                className={numberInputCls}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Total pages</label>
+              <input
+                type="number"
+                min="0"
+                value={totalPages}
+                onChange={e => handleTotalPagesChange(e.target.value)}
+                className={numberInputCls}
+              />
+            </div>
+
+            {totalPages > 0 && (
+              <div>
+                <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#534340]">
+                  <span>{clampedCurrentPage} / {totalPages} pages</span>
+                  <span>{progressPercent}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-[#FFDAD4]">
+                  <div
+                    className="h-full rounded-full bg-[#E63B2E] transition-all"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleSave}
+              className="w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
+            >
+              Save progress
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
 // MEDIA CARD COMPONENT
 // ============================================================================
 
@@ -139,16 +247,32 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const statusOptions = getStatusOptions(item.category);
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, PLACEHOLDER_IMAGE) || PLACEHOLDER_IMAGE;
 
   const isWatchingTvShow = item.category === 'tvshows' && item.status === 'watching';
+  const isBook = item.category === 'books';
   const pageLabel = item.category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
   const progress = item.progress;
 
   const progressLabel = (() => {
+    if (isBook && !progress) return 'Set progress...';
     if (!progress) return null;
+    if (isBook && Number.isFinite(Number(progress.currentPage))) {
+      const currentPage = Math.max(0, Math.floor(Number(progress.currentPage) || 0));
+      const totalPages = Math.max(0, Math.floor(Number(progress.totalPages || item.totalPages || 0) || 0));
+      return totalPages ? `${Math.min(currentPage, totalPages)} / ${totalPages} pages` : `Page ${currentPage}`;
+    }
     if (progress.currentSeason) return `S${progress.currentSeason} E${progress.currentEpisode}`;
     if (progress.currentEpisode) return `Ep ${progress.currentEpisode}`;
     return null;
+  })();
+
+  const bookProgressPercent = (() => {
+    if (!isBook) return null;
+    const totalPages = Math.max(0, Math.floor(Number(progress?.totalPages || item.totalPages || 0) || 0));
+    if (!totalPages) return null;
+    const currentPage = Math.min(Math.max(0, Math.floor(Number(progress?.currentPage || 0) || 0)), totalPages);
+    return Math.round((currentPage / totalPages) * 100);
   })();
 
   return (
@@ -156,7 +280,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
       <div className="group relative overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10">
         <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
           <img
-            src={item.thumbnail}
+            src={safeThumbnail}
             alt={item.title}
             loading="lazy"
             decoding="async"
@@ -222,7 +346,16 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
             </div>
           </div>
 
-          {isWatchingTvShow && (
+          {bookProgressPercent !== null && (
+            <div className="h-1.5 overflow-hidden rounded-full bg-[#FFDAD4]">
+              <div
+                className="h-full rounded-full bg-[#E63B2E]"
+                style={{ width: `${bookProgressPercent}%` }}
+              />
+            </div>
+          )}
+
+          {(isWatchingTvShow || isBook) && (
             <button
               onClick={() => setShowProgressModal(true)}
               className="mt-1 flex w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
@@ -236,8 +369,15 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
         </div>
       </div>
 
-      {showProgressModal && (
+      {showProgressModal && isWatchingTvShow && (
         <TvProgressModal
+          item={item}
+          onClose={() => setShowProgressModal(false)}
+          onSave={(progress) => onProgressChange && onProgressChange(item.id, progress)}
+        />
+      )}
+      {showProgressModal && isBook && (
+        <BookProgressModal
           item={item}
           onClose={() => setShowProgressModal(false)}
           onSave={(progress) => onProgressChange && onProgressChange(item.id, progress)}
@@ -253,6 +393,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
 
 const ResultCard = ({ item, category, onAdd }) => {
   const pageLabel = category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, PLACEHOLDER_IMAGE) || PLACEHOLDER_IMAGE;
 
   return (
   <div
@@ -261,7 +402,7 @@ const ResultCard = ({ item, category, onAdd }) => {
   >
     <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
       <img
-        src={item.thumbnail}
+        src={safeThumbnail}
         alt={item.title}
         loading="lazy"
         decoding="async"

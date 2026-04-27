@@ -28,11 +28,12 @@ const UserAvatar = ({ user, size = 40 }) => {
     .slice(0, 2);
   const color = user.color || AVATAR_COLORS[0];
   const [imgError, setImgError] = useState(false);
+  const safeAvatar = window.safeImageUrl?.(user.avatar) || '';
 
-  if (user.avatar && !imgError) {
+  if (safeAvatar && !imgError) {
     return (
       <img
-        src={user.avatar}
+        src={safeAvatar}
         alt={user.name}
         width={size}
         height={size}

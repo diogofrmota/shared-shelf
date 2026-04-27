@@ -1,22 +1,9 @@
 import { randomBytes, randomUUID } from 'crypto';
-import { cors, errResponse, sql, verifyJwt } from '../../lib/auth-shared.js';
+import { cors, errResponse, getUserIdFromRequest, sql } from '../../lib/auth-shared.js';
 import { DEFAULT_SHELF_DATA, initializeDatabase, normalizeShelfData, normalizeShelfSections } from '../../lib/db.js';
 
 async function ensureSchema() {
   await initializeDatabase();
-}
-
-function getUserIdFromRequest(req) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) return null;
-
-  try {
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyJwt(token);
-    return decoded.userId || null;
-  } catch {
-    return null;
-  }
 }
 
 function getPathSegments(req) {
@@ -80,6 +67,23 @@ async function getShelfSummary(shelfId) {
 
 function generateJoinCode() {
   return randomBytes(6).toString('base64url').toUpperCase();
+}
+
+function sanitizeHttpUrl(value) {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw) return '';
+
+  try {
+    const url = new URL(raw);
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
+function normalizeShelfName(value) {
+  const name = typeof value === 'string' ? value.trim() : '';
+  return name.slice(0, 80);
 }
 
 async function createJoinCode(shelfId) {
@@ -161,7 +165,7 @@ export default async function handler(req, res) {
       }
 
       if (req.method === 'POST') {
-        const name = req.body?.name?.trim();
+        const name = normalizeShelfName(req.body?.name);
         if (!name) return res.status(400).json({ error: 'Name required' });
         const shelfId = randomUUID();
         const enabledSections = normalizeShelfSections(req.body?.enabledSections);
@@ -241,8 +245,8 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Only the shelf owner can update shelf settings' });
       }
 
-      const nextName = req.body?.name?.trim();
-      const nextLogo = typeof req.body?.logo === 'string' ? req.body.logo.trim() : undefined;
+      const nextName = normalizeShelfName(req.body?.name);
+      const nextLogo = typeof req.body?.logo === 'string' ? sanitizeHttpUrl(req.body.logo) : undefined;
       const hasEnabledSections = Array.isArray(req.body?.enabledSections);
       const nextEnabledSections = hasEnabledSections ? normalizeShelfSections(req.body.enabledSections) : undefined;
 
@@ -363,6 +367,19 @@ export default async function handler(req, res) {
         await sql`
           DELETE FROM shelf_id
           WHERE id = ${shelfId}
+        `;
+      } else if (membership.role === 'owner') {
+        await sql`
+          UPDATE shelf_members
+          SET role = 'owner'
+          WHERE shelf_id = ${shelfId}
+            AND user_id = (
+              SELECT user_id
+              FROM shelf_members
+              WHERE shelf_id = ${shelfId}
+              ORDER BY joined_at ASC
+              LIMIT 1
+            )
         `;
       }
 

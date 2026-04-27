@@ -118,16 +118,22 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     let hasMarkers = false;
 
     places.forEach(place => {
-      if (place.lat != null && place.lng != null) {
-        const latLng = L.latLng(place.lat, place.lng);
+      const lat = Number(place.lat);
+      const lng = Number(place.lng);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const latLng = L.latLng(lat, lng);
         bounds.extend(latLng);
         hasMarkers = true;
+        const safeName = window.escapeHtml?.(place.name || '') || '';
+        const safeCategory = window.escapeHtml?.(getDateCategoryLabel(place.category)) || 'Other';
+        const safeAddress = window.escapeHtml?.(place.address || '') || '';
+        const safeLink = window.safeExternalUrl?.(place.link) || '';
         const popupContent = `
           <div style="min-width:180px;">
-            <strong>${place.name}</strong><br/>
-            <span style="text-transform:capitalize;">${getDateCategoryLabel(place.category)}</span><br/>
-            ${place.address ? `<span>${place.address}</span><br/>` : ''}
-            ${place.link ? `<a href="${place.link}" target="_blank" rel="noreferrer noopener" style="color:#E63B2E;">Open link</a>` : ''}
+            <strong>${safeName}</strong><br/>
+            <span style="text-transform:capitalize;">${safeCategory}</span><br/>
+            ${safeAddress ? `<span>${safeAddress}</span><br/>` : ''}
+            ${safeLink ? `<a href="${safeLink}" target="_blank" rel="noreferrer noopener" style="color:#E63B2E;">Open link</a>` : ''}
           </div>
         `;
         const marker = L.marker(latLng).bindPopup(popupContent).addTo(layerGroup);
@@ -167,8 +173,13 @@ const DatesLeafletMap = ({ places, focusedId }) => {
 const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUpdateDate }) => {
   const photoInputRef = useRef(null);
   const categoryStyle = DATE_CATEGORY_STYLES[place.category] || DATE_CATEGORY_STYLES.other;
-  const mapsLink = (place.lat != null && place.lng != null)
-    ? `https://www.openstreetmap.org/?mlat=${place.lat}&mlon=${place.lng}&zoom=15`
+  const safeLink = window.safeExternalUrl?.(place.link) || '';
+  const safePhoto = window.safeImageUrl?.(place.photo) || '';
+  const lat = Number(place.lat);
+  const lng = Number(place.lng);
+  const hasCoordinates = Number.isFinite(lat) && Number.isFinite(lng);
+  const mapsLink = hasCoordinates
+    ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`
     : place.address
       ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(place.address)}`
       : null;
@@ -222,9 +233,9 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
       }`}
       onClick={() => onFocus(place.id)}
     >
-      {place.photo ? (
+      {safePhoto ? (
         <div className="relative h-36 w-full overflow-hidden bg-[#FFDAD4]">
-          <img src={place.photo} alt={place.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+          <img src={safePhoto} alt={place.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           <button
             onClick={e => { e.stopPropagation(); onUpdateDate?.(place.id, { photo: null }); }}
             className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-[#410001] opacity-0 shadow-sm transition group-hover:opacity-100"
@@ -288,8 +299,8 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
         {place.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-[#534340]">{place.notes}</p>}
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {place.link && (
-            <a href={place.link} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
+          {safeLink && (
+            <a href={safeLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
               <LinkIcon size={14} /> Link
             </a>
           )}
@@ -298,7 +309,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
               <MapPin size={14} /> Map
             </a>
           )}
-          {place.photo && (
+          {safePhoto && (
             <button onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#534340] transition hover:text-[#410001]">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               Change photo

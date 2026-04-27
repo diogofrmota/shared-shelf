@@ -1,11 +1,22 @@
+import { cors, getUserIdFromRequest } from '../lib/auth-shared.js';
+
 export default async function handler(req, res) {
+  cors(req, res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { id } = req.query;
-  if (!id) {
+  const tvId = Array.isArray(id) ? id[0] : id;
+  if (!getUserIdFromRequest(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (!tvId) {
     return res.status(400).json({ error: 'Missing "id" parameter' });
+  }
+  if (!/^\d+$/.test(String(tvId))) {
+    return res.status(400).json({ error: 'Invalid "id" parameter' });
   }
 
   const apiKey = process.env.TMDB_API_KEY;
@@ -14,9 +25,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`
-    );
+    const url = new URL(`https://api.themoviedb.org/3/tv/${tvId}`);
+    url.searchParams.set('api_key', apiKey);
+    const response = await fetch(url.toString());
     if (!response.ok) {
       return res.status(response.status).json({ error: 'TMDB request failed' });
     }

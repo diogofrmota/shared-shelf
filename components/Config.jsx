@@ -193,7 +193,9 @@ const transformBookData = (doc) => ({
 
 const searchMovies = async (query) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`, {
+      headers: window.getAuthToken?.() ? { Authorization: `Bearer ${window.getAuthToken()}` } : {}
+    });
     if (!response.ok) throw new Error('Failed to fetch movies');
     const data = await response.json();
     return (data.results || [])
@@ -208,7 +210,12 @@ const searchMovies = async (query) => {
 const searchTvShows = async (query) => {
   try {
     const [tmdbResponse, animeData] = await Promise.allSettled([
-      fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`, {
+        headers: window.getAuthToken?.() ? { Authorization: `Bearer ${window.getAuthToken()}` } : {}
+      }).then(r => {
+        if (!r.ok) throw new Error('Failed to fetch TV shows');
+        return r.json();
+      }),
       fetch(`${API_CONFIG.JIKAN.BASE_URL}${API_CONFIG.JIKAN.ENDPOINTS.SEARCH_ANIME}?q=${encodeURIComponent(query)}&limit=10`).then(r => r.json())
     ]);
     const tvResults = tmdbResponse.status === 'fulfilled'
@@ -226,7 +233,9 @@ const searchTvShows = async (query) => {
 
 const fetchTvDetails = async (tmdbId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/tvdetails?id=${tmdbId}`);
+    const response = await fetch(`${API_BASE_URL}/api/tvdetails?id=${tmdbId}`, {
+      headers: window.getAuthToken?.() ? { Authorization: `Bearer ${window.getAuthToken()}` } : {}
+    });
     if (!response.ok) throw new Error('Failed to fetch TV details');
     return await response.json();
   } catch (error) {

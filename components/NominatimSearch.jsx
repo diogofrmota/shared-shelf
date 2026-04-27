@@ -17,7 +17,10 @@ export const NominatimSearch = ({ onSelect }) => {
       setLoading(true);
       try {
         // Call your Vercel API endpoint instead of Nominatim directly
-        const res = await fetch(`/api/nominatim?q=${encodeURIComponent(query)}`);
+        const token = window.getAuthToken?.();
+        const res = await fetch(`/api/nominatim?q=${encodeURIComponent(query)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
         const data = await res.json();
         setResults(data);
       } catch (err) {

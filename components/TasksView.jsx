@@ -1,6 +1,41 @@
 const React = window.React;
 const { useState } = React;
 
+const TASK_RECURRENCE_OPTIONS = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' }
+];
+
+const TASK_RECURRENCE_LABELS = TASK_RECURRENCE_OPTIONS.reduce((labels, option) => ({
+  ...labels,
+  [option.value]: option.label
+}), {});
+
+const getTaskRecurrenceFrequency = (task = {}) => {
+  const frequency = task.taskRecurrenceFrequency || task.recurrence?.frequency || task.recurrence || 'weekly';
+  return TASK_RECURRENCE_LABELS[frequency] ? frequency : 'weekly';
+};
+
+const isRecurringTask = (task = {}) => Boolean(task.recurrence);
+
+const isSameLocalDay = (isoDate) => {
+  if (!isoDate) return false;
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return false;
+  const today = new Date();
+  return date.getFullYear() === today.getFullYear()
+    && date.getMonth() === today.getMonth()
+    && date.getDate() === today.getDate();
+};
+
+const formatTaskDate = (value) => {
+  if (!value) return '';
+  const datePart = String(value).split('T')[0];
+  return datePart.split('-').reverse().join('/');
+};
+
 // ============================================================================
 // TASKS VIEW COMPONENT
 // ============================================================================
@@ -8,7 +43,7 @@ const { useState } = React;
 const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderTasks, onAddClick, profile }) => {
   const [filter, setFilter] = useState('all');
   const [editingTask, setEditingTask] = useState(null);
-  const [editForm, setEditForm] = useState({ title: '', description: '' });
+  const [editForm, setEditForm] = useState({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -26,19 +61,29 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
 
   const handleEditTask = (task) => {
     setEditingTask(task.id);
-    setEditForm({ title: task.title, description: task.description || '' });
+    setEditForm({
+      title: task.title,
+      description: task.description || '',
+      isRecurring: isRecurringTask(task),
+      taskRecurrenceFrequency: getTaskRecurrenceFrequency(task)
+    });
   };
 
   const handleSaveEdit = (taskId) => {
     if (!editForm.title.trim()) return;
-    onUpdateTask?.(taskId, editForm.title.trim(), editForm.description.trim());
+    onUpdateTask?.(taskId, {
+      title: editForm.title.trim(),
+      description: editForm.description.trim(),
+      recurrence: editForm.isRecurring ? { frequency: getTaskRecurrenceFrequency(editForm) } : null,
+      ...(editForm.isRecurring ? {} : { lastCompletedAt: null, completionCount: 0 })
+    });
     setEditingTask(null);
-    setEditForm({ title: '', description: '' });
+    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
   };
 
   const handleCancelEdit = () => {
     setEditingTask(null);
-    setEditForm({ title: '', description: '' });
+    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
   };
 
   const handleMoveTask = (indexInSorted, direction) => {
@@ -84,6 +129,12 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const renderTaskItem = (task, indexInSorted) => {
     const assignedUser = getUserById(task.assignedTo);
     const isOverdue = task.dueDate && !task.completed && task.dueDate < new Date().toISOString().split('T')[0];
+    const taskIsRecurring = isRecurringTask(task);
+    const completedThisOccurrence = taskIsRecurring ? isSameLocalDay(task.lastCompletedAt) : Boolean(task.completed);
+    const recurrenceLabel = taskIsRecurring ? `Repeats ${TASK_RECURRENCE_LABELS[getTaskRecurrenceFrequency(task)].toLowerCase()}` : '';
+    const lastCompletedLabel = taskIsRecurring && task.lastCompletedAt
+      ? (completedThisOccurrence ? 'Done today' : `Last done ${formatTaskDate(task.lastCompletedAt)}`)
+      : '';
 
     return (
       <div
@@ -117,6 +168,40 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 placeholder="Description (optional)"
                 rows="2"
               />
+              <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                <label className="flex items-center gap-2 text-sm font-bold text-[#410001]">
+                  <input
+                    type="checkbox"
+                    checked={editForm.isRecurring}
+                    onChange={(e) => setEditForm({
+                      ...editForm,
+                      isRecurring: e.target.checked,
+                      taskRecurrenceFrequency: e.target.checked ? getTaskRecurrenceFrequency(editForm) : 'weekly'
+                    })}
+                    className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                  />
+                  Recurring task
+                </label>
+                {editForm.isRecurring && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Repeat every</label>
+                      <select
+                        value={getTaskRecurrenceFrequency(editForm)}
+                        onChange={(e) => setEditForm({ ...editForm, taskRecurrenceFrequency: e.target.value })}
+                        className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                      >
+                        {TASK_RECURRENCE_OPTIONS.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <p className="text-xs font-medium text-[#857370]">
+                      Checking a recurring task records one completed occurrence and keeps it active.
+                    </p>
+                  </>
+                )}
+              </div>
               <div className="flex gap-2">
                 <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save</button>
                 <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} className="rounded-lg border border-[#E1D8D4] bg-white px-4 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
@@ -125,11 +210,11 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
           ) : (
             <>
               <label className="mt-0.5 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center">
-                <span className="sr-only">Mark task complete</span>
+                <span className="sr-only">{taskIsRecurring ? 'Mark current recurring task occurrence complete' : 'Mark task complete'}</span>
                 <input
                   type="checkbox"
-                  checked={task.completed || false}
-                  onChange={(e) => { e.stopPropagation(); onToggleTask(task.id); }}
+                  checked={completedThisOccurrence}
+                  onChange={(e) => { e.stopPropagation(); onToggleTask(task.id, e.target.checked); }}
                   onClick={(e) => e.stopPropagation()}
                   className="h-5 w-5 cursor-pointer rounded border-[#D8C2BE] accent-[#E63B2E]"
                 />
@@ -157,6 +242,20 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                       <span className={`flex items-center gap-1 text-xs font-medium ${isOverdue ? 'text-[#C1121F]' : 'text-[#534340]'}`}>
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         {isOverdue ? 'Overdue · ' : ''}{task.dueDate.split('-').reverse().join('/')}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {(recurrenceLabel || lastCompletedLabel) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {recurrenceLabel && (
+                      <span className="inline-flex items-center rounded-full bg-[#FFF0EE] px-2 py-1 text-xs font-bold text-[#A9372C]">
+                        {recurrenceLabel}
+                      </span>
+                    )}
+                    {lastCompletedLabel && (
+                      <span className="inline-flex items-center rounded-full bg-[#EAF7EF] px-2 py-1 text-xs font-bold text-[#2F6B47]">
+                        {lastCompletedLabel}
                       </span>
                     )}
                   </div>

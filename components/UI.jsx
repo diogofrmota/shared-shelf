@@ -83,10 +83,11 @@ const LoadingScreen = ({ label = 'Loading...' }) => (
 );
 
 const UserAvatar = ({ user, size = 32 }) => {
-  if (user.avatar) {
+  const safeAvatar = window.safeImageUrl?.(user.avatar) || '';
+  if (safeAvatar) {
     return (
       <img
-        src={user.avatar}
+        src={safeAvatar}
         alt={user.name}
         loading="lazy"
         decoding="async"

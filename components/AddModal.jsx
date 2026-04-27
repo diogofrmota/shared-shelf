@@ -91,6 +91,300 @@ const FormField = ({ label, required, children }) => (
 const inputCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const selectCls = inputCls;
 
+const createTripItemId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+const emptyItineraryItem = () => ({ id: createTripItemId('itinerary'), date: '', time: '', title: '', notes: '' });
+const emptyBookingItem = () => ({ id: createTripItemId('booking'), type: 'accommodation', title: '', link: '', notes: '' });
+const emptyPackingItem = () => ({ id: createTripItemId('packing'), text: '', packed: false });
+
+const deriveTripYear = (formData = {}) => {
+  const parsedYear = parseInt(formData.year, 10);
+  if (parsedYear) return parsedYear;
+  if (formData.startDate) {
+    const parsedDate = new Date(formData.startDate);
+    if (!Number.isNaN(parsedDate.getTime())) return parsedDate.getFullYear();
+  }
+  return new Date().getFullYear();
+};
+
+const cleanTripItinerary = (items) => (Array.isArray(items) ? items : [])
+  .map(item => ({
+    id: item.id || createTripItemId('itinerary'),
+    date: item.date || '',
+    time: item.time || '',
+    title: item.title || '',
+    notes: item.notes || ''
+  }))
+  .filter(item => item.date || item.time || item.title || item.notes);
+
+const cleanTripBookings = (items) => (Array.isArray(items) ? items : [])
+  .filter(item => item?.title || item?.link || item?.notes)
+  .map(item => ({
+    id: item.id || createTripItemId('booking'),
+    type: item.type || 'reservation',
+    title: item.title || '',
+    link: item.link || '',
+    notes: item.notes || ''
+  }));
+
+const cleanPackingList = (items) => (Array.isArray(items) ? items : [])
+  .map(item => ({
+    id: item.id || createTripItemId('packing'),
+    text: item.text || '',
+    packed: Boolean(item.packed)
+  }))
+  .filter(item => item.text);
+
+const buildTripPayload = (formData = {}) => ({
+  destination: formData.destination || '',
+  year: deriveTripYear(formData),
+  tripType: formData.tripType || 'next',
+  startDate: formData.startDate || '',
+  endDate: formData.endDate || formData.startDate || '',
+  photo: formData.photo || '',
+  accommodation: formData.accommodation || '',
+  itinerary: cleanTripItinerary(formData.itinerary),
+  bookings: cleanTripBookings(formData.bookings),
+  notes: formData.notes || '',
+  packingList: cleanPackingList(formData.packingList)
+});
+
+const RECURRENCE_OPTIONS = [
+  { value: 'none', label: 'Does not repeat' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' }
+];
+
+const TASK_RECURRENCE_OPTIONS = RECURRENCE_OPTIONS.filter(option => option.value !== 'none');
+
+const getRecurrenceFrequency = (formData = {}) => {
+  const frequency = formData.recurrenceFrequency || formData.recurrence?.frequency || 'none';
+  return RECURRENCE_OPTIONS.some(option => option.value === frequency) ? frequency : 'none';
+};
+
+const buildEventRecurrence = (formData = {}) => {
+  const frequency = getRecurrenceFrequency(formData);
+  if (frequency === 'none') return null;
+  return {
+    frequency,
+    until: formData.recurrenceUntil || formData.recurrence?.until || ''
+  };
+};
+
+const buildCalendarEventPayload = (formData = {}) => ({
+  title: formData.title || '',
+  date: formData.date || '',
+  startDate: formData.date || '',
+  endDate: formData.endDate || formData.date || '',
+  time: formData.time || '',
+  description: formData.description || '',
+  recurrence: buildEventRecurrence(formData)
+});
+
+const getTaskRecurrenceFrequency = (formData = {}) => {
+  const frequency = formData.taskRecurrenceFrequency || formData.recurrence?.frequency || 'weekly';
+  return TASK_RECURRENCE_OPTIONS.some(option => option.value === frequency) ? frequency : 'weekly';
+};
+
+const buildTaskRecurrence = (formData = {}) => {
+  if (!formData.isRecurring) return null;
+  return { frequency: getTaskRecurrenceFrequency(formData) };
+};
+
+const CalendarRecurrenceFields = ({ formData, setFormData, editing = false }) => {
+  const frequency = getRecurrenceFrequency(formData);
+
+  return (
+    <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+      <FormField label="Repeat">
+        <select
+          className={selectCls}
+          value={frequency}
+          onChange={(e) => setFormData({
+            ...formData,
+            recurrenceFrequency: e.target.value,
+            recurrenceUntil: e.target.value === 'none' ? '' : formData.recurrenceUntil || ''
+          })}
+        >
+          {RECURRENCE_OPTIONS.map(option => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </FormField>
+      {frequency !== 'none' && (
+        <>
+          <FormField label="Repeat until">
+            <input
+              type="date"
+              className={inputCls}
+              min={formData.date || undefined}
+              value={formData.recurrenceUntil || ''}
+              onChange={(e) => setFormData({ ...formData, recurrenceUntil: e.target.value })}
+            />
+          </FormField>
+          <p className="text-xs font-medium text-[#857370]">
+            {editing ? 'Saving changes updates every occurrence in this series.' : 'Leave blank to keep showing this series in future months.'}
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
+const TaskRecurrenceFields = ({ formData, setFormData }) => {
+  const isRecurring = Boolean(formData.isRecurring);
+
+  return (
+    <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+      <label className="flex items-center gap-2 text-sm font-bold text-[#410001]">
+        <input
+          type="checkbox"
+          checked={isRecurring}
+          onChange={(e) => setFormData({
+            ...formData,
+            isRecurring: e.target.checked,
+            taskRecurrenceFrequency: e.target.checked
+              ? getTaskRecurrenceFrequency(formData)
+              : 'weekly'
+          })}
+          className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+        />
+        Recurring task
+      </label>
+      {isRecurring && (
+        <>
+          <FormField label="Repeat every">
+            <select
+              className={selectCls}
+              value={getTaskRecurrenceFrequency(formData)}
+              onChange={(e) => setFormData({ ...formData, taskRecurrenceFrequency: e.target.value })}
+            >
+              {TASK_RECURRENCE_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </FormField>
+          <p className="text-xs font-medium text-[#857370]">
+            Checking a recurring task records one completed occurrence and keeps it active.
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
+const TripListSection = ({ title, actionLabel, rows, emptyRow, children, onChange }) => {
+  const visibleRows = Array.isArray(rows) && rows.length ? rows : [emptyRow()];
+  const updateRow = (id, patch) => onChange(visibleRows.map(row => row.id === id ? { ...row, ...patch } : row));
+  const removeRow = (id) => onChange(visibleRows.length === 1 ? [] : visibleRows.filter(row => row.id !== id));
+
+  return (
+    <div className="space-y-2 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-[#534340]">{title}</h3>
+        <button
+          type="button"
+          onClick={() => onChange([...visibleRows, emptyRow()])}
+          className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#410001] transition hover:border-[#FFB4A9] hover:text-[#E63B2E]"
+        >
+          {actionLabel}
+        </button>
+      </div>
+      <div className="space-y-2">
+        {visibleRows.map((row, index) => (
+          <div key={row.id} className="rounded-lg border border-[#E1D8D4] bg-white p-3">
+            {children(row, updateRow)}
+            <button
+              type="button"
+              onClick={() => removeRow(row.id)}
+              className="mt-2 text-xs font-bold text-[#857370] transition hover:text-[#C1121F]"
+            >
+              Remove {index + 1}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const TripPlanningFields = ({ formData, setFormData }) => (
+  <>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <FormField label="Start date">
+        <input type="date" className={inputCls} value={formData.startDate || ''} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
+      </FormField>
+      <FormField label="End date">
+        <input type="date" className={inputCls} value={formData.endDate || ''} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
+      </FormField>
+    </div>
+
+    <TripListSection
+      title="Itinerary"
+      actionLabel="Add item"
+      rows={formData.itinerary}
+      emptyRow={emptyItineraryItem}
+      onChange={(itinerary) => setFormData({ ...formData, itinerary })}
+    >
+      {(row, updateRow) => (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_110px]">
+          <input type="date" className={inputCls} value={row.date || ''} onChange={(e) => updateRow(row.id, { date: e.target.value })} />
+          <input type="time" className={inputCls} value={row.time || ''} onChange={(e) => updateRow(row.id, { time: e.target.value })} />
+          <input type="text" className={`${inputCls} sm:col-span-2`} value={row.title || ''} placeholder="Plan" onChange={(e) => updateRow(row.id, { title: e.target.value })} />
+          <textarea rows="2" className={`${inputCls} sm:col-span-2`} value={row.notes || ''} placeholder="Notes" onChange={(e) => updateRow(row.id, { notes: e.target.value })} />
+        </div>
+      )}
+    </TripListSection>
+
+    <TripListSection
+      title="Bookings"
+      actionLabel="Add booking"
+      rows={formData.bookings}
+      emptyRow={emptyBookingItem}
+      onChange={(bookings) => setFormData({ ...formData, bookings })}
+    >
+      {(row, updateRow) => (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[150px_1fr]">
+          <select className={selectCls} value={row.type || 'reservation'} onChange={(e) => updateRow(row.id, { type: e.target.value })}>
+            <option value="accommodation">Accommodation</option>
+            <option value="transport">Transport</option>
+            <option value="reservation">Reservation</option>
+            <option value="other">Other</option>
+          </select>
+          <input type="text" className={inputCls} value={row.title || ''} placeholder="Name" onChange={(e) => updateRow(row.id, { title: e.target.value })} />
+          <input type="url" className={`${inputCls} sm:col-span-2`} value={row.link || ''} placeholder="Link" onChange={(e) => updateRow(row.id, { link: e.target.value })} />
+          <textarea rows="2" className={`${inputCls} sm:col-span-2`} value={row.notes || ''} placeholder="Details" onChange={(e) => updateRow(row.id, { notes: e.target.value })} />
+        </div>
+      )}
+    </TripListSection>
+
+    <FormField label="Trip notes">
+      <textarea rows="4" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+    </FormField>
+
+    <TripListSection
+      title="Packing list"
+      actionLabel="Add item"
+      rows={formData.packingList}
+      emptyRow={emptyPackingItem}
+      onChange={(packingList) => setFormData({ ...formData, packingList })}
+    >
+      {(row, updateRow) => (
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={Boolean(row.packed)}
+            onChange={(e) => updateRow(row.id, { packed: e.target.checked })}
+            className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+          />
+          <input type="text" className={inputCls} value={row.text || ''} placeholder="Packing item" onChange={(e) => updateRow(row.id, { text: e.target.value })} />
+        </div>
+      )}
+    </TripListSection>
+  </>
+);
+
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile }) => {
   const [formData, setFormData] = useState({});
 
@@ -116,19 +410,30 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     switch (activeTab) {
       case 'tasks':
         if (formData.title) {
-          onAddTask({ id: `task-${uid()}`, title: formData.title, description: formData.description || '', assignedTo: formData.assignedTo || null, dueDate: formData.dueDate || null, completed: false, createdAt: new Date().toISOString() });
+          onAddTask({
+            id: `task-${uid()}`,
+            title: formData.title,
+            description: formData.description || '',
+            assignedTo: formData.assignedTo || null,
+            dueDate: formData.dueDate || null,
+            completed: false,
+            recurrence: buildTaskRecurrence(formData),
+            lastCompletedAt: null,
+            completionCount: 0,
+            createdAt: new Date().toISOString()
+          });
           onClose();
         }
         break;
       case 'calendar':
         if (formData.title && formData.date) {
-          onAddEvent({ id: `event-${uid()}`, title: formData.title, date: formData.date, startDate: formData.date, endDate: formData.endDate || formData.date, time: formData.time || '', description: formData.description || '' });
+          onAddEvent({ id: `event-${uid()}`, ...buildCalendarEventPayload(formData) });
           onClose();
         }
         break;
       case 'trips':
         if (formData.destination) {
-          onAddTrip({ id: `trip-${uid()}`, destination: formData.destination, year: formData.year || new Date().getFullYear(), tripType: formData.tripType || 'next', photo: formData.photo || '', accommodation: formData.accommodation || '' });
+          onAddTrip({ id: `trip-${uid()}`, ...buildTripPayload(formData) });
           onClose();
         }
         break;
@@ -162,7 +467,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+      <div className={`max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30 ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'}`}>
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">{getModalTitle()}</h2>
           <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
@@ -204,6 +509,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Due date">
                 <input type="date" className={inputCls} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} />
               </FormField>
+              <TaskRecurrenceFields formData={formData} setFormData={setFormData} />
             </>
           )}
 
@@ -224,6 +530,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                   {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </FormField>
+              <CalendarRecurrenceFields formData={formData} setFormData={setFormData} />
               <FormField label="Description">
                 <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </FormField>
@@ -252,6 +559,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Year">
                 <input type="number" min="1900" max="2100" placeholder={new Date().getFullYear()} className={inputCls} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
               </FormField>
+              <TripPlanningFields formData={formData} setFormData={setFormData} />
               <FormField label="Photo URL">
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
               </FormField>
@@ -339,7 +647,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         date: event.startDate || event.date || '',
         endDate: event.endDate || '',
         time: event.time || '',
-        description: event.description || ''
+        description: event.description || '',
+        recurrenceFrequency: event.recurrence?.frequency || event.recurrence || 'none',
+        recurrenceUntil: event.recurrence?.until || event.recurrenceUntil || ''
       });
     }
   }, [isOpen, event]);
@@ -351,12 +661,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
     if (formData.title && formData.date) {
       onSave({
         ...event,
-        title: formData.title,
-        date: formData.date,
-        startDate: formData.date,
-        endDate: formData.endDate || formData.date,
-        time: formData.time || '',
-        description: formData.description || ''
+        ...buildCalendarEventPayload(formData)
       });
       onClose();
     }
@@ -388,6 +693,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
               {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </FormField>
+          <CalendarRecurrenceFields formData={formData} setFormData={setFormData} editing />
           <FormField label="Description">
             <textarea rows="3" className={inputCls} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
           </FormField>
@@ -481,8 +787,14 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
         destination: trip.destination || '',
         year: trip.year || new Date().getFullYear(),
         tripType: trip.tripType || 'next',
+        startDate: trip.startDate || '',
+        endDate: trip.endDate || '',
         photo: trip.photo || '',
         accommodation: trip.accommodation || '',
+        itinerary: Array.isArray(trip.itinerary) ? trip.itinerary : [],
+        bookings: Array.isArray(trip.bookings) ? trip.bookings : [],
+        notes: trip.notes || '',
+        packingList: Array.isArray(trip.packingList) ? trip.packingList : [],
       });
     }
   }, [isOpen, trip]);
@@ -492,14 +804,14 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.destination) {
-      onSave({ ...trip, ...formData });
+      onSave({ ...trip, ...buildTripPayload(formData) });
       onClose();
     }
   };
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit trip</h2>
           <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
@@ -513,6 +825,7 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
           <FormField label="Year">
             <input type="number" className={inputCls} value={formData.year} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
           </FormField>
+          <TripPlanningFields formData={formData} setFormData={setFormData} />
           <FormField label="Trip type">
             <div className="flex gap-2">
               {['past', 'next'].map(type => (

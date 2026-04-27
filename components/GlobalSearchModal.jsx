@@ -5,14 +5,16 @@ const { useState, useEffect } = React;
 // GLOBAL SEARCH MODAL COMPONENT
 // ============================================================================
 
-const LibraryResultCard = ({ item, onSelect }) => (
+const LibraryResultCard = ({ item, onSelect }) => {
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, PLACEHOLDER_IMAGE) || PLACEHOLDER_IMAGE;
+  return (
   <div
     className="group relative cursor-pointer overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
     onClick={() => onSelect(item)}
   >
     <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
       <img
-        src={item.thumbnail}
+        src={safeThumbnail}
         alt={item.title}
         loading="lazy"
         decoding="async"
@@ -31,7 +33,8 @@ const LibraryResultCard = ({ item, onSelect }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
   const [query, setQuery] = useState('');

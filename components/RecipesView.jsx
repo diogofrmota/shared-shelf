@@ -9,6 +9,8 @@ const RECIPE_PHOTO_PLACEHOLDER = 'https://via.placeholder.com/800x500/FFDAD4/E63
 
 const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
   if (!recipe) return null;
+  const safePhoto = window.safeImageUrl?.(recipe.photo, RECIPE_PHOTO_PLACEHOLDER) || RECIPE_PHOTO_PLACEHOLDER;
+  const safeLink = window.safeExternalUrl?.(recipe.link) || '';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
@@ -19,7 +21,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
         {/* Hero image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-[#FFDAD4]">
           <img
-            src={recipe.photo || RECIPE_PHOTO_PLACEHOLDER}
+            src={safePhoto}
             alt={recipe.name}
             onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
             decoding="async"
@@ -55,9 +57,9 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
             )}
           </div>
 
-          {recipe.link && (
+          {safeLink && (
             <a
-              href={recipe.link}
+              href={safeLink}
               target="_blank"
               rel="noreferrer noopener"
               className="inline-flex items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
@@ -94,14 +96,17 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
   );
 };
 
-const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => (
+const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
+  const safePhoto = window.safeImageUrl?.(recipe.photo, RECIPE_PHOTO_PLACEHOLDER) || RECIPE_PHOTO_PLACEHOLDER;
+  const safeLink = window.safeExternalUrl?.(recipe.link) || '';
+  return (
   <div
     className="group cursor-pointer overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
     onClick={() => onViewDetails(recipe)}
   >
     <div className="aspect-[4/3] overflow-hidden bg-[#FFDAD4]">
       <img
-        src={recipe.photo || RECIPE_PHOTO_PLACEHOLDER}
+        src={safePhoto}
         alt={recipe.name}
         onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
         loading="lazy"
@@ -138,9 +143,9 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => (
         </div>
       </div>
 
-      {recipe.link && (
+      {safeLink && (
         <a
-          href={recipe.link}
+          href={safeLink}
           target="_blank"
           rel="noreferrer noopener"
           onClick={e => e.stopPropagation()}
@@ -152,7 +157,8 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => (
       )}
     </div>
   </div>
-);
+  );
+};
 
 const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   const [formData, setFormData] = useState(recipe || {});
