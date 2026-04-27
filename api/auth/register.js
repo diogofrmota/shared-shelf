@@ -43,10 +43,10 @@ async function sendVerificationEmail(user) {
       await resend.emails.send({
         from: FROM_EMAIL,
         to: user.email,
-        subject: 'Confirm your Shared Shelf account',
+        subject: 'Confirm your Couple Planner account',
         html: `
           <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-            <h2 style="color:#031A6B">Shared Shelf</h2>
+            <h2 style="color:#E63B2E">Couple Planner</h2>
             <p>Hi ${safeDisplayName},</p>
             <p>Confirm your email address to finish creating your account. This link expires in <strong>24 hours</strong>.</p>
             <a href="${safeVerificationUrl}" style="display:inline-block;margin:24px 0;padding:12px 24px;background:#004385;color:#ffffff;border-radius:8px;text-decoration:none;font-weight:600">

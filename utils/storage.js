@@ -8,8 +8,8 @@ const API_BASE = window.API_BASE_URL ?? '';
  * Check if user is authenticated
  */
 const isAuthenticated = () => {
-  const token = localStorage.getItem('shared-shelf-auth-token');
-  const sessionToken = sessionStorage.getItem('shared-shelf-auth-token');
+  const token = localStorage.getItem('couple-planner-auth-token');
+  const sessionToken = sessionStorage.getItem('couple-planner-auth-token');
   return !!(token || sessionToken);
 };
 
@@ -27,7 +27,7 @@ const authenticate = async (username, password) => {
     const data = await response.json();
     
     if (data.authenticated) {
-      localStorage.setItem('shared-shelf-legacy-auth', 'true');
+      localStorage.setItem('couple-planner-legacy-auth', 'true');
       return true;
     }
     
@@ -42,10 +42,10 @@ const authenticate = async (username, password) => {
  * Logout user
  */
 const logout = () => {
-  localStorage.removeItem('shared-shelf-auth-token');
-  localStorage.removeItem('shared-shelf-legacy-auth');
-  localStorage.removeItem('shared-shelf-user');
-  sessionStorage.removeItem('shared-shelf-auth-token');
+  localStorage.removeItem('couple-planner-auth-token');
+  localStorage.removeItem('couple-planner-legacy-auth');
+  localStorage.removeItem('couple-planner-user');
+  sessionStorage.removeItem('couple-planner-auth-token');
 };
 
 /**

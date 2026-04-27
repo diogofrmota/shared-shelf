@@ -51,7 +51,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
         onJoin(created.shelf);
         onClose();
       } else {
-        setError('Failed to create shelf');
+        setError('Failed to create space');
       }
     } catch (err) {
       setError(err?.message || 'Connection error');
@@ -90,12 +90,12 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
       <div className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30">
         <div className="mb-5">
           <h2 className="text-xl font-extrabold text-[#410001]">
-            {mode === 'create' ? 'Create a shelf' : 'Join a shelf'}
+            {mode === 'create' ? 'Create a space' : 'Join a space'}
           </h2>
           <p className="mt-1 text-sm text-[#534340]">
             {mode === 'create'
               ? 'Start a new shared space and pick what you want to track.'
-              : 'Enter the shelf ID and one-time join code from a shelf owner.'}
+              : 'Enter the space ID and one-time join code from a space owner.'}
           </p>
         </div>
 
@@ -119,11 +119,11 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
         {mode === 'create' ? (
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className={labelCls} htmlFor="create-shelf-name">Shelf name</label>
+              <label className={labelCls} htmlFor="create-space-name">Space name</label>
               <input
-                id="create-shelf-name"
+                id="create-space-name"
                 type="text"
-                name="shelf-name"
+                name="space-name"
                 autoComplete="off"
                 placeholder="Weekend plans"
                 value={name}
@@ -162,21 +162,21 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
                 disabled={loading}
                 className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
               >
-                {loading ? 'Creating...' : 'Create shelf'}
+                {loading ? 'Creating...' : 'Create space'}
               </button>
             </div>
           </form>
         ) : (
           <form onSubmit={handleJoin} className="space-y-4">
             <div>
-              <label className={labelCls} htmlFor="join-shelf-id">Shelf ID</label>
+              <label className={labelCls} htmlFor="join-space-id">Space ID</label>
               <input
-                id="join-shelf-id"
+                id="join-space-id"
                 type="text"
-                name="shelf-id"
+                name="space-id"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="Shelf ID"
+                placeholder="Space ID"
                 value={shelfId}
                 onChange={e => setShelfId(e.target.value)}
                 className={inputCls}
@@ -212,7 +212,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
                 disabled={loading}
                 className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
               >
-                {loading ? 'Joining...' : 'Join shelf'}
+                {loading ? 'Joining...' : 'Join space'}
               </button>
             </div>
           </form>

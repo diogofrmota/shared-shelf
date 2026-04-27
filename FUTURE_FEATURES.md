@@ -36,7 +36,7 @@ Keep AGENTS.md and README.md updated.
 
 ## Prompt 3: Transactional Emails And Welcome Email
 
-Improve production email quality for Shared Shelf.
+Improve production email quality for Couple Planner.
 
 Requirements:
 

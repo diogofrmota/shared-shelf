@@ -71,10 +71,10 @@ export default async function handler(req, res) {
           await resend.emails.send({
             from: FROM_EMAIL,
             to: emailValue,
-            subject: 'Reset your Shared Shelf password',
+            subject: 'Reset your Couple Planner password',
             html: `
               <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-                <h2 style="color:#780000">Shared Shelf</h2>
+                <h2 style="color:#E63B2E">Couple Planner</h2>
                 <p>Hi ${safeDisplayName},</p>
                 <p>We received a request to reset your password. Click the button below — the link expires in <strong>1 hour</strong>.</p>
                 <a href="${safeResetUrl}" style="display:inline-block;margin:24px 0;padding:12px 24px;background:#c1121f;color:#fdf0d5;border-radius:8px;text-decoration:none;font-weight:600">
