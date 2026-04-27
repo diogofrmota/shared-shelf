@@ -7,12 +7,23 @@ import {
   getClientIp,
   normalizeRateLimitKey,
   rateLimitResponse,
+  jwt,
   verifyJwt
 } from '../../lib/auth-shared.js';
 import { initializeDatabase } from '../../lib/db.js';
 
 const CONFIRM_EMAIL_RATE_LIMIT = { limit: 8, windowSeconds: 15 * 60 };
 const CONFIRM_EMAIL_IP_RATE_LIMIT = { limit: 30, windowSeconds: 15 * 60 };
+
+const linkError = (res, status, error, action) =>
+  res.status(status).json({
+    error,
+    linkStatus: action.status,
+    nextAction: {
+      label: action.label,
+      target: action.target
+    }
+  });
 
 export default async function handler(req, res) {
   cors(req, res);
@@ -51,12 +62,31 @@ export default async function handler(req, res) {
     let decoded;
     try {
       decoded = verifyJwt(token);
-    } catch {
-      return res.status(400).json({ error: 'Confirmation link has expired or is invalid.' });
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return linkError(
+          res,
+          400,
+          'This confirmation link has expired. For your security, please request a new confirmation email.',
+          { status: 'expired', label: 'Send a new confirmation email', target: 'signup' }
+        );
+      }
+
+      return linkError(
+        res,
+        400,
+        'This confirmation link is not valid. Please use the latest email from Shared Shelf or start again.',
+        { status: 'invalid', label: 'Return to sign in', target: 'signin' }
+      );
     }
 
     if (decoded.purpose !== 'email-verification') {
-      return res.status(400).json({ error: 'Invalid confirmation token.' });
+      return linkError(
+        res,
+        400,
+        'This confirmation link is not valid. Please use the latest email from Shared Shelf or start again.',
+        { status: 'invalid', label: 'Return to sign in', target: 'signin' }
+      );
     }
 
     const row = (await sql`
@@ -65,14 +95,49 @@ export default async function handler(req, res) {
       WHERE user_id = ${decoded.userId}
     `).rows[0];
 
-    if (!row) return res.status(400).json({ error: 'Confirmation link already used or expired.' });
+    if (!row) {
+      const user = (await sql`
+        SELECT email_verified
+        FROM users
+        WHERE id = ${decoded.userId}
+      `).rows[0];
+
+      if (user?.email_verified) {
+        return linkError(
+          res,
+          400,
+          'This confirmation link has already been used. Your account is ready, so you can sign in.',
+          { status: 'used', label: 'Return to sign in', target: 'signin' }
+        );
+      }
+
+      return linkError(
+        res,
+        400,
+        'This confirmation link is no longer active. Please request a new confirmation email.',
+        { status: 'expired', label: 'Send a new confirmation email', target: 'signup' }
+      );
+    }
+
     if (new Date(row.expires_at).getTime() < Date.now()) {
       await sql`DELETE FROM email_verification_tokens WHERE user_id = ${decoded.userId}`;
-      return res.status(400).json({ error: 'Confirmation link has expired.' });
+      return linkError(
+        res,
+        400,
+        'This confirmation link has expired. For your security, please request a new confirmation email.',
+        { status: 'expired', label: 'Send a new confirmation email', target: 'signup' }
+      );
     }
 
     const valid = await bcrypt.compare(token, row.token_hash);
-    if (!valid) return res.status(400).json({ error: 'Confirmation link is invalid.' });
+    if (!valid) {
+      return linkError(
+        res,
+        400,
+        'This confirmation link is not valid. Please use the latest email from Shared Shelf or start again.',
+        { status: 'invalid', label: 'Return to sign in', target: 'signin' }
+      );
+    }
 
     await sql`UPDATE users SET email_verified = true WHERE id = ${decoded.userId}`;
     await sql`DELETE FROM email_verification_tokens WHERE user_id = ${decoded.userId}`;

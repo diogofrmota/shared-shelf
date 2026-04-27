@@ -268,10 +268,35 @@ const confirmEmail = async (token) => {
       body: JSON.stringify({ token })
     });
     const data = await res.json().catch(() => ({}));
-    return { success: res.ok, message: data.message || data.error };
+    return {
+      success: res.ok && Boolean(data.message),
+      message: data.message || data.error,
+      linkStatus: data.linkStatus,
+      nextAction: data.nextAction
+    };
   } catch (error) {
     console.error('Confirm email error:', error);
-    return { success: false, message: 'Network error occurred.' };
+    return { success: false, message: 'Network error occurred.', linkStatus: 'network' };
+  }
+};
+
+const validateResetToken = async (token) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, validateOnly: true })
+    });
+    const data = await res.json().catch(() => ({}));
+    return {
+      success: res.ok && Boolean(data.message),
+      message: data.message || data.error,
+      linkStatus: data.linkStatus,
+      nextAction: data.nextAction
+    };
+  } catch (error) {
+    console.error('Validate reset token error:', error);
+    return { success: false, message: 'Network error occurred.', linkStatus: 'network' };
   }
 };
 
@@ -282,11 +307,16 @@ const resetPassword = async (token, newPassword) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, newPassword })
     });
-    const data = await res.json();
-    return { success: res.ok, message: data.message || data.error };
+    const data = await res.json().catch(() => ({}));
+    return {
+      success: res.ok && Boolean(data.message),
+      message: data.message || data.error,
+      linkStatus: data.linkStatus,
+      nextAction: data.nextAction
+    };
   } catch (error) {
     console.error('Reset password error:', error);
-    return { success: false, message: 'Network error occurred.' };
+    return { success: false, message: 'Network error occurred.', linkStatus: 'network' };
   }
 };
 
@@ -514,6 +544,7 @@ Object.assign(window, {
   loginUser,
   registerUser,
   confirmEmail,
+  validateResetToken,
   updateAccount,
   forgotPassword,
   resetPassword,

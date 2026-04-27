@@ -27,24 +27,7 @@ Requirements:
 Verify by checking the auth email link generation paths and any public route references.
 Keep AGENTS.md and README.md updated.
 
-## Prompt 2: Confirmation And Reset Link Error Messages
-
-Improve the user experience for account confirmation and password reset links.
-
-Requirements:
-
-- Add friendly error messages for expired confirmation links.
-- Add friendly error messages for invalid confirmation links.
-- Add friendly error messages for already-used confirmation links.
-- Add friendly error messages for expired password reset links.
-- Add friendly error messages for invalid password reset links.
-- Add friendly error messages for already-used password reset links.
-- Provide a clear next action, such as resending confirmation email, returning to login, or requesting a new reset email.
-- Avoid leaking sensitive account existence details.
-
-Verify direct URL flows for confirmation and reset tokens.
-
-## Prompt 3: Account Settings - Change Password, Change Email, Username Availability
+## Prompt 2: Account Settings - Change Password, Change Email, Username Availability
 
 Improve signed-in account management.
 
@@ -63,7 +46,7 @@ Requirements:
 Preserve existing profile editing behavior for name and username.
 Keep AGENTS.md and README.md updated.
 
-## Prompt 4: Transactional Emails And Welcome Email
+## Prompt 3: Transactional Emails And Welcome Email
 
 Improve production email quality for Shared Shelf.
 
@@ -79,13 +62,13 @@ Requirements:
 
 Use the existing Resend integration and avoid exposing email API keys to the frontend.
 
-## Prompt 5: Branding Assets And Metadata
+## Prompt 4: Branding Assets And Metadata
 
 Add consistent public branding assets. Get context at readme and agents.md  
 
 Requirements:
 
-- Add or verify the app favicon.
+- Add the app favicon.
 - Add consistent logo usage across public pages, login, shelf selection, and shelf pages.
 - Add social preview metadata for shared links.
 - Add app title and description metadata.

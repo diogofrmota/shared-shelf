@@ -24,6 +24,9 @@ function LoginScreen({ onLogin, onNavigate }) {
   const [linkIssue, setLinkIssue] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const resetLinkIssue = linkIssue?.type === 'reset';
+  const confirmationLinkIssue = linkIssue?.type === 'confirm';
+
   const handleHomeNavigation = (event) => {
     if (event) event.preventDefault();
     if (typeof onNavigate === 'function') {
@@ -43,6 +46,27 @@ function LoginScreen({ onLogin, onNavigate }) {
     if (reset) {
       setResetToken(reset);
       setMode('reset');
+      setLoading(true);
+      validateResetToken(reset)
+        .then((result) => {
+          if (!result.success) {
+            setLinkIssue({
+              type: 'reset',
+              status: result.linkStatus || 'invalid',
+              nextAction: result.nextAction || { label: 'Request a new reset link', target: 'forgot-password' }
+            });
+            setServerError(result.message || 'This password reset link is not valid. Please request a new reset email.');
+          }
+        })
+        .catch(() => {
+          setLinkIssue({
+            type: 'reset',
+            status: 'network',
+            nextAction: { label: 'Return to sign in', target: 'signin' }
+          });
+          setServerError('Something went wrong checking this reset link. Please try again.');
+        })
+        .finally(() => setLoading(false));
       return;
     }
     if (confirmation) {
@@ -53,12 +77,20 @@ function LoginScreen({ onLogin, onNavigate }) {
             setServerSuccess(result.message || 'Account confirmed. You can now sign in.');
             window.history.replaceState({}, '', window.location.pathname);
           } else {
-            setLinkIssue('confirm');
+            setLinkIssue({
+              type: 'confirm',
+              status: result.linkStatus || 'invalid',
+              nextAction: result.nextAction || { label: 'Return to sign in', target: 'signin' }
+            });
             setServerError(result.message || 'Confirmation link has expired or is invalid.');
           }
         })
         .catch(() => {
-          setLinkIssue('confirm');
+          setLinkIssue({
+            type: 'confirm',
+            status: 'network',
+            nextAction: { label: 'Return to sign in', target: 'signin' }
+          });
           setServerError('Something went wrong confirming your account. Please try again.');
         })
         .finally(() => setLoading(false));
@@ -192,6 +224,31 @@ function LoginScreen({ onLogin, onNavigate }) {
     }
   };
 
+  const handleLinkAction = (issue) => {
+    const target = issue?.nextAction?.target;
+    window.history.replaceState({}, '', window.location.pathname);
+    setServerError('');
+    setServerSuccess('');
+    setErrors({});
+    setLinkIssue(null);
+
+    if (target === 'forgot-password') {
+      setMode('signin');
+      setResetToken(null);
+      setForgotOpen(true);
+      return;
+    }
+
+    if (target === 'signup') {
+      setMode('signup');
+      setResetToken(null);
+      return;
+    }
+
+    setMode('signin');
+    setResetToken(null);
+  };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setServerError('');
@@ -211,11 +268,19 @@ function LoginScreen({ onLogin, onNavigate }) {
         setLinkIssue(null);
         setTimeout(() => setMode('signin'), 2000);
       } else {
-        setLinkIssue('reset');
+        setLinkIssue({
+          type: 'reset',
+          status: result.linkStatus || 'invalid',
+          nextAction: result.nextAction || { label: 'Request a new reset link', target: 'forgot-password' }
+        });
         setServerError(result.message || 'Failed to reset password. The link may have expired.');
       }
     } catch {
-      setLinkIssue('reset');
+      setLinkIssue({
+        type: 'reset',
+        status: 'network',
+        nextAction: { label: 'Return to sign in', target: 'signin' }
+      });
       setServerError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -297,51 +362,61 @@ function LoginScreen({ onLogin, onNavigate }) {
         {mode === 'reset' && (
           <form onSubmit={handleResetPassword} className="space-y-4" noValidate>
             <h2 className="mb-2 text-center text-lg font-semibold text-[#410001]">Set a new password</h2>
-            <div>
-              <label className={labelClass} htmlFor="new-password">New Password</label>
-              <input
-                id="new-password"
-                type="password"
-                name="new-password"
-                autoComplete="new-password"
-                placeholder="New password"
-                value={newPassword}
-                onChange={(e) => handleInput('newPassword', e.target.value)}
-                className={inputClass}
-              />
-              {errors.newPassword && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.newPassword}</p>}
-            </div>
+            {!resetLinkIssue && (
+              <div>
+                <label className={labelClass} htmlFor="new-password">New Password</label>
+                <input
+                  id="new-password"
+                  type="password"
+                  name="new-password"
+                  autoComplete="new-password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(e) => handleInput('newPassword', e.target.value)}
+                  className={inputClass}
+                />
+                {errors.newPassword && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.newPassword}</p>}
+              </div>
+            )}
             {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
             {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
-            {linkIssue === 'reset' && (
+            {resetLinkIssue && (
               <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#534340]">
-                <p>This reset link may have expired or already been used.</p>
+                <p>
+                  {linkIssue.status === 'used'
+                    ? 'This reset link has already been used.'
+                    : linkIssue.status === 'expired'
+                      ? 'This reset link has expired.'
+                      : 'This reset link cannot be used.'}
+                </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    window.history.replaceState({}, '', window.location.pathname);
-                    setMode('signin');
-                    setResetToken(null);
-                    setForgotOpen(true);
-                    setServerError('');
-                    setLinkIssue(null);
-                  }}
+                  onClick={() => handleLinkAction(linkIssue)}
                   className="mt-2 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
                 >
-                  Request a new link
+                  {linkIssue.nextAction?.label || 'Request a new link'}
                 </button>
               </div>
             )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3 font-semibold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
-            >
-              {loading ? 'Updating...' : 'Update Password'}
-            </button>
+            {!resetLinkIssue && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3 font-semibold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+              >
+                {loading ? 'Checking...' : 'Update Password'}
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => { setMode('signin'); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
+              onClick={() => {
+                window.history.replaceState({}, '', window.location.pathname);
+                setMode('signin');
+                setResetToken(null);
+                setServerError('');
+                setServerSuccess('');
+                setLinkIssue(null);
+              }}
               className="w-full text-sm font-medium text-[#534340] transition hover:text-[#E63B2E]"
             >
               Back to sign in
@@ -461,15 +536,21 @@ function LoginScreen({ onLogin, onNavigate }) {
 
               {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
               {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
-              {linkIssue === 'confirm' && (
+              {confirmationLinkIssue && (
                 <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#534340]">
-                  <p>This confirmation link may have expired or already been used.</p>
+                  <p>
+                    {linkIssue.status === 'used'
+                      ? 'This confirmation link has already been used.'
+                      : linkIssue.status === 'expired'
+                        ? 'This confirmation link has expired.'
+                        : 'This confirmation link cannot be used.'}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => { setMode('signup'); setServerError(''); setLinkIssue(null); }}
+                    onClick={() => handleLinkAction(linkIssue)}
                     className="mt-2 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
                   >
-                    Create a fresh account
+                    {linkIssue.nextAction?.label || 'Return to sign in'}
                   </button>
                 </div>
               )}

@@ -24,9 +24,9 @@ Clicking `Forgot password?` opens a reset-password popup where users enter their
 
 In `Register`, the page shows `Name`, `Username`, `Email`, and `Password` fields plus a `Create Account` button. The form validates the same rules as the API: name is required, 20 characters or fewer, and letters/spaces only; username is required, unique, 20 characters or fewer, and letters/numbers only; email must include `@`; password must include at least five letters and at least one number. Special characters are allowed in passwords. Creating an account does not log the user in. Instead, the server creates an unverified account, stores a hashed confirmation token, and sends a confirmation email. Users can sign in only after opening the confirmation link.
 
-If `/login` is opened with a reset token in the URL, it switches to the reset-password form. Users can enter a new password, click `Update password`, and then return to sign in. `Back to sign in` leaves the reset form without changing the password. If `/login` is opened with a confirmation token in the URL, it confirms the account and then prompts the user to sign in.
+If `/login` is opened with a reset token in the URL, it checks the link and switches to the reset-password form. Valid links let users enter a new password, click `Update password`, and then return to sign in. Expired, invalid, or already-used links show a friendly explanation and a clear action to request a new reset email. `Back to sign in` leaves the reset form without changing the password. If `/login` is opened with a confirmation token in the URL, it confirms the account and then prompts the user to sign in. Expired, invalid, or already-used confirmation links show a friendly explanation and a clear action to return to sign in or request a fresh confirmation email.
 
-Login, register, confirmation, and reset errors appear inside the authentication panel or popup. Messages are specific enough to help users fix input, such as a missing password number, invalid credentials, an already-used username, or an unconfirmed account.
+Login, register, confirmation, and reset errors appear inside the authentication panel or popup. Messages are specific enough to help users fix input, such as a missing password number, invalid credentials, an already-used username, an unconfirmed account, or an expired link, while reset and resend requests keep account existence details generic.
 
 Signed-in users who navigate to `/login` are redirected to `/shelf-selection/`.
 
@@ -261,13 +261,13 @@ When adding new fields, keep old saved shelf data rendering by adding normalizat
 
 | Route | Purpose |
 | --- | --- |
-| `POST /api/auth/register` | Create an unverified user account and send a confirmation email |
-| `POST /api/auth/confirm-email` | Confirm a registered account from an email token |
+| `POST /api/auth/register` | Create an unverified user account and send a confirmation email; unconfirmed existing emails receive a fresh confirmation response without exposing account details |
+| `POST /api/auth/confirm-email` | Confirm a registered account from an email token and classify expired, invalid, or already-used links |
 | `POST /api/auth/login` | Login with email or username and password after email confirmation |
 | `GET /api/auth/me` | Read the current account |
 | `PATCH /api/auth/me` | Update account name/username |
 | `POST /api/auth/forgot-password` | Create reset token and send email when Resend is configured |
-| `POST /api/auth/reset-password` | Reset password from token |
+| `POST /api/auth/reset-password` | Validate or consume a reset token, classify expired, invalid, or already-used links, and update the password |
 | `GET /api/shelf` | List shelves for the current user |
 | `POST /api/shelf` | Create a shelf and initial join code |
 | `POST /api/shelf/join` | Join a shelf with shelf ID and join code |
