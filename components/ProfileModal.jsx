@@ -5,20 +5,18 @@ const { useState, useEffect } = React;
 // PROFILE / SETTINGS / ACCOUNT MODAL
 // ============================================================================
 
-const AVATAR_COLORS = ['#E63B2E', '#A9372C', '#8C4F45', '#8C4F45', '#FFB4A9'];
+const AVATAR_COLORS = ['#E63B2E', '#A9372C', '#8C4F45', '#FFB4A9', '#FBD08A', '#A7C957'];
 
 const getAvatarTextColor = (backgroundColor) => {
   if (!backgroundColor || !/^#([0-9a-f]{6})$/i.test(backgroundColor)) {
     return '#ffffff';
   }
-
   const hex = backgroundColor.slice(1);
   const red = parseInt(hex.slice(0, 2), 16);
   const green = parseInt(hex.slice(2, 4), 16);
   const blue = parseInt(hex.slice(4, 6), 16);
   const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
-
-  return brightness > 150 ? '#000000' : '#FFFFFF';
+  return brightness > 150 ? '#241A18' : '#FFFFFF';
 };
 
 const UserAvatar = ({ user, size = 40 }) => {
@@ -41,7 +39,7 @@ const UserAvatar = ({ user, size = 40 }) => {
         loading="lazy"
         decoding="async"
         style={{ width: size, height: size, minWidth: size }}
-        className="rounded-full object-cover border-2 border-slate-600 flex-shrink-0"
+        className="flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
         onError={() => setImgError(true)}
       />
     );
@@ -56,12 +54,15 @@ const UserAvatar = ({ user, size = 40 }) => {
         background: color,
         color: getAvatarTextColor(color)
       }}
-      className="rounded-full flex items-center justify-center font-bold border-2 border-slate-600 flex-shrink-0"
+      className="flex flex-shrink-0 items-center justify-center rounded-full border-2 border-white font-bold shadow-sm"
     >
       <span style={{ fontSize: Math.max(10, size * 0.35) }}>{initials}</span>
     </div>
   );
 };
+
+const inputCls = "w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
 const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onSaveAccount, onLogout, onBackToShelves }) => {
   const sectionOptions = [
@@ -133,10 +134,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     };
 
     loadShareInfo();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [mode, isOpen, shelf?.id]);
 
   if (!isOpen) return null;
@@ -166,53 +164,53 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     };
 
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-lg border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-slate-800 z-10">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+        <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+          <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <UserIcon size={20} className="text-purple-400" />
+                <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+                  <UserIcon size={20} className="text-[#E63B2E]" />
                   Profiles
                 </h2>
-                <p className="text-slate-400 text-xs mt-0.5">Manage who uses this shared shelf</p>
+                <p className="mt-0.5 text-xs text-[#534340]">Manage who uses this shared shelf.</p>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white">
+              <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
                 <Close size={20} />
               </button>
             </div>
           </div>
 
-          <div className="p-5 space-y-3">
+          <div className="space-y-3 p-5">
             {users.map((user, index) => (
-              <div key={user.id} className="bg-slate-700/30 rounded-xl p-4 border border-slate-700/50">
+              <div key={user.id} className="rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-shrink-0">
-                    <UserAvatar user={user} size={52} />
+                    <UserAvatar user={user} size={48} />
                     <button
                       onClick={() => setExpandedId(expandedId === user.id ? null : user.id)}
-                      className="absolute -bottom-1 -right-1 w-5 h-5 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center transition-colors"
-                      title="Change avatar"
+                      className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#A9372C]"
+                      title="Customize"
                     >
-                      <Camera size={10} className="text-white" />
+                      <Camera size={10} />
                     </button>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <label className="block text-xs font-medium text-slate-400 mb-1">User {index + 1}</label>
+                  <div className="min-w-0 flex-1">
+                    <label className={labelCls}>Person {index + 1}</label>
                     <input
                       type="text"
                       value={user.name}
                       onChange={(e) => updateUser(user.id, 'name', e.target.value)}
                       placeholder="Enter name…"
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm"
+                      className={inputCls}
                     />
                   </div>
 
                   {users.length > 1 && (
                     <button
                       onClick={() => removeUser(user.id)}
-                      className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-slate-500 hover:text-red-400 flex-shrink-0"
+                      className="flex-shrink-0 rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       title="Remove"
                     >
                       <Trash size={15} />
@@ -221,26 +219,27 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 </div>
 
                 {expandedId === user.id && (
-                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-3">
+                  <div className="mt-3 space-y-3 border-t border-[#E1D8D4] pt-3">
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">Avatar URL (optional)</label>
+                      <label className={labelCls}>Avatar URL (optional)</label>
                       <input
                         type="url"
                         value={user.avatar || ''}
                         onChange={(e) => updateUser(user.id, 'avatar', e.target.value)}
                         placeholder="https://example.com/photo.jpg"
-                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm"
+                        className={inputCls}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-2">Color</label>
-                      <div className="flex gap-2 flex-wrap">
+                      <label className={labelCls}>Color</label>
+                      <div className="flex flex-wrap gap-2">
                         {AVATAR_COLORS.map(color => (
                           <button
                             key={color}
                             onClick={() => updateUser(user.id, 'color', color)}
                             style={{ background: color }}
-                            className={`w-7 h-7 rounded-full transition-all ${user.color === color ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800 scale-110' : 'hover:scale-105'}`}
+                            className={`h-7 w-7 rounded-full transition ${user.color === color ? 'ring-2 ring-[#E63B2E] ring-offset-2 ring-offset-white scale-110' : 'hover:scale-105'}`}
+                            aria-label={`Choose color ${color}`}
                           />
                         ))}
                       </div>
@@ -252,19 +251,19 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
             <button
               onClick={addUser}
-              className="w-full py-3 border-2 border-dashed border-slate-600 hover:border-purple-500 text-slate-400 hover:text-purple-400 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#E1D8D4] py-3 text-sm font-bold text-[#534340] transition hover:border-[#E63B2E] hover:text-[#E63B2E]"
             >
               <Plus size={16} />
-              Add Another Person
+              Add another person
             </button>
           </div>
 
-          <div className="px-5 pb-5 flex gap-3">
-            <button onClick={onClose} className="flex-1 py-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold transition-colors text-sm">
+          <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
+            <button onClick={onClose} className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors text-sm shadow-lg shadow-purple-900/30">
-              Save Profiles
+            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+              Save profiles
             </button>
           </div>
         </div>
@@ -291,7 +290,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
     const copyValue = async (label, value) => {
       if (!value) return;
-
       try {
         await navigator.clipboard.writeText(value);
         setCopiedField(label);
@@ -303,10 +301,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
     const handleRegenerate = async () => {
       if (!shelf?.id) return;
-
       setRegeneratingShare(true);
       setShareError('');
-
       try {
         const nextShareInfo = await regenerateShelfJoinCode(shelf.id);
         setShareInfo(nextShareInfo);
@@ -321,41 +317,40 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     const joinCode = shareInfo?.joinCode || '';
 
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/30">
-          <div className="border-b border-slate-200 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-[#E63B2E]">
-                <SettingsIcon size={20} />
-                Shelf Settings
-              </h2>
-              <button onClick={onClose} className="rounded-lg p-2 text-[#E63B2E] transition-colors hover:bg-[#FFF8F5]">
-                <Close size={20} />
-              </button>
-            </div>
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+        <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
+            <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+              <SettingsIcon size={20} className="text-[#E63B2E]" />
+              Shelf settings
+            </h2>
+            <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
+              <Close size={20} />
+            </button>
           </div>
           <div className="space-y-5 p-5">
             <div>
-              <label className="mb-1 block text-sm font-bold text-[#E63B2E]">Shelf Name</label>
+              <label className={labelCls} htmlFor="shelf-name">Shelf name</label>
               <input
+                id="shelf-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Our Shared Shelf"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-black outline-none transition focus:border-[#E63B2E]"
+                placeholder="Our shared shelf"
+                className={inputCls}
               />
             </div>
 
             <div>
-              <p className="mb-2 text-sm font-bold text-[#E63B2E]">Shared Items</p>
+              <p className={labelCls}>Shared items</p>
               <div className="grid grid-cols-2 gap-2">
                 {sectionOptions.map(section => (
-                  <label key={section.id} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-black">
+                  <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
                     <input
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
                       onChange={() => toggleSection(section.id)}
-                      className="accent-[#E63B2E]"
+                      className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
                     />
                     <span>{section.label}</span>
                   </label>
@@ -363,11 +358,11 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-[#FFF8F5] p-4">
+            <div className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-[#E63B2E]">Share Shelf</h3>
-                  <p className="mt-1 text-sm text-black/70">
+                  <h3 className="text-base font-extrabold text-[#410001]">Share shelf</h3>
+                  <p className="mt-1 text-sm text-[#534340]">
                     Share this shelf ID and one-time code so someone else can join.
                   </p>
                 </div>
@@ -375,40 +370,40 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   type="button"
                   onClick={handleRegenerate}
                   disabled={regeneratingShare || shareLoading}
-                  className="rounded-xl bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                  className="rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
                 >
-                  {regeneratingShare ? 'Generating...' : 'Generate New'}
+                  {regeneratingShare ? 'Generating...' : 'New code'}
                 </button>
               </div>
 
               {shareLoading ? (
-                <p className="py-6 text-center text-sm font-medium text-[#E63B2E]">Loading share details...</p>
+                <p className="py-6 text-center text-sm font-medium text-[#534340]">Loading share details...</p>
               ) : (
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf ID</p>
                     <div className="mt-2 flex items-center gap-2">
-                      <code className="flex-1 break-all text-sm font-semibold text-black">{shelfId}</code>
+                      <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shelfId}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('shelfId', shelfId)}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
+                        className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                       >
                         {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
                       </button>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-slate-200 bg-white p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join Code</p>
-                    <p className="mt-1 text-xs text-black/60">This code works once, then expires.</p>
+                  <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
+                    <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
                     <div className="mt-2 flex items-center gap-2">
-                      <code className="flex-1 break-all text-lg font-bold tracking-[0.25em] text-black">{joinCode || '--------'}</code>
+                      <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#241A18]">{joinCode || '--------'}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('joinCode', joinCode)}
                         disabled={!joinCode}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
+                        className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
                       >
                         {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
                       </button>
@@ -417,15 +412,15 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 </div>
               )}
 
-              {shareError && <p className="mt-3 text-sm font-semibold text-[#c1121f]">{shareError}</p>}
+              {shareError && <p className="mt-3 text-sm font-semibold text-[#C1121F]">{shareError}</p>}
             </div>
           </div>
-          <div className="flex gap-3 px-5 pb-5">
-            <button onClick={onClose} className="flex-1 rounded-xl bg-[#ced4da] py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]">
+          <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
+            <button onClick={onClose} className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white transition hover:bg-[#A9372C]">
-              Save Changes
+            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+              Save changes
             </button>
           </div>
         </div>
@@ -433,40 +428,23 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     );
   }
 
-  // ---------- ACCOUNT MODE (user info & logout) ----------
+  // ---------- ACCOUNT MODE ----------
   if (mode === 'account') {
     const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
     const username = currentUser?.username || 'User';
+    const initials = displayName.trim().charAt(0).toUpperCase();
 
     const handleAccountSave = async (event) => {
       event.preventDefault();
       const nextName = accountName.trim();
       const nextUsername = accountUsername.trim();
 
-      if (!nextName) {
-        setAccountError('Name is required');
-        return;
-      }
-      if (nextName.length > 20) {
-        setAccountError('Name must be 20 characters or fewer');
-        return;
-      }
-      if (!/^[A-Za-z ]+$/.test(nextName)) {
-        setAccountError('Name can only contain letters and spaces');
-        return;
-      }
-      if (!nextUsername) {
-        setAccountError('Username is required');
-        return;
-      }
-      if (nextUsername.length > 20) {
-        setAccountError('Username must be 20 characters or fewer');
-        return;
-      }
-      if (!/^[A-Za-z0-9]+$/.test(nextUsername)) {
-        setAccountError('Username can only contain letters and numbers');
-        return;
-      }
+      if (!nextName) { setAccountError('Name is required'); return; }
+      if (nextName.length > 20) { setAccountError('Name must be 20 characters or fewer'); return; }
+      if (!/^[A-Za-z ]+$/.test(nextName)) { setAccountError('Name can only contain letters and spaces'); return; }
+      if (!nextUsername) { setAccountError('Username is required'); return; }
+      if (nextUsername.length > 20) { setAccountError('Username must be 20 characters or fewer'); return; }
+      if (!/^[A-Za-z0-9]+$/.test(nextUsername)) { setAccountError('Username can only contain letters and numbers'); return; }
 
       setAccountSaving(true);
       setAccountError('');
@@ -483,50 +461,50 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     };
 
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/30">
-          <div className="border-b border-slate-200 p-6">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+        <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+          <div className="border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-[#E63B2E]">
-                <UserIcon size={20} />
+              <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+                <UserIcon size={20} className="text-[#E63B2E]" />
                 Profile
               </h2>
-              <button onClick={onClose} className="rounded-lg p-2 text-[#E63B2E] transition-colors hover:bg-[#FFF8F5]">
+              <button onClick={onClose} className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]">
                 <Close size={20} />
               </button>
             </div>
           </div>
           <div className="p-5">
             {accountEditing ? (
-              <form className="space-y-4 text-left text-sm" onSubmit={handleAccountSave}>
+              <form className="space-y-4" onSubmit={handleAccountSave}>
                 <div>
-                  <label className="mb-1 block font-bold text-[#E63B2E]" htmlFor="account-name">Name</label>
+                  <label className={labelCls} htmlFor="account-name">Name</label>
                   <input
                     id="account-name"
                     type="text"
                     value={accountName}
                     onChange={(event) => setAccountName(event.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#E63B2E]"
+                    className={inputCls}
                     autoComplete="name"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block font-bold text-[#E63B2E]" htmlFor="account-username">Username</label>
+                  <label className={labelCls} htmlFor="account-username">Username</label>
                   <input
                     id="account-username"
                     type="text"
                     value={accountUsername}
                     onChange={(event) => setAccountUsername(event.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-black outline-none transition focus:border-[#E63B2E]"
+                    className={inputCls}
                     autoComplete="username"
                   />
                 </div>
                 <div>
-                  <p className="font-bold text-[#E63B2E]">Email:</p>
-                  <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
+                  <p className={labelCls}>Email</p>
+                  <p className="break-words text-sm font-semibold text-[#241A18]">{currentUser?.email || 'No email available'}</p>
                 </div>
-                {accountError && <p className="text-sm font-semibold text-[#c1121f]">{accountError}</p>}
-                <div className="flex gap-3">
+                {accountError && <p className="text-sm font-semibold text-[#C1121F]">{accountError}</p>}
+                <div className="flex gap-3 pt-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -535,14 +513,14 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                       setAccountUsername(username);
                       setAccountError('');
                     }}
-                    className="flex-1 rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
+                    className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                     disabled={accountSaving}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 rounded-xl bg-[#E63B2E] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                    className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
                     disabled={accountSaving}
                   >
                     {accountSaving ? 'Saving...' : 'Save'}
@@ -551,47 +529,41 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
               </form>
             ) : (
               <>
-                <div className="space-y-3 text-left text-sm">
-                  <div>
-                    <p className="font-bold text-[#E63B2E]">Name:</p>
-                    <p className="break-words font-medium text-black">{displayName}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#E63B2E]">Username:</p>
-                    <p className="break-words font-medium text-black">{username}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#E63B2E]">Email:</p>
-                    <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
+                <div className="mb-5 flex items-center gap-4 rounded-2xl bg-[#FFF8F5] p-4">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E63B2E] text-xl font-extrabold text-white shadow-md">
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-extrabold text-[#410001]">{displayName}</p>
+                    <p className="truncate text-xs font-medium text-[#534340]">{username}</p>
+                    {currentUser?.email && <p className="truncate text-xs text-[#857370]">{currentUser.email}</p>}
                   </div>
                 </div>
-                <div className="mt-6 flex flex-col gap-3">
+
+                <div className="space-y-2">
                   <button
                     type="button"
                     onClick={() => setAccountEditing(true)}
-                    className="w-full rounded-xl bg-[#E63B2E] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#A9372C]"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
                   >
-                    Edit Information
+                    Edit profile
                   </button>
+                  {onBackToShelves && (
+                    <button
+                      type="button"
+                      onClick={() => { onBackToShelves(); onClose(); }}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      Back to shelves
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => {
-                      onBackToShelves?.();
-                      onClose();
-                    }}
-                    className="w-full rounded-xl bg-[#FFF8F5] px-3 py-3 text-sm font-bold text-[#E63B2E] transition hover:bg-[#FBF2ED]"
+                    onClick={() => { onLogout(); onClose(); }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                   >
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onLogout();
-                      onClose();
-                    }}
-                    className="w-full rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
-                  >
-                    Logout
+                    <LogoutIcon size={16} />
+                    Log out
                   </button>
                 </div>
               </>

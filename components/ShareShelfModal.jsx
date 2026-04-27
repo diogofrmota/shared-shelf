@@ -24,25 +24,16 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
 
       try {
         const nextShareInfo = await getShelfShareInfo(shelf.id);
-        if (active) {
-          setShareInfo(nextShareInfo);
-        }
+        if (active) setShareInfo(nextShareInfo);
       } catch (err) {
-        if (active) {
-          setError(err?.message || 'Failed to load share details');
-        }
+        if (active) setError(err?.message || 'Failed to load share details');
       } finally {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     };
 
     loadShareInfo();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [isOpen, shelf?.id]);
 
   if (!isOpen || !shelf) return null;
@@ -72,74 +63,74 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[180] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-[180] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30" onClick={(event) => event.stopPropagation()}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-white">Share Shelf</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-xl font-extrabold text-[#410001]">Share shelf</h2>
+            <p className="mt-1 text-sm text-[#534340]">
               Share this shelf ID and one-time code so someone else can join.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
+            className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Close share modal"
           >
             <Close size={18} />
           </button>
         </div>
 
-        <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Shelf</p>
-          <p className="mt-2 text-lg font-semibold text-white">{shelf.name}</p>
+        <div className="mb-4 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf</p>
+          <p className="mt-1 text-lg font-extrabold text-[#410001]">{shelf.name}</p>
         </div>
 
         {loading ? (
-          <p className="py-10 text-center text-sm text-slate-300">Loading share details...</p>
+          <p className="py-10 text-center text-sm font-medium text-[#534340]">Loading share details...</p>
         ) : (
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Shelf ID</p>
+          <div className="space-y-3">
+            <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf ID</p>
               <div className="mt-2 flex items-center gap-2">
-                <code className="flex-1 break-all text-sm text-white">{shareInfo?.shelfId || shelf.id}</code>
+                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.shelfId || shelf.id}</code>
                 <button
                   onClick={() => copyValue('shelfId', shareInfo?.shelfId || shelf.id)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/10"
+                  className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                 >
                   {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
                 </button>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-              <div className="flex items-center justify-between gap-3">
+            <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Join Code</p>
-                  <p className="mt-1 text-xs text-slate-400">This code works once, then expires.</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
+                  <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
                 </div>
                 <button
                   onClick={handleRegenerate}
                   disabled={regenerating}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
+                  className="rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-50"
                 >
-                  {regenerating ? 'Generating...' : 'Generate New'}
+                  {regenerating ? 'Generating...' : 'New code'}
                 </button>
               </div>
 
               <div className="mt-3 flex items-center gap-2">
-                <code className="flex-1 break-all text-lg font-semibold tracking-[0.3em] text-white">{shareInfo?.joinCode || '--------'}</code>
+                <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#241A18]">{shareInfo?.joinCode || '--------'}</code>
                 <button
                   onClick={() => shareInfo?.joinCode && copyValue('joinCode', shareInfo.joinCode)}
                   disabled={!shareInfo?.joinCode}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
+                  className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
                 >
                   {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
                 </button>
               </div>
             </div>
 
-            {error && <p className="text-sm text-rose-300">{error}</p>}
+            {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
           </div>
         )}
       </div>

@@ -111,33 +111,39 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
     : `Agenda - ${MONTH_NAMES[viewMonth]} ${viewYear}`;
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <button onClick={goPrev} className="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" aria-label="Previous month">
-              <ChevronLeft size={20} />
-            </button>
-            <h3 className="text-lg sm:text-xl font-semibold text-white min-w-[180px] text-center">
+    <div className="grid w-full gap-6 lg:grid-cols-12">
+      {/* Calendar grid */}
+      <section className="rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm sm:p-6 lg:col-span-8">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">
               {MONTH_NAMES[viewMonth]} {viewYear}
-            </h3>
-            <button onClick={goNext} className="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" aria-label="Next month">
-              <ChevronRight size={20} />
-            </button>
+            </h2>
+            <div className="flex items-center rounded-lg bg-[#FBF2ED] p-1">
+              <button onClick={goPrev} className="rounded p-1.5 text-[#534340] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Previous month">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={goNext} className="rounded p-1.5 text-[#534340] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Next month">
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={goToday} className="px-3 py-1.5 text-sm bg-slate-800/60 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors">
-              Today
-            </button>
-          </div>
+          <button
+            onClick={goToday}
+            className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+          >
+            Today
+          </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
+        {/* Weekday labels */}
+        <div className="mb-2 grid grid-cols-7 gap-1 sm:gap-2">
           {WEEKDAY_LABELS.map(day => (
-            <div key={day} className="text-center text-xs sm:text-sm font-medium text-slate-400 py-1">{day}</div>
+            <div key={day} className="py-1 text-center text-xs font-bold uppercase tracking-wider text-[#857370] sm:text-sm">{day}</div>
           ))}
         </div>
 
+        {/* Day grid */}
         <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {cells.map((day, idx) => {
             if (day === null) {
@@ -149,95 +155,112 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent }) => {
             const isSelected = iso === selectedDate;
 
             const handleDayClick = () => {
-              if (isSelected) {
-                setSelectedDate(null);
-              } else {
-                setSelectedDate(iso);
-              }
+              if (isSelected) setSelectedDate(null);
+              else setSelectedDate(iso);
             };
 
             return (
               <button
                 key={iso}
                 onClick={handleDayClick}
-                className={`text-left aspect-square sm:aspect-auto sm:min-h-[88px] p-1 sm:p-2 rounded-lg border transition-colors flex flex-col ${
-                  isSelected ? 'border-purple-500 bg-purple-500/10' :
-                  isToday ? 'border-purple-500/60 bg-slate-800/40 hover:bg-slate-800/70' :
-                  'border-slate-700/60 bg-slate-800/20 hover:bg-slate-800/50'
+                className={`flex aspect-square flex-col rounded-lg border p-1.5 text-left transition sm:aspect-auto sm:min-h-[88px] sm:p-2 ${
+                  isSelected
+                    ? 'border-[#E63B2E] bg-[#FFDAD4]'
+                    : isToday
+                      ? 'border-[#FFB4A9] bg-[#FFF8F5]'
+                      : 'border-[#E1D8D4] bg-white hover:border-[#FFB4A9] hover:bg-[#FFF8F5]'
                 }`}
               >
-                <span className={`text-xs sm:text-sm font-semibold ${isToday ? 'text-purple-300' : 'text-slate-200'}`}>{day}</span>
-                <div className="mt-1 flex-1 overflow-hidden space-y-1 hidden sm:block">
+                <span className={`text-xs font-bold sm:text-sm ${
+                  isToday
+                    ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#E63B2E] text-white'
+                    : isSelected
+                      ? 'text-[#410001]'
+                      : 'text-[#241A18]'
+                }`}>
+                  {day}
+                </span>
+                <div className="mt-1 hidden flex-1 space-y-0.5 overflow-hidden sm:block">
                   {dayEvents.slice(0, 2).map(ev => (
-                    <div key={ev.id} className="text-[10px] leading-tight px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-100 truncate" title={ev.title}>
-                      {(ev.startHour || ev.time) && <span className="font-medium mr-1">{ev.startHour || ev.time}</span>}
+                    <div
+                      key={ev.id}
+                      className="truncate rounded bg-[#FFDAD4] px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#410001]"
+                      title={ev.title}
+                    >
+                      {(ev.startHour || ev.time) && <span className="mr-1 font-bold">{ev.startHour || ev.time}</span>}
                       {ev.title}
                     </div>
                   ))}
-                  {dayEvents.length > 2 && <div className="text-[10px] text-slate-400">+{dayEvents.length - 2} more</div>}
+                  {dayEvents.length > 2 && (
+                    <div className="text-[10px] font-semibold text-[#857370]">+{dayEvents.length - 2} more</div>
+                  )}
                 </div>
                 {dayEvents.length > 0 && (
-                  <div className="sm:hidden flex justify-center mt-auto">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                  <div className="mt-auto flex justify-center sm:hidden">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#E63B2E]"></span>
                   </div>
                 )}
               </button>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">{agendaTitle}</h3>
+      {/* Agenda */}
+      <section className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4 shadow-sm sm:p-6 lg:col-span-4">
+        <div className="mb-5 flex items-center justify-between gap-2">
+          <h3 className="text-lg font-extrabold text-[#410001] sm:text-xl">{agendaTitle}</h3>
           {selectedDate && (
-            <button onClick={() => setSelectedDate(null)} className="text-sm text-slate-400 hover:text-white transition-colors">
+            <button
+              onClick={() => setSelectedDate(null)}
+              className="text-xs font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+            >
               Show month
             </button>
           )}
         </div>
 
         {agendaEvents.length === 0 ? (
-          <p className="text-slate-500 text-sm py-6 text-center">
+          <div className="rounded-xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#534340]">
             No activities {selectedDate ? 'for this day' : 'for this month'}.
-          </p>
+          </div>
         ) : (
           <ul className="space-y-3">
             {agendaEvents.map(ev => (
               <li
                 key={ev.id}
                 onClick={() => onEditEvent(ev)}
-                className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 cursor-pointer hover:bg-slate-700/50 transition-colors"
+                className="group flex cursor-pointer gap-3 rounded-xl border border-[#E1D8D4] bg-white p-3 shadow-sm transition hover:border-[#E63B2E]/40 hover:shadow-md sm:p-4"
               >
-                <div className="flex flex-col items-center justify-center min-w-[64px] px-2 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30">
-                  <span className="text-xs text-purple-300 font-medium tabular-nums">{formatDateDisplay(ev.startDate || ev.date)}</span>
+                <div className="flex min-w-[64px] flex-col items-center justify-center rounded-lg bg-[#FFDAD4] px-2 py-1.5 text-[#410001]">
+                  <span className="text-xs font-bold tabular-nums">{formatDateDisplay(ev.startDate || ev.date)}</span>
                   {ev.endDate && ev.endDate !== (ev.startDate || ev.date) && (
-                    <span className="text-xs text-purple-400 tabular-nums">→ {formatDateDisplay(ev.endDate)}</span>
+                    <span className="text-[10px] tabular-nums opacity-80">→ {formatDateDisplay(ev.endDate)}</span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-semibold text-white truncate">{ev.title}</h4>
+                    <h4 className="truncate font-bold text-[#410001]">{ev.title}</h4>
                     <button
                       onClick={(e) => { e.stopPropagation(); onDeleteEvent(ev.id); }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700/50 transition-colors"
+                      className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       aria-label="Delete event"
                     >
                       <Trash size={14} />
                     </button>
                   </div>
                   {(ev.time || ev.startHour || ev.endHour) && (
-                    <p className="text-sm text-slate-400 mt-0.5">
+                    <p className="mt-0.5 text-sm font-medium text-[#534340]">
                       {ev.time ? ev.time : `${formatTime(ev.startHour)}${ev.startHour && ev.endHour ? ' – ' : ''}${formatTime(ev.endHour)}`}
                     </p>
                   )}
-                  {ev.description && <p className="text-sm text-slate-300 mt-2 whitespace-pre-wrap">{ev.description}</p>}
+                  {ev.description && <p className="mt-2 whitespace-pre-wrap text-sm text-[#534340]">{ev.description}</p>}
                 </div>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 };

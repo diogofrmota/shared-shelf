@@ -1,5 +1,5 @@
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, currentUser }) {
   const [shelves, setShelves] = useState([]);
@@ -8,18 +8,30 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   const [manageMode, setManageMode] = useState(false);
   const [removingShelfId, setRemovingShelfId] = useState('');
   const [error, setError] = useState('');
-  const [activePanel, setActivePanel] = useState('');
+  const [profileOpen, setProfileOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileName, setProfileName] = useState('');
   const [profileUsername, setProfileUsername] = useState('');
   const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
+  const profileRef = useRef(null);
 
   const API_BASE = window.API_BASE_URL ?? '';
 
   useEffect(() => {
-    document.title = 'Shared Shelf - Join your Shelf';
+    document.title = 'Shared Shelf - Your shelves';
   }, []);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileOpen]);
 
   const fetchShelves = async () => {
     try {
@@ -46,7 +58,6 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
       onSelectShelf(shelf);
       return;
     }
-
     fetchShelves();
   };
 
@@ -83,47 +94,25 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   const username = currentUser?.username || 'User';
 
   useEffect(() => {
-    if (activePanel === 'profile') {
+    if (profileOpen) {
       setIsEditingProfile(false);
       setProfileName(displayName);
       setProfileUsername(username);
       setProfileError('');
     }
-  }, [activePanel, currentUser?.id, displayName, username]);
-
-  const togglePanel = (panel) => {
-    setActivePanel(prev => prev === panel ? '' : panel);
-  };
+  }, [profileOpen, currentUser?.id, displayName, username]);
 
   const handleProfileSave = async (event) => {
     event.preventDefault();
     const nextName = profileName.trim();
     const nextUsername = profileUsername.trim();
 
-    if (!nextName) {
-      setProfileError('Name is required');
-      return;
-    }
-    if (nextName.length > 20) {
-      setProfileError('Name must be 20 characters or fewer');
-      return;
-    }
-    if (!/^[A-Za-z ]+$/.test(nextName)) {
-      setProfileError('Name can only contain letters and spaces');
-      return;
-    }
-    if (!nextUsername) {
-      setProfileError('Username is required');
-      return;
-    }
-    if (nextUsername.length > 20) {
-      setProfileError('Username must be 20 characters or fewer');
-      return;
-    }
-    if (!/^[A-Za-z0-9]+$/.test(nextUsername)) {
-      setProfileError('Username can only contain letters and numbers');
-      return;
-    }
+    if (!nextName) { setProfileError('Name is required'); return; }
+    if (nextName.length > 20) { setProfileError('Name must be 20 characters or fewer'); return; }
+    if (!/^[A-Za-z ]+$/.test(nextName)) { setProfileError('Name can only contain letters and spaces'); return; }
+    if (!nextUsername) { setProfileError('Username is required'); return; }
+    if (nextUsername.length > 20) { setProfileError('Username must be 20 characters or fewer'); return; }
+    if (!/^[A-Za-z0-9]+$/.test(nextUsername)) { setProfileError('Username can only contain letters and numbers'); return; }
 
     setProfileSaving(true);
     setProfileError('');
@@ -140,14 +129,14 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   };
 
   const avatarPalette = [
-    { bg: '#8ecae6', border: '#4f9fbd', text: '#073b4c' },
-    { bg: '#ffb703', border: '#d78d00', text: '#3d2b00' },
-    { bg: '#b8f2c2', border: '#64b874', text: '#0f3d1c' },
-    { bg: '#f7a8b8', border: '#ce6477', text: '#4a1020' },
-    { bg: '#ffdad4', border: '#ffb4a9', text: '#410001' },
-    { bg: '#90dbf4', border: '#38a9c9', text: '#063949' },
-    { bg: '#fdd85d', border: '#d4a21a', text: '#3a2c05' },
-    { bg: '#a7c957', border: '#6f9230', text: '#24340d' }
+    { bg: '#FFB4A9', text: '#410001' },
+    { bg: '#FFDAD4', text: '#410001' },
+    { bg: '#FBD08A', text: '#3A2C05' },
+    { bg: '#A7C957', text: '#24340D' },
+    { bg: '#8ECAE6', text: '#073B4C' },
+    { bg: '#F7A8B8', text: '#4A1020' },
+    { bg: '#90DBF4', text: '#063949' },
+    { bg: '#E63B2E', text: '#FFFFFF' }
   ];
 
   const getMemberName = (member) => (
@@ -159,59 +148,35 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
       .split('')
       .reduce((sum, char) => sum + char.charCodeAt(0), 0);
     const color = avatarPalette[seed % avatarPalette.length];
-    return {
-      backgroundColor: color.bg,
-      borderColor: color.border,
-      color: color.text
-    };
+    return { backgroundColor: color.bg, color: color.text };
   };
 
-  const AvatarBubble = ({ member, className = '' }) => {
-    const name = getMemberName(member);
-    const initial = name.trim().charAt(0).toUpperCase() || '?';
-
+  const MemberStack = ({ members, max = 3 }) => {
+    const visible = members.slice(0, max);
+    const overflow = Math.max(0, members.length - visible.length);
     return (
-      <span
-        className={`absolute flex h-14 w-14 items-center justify-center rounded-full border-4 text-xl font-black shadow-md shadow-slate-950/10 ${className}`}
-        style={getAvatarStyle(member)}
-        title={name}
-        aria-label={name}
-      >
-        {initial}
-      </span>
-    );
-  };
-
-  const AvatarCluster = ({ shelf }) => {
-    const shelfMembers = Array.isArray(shelf.members) && shelf.members.length
-      ? shelf.members
-      : [currentUser].filter(Boolean);
-    const visibleMembers = shelfMembers.slice(0, 4);
-    const overflowCount = Math.max(0, shelfMembers.length - visibleMembers.length);
-    const positionsByCount = {
-      1: ['left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'],
-      2: ['left-3 top-1/2 -translate-y-1/2', 'right-3 top-1/2 -translate-y-1/2'],
-      3: ['left-3 top-3', 'right-3 top-3', 'left-1/2 bottom-3 -translate-x-1/2'],
-      4: ['left-3 top-3', 'right-3 top-3', 'left-3 bottom-3', 'right-3 bottom-3']
-    };
-    const positions = positionsByCount[visibleMembers.length] || positionsByCount[1];
-    const memberNames = shelfMembers.map(getMemberName).join(', ');
-
-    return (
-      <span className="relative block h-28 w-28" aria-label={`${shelf.name} members: ${memberNames}`}>
-        {visibleMembers.map((member, index) => (
-          <AvatarBubble
-            key={member?.id || `${getMemberName(member)}-${index}`}
-            member={member}
-            className={`${positions[index]} ${index > 0 ? '-ml-2' : ''}`}
-          />
-        ))}
-        {overflowCount > 0 && (
-          <span className="absolute left-1/2 top-1/2 z-10 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-slate-500 bg-slate-200 text-sm font-black text-slate-800 shadow-lg shadow-slate-950/15">
-            +{overflowCount}
+      <div className="flex -space-x-2">
+        {visible.map((member, idx) => {
+          const name = getMemberName(member);
+          const initial = name.trim().charAt(0).toUpperCase() || '?';
+          return (
+            <span
+              key={member?.id || `${name}-${idx}`}
+              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-bold shadow-sm"
+              style={getAvatarStyle(member)}
+              title={name}
+              aria-label={name}
+            >
+              {initial}
+            </span>
+          );
+        })}
+        {overflow > 0 && (
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-[#410001] text-[10px] font-bold text-white shadow-sm">
+            +{overflow}
           </span>
         )}
-      </span>
+      </div>
     );
   };
 
@@ -226,66 +191,76 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   );
 
   if (loading) {
-    return <LoadingScreen label="Logging in..." />;
+    return <LoadingScreen label="Loading your shelves..." />;
   }
 
+  const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
+
   return (
-    <div className="min-h-screen bg-[#fbf2ed] px-4 py-8 text-[#241a18] sm:px-6 sm:py-10">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex flex-col gap-5 rounded-xl border border-[#e1d8d4] bg-[#fff8f5] px-5 py-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.16em] text-[#e63b2e]">Shared Shelf</p>
-            <h1 className="text-2xl font-bold text-[#410001] sm:text-3xl lg:text-4xl">Your Shelves</h1>
-            <p className="mt-2 max-w-2xl text-sm font-medium text-[#534340] sm:text-base">
-              Open an existing shelf, create a new one, or join with an invite code.
-            </p>
+    <div className="min-h-screen bg-[#FBF2ED] text-[#241A18]">
+      {/* Top header */}
+      <header className="border-b border-[#E1D8D4] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/25 sm:h-10 sm:w-10">
+              <Tv size={18} />
+            </span>
+            <div className="leading-tight">
+              <p className="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">Shared Shelf</p>
+              <p className="text-xs font-medium text-[#534340]">Your collaborative spaces</p>
+            </div>
           </div>
-          <div className="relative flex shrink-0 items-center gap-3 self-end sm:self-auto">
+
+          <div className="relative" ref={profileRef}>
             <button
-              onClick={() => togglePanel('profile')}
-              className="flex h-10 w-24 items-center justify-center rounded-lg border border-[#e1d8d4] bg-white px-4 text-sm font-semibold text-[#410001] transition hover:bg-[#fbf2ed]"
+              type="button"
+              onClick={() => setProfileOpen(prev => !prev)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFDAD4] text-sm font-bold text-[#410001] shadow-sm transition hover:bg-[#FFB4A9] sm:w-auto sm:gap-2 sm:px-3"
+              title="Account"
+              aria-haspopup="menu"
+              aria-expanded={profileOpen}
             >
-              <span>Profile</span>
-            </button>
-            <button
-              onClick={onBackToLogin}
-              className="flex h-10 w-24 items-center justify-center rounded-lg border border-[#e1d8d4] bg-white px-4 text-sm font-semibold text-[#410001] transition hover:bg-[#fbf2ed]"
-            >
-              Logout
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E63B2E] text-xs font-bold text-white">{userInitial}</span>
+              <span className="hidden text-[#410001] sm:inline">{displayName.split(' ')[0]}</span>
             </button>
 
-            {activePanel === 'profile' && (
-              <div className="absolute right-0 top-14 z-20 w-80 rounded-xl border border-[#e1d8d4] bg-white p-5 shadow-2xl shadow-red-950/10">
+            {profileOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-12 z-50 w-72 overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+              >
+                <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
+                  <p className="mt-1 truncate text-base font-bold text-[#410001]">{displayName}</p>
+                  <p className="truncate text-xs text-[#534340]">{currentUser?.email || username}</p>
+                </div>
+
                 {isEditingProfile ? (
-                  <form className="space-y-4 text-left text-sm" onSubmit={handleProfileSave}>
+                  <form className="space-y-3 p-4 text-left text-sm" onSubmit={handleProfileSave}>
                     <div>
-                      <label className="mb-1 block font-bold text-[#410001]" htmlFor="profile-name">Name</label>
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[#E63B2E]" htmlFor="profile-name">Name</label>
                       <input
                         id="profile-name"
                         type="text"
                         value={profileName}
                         onChange={(event) => setProfileName(event.target.value)}
-                        className="w-full rounded-lg border border-[#e1d8d4] bg-[#fbf2ed] px-3 py-2 text-[#241a18] outline-none transition focus:border-[#e63b2e]"
+                        className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
                         autoComplete="name"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-bold text-[#410001]" htmlFor="profile-username">Username</label>
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[#E63B2E]" htmlFor="profile-username">Username</label>
                       <input
                         id="profile-username"
                         type="text"
                         value={profileUsername}
                         onChange={(event) => setProfileUsername(event.target.value)}
-                        className="w-full rounded-lg border border-[#e1d8d4] bg-[#fbf2ed] px-3 py-2 text-[#241a18] outline-none transition focus:border-[#e63b2e]"
+                        className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
                         autoComplete="username"
                       />
                     </div>
-                    <div>
-                      <p className="font-bold text-[#410001]">Email:</p>
-                      <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
-                    </div>
-                    {profileError && <p className="text-sm font-semibold text-[#c1121f]">{profileError}</p>}
-                    <div className="flex gap-3">
+                    {profileError && <p className="text-sm font-semibold text-[#C1121F]">{profileError}</p>}
+                    <div className="flex gap-2 pt-1">
                       <button
                         type="button"
                         onClick={() => {
@@ -294,14 +269,14 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                           setProfileUsername(username);
                           setProfileError('');
                         }}
-                        className="flex-1 rounded-xl bg-[#ced4da] px-3 py-3 text-sm font-bold text-[#1f2937] transition hover:bg-[#adb5bd]"
+                        className="flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                         disabled={profileSaving}
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 rounded-lg bg-[#e63b2e] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#a9372c] disabled:opacity-60"
+                        className="flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
                         disabled={profileSaving}
                       >
                         {profileSaving ? 'Saving...' : 'Save'}
@@ -309,57 +284,106 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                     </div>
                   </form>
                 ) : (
-                  <>
-                    <div className="space-y-3 text-left text-sm">
-                      <div>
-                        <p className="font-bold text-[#410001]">Name:</p>
-                        <p className="break-words font-medium text-black">{displayName}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold text-[#410001]">Username:</p>
-                        <p className="break-words font-medium text-black">{username}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold text-[#410001]">Email:</p>
-                        <p className="break-words font-medium text-black">{currentUser?.email || 'No email available'}</p>
-                      </div>
-                    </div>
-                    <div className="mt-6">
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingProfile(true)}
-                        className="shelf-profile-action w-full rounded-lg bg-[#e63b2e] px-3 py-3 text-sm font-bold transition hover:bg-[#a9372c]"
-                        style={{ color: '#ffffff' }}
-                      >
-                        Edit Information
-                      </button>
-                    </div>
-                  </>
+                  <div className="p-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingProfile(true)}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <UserIcon size={18} />
+                      Edit profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setProfileOpen(false); onBackToLogin?.(); }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <LogoutIcon size={18} />
+                      Log out
+                    </button>
+                  </div>
                 )}
               </div>
             )}
           </div>
         </div>
+      </header>
 
-        {error && <p className="mb-5 text-sm text-rose-300">{error}</p>}
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        {/* Hero */}
+        <section className="mb-8 sm:mb-10">
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Your shelves</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl lg:text-5xl">Join your shared space</h1>
+          <p className="mt-3 max-w-2xl text-base font-medium text-[#534340]">
+            Open an existing shelf to keep planning, or create a new one for your family, roommates, or friends.
+          </p>
+        </section>
 
-        {shelves.length === 0 && !error && (
-          <div className="mx-auto mb-2 max-w-xl rounded-xl border border-[#e1d8d4] bg-white p-5 text-center text-[#241a18] shadow-sm">
-            <p className="text-lg font-bold">No shelves yet</p>
-            <p className="mt-1 text-sm text-[#534340]">Create a shelf for shared plans, or join one with a shelf ID and code.</p>
+        {error && (
+          <div className="mb-6 rounded-2xl border border-[#FFB4A9] bg-[#FFDAD4] px-4 py-3 text-sm font-semibold text-[#410001]">
+            {error}
           </div>
         )}
 
-        <div className={`mb-4 flex justify-center ${shelves.length ? 'mt-16 sm:mt-20 lg:mt-24' : 'mt-8'}`}>
-          <div className="flex max-w-full gap-6 overflow-x-auto px-1 pb-4 pt-2">
-            {shelves.map(shelf => (
-              <div key={shelf.id} className="flex-none">
-                <div className="relative">
+        {/* Action bar */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => { setError(''); setJoinOpen(true); }}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+            >
+              <Plus size={16} />
+              Create or join
+            </button>
+            {shelves.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setManageMode(prev => !prev)}
+                className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
+                  manageMode
+                    ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#410001]'
+                    : 'border-[#E1D8D4] bg-white text-[#410001] hover:bg-[#FFF8F5]'
+                }`}
+              >
+                {manageMode ? 'Done managing' : 'Manage shelves'}
+              </button>
+            )}
+          </div>
+          <span className="text-sm font-medium text-[#534340]">{shelves.length} {shelves.length === 1 ? 'shelf' : 'shelves'}</span>
+        </div>
+
+        {shelves.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white p-10 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E]">
+              <Plus size={28} />
+            </div>
+            <h2 className="text-xl font-bold text-[#410001]">No shelves yet</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-[#534340]">
+              Create a shelf for shared plans, or join one with a shelf ID and code.
+            </p>
+            <button
+              type="button"
+              onClick={() => { setError(''); setJoinOpen(true); }}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+            >
+              <Plus size={16} />
+              Create your first shelf
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {shelves.map(shelf => {
+              const shelfMembers = Array.isArray(shelf.members) && shelf.members.length
+                ? shelf.members
+                : [currentUser].filter(Boolean);
+              return (
+                <div key={shelf.id} className="group relative overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#410001]/10">
                   {manageMode && (
                     <button
                       onClick={() => handleRemoveShelf(shelf)}
                       disabled={removingShelfId === shelf.id}
-                      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#c1121f] text-white transition hover:bg-[#a80f1a] disabled:opacity-50"
+                      className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[#C1121F] text-white shadow-md transition hover:bg-[#A80F1A] disabled:opacity-50"
                       aria-label={`Remove ${shelf.name}`}
                     >
                       <TrashCanIcon />
@@ -368,51 +392,45 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                   <button
                     onClick={() => !manageMode && onSelectShelf(shelf)}
                     disabled={manageMode}
-                    className={`flex h-36 w-36 items-center justify-center rounded-xl border border-[#e1d8d4] bg-white text-[#410001] shadow-sm transition ${
-                      manageMode
-                        ? 'cursor-default'
-                        : 'hover:-translate-y-1 hover:border-[#e63b2e] hover:bg-[#fff8f5] hover:shadow-lg hover:shadow-red-950/10'
-                    }`}
-                    title={shelf.name}
+                    className="block w-full text-left"
                   >
-                    <AvatarCluster shelf={shelf} />
+                    <div
+                      className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[#A9372C] via-[#E63B2E] to-[#8C4F45] text-white"
+                      aria-hidden="true"
+                    >
+                      <span className="text-4xl font-extrabold tracking-tight opacity-90">
+                        {shelf.name?.charAt(0).toUpperCase() || 'S'}
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="truncate text-lg font-extrabold text-[#410001]">{shelf.name}</h3>
+                      <div className="mt-3 flex items-center justify-between">
+                        <MemberStack members={shelfMembers} />
+                        <span className="rounded-full bg-[#FFDAD4] px-2.5 py-0.5 text-xs font-bold text-[#410001]">
+                          {shelfMembers.length} {shelfMembers.length === 1 ? 'member' : 'members'}
+                        </span>
+                      </div>
+                    </div>
                   </button>
                 </div>
-                <p className="mt-3 max-w-36 text-center text-base font-bold text-[#410001]">{shelf.name}</p>
-              </div>
-            ))}
+              );
+            })}
 
-            <div className="flex-none">
-              <button
-                onClick={() => {
-                  setError('');
-                  setJoinOpen(true);
-                }}
-                className="shelf-add-tile flex h-36 w-36 items-center justify-center rounded-xl border-2 border-dashed border-[#e63b2e] bg-white text-5xl font-light text-[#e63b2e] transition hover:-translate-y-1 hover:bg-[#fff8f5]"
-                aria-label="Add or join a shelf"
-              >
-                +
-              </button>
-              <p className="mt-3 text-center text-base font-bold text-[#410001]">Add / Join a Shelf</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center">
-          {shelves.length > 0 && (
+            {/* Add tile */}
             <button
-              onClick={() => setManageMode(prev => !prev)}
-              className={`flex h-11 w-28 items-center justify-center rounded-xl border px-5 text-sm font-semibold transition ${
-                manageMode
-                  ? 'border-[#e63b2e] bg-white text-[#410001] hover:bg-[#fff8f5]'
-                  : 'border-[#e1d8d4] bg-white text-[#410001] hover:bg-[#fff8f5]'
-              }`}
+              type="button"
+              onClick={() => { setError(''); setJoinOpen(true); }}
+              className="group flex min-h-[224px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#E63B2E]/60 bg-white text-[#E63B2E] transition hover:-translate-y-1 hover:border-[#E63B2E] hover:bg-[#FFF8F5] hover:shadow-lg hover:shadow-[#410001]/10"
+              aria-label="Create or join a shelf"
             >
-              {manageMode ? 'Cancel' : 'Manage'}
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
+                <Plus size={26} />
+              </span>
+              <span className="text-base font-extrabold text-[#410001]">Add or join a shelf</span>
             </button>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </main>
 
       <JoinShelfModal
         isOpen={joinOpen}

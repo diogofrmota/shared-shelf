@@ -1,6 +1,7 @@
 const React = window.React;
+const { useState, useEffect, useRef } = React;
 
-const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film } = window;
+const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon } = window;
 
 const Header = ({
   shelfName,
@@ -9,10 +10,26 @@ const Header = ({
   onCategoryChange,
   onSettingsClick,
   onAccountClick,
+  onBackToShelves,
   enabledSections
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
+
   const handleTabClick = (category, subTab) => {
     onCategoryChange(category, subTab);
+    setMenuOpen(false);
   };
 
   const navTabs = [
@@ -28,71 +45,156 @@ const Header = ({
     : ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist']);
   const visibleNavTabs = navTabs.filter(tab => tab.id === 'media' ? enabledSet.has('watchlist') : enabledSet.has(tab.id));
 
-  const headerButton = 'flex h-10 items-center justify-center rounded-lg border border-stone-200 bg-white px-3 text-sm font-semibold text-[#410001] transition hover:bg-[#fff8f5] hover:text-[#e63b2e] sm:px-4';
+  const isTabActive = (tab) => tab.id === 'media'
+    ? activeCategory === 'media'
+    : activeCategory === tab.category && activeSubTab === tab.id;
+
+  const activeTabLabel = visibleNavTabs.find(isTabActive)?.label || 'Menu';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200 bg-[#fdfbf7]/95 shadow-sm backdrop-blur">
-      <div className="max-w-8xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e63b2e] text-white shadow-sm">
-                <Tv size={18} />
-              </span>
-              <h1 className="max-w-full truncate text-left text-xl font-bold text-[#410001] lg:max-w-[220px]">
-                {shelfName || 'Shared Shelf'}
-              </h1>
-            </div>
+    <header className="sticky top-0 z-40 border-b border-[#E1D8D4] bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        {/* Brand + shelf name */}
+        <button
+          type="button"
+          onClick={onBackToShelves}
+          className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:opacity-90"
+          title="Back to your shelves"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/25 sm:h-10 sm:w-10">
+            <Tv size={18} />
+          </span>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">
+              Shared Shelf
+            </span>
+            <span className="truncate text-xs font-medium text-[#534340] sm:text-sm">
+              {shelfName || 'Your shelf'}
+            </span>
+          </span>
+        </button>
 
-            <nav className="flex flex-wrap items-center gap-2">
-              {visibleNavTabs.map(tab => {
-                const Icon = tab.icon;
-                const isActive = tab.id === 'media'
-                  ? activeCategory === 'media'
-                  : activeCategory === tab.category && activeSubTab === tab.id;
-                return (
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 lg:flex">
+          {visibleNavTabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = isTabActive(tab);
+            return (
+              <button
+                key={tab.id}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => {
+                  if (tab.id === 'media') handleTabClick('media', null);
+                  else handleTabClick(tab.category, tab.id);
+                }}
+                className={`relative inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${
+                  isActive
+                    ? 'text-[#E63B2E]'
+                    : 'text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
+                }`}
+              >
+                <Icon size={16} />
+                {tab.label}
+                {isActive && <span className="absolute inset-x-2 -bottom-[14px] h-[3px] rounded-full bg-[#E63B2E]"></span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Right actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={onSettingsClick}
+            className="hidden h-10 w-10 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
+            title="Shelf settings"
+            aria-label="Shelf settings"
+          >
+            <SettingsIcon size={18} />
+          </button>
+
+          <button
+            onClick={onAccountClick}
+            className="hidden h-10 w-10 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
+            title="Profile"
+            aria-label="Profile"
+          >
+            <UserIcon size={18} />
+          </button>
+
+          {/* Mobile menu trigger */}
+          <div className="relative lg:hidden" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(prev => !prev)}
+              className="flex h-10 items-center gap-1.5 rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              <span className="max-w-[80px] truncate sm:max-w-[120px]">{activeTabLabel}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`}>
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-12 z-50 w-60 origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+              >
+                <div className="p-1">
+                  {visibleNavTabs.map(tab => {
+                    const Icon = tab.icon;
+                    const isActive = isTabActive(tab);
+                    return (
+                      <button
+                        key={tab.id}
+                        role="menuitem"
+                        onClick={() => {
+                          if (tab.id === 'media') handleTabClick('media', null);
+                          else handleTabClick(tab.category, tab.id);
+                        }}
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                          isActive
+                            ? 'bg-[#FFDAD4] text-[#E63B2E]'
+                            : 'text-[#410001] hover:bg-[#FFF8F5]'
+                        }`}
+                      >
+                        <Icon size={18} />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="border-t border-[#E1D8D4] p-1">
                   <button
-                    key={tab.id}
-                    aria-current={isActive ? 'page' : undefined}
-                    onClick={() => {
-                      if (tab.id === 'media') {
-                        handleTabClick('media', null);
-                      } else {
-                        handleTabClick(tab.category, tab.id);
-                      }
-                    }}
-                    className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
-                      isActive
-                        ? 'border-b-2 border-[#e63b2e] bg-[#fff8f5] text-[#e63b2e]'
-                        : 'text-[#534340] hover:bg-[#fff8f5] hover:text-[#e63b2e]'
-                    }`}
+                    role="menuitem"
+                    onClick={() => { onSettingsClick?.(); setMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
-                    <Icon size={16} />
-                    {tab.label}
+                    <SettingsIcon size={18} />
+                    Shelf settings
                   </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <button
-              onClick={onSettingsClick}
-              className={headerButton}
-              title="Shelf settings"
-            >
-              <SettingsIcon size={16} />
-              <span className="ml-1.5">Settings</span>
-            </button>
-
-            <button
-              onClick={onAccountClick}
-              className={headerButton}
-              title="Profile"
-            >
-              <UserIcon size={16} />
-              <span className="ml-1.5">Profile</span>
-            </button>
+                  <button
+                    role="menuitem"
+                    onClick={() => { onAccountClick?.(); setMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                  >
+                    <UserIcon size={18} />
+                    Profile
+                  </button>
+                  {onBackToShelves && (
+                    <button
+                      role="menuitem"
+                      onClick={() => { onBackToShelves?.(); setMenuOpen(false); }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <LogoutIcon size={18} />
+                      Back to shelves
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
