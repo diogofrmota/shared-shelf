@@ -25,6 +25,38 @@
     {
       "source": "/shelf/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy-policy/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms-of-service",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms-of-service/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/report-a-bug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/report-a-bug/",
+      "destination": "/index.html"
     }
   ]
 }

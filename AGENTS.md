@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository.
 
 ## Project Overview
 
-Shared Shelf is a Vercel-hosted web app for shared planning. Users authenticate, create or join private shelves, and manage shared calendar, tasks, locations, trips, recipes, and watchlist (movies, TV shows, and books).
+Shared Shelf is a Vercel-hosted web app for shared planning. The root URL is a public homepage that introduces the app and links to sign-in and account creation; authentication lives at `/login`. Once signed in, users create or join private shelves and manage shared calendar, tasks, locations, trips, recipes, and watchlist (movies, TV shows, and books).
 
 The app is intentionally lightweight and designed to deploy for free in Vercel:
 
@@ -32,7 +32,11 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - `package.json` - Serverless/runtime dependencies; no package scripts are currently defined.
 - `vercel.json` - Vercel function duration config and `/api/shelf` rewrites.
 - `components/Config.jsx` - Runtime browser-global config/constants used by component scripts.
-- `components/Login.jsx` - Sign in, registration, forgot password, and reset password UI.
+- `components/HomePage.jsx` - Public homepage at `/` with hero, features, calls to action, and release notes.
+- `components/Footer.jsx` - Global footer with copyright and `/privacy-policy`, `/terms-of-service`, and `/report-a-bug` links.
+- `components/LegalPages.jsx` - `/privacy-policy` and `/terms-of-service` static pages.
+- `components/BugReport.jsx` - `/report-a-bug` page with bug report form that opens the user's email client.
+- `components/Login.jsx` - `/login` page: sign in, registration, forgot password, and reset password UI. Reads `mode`, `reset_token`, and `confirm_token` from the URL.
 - `components/ShelfSelector.jsx` - Post-login shelf list, create/join entry points, profile dropdown, and shelf management.
 - `components/Header.jsx` - In-shelf navigation, global add, settings/profile/logout/back controls, sync status.
 - `components/AddModal.jsx` - Global add modal plus edit modals for events, trips, and recipes.
@@ -68,6 +72,20 @@ The app is intentionally lightweight and designed to deploy for free in Vercel:
 - Use existing constants from `config.js` or `components/Config.jsx` when possible.
 - Keep comments useful and sparse.
 - Use ASCII unless editing existing non-ASCII content that already requires it.
+
+## Frontend Routes
+
+Client-side routing is handled by `media-tracker.jsx` via `readAppRoute` plus rewrites in `vercel.json` that map all known paths to `index.html`. When adding or changing a route, update both `readAppRoute` and `vercel.json`.
+
+| Path | Route type | Component |
+| --- | --- | --- |
+| `/` | `home` | `HomePage` (signed-in users redirect to `/shelf-selection/`) |
+| `/login` | `login` | `LoginScreen` (signed-in users redirect to `/shelf-selection/`) |
+| `/privacy-policy` | `privacy` | `PrivacyPolicyPage` |
+| `/terms-of-service` | `terms` | `TermsOfServicePage` |
+| `/report-a-bug` | `bug-report` | `BugReportPage` |
+| `/shelf-selection/` | `selection` | `ShelfSelector` (signed-in only) |
+| `/shelf/<shelf-id>/` | `shelf` | shelf workspace (signed-in only) |
 
 ## Frontend Guidance
 
@@ -136,7 +154,10 @@ When adding fields to stored objects, ensure old saved data still renders.
 
 ## App Usability Expectations
 
-- Homepage: users can sign in with email or username, register, remember their session, or request a password reset.
+- Homepage (`/`): public landing page that explains what Shared Shelf is, who it is for, how private shelves work, and the main features. Provides clear sign-in and create-account calls to action that link to `/login`. Includes a release notes section near the bottom and the global footer. Signed-in users are redirected from `/` to `/shelf-selection/`.
+- Login (`/login`): users sign in with email or username, register a new account, request a password reset, or open `/login?mode=signup` to land directly on the register tab. Signed-in users visiting `/login` are redirected to `/shelf-selection/`.
+- Legal pages (`/privacy-policy`, `/terms-of-service`): static legal text reachable from the global footer.
+- Bug report (`/report-a-bug`): a short form with title, description, optional steps, and optional reply email. Submitting opens the user's email client with the pre-filled report and provides a copy-to-clipboard fallback.
 - Shelf selection: users can open existing shelves, create a shelf, join another shelf using shelf ID and join code, manage/remove their shelf membership, edit profile details, and log out.
 - Shelf: users work inside one selected shelf. All members of the shelf read/write the same shelf JSON document.
 - Sharing: shelf share information is exposed through share codes. Codes are one-time and expire after seven days; owners can regenerate them.
@@ -159,6 +180,9 @@ http://127.0.0.1:5173/index.html
 Useful checks:
 
 - `index.html` loads without console errors.
+- Public homepage `/`, `/login`, `/privacy-policy`, `/terms-of-service`, and `/report-a-bug` render with the global footer.
+- Returning, signed-in users are redirected from `/` and `/login` to `/shelf-selection/`.
+- `/login?mode=signup` opens directly on the register tab.
 - Login, registration, session restore, and password reset screens still render.
 - Shelf list/create/join/share/settings/profile flows still render and work when backend env is available.
 - Add/edit/delete flows work for the touched category.

@@ -1,8 +1,15 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-function LoginScreen({ onLogin }) {
-  const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'reset'
+function LoginScreen({ onLogin, onNavigate }) {
+  const initialMode = (() => {
+    if (typeof window === 'undefined') return 'signin';
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get('mode');
+    if (requested === 'signup' || requested === 'register') return 'signup';
+    return 'signin';
+  })();
+  const [mode, setMode] = useState(initialMode); // 'signin' | 'signup' | 'reset'
   const [email, setEmail] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -16,12 +23,22 @@ function LoginScreen({ onLogin }) {
   const [serverSuccess, setServerSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const handleHomeNavigation = (event) => {
+    if (event) event.preventDefault();
+    if (typeof onNavigate === 'function') {
+      onNavigate('/');
+    } else {
+      window.location.href = '/';
+    }
+  };
+
   // Activate reset-password form when URL contains ?reset_token=
   const [resetToken, setResetToken] = useState(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const reset = params.get('reset_token');
     const confirmation = params.get('confirm_token');
+    const requestedMode = params.get('mode');
     if (reset) {
       setResetToken(reset);
       setMode('reset');
@@ -40,6 +57,11 @@ function LoginScreen({ onLogin }) {
         })
         .catch(() => setServerError('Something went wrong confirming your account. Please try again.'))
         .finally(() => setLoading(false));
+      return;
+    }
+    if (requestedMode === 'signup' || requestedMode === 'register') {
+      // Strip the mode param from the URL after consuming it.
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
@@ -239,12 +261,22 @@ function LoginScreen({ onLogin }) {
   const labelClass = "mb-1.5 block text-sm font-bold text-[#241A18]";
 
   return (
-    <div className="app-auth-bg flex min-h-screen items-center justify-center p-4 sm:p-6">
+    <div className="app-auth-bg flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
+      <div className="mb-4 w-full max-w-md text-left">
+        <a
+          href="/"
+          onClick={handleHomeNavigation}
+          className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:bg-white/25"
+        >
+          <span aria-hidden="true">&larr;</span>
+          Back to homepage
+        </a>
+      </div>
       <div className="w-full max-w-md rounded-2xl border border-white/40 bg-[#FFF8F5] p-7 shadow-[0_24px_60px_rgba(65,0,1,0.32)] sm:p-9 animate-scale-in">
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/30">
+          <a href="/" onClick={handleHomeNavigation} className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/30">
             <Tv size={26} />
-          </div>
+          </a>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">Shared Shelf</h1>
           <p className="mt-2 text-sm font-medium text-[#534340]">
             Organize your life, together.
@@ -467,6 +499,18 @@ function LoginScreen({ onLogin }) {
           </>
         )}
       </div>
+
+      <nav aria-label="Footer" className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold text-white/85">
+        <a href="/privacy-policy" onClick={(event) => { event.preventDefault(); if (typeof onNavigate === 'function') onNavigate('/privacy-policy'); else window.location.href = '/privacy-policy'; }} className="transition hover:text-white">
+          Privacy Policy
+        </a>
+        <a href="/terms-of-service" onClick={(event) => { event.preventDefault(); if (typeof onNavigate === 'function') onNavigate('/terms-of-service'); else window.location.href = '/terms-of-service'; }} className="transition hover:text-white">
+          Terms of Service
+        </a>
+        <a href="/report-a-bug" onClick={(event) => { event.preventDefault(); if (typeof onNavigate === 'function') onNavigate('/report-a-bug'); else window.location.href = '/report-a-bug'; }} className="transition hover:text-white">
+          Report a Bug
+        </a>
+      </nav>
     </div>
   );
 }
