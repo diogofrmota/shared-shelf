@@ -187,6 +187,7 @@ const transformBookData = (doc) => ({
   rating: doc.ratings_average ? parseFloat(doc.ratings_average).toFixed(1) : 'N/A',
   year: doc.first_publish_year?.toString() || 'N/A',
   author: doc.author_name?.[0] || 'Unknown Author',
+  totalPages: Number.isFinite(Number(doc.number_of_pages_median)) ? Number(doc.number_of_pages_median) : null,
   type: 'Book'
 });
 
@@ -271,7 +272,7 @@ const searchBooks = async (query) => {
     const url = new URL(`${OPEN_LIBRARY.BASE_URL}${OPEN_LIBRARY.ENDPOINTS.SEARCH}`);
     url.searchParams.append('q', query);
     url.searchParams.append('limit', 20);
-    url.searchParams.append('fields', 'key,title,author_name,first_publish_year,cover_i,ratings_average');
+    url.searchParams.append('fields', 'key,title,author_name,first_publish_year,cover_i,ratings_average,number_of_pages_median');
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error('Failed to fetch books');
     const data = await response.json();

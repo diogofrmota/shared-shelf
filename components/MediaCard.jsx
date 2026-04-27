@@ -141,6 +141,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
   const statusOptions = getStatusOptions(item.category);
 
   const isWatchingTvShow = item.category === 'tvshows' && item.status === 'watching';
+  const pageLabel = item.category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
   const progress = item.progress;
 
   const progressLabel = (() => {
@@ -169,6 +170,9 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
           </h3>
           {item.author && (
             <p className="text-[11px] font-medium text-[#534340]">{item.author}</p>
+          )}
+          {pageLabel && (
+            <p className="text-[11px] font-semibold text-[#8C4F45]">{pageLabel}</p>
           )}
 
           <div className="flex items-start justify-between">
@@ -247,7 +251,10 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
 // RESULT CARD COMPONENT (used in SearchModal)
 // ============================================================================
 
-const ResultCard = ({ item, category, onAdd }) => (
+const ResultCard = ({ item, category, onAdd }) => {
+  const pageLabel = category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
+
+  return (
   <div
     className="group relative cursor-pointer overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
     onClick={() => onAdd({ ...item, category })}
@@ -266,6 +273,9 @@ const ResultCard = ({ item, category, onAdd }) => (
         {item.title}
       </h3>
       {item.author && <p className="mt-0.5 text-[11px] font-medium text-white/80">{item.author}</p>}
+      {pageLabel && (
+        <p className="mt-0.5 text-[11px] font-semibold text-white/80">{pageLabel}</p>
+      )}
       <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-white/85 sm:gap-2">
         <span className="flex items-center gap-0.5">⭐ {item.rating}</span>
         <span>·</span>
@@ -273,6 +283,7 @@ const ResultCard = ({ item, category, onAdd }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 Object.assign(window, { MediaCard, ResultCard });

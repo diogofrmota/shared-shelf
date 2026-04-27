@@ -91,6 +91,9 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
     ...item,
     category,
     type: typeByCategory[category],
+    totalPages: category === 'books'
+      ? Number(item.totalPages || item.pages || item.pageCount || 0) || null
+      : item.totalPages,
     status: normalizeWatchlistStatus(item, category)
   };
 };
