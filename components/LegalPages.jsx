@@ -23,7 +23,7 @@ function LegalPageShell({ title, lastUpdated, onNavigate, children }) {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/30">
               <Tv size={18} />
             </span>
-            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Shared Shelf</span>
+            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Couple Planner</span>
           </a>
           <nav className="flex items-center gap-2 sm:gap-3">
             <a
@@ -71,23 +71,23 @@ function PrivacyPolicyPage({ onNavigate }) {
   return (
     <LegalPageShell title="Privacy Policy" lastUpdated="April 2026" onNavigate={onNavigate}>
       <p className={paragraphClass}>
-        This Privacy Policy describes what Shared Shelf collects, why, and how it is stored. Shared Shelf is a small
+        This Privacy Policy describes what Couple Planner collects, why, and how it is stored. Couple Planner is a small
         side-project app, so the policy below intentionally stays short and direct.
       </p>
 
       <h2 className={sectionHeadingClass}>What we collect</h2>
       <ul className={listClass}>
         <li>Account information you provide: name, username, email, and a hashed password.</li>
-        <li>Shelf content you create: calendar activities, tasks, locations, trips, recipes, and watchlist items.</li>
+        <li>Space content you create: calendar activities, tasks, locations, trips, recipes, and watchlist items.</li>
         <li>
           Technical data needed to run the app: session tokens stored in your browser, basic request logs from the
-          hosting platform, and database records for your shelves and memberships.
+          hosting platform, and database records for your spaces and memberships.
         </li>
       </ul>
 
       <h2 className={sectionHeadingClass}>How we use it</h2>
       <ul className={listClass}>
-        <li>To sign you in and let you read and write the shelves you belong to.</li>
+        <li>To sign you in and let you read and write the spaces you belong to.</li>
         <li>To send transactional email such as account confirmation and password reset links.</li>
         <li>To keep the app available, debug failures, and prevent abuse.</li>
       </ul>
@@ -97,19 +97,19 @@ function PrivacyPolicyPage({ onNavigate }) {
         <li>We do not sell or rent your personal data.</li>
         <li>We do not run advertising or third-party tracking on the app.</li>
         <li>
-          Shelf content is only visible to invited shelf members. We do not share private shelf content with anyone
+          Shelf content is only visible to invited space members. We do not share private shelf content with anyone
           else.
         </li>
       </ul>
 
       <h2 className={sectionHeadingClass}>Third-party services</h2>
       <p className={paragraphClass}>
-        Shared Shelf relies on a small set of third parties to operate. By using the app, your data may be processed by
+        Couple Planner relies on a small set of third parties to operate. By using the app, your data may be processed by
         these services in line with their own privacy policies:
       </p>
       <ul className={listClass}>
         <li>Vercel for hosting the website and serverless API.</li>
-        <li>Vercel Postgres / Neon for storing your account, shelf metadata, and shelf content.</li>
+        <li>Vercel Postgres / Neon for storing your account, space metadata, and space content.</li>
         <li>Resend for sending account confirmation and password reset emails when configured.</li>
         <li>TMDB, Open Library, Jikan, and OpenStreetMap Nominatim for media and location lookups you trigger.</li>
       </ul>
@@ -117,9 +117,9 @@ function PrivacyPolicyPage({ onNavigate }) {
       <h2 className={sectionHeadingClass}>Your choices</h2>
       <ul className={listClass}>
         <li>You can update your name and username from the account modal.</li>
-        <li>You can leave a shelf at any time from the shelf selection page.</li>
+        <li>You can leave a space at any time from the space selection page.</li>
         <li>
-          To delete your account or any shelf you own, contact us through the bug report page and ask. We will respond
+          To delete your account or any space you own, contact us through the bug report page and ask. We will respond
           and act on the request manually.
         </li>
       </ul>
@@ -136,7 +136,7 @@ function TermsOfServicePage({ onNavigate }) {
   return (
     <LegalPageShell title="Terms of Service" lastUpdated="April 2026" onNavigate={onNavigate}>
       <p className={paragraphClass}>
-        These terms describe the basic rules for using Shared Shelf. By creating an account or using the app, you
+        These terms describe the basic rules for using Couple Planner. By creating an account or using the app, you
         agree to them.
       </p>
 
@@ -149,8 +149,8 @@ function TermsOfServicePage({ onNavigate }) {
 
       <h2 className={sectionHeadingClass}>Your content</h2>
       <ul className={listClass}>
-        <li>You keep ownership of the content you add to your shelves.</li>
-        <li>You give Shared Shelf the limited permission needed to store, display, and back up that content for shelf members.</li>
+        <li>You keep ownership of the content you add to your spaces.</li>
+        <li>You give Couple Planner the limited permission needed to store, display, and back up that content for space members.</li>
         <li>You confirm that your content does not break the law and does not violate other people's rights.</li>
       </ul>
 
@@ -163,14 +163,14 @@ function TermsOfServicePage({ onNavigate }) {
 
       <h2 className={sectionHeadingClass}>Service availability</h2>
       <p className={paragraphClass}>
-        Shared Shelf is provided as-is and may be unavailable from time to time. The app runs on a free hosting plan
+        Couple Planner is provided as-is and may be unavailable from time to time. The app runs on a free hosting plan
         and may be paused, throttled, or change behavior at any time. We do our best to preserve your data, but you
-        should not rely on Shared Shelf as the only place where critical information lives.
+        should not rely on Couple Planner as the only place where critical information lives.
       </p>
 
       <h2 className={sectionHeadingClass}>Termination</h2>
       <p className={paragraphClass}>
-        You can stop using Shared Shelf at any time. We may suspend or remove accounts that break these terms or that
+        You can stop using Couple Planner at any time. We may suspend or remove accounts that break these terms or that
         threaten the safety or stability of the service.
       </p>
 

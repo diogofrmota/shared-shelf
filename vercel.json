@@ -7,23 +7,23 @@
   },
   "rewrites": [
     {
-      "source": "/api/shelf",
-      "destination": "/api/shelf/[...path]?path=__root__"
+      "source": "/api/space",
+      "destination": "/api/space/[...path]?path=__root__"
     },
     {
-      "source": "/api/shelf/:path*",
-      "destination": "/api/shelf/[...path]?path=:path*"
+      "source": "/api/space/:path*",
+      "destination": "/api/space/[...path]?path=:path*"
     },
     {
-      "source": "/shelf-selection",
+      "source": "/space-selection",
       "destination": "/index.html"
     },
     {
-      "source": "/shelf-selection/",
+      "source": "/space-selection/",
       "destination": "/index.html"
     },
     {
-      "source": "/shelf/:path*",
+      "source": "/space/:path*",
       "destination": "/index.html"
     },
     {

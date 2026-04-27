@@ -38,18 +38,18 @@ const sectionToView = (section) => {
 
 const readAppRoute = (pathname = window.location.pathname) => {
   const path = pathname || '/';
-  const shelfMatch = path.match(/^\/shelf\/([^/]+)\/?$/);
+  const shelfMatch = path.match(/^\/space\/([^/]+)\/?$/);
 
   if (shelfMatch) {
     return {
       type: 'shelf',
       shelfId: decodeURIComponent(shelfMatch[1]),
-      path: `/shelf/${shelfMatch[1]}/`
+      path: `/space/${shelfMatch[1]}/`
     };
   }
 
-  if (/^\/shelf-selection\/?$/.test(path)) {
-    return { type: 'selection', path: '/shelf-selection/' };
+  if (/^\/space-selection\/?$/.test(path)) {
+    return { type: 'selection', path: '/space-selection/' };
   }
 
   if (/^\/login\/?$/.test(path)) {
@@ -505,7 +505,7 @@ function MediaTracker() {
         setAccessIssue({
           type: 'unauthorized',
           title: 'Sign in to keep going',
-          message: 'This part of Shared Shelf is private. Sign in first, then you can open your shelves safely.'
+          message: 'This part of Couple Planner is private. Sign in first, then you can open your spaces safely.'
         });
       }
       return;
@@ -516,7 +516,7 @@ function MediaTracker() {
         setCurrentShelf(null);
         setData(null);
       }
-      navigateTo('/shelf-selection/', { replace: true });
+      navigateTo('/space-selection/', { replace: true });
       return;
     }
 
@@ -527,7 +527,7 @@ function MediaTracker() {
     ) {
       directShelfHistorySeededRef.current = true;
       const currentUrl = `${appRoute.path}${window.location.search || ''}`;
-      window.history.replaceState({ appRoutePath: '/shelf-selection/' }, '', '/shelf-selection/');
+      window.history.replaceState({ appRoutePath: '/space-selection/' }, '', '/space-selection/');
       window.history.pushState({ appRoutePath: appRoute.path }, '', currentUrl);
       currentUrlRef.current = currentUrl;
     }
@@ -566,8 +566,8 @@ function MediaTracker() {
             setData(null);
             setAccessIssue({
               type: 'forbidden',
-              title: 'You do not have access to this shelf',
-              message: 'The shelf may have been removed, or your account is not a member of it anymore.'
+              title: 'You do not have access to this space',
+              message: 'The space may have been removed, or your account is not a member of it anymore.'
             });
           }
         })
@@ -577,8 +577,8 @@ function MediaTracker() {
             setData(null);
             setAccessIssue({
               type: 'unrecoverable',
-              title: 'We could not check that shelf',
-              message: 'Shared Shelf could not confirm your access right now. Try again from shelf selection.'
+              title: 'We could not check that space',
+              message: 'Couple Planner could not confirm your access right now. Try again from space selection.'
             });
           }
         })
@@ -594,31 +594,31 @@ function MediaTracker() {
 
   useEffect(() => {
     if (appRoute.type === 'not-found') {
-      document.title = 'Shared Shelf - Page not found';
+      document.title = 'Couple Planner - Page not found';
       return;
     }
     if (appRoute.type === 'privacy') {
-      document.title = 'Shared Shelf - Privacy Policy';
+      document.title = 'Couple Planner - Privacy Policy';
       return;
     }
     if (appRoute.type === 'terms') {
-      document.title = 'Shared Shelf - Terms of Service';
+      document.title = 'Couple Planner - Terms of Service';
       return;
     }
     if (appRoute.type === 'bug-report') {
-      document.title = 'Shared Shelf - Report a Bug';
+      document.title = 'Couple Planner - Report a Bug';
       return;
     }
     if (appRoute.type === 'login') {
-      document.title = 'Shared Shelf - Sign in';
+      document.title = 'Couple Planner - Sign in';
       return;
     }
     if (!currentUser) {
-      document.title = 'Shared Shelf - Plan together';
+      document.title = 'Couple Planner - Plan together';
     } else if (!currentShelf) {
-      document.title = 'Shared Shelf - Join your Shelf';
+      document.title = 'Couple Planner - Your spaces';
     } else {
-      document.title = `Shared Shelf - ${currentShelf.name}`;
+      document.title = `Couple Planner - ${currentShelf.name}`;
     }
   }, [appRoute.type, currentUser, currentShelf]);
 
@@ -684,7 +684,7 @@ function MediaTracker() {
 
   const handleLogin = (user) => {
     setCurrentUser(user);
-    navigateTo('/shelf-selection/');
+    navigateTo('/space-selection/');
   };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
@@ -698,14 +698,14 @@ function MediaTracker() {
   const handleShelfSelect = (shelf) => {
     setCurrentShelf(shelf);
     setData(null);
-    navigateTo(`/shelf/${encodeURIComponent(shelf.id)}/`);
+    navigateTo(`/space/${encodeURIComponent(shelf.id)}/`);
   };
   const handleBackToShelves = () => {
-    if (!confirmRouteChange(readAppRoute('/shelf-selection/'))) return;
+    if (!confirmRouteChange(readAppRoute('/space-selection/'))) return;
     setCurrentShelf(null);
     setData(null);
     closeShelfOverlays();
-    navigateTo('/shelf-selection/', { skipPrompt: true });
+    navigateTo('/space-selection/', { skipPrompt: true });
   };
 
   const handleCategoryChange = (category, subTab) => {
@@ -760,8 +760,8 @@ function MediaTracker() {
     requestConfirmation({
       title: isRecurring ? 'Delete recurring activity?' : 'Delete activity?',
       message: isRecurring
-        ? `${getItemLabel(sourceEvent, 'This activity')} and all of its occurrences will be deleted from this shelf.`
-        : `${getItemLabel(sourceEvent, 'This activity')} will be deleted from this shelf.`,
+        ? `${getItemLabel(sourceEvent, 'This activity')} and all of its occurrences will be deleted from this space.`
+        : `${getItemLabel(sourceEvent, 'This activity')} will be deleted from this space.`,
       confirmLabel: 'Delete'
     }, () => {
       setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.filter(e => e.id !== id) }));
@@ -776,7 +776,7 @@ function MediaTracker() {
     const trip = (data?.trips || []).find(t => t.id === id);
     requestConfirmation({
       title: 'Delete trip?',
-      message: `${getItemLabel(trip, 'This trip')} will be deleted from this shelf.`,
+      message: `${getItemLabel(trip, 'This trip')} will be deleted from this space.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, trips: prev.trips.filter(t => t.id !== id) })));
   };
@@ -789,7 +789,7 @@ function MediaTracker() {
     const recipe = (data?.recipes || []).find(r => r.id === id);
     requestConfirmation({
       title: 'Delete recipe?',
-      message: `${getItemLabel(recipe, 'This recipe')} will be deleted from this shelf.`,
+      message: `${getItemLabel(recipe, 'This recipe')} will be deleted from this space.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, recipes: prev.recipes.filter(r => r.id !== id) })));
   };
@@ -802,7 +802,7 @@ function MediaTracker() {
     const place = (data?.locations || []).find(p => p.id === id);
     requestConfirmation({
       title: 'Delete location?',
-      message: `${getItemLabel(place, 'This location')} will be deleted from this shelf.`,
+      message: `${getItemLabel(place, 'This location')} will be deleted from this space.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) })));
   };
@@ -847,7 +847,7 @@ function MediaTracker() {
     const task = (data?.tasks || []).find(t => t.id === id);
     requestConfirmation({
       title: 'Delete task?',
-      message: `${getItemLabel(task, 'This task')} will be deleted from this shelf.`,
+      message: `${getItemLabel(task, 'This task')} will be deleted from this space.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) })));
   };
@@ -939,10 +939,10 @@ function MediaTracker() {
     return (
       <FailureScreen
         eyebrow="404"
-        title="This page is not on the shelf"
+        title="This page is not in the app"
         message="The link may be mistyped, moved, or no longer available. Head back to a known place and keep planning from there."
         primaryLabel={currentUser ? 'Go to shelves' : 'Go home'}
-        primaryPath={currentUser ? '/shelf-selection/' : '/'}
+        primaryPath={currentUser ? '/space-selection/' : '/'}
         secondaryLabel="Report a bug"
         secondaryPath="/report-a-bug"
         onNavigate={navigateTo}
@@ -981,7 +981,7 @@ function MediaTracker() {
     return <HomePage onNavigate={navigateTo} />;
   }
 
-  // Signed-in users on public landing routes are on their way to /shelf-selection/.
+  // Signed-in users on public landing routes are on their way to /space-selection/.
   if (appRoute.type === 'home' || appRoute.type === 'login') {
     return <LoadingScreen label="Loading..." />;
   }
@@ -992,9 +992,9 @@ function MediaTracker() {
       <FailureScreen
         eyebrow={accessIssue.type === 'forbidden' ? 'Access denied' : 'App error'}
         title={accessIssue.title || 'We could not open this shelf'}
-        message={accessIssue.message || 'Shared Shelf could not finish this request. Try again from a safe place.'}
+        message={accessIssue.message || 'Couple Planner could not finish this request. Try again from a safe place.'}
         primaryLabel="Go to shelves"
-        primaryPath="/shelf-selection/"
+        primaryPath="/space-selection/"
         secondaryLabel="Report a bug"
         secondaryPath="/report-a-bug"
         onNavigate={navigateTo}

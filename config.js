@@ -92,8 +92,8 @@ const API_REQUEST_CONFIG = { DEBOUNCE_DELAY: 300, TIMEOUT: 10000 };
 // AUTHENTICATION (CLIENT-SIDE)
 // ============================================================================
 
-const AUTH_TOKEN_KEY = 'shared-shelf-token';
-const REMEMBER_KEY = 'shared-shelf-remember';
+const AUTH_TOKEN_KEY = 'couple-planner-token';
+const REMEMBER_KEY = 'couple-planner-remember';
 
 const setAuthToken = (token, persist = false) => {
   if (persist) {

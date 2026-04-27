@@ -69,9 +69,9 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
       <div className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30" onClick={(event) => event.stopPropagation()}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-[#410001]">Share shelf</h2>
+            <h2 className="text-xl font-extrabold text-[#410001]">Share space</h2>
             <p className="mt-1 text-sm text-[#534340]">
-              Share this shelf ID and one-time code so someone else can join.
+              Share this space ID and one-time code so someone else can join.
             </p>
           </div>
           <button
@@ -84,7 +84,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
         </div>
 
         <div className="mb-4 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space</p>
           <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={shelf.name}>{shelf.name}</p>
         </div>
 
@@ -93,14 +93,14 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
         ) : (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shelf ID</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space ID</p>
               <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.shelfId || shelf.id}</code>
+                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.spaceId || shelf.id}</code>
                 <button
-                  onClick={() => copyValue('shelfId', shareInfo?.shelfId || shelf.id)}
+                  onClick={() => copyValue('spaceId', shareInfo?.spaceId || shelf.id)}
                   className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                 >
-                  {copiedField === 'shelfId' ? 'Copied' : 'Copy'}
+                  {copiedField === 'spaceId' ? 'Copied' : 'Copy'}
                 </button>
               </div>
             </div>

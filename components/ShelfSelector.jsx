@@ -20,7 +20,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   const API_BASE = window.API_BASE_URL ?? '';
 
   useEffect(() => {
-    document.title = 'Shared Shelf - Your shelves';
+    document.title = 'Couple Planner - Your spaces';
   }, []);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
     setPendingShelfRemoval(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/shelf/${shelf.id}/membership`, {
+      const res = await fetch(`${API_BASE}/api/space/${shelf.id}/membership`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -80,7 +80,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
         setShelves(prev => prev.filter(item => item.id !== shelf.id));
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Failed to remove shelf');
+        setError(data.error || 'Failed to remove space');
       }
     } catch {
       setError('Connection error');
@@ -194,7 +194,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   );
 
   if (loading) {
-    return <LoadingScreen label="Loading your shelves..." />;
+    return <LoadingScreen label="Loading your spaces..." />;
   }
 
   const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
@@ -209,7 +209,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               <Tv size={18} />
             </span>
             <div className="leading-tight">
-              <p className="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">Shared Shelf</p>
+              <p className="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">Couple Planner</p>
               <p className="text-xs font-medium text-[#534340]">Your collaborative spaces</p>
             </div>
           </div>
@@ -315,10 +315,10 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         {/* Hero */}
         <section className="mb-8 sm:mb-10">
-          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Your shelves</p>
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Your spaces</p>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl lg:text-5xl">Join your shared space</h1>
           <p className="mt-3 max-w-2xl text-base font-medium text-[#534340]">
-            Open an existing shelf to keep planning, or create a new one for your family, roommates, or friends.
+            Open an existing space to keep planning, or create a new one together.
           </p>
         </section>
 
@@ -349,11 +349,11 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                     : 'border-[#E1D8D4] bg-white text-[#410001] hover:bg-[#FFF8F5]'
                 }`}
               >
-                {manageMode ? 'Done managing' : 'Manage shelves'}
+                {manageMode ? 'Done managing' : 'Manage spaces'}
               </button>
             )}
           </div>
-          <span className="text-sm font-medium text-[#534340]">{shelves.length} {shelves.length === 1 ? 'shelf' : 'shelves'}</span>
+          <span className="text-sm font-medium text-[#534340]">{shelves.length} {shelves.length === 1 ? 'space' : 'spaces'}</span>
         </div>
 
         {shelves.length === 0 ? (
@@ -361,9 +361,9 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E]">
               <Plus size={28} />
             </div>
-            <h2 className="text-xl font-bold text-[#410001]">No shelves yet</h2>
+            <h2 className="text-xl font-bold text-[#410001]">No spaces yet</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-[#534340]">
-              Create a shelf for shared plans, or join one with a shelf ID and code.
+              Create a shared space, or join one with a space ID and code.
             </p>
             <button
               type="button"
@@ -371,7 +371,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
             >
               <Plus size={16} />
-              Create your first shelf
+              Create your first space
             </button>
           </div>
         ) : (
@@ -424,12 +424,12 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               type="button"
               onClick={() => { setError(''); setJoinOpen(true); }}
               className="group flex min-h-[224px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#E63B2E]/60 bg-white text-[#E63B2E] transition hover:-translate-y-1 hover:border-[#E63B2E] hover:bg-[#FFF8F5] hover:shadow-lg hover:shadow-[#410001]/10"
-              aria-label="Create or join a shelf"
+              aria-label="Create or join a space"
             >
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
                 <Plus size={26} />
               </span>
-              <span className="text-base font-extrabold text-[#410001]">Add or join a shelf</span>
+              <span className="text-base font-extrabold text-[#410001]">Add or join a space</span>
             </button>
           </div>
         )}
@@ -443,10 +443,10 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
       />
       <ConfirmationDialog
         isOpen={Boolean(pendingShelfRemoval)}
-        title="Remove shelf?"
-        message={`This removes "${pendingShelfRemoval?.name || 'this shelf'}" from your account. Other members can keep using it if they still have access.`}
-        confirmLabel={removingShelfId ? 'Removing...' : 'Remove shelf'}
-        cancelLabel="Keep shelf"
+        title="Remove space?"
+        message={`This removes "${pendingShelfRemoval?.name || 'this space'}" from your account. Other members can keep using it if they still have access.`}
+        confirmLabel={removingShelfId ? 'Removing...' : 'Remove space'}
+        cancelLabel="Keep space"
         onConfirm={() => pendingShelfRemoval && removeShelfMembership(pendingShelfRemoval)}
         onCancel={() => setPendingShelfRemoval(null)}
       />

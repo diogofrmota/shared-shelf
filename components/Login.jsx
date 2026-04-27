@@ -352,7 +352,7 @@ function LoginScreen({ onLogin, onNavigate }) {
           <a href="/" onClick={handleHomeNavigation} className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/30">
             <Tv size={26} />
           </a>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">Shared Shelf</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">Couple Planner</h1>
           <p className="mt-2 text-sm font-medium text-[#534340]">
             Organize your life, together.
           </p>
@@ -571,7 +571,7 @@ function LoginScreen({ onLogin, onNavigate }) {
             </form>
 
             <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
-              {mode === 'signin' ? 'New to Shared Shelf?' : 'Already have an account?'}
+              {mode === 'signin' ? 'New to Couple Planner?' : 'Already have an account?'}
               <button
                 type="button"
                 onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}

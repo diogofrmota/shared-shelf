@@ -15,7 +15,7 @@ const RELEASE_NOTES = [
     date: 'April 2026',
     title: 'Public homepage and bug reports',
     items: [
-      'New public homepage that explains Shared Shelf before you sign in.',
+      'New public homepage that explains Couple Planner before you sign in.',
       'Authentication moved to a dedicated /login page.',
       'Privacy Policy and Terms of Service pages.',
       'Simple bug report form at /report-a-bug.',
@@ -52,10 +52,10 @@ const RELEASE_NOTES = [
   {
     version: 'v1.0',
     date: 'July 2025',
-    title: 'Shared Shelf launch',
+    title: 'Couple Planner launch',
     items: [
       'Private shelves with calendar, tasks, locations, trips, recipes, and watchlist.',
-      'Invite shelf members with a one-time, seven-day join code.'
+      'Invite space members with a one-time, seven-day join code.'
     ]
   }
 ];
@@ -64,7 +64,7 @@ const FEATURES = [
   {
     icon: CalendarIcon,
     title: 'Shared calendar',
-    description: 'Plan dates, anniversaries, and recurring routines on one calendar that everyone in the shelf sees.'
+    description: 'Plan dates, anniversaries, and recurring routines on one calendar that everyone in the space sees.'
   },
   {
     icon: CheckSquare,
@@ -134,7 +134,7 @@ function HomePage({ onNavigate }) {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/30">
               <Tv size={18} />
             </span>
-            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Shared Shelf</span>
+            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Couple Planner</span>
           </a>
           <nav className="flex items-center gap-2 sm:gap-3">
             <a
@@ -164,7 +164,7 @@ function HomePage({ onNavigate }) {
                 Organize your life,<br />together.
               </h1>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                Shared Shelf is a private shared space for the people you plan with. Calendar, tasks, places, trips,
+                Couple Planner is a private shared space for the people you plan with. Calendar, tasks, places, trips,
                 recipes, and watchlists for couples, families, roommates, and friend groups.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -229,9 +229,9 @@ function HomePage({ onNavigate }) {
               A small shared space, just for the people who share your plans.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
-              Shared Shelf gathers the things couples, families, roommates, and friends try to coordinate over chats and
-              screenshots — calendars, tasks, places, trips, recipes, and watchlists — into one private shared shelf.
-              Everyone in the shelf reads and writes the same content, so nothing gets lost between apps.
+              Couple Planner gathers everything couples try to coordinate over chats and
+              screenshots — calendars, tasks, places, trips, recipes, and watchlists — into one private shared space.
+              Everyone in the space reads and writes the same content, so nothing gets lost between apps.
             </p>
           </div>
         </section>
@@ -260,16 +260,16 @@ function HomePage({ onNavigate }) {
             <div className="mb-10 text-center sm:mb-12">
               <span className="ss-tag mb-4">Private shelves</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Your shelf, your people, your data.
+                Your space, your people, your data.
               </h2>
             </div>
             <ol className="space-y-5">
               <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Create or join a shelf</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Create or join a space</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Each shelf has a unique shelf ID and a one-time join code that expires after seven days. Share both
+                    Each space has a unique space ID and a one-time join code that expires after seven days. Share both
                     with the people you want to invite. Owners can regenerate the code at any time.
                   </p>
                 </div>
@@ -277,19 +277,19 @@ function HomePage({ onNavigate }) {
               <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what the shelf includes</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what the space includes</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Turn on calendar, tasks, locations, trips, recipes, and watchlist per shelf. Disabled sections stay
-                    out of the way so each shelf stays focused on what its members actually use.
+                    Turn on calendar, tasks, locations, trips, recipes, and watchlist per space. Disabled sections stay
+                    out of the way so each space stays focused on what its members actually use.
                   </p>
                 </div>
               </li>
               <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Members read and write the same shelf</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Members read and write the same space</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Only invited members can see a shelf's content. Everyone in a shelf works against the same shared
+                    Only invited members can see a space's content. Everyone in a space works against the same shared
                     document, with offline cache so the app stays useful when the connection drops.
                   </p>
                 </div>
@@ -303,7 +303,7 @@ function HomePage({ onNavigate }) {
             <div className="mb-10 text-center sm:mb-12">
               <span className="ss-tag mb-4">Features</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Everything a shared shelf can hold.
+                Everything a shared space can hold.
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
@@ -344,10 +344,10 @@ function HomePage({ onNavigate }) {
         <section className="bg-[#FFF8F5] py-16 sm:py-20">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
             <h2 className="text-2xl font-extrabold tracking-tight text-[#410001] sm:text-3xl">
-              Ready to start a shelf?
+              Ready to start your space?
             </h2>
             <p className="mt-3 text-base text-[#534340]">
-              Sign in if you already have an account, or create one to start your first shelf in a couple of minutes.
+              Sign in if you already have an account, or create one to start your first space in minutes.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
@@ -373,7 +373,7 @@ function HomePage({ onNavigate }) {
             <div className="mb-10 text-center sm:mb-12">
               <span className="ss-tag mb-4">Release notes</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                What is new on Shared Shelf.
+                What is new on Couple Planner.
               </h2>
               <p className="mt-3 text-base text-[#534340]">
                 A short log of recent changes, in order from newest to oldest.

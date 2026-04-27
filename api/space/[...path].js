@@ -9,7 +9,7 @@ import {
   rateLimitResponse,
   sql
 } from '../../lib/auth-shared.js';
-import { DEFAULT_SHELF_DATA, initializeDatabase, normalizeShelfData, normalizeShelfSections } from '../../lib/db.js';
+import { DEFAULT_SPACE_DATA, initializeDatabase, normalizeShelfData, normalizeShelfSections } from '../../lib/db.js';
 
 const JOIN_CODE_RATE_LIMIT = { limit: 10, windowSeconds: 15 * 60 };
 const JOIN_CODE_IP_RATE_LIMIT = { limit: 60, windowSeconds: 15 * 60 };
@@ -28,18 +28,18 @@ function getPathSegments(req) {
     .filter((value) => value && value !== '__root__');
 }
 
-async function requireShelfMember(shelfId, userId) {
+async function requireSpaceMember(spaceId, userId) {
   const result = await sql`
     SELECT role
-    FROM shelf_members
-    WHERE shelf_id = ${shelfId} AND user_id = ${userId}
+    FROM space_members
+    WHERE shelf_id = ${spaceId} AND user_id = ${userId}
     LIMIT 1
   `;
 
   return result.rows[0] || null;
 }
 
-async function getShelfSummary(shelfId) {
+async function getSpaceSummary(spaceId) {
   const result = await sql`
     SELECT
       s.id,
@@ -62,15 +62,15 @@ async function getShelfSummary(shelfId) {
           )
           FROM (
             SELECT u.id, u.display_name AS name, u.username, sm.role, sm.joined_at
-            FROM shelf_members sm
+            FROM space_members sm
             JOIN users u ON u.id = sm.user_id
             WHERE sm.shelf_id = s.id
           ) member_rows
         ),
         '[]'::json
       ) AS members
-    FROM shelf_id s
-    WHERE s.id = ${shelfId}
+    FROM spaces s
+    WHERE s.id = ${spaceId}
     LIMIT 1
   `;
 
@@ -93,27 +93,27 @@ function sanitizeHttpUrl(value) {
   }
 }
 
-function normalizeShelfName(value) {
+function normalizeSpaceName(value) {
   const name = typeof value === 'string' ? value.trim() : '';
   return name.slice(0, 80);
 }
 
-async function createJoinCode(shelfId) {
+async function createJoinCode(spaceId) {
   const code = generateJoinCode();
 
   await sql`
-    INSERT INTO shelf_join_codes (shelf_id, code, is_used, expires_at)
-    VALUES (${shelfId}, ${code}, false, NOW() + INTERVAL '7 days')
+    INSERT INTO space_join_codes (shelf_id, code, is_used, expires_at)
+    VALUES (${spaceId}, ${code}, false, NOW() + INTERVAL '7 days')
   `;
 
   return code;
 }
 
-async function getLatestActiveJoinCode(shelfId) {
+async function getLatestActiveJoinCode(spaceId) {
   const result = await sql`
     SELECT id, code, expires_at, created_at
-    FROM shelf_join_codes
-    WHERE shelf_id = ${shelfId}
+    FROM space_join_codes
+    WHERE shelf_id = ${spaceId}
       AND is_used = false
       AND expires_at > NOW()
     ORDER BY created_at DESC
@@ -137,7 +137,7 @@ export default async function handler(req, res) {
 
     if (segments.length === 0) {
       if (req.method === 'GET') {
-        const shelves = await sql`
+        const result = await sql`
           SELECT
             s.id,
             s.name,
@@ -160,69 +160,69 @@ export default async function handler(req, res) {
                 )
                 FROM (
                   SELECT u.id, u.display_name AS name, u.username, member_sm.role, member_sm.joined_at
-                  FROM shelf_members member_sm
+                  FROM space_members member_sm
                   JOIN users u ON u.id = member_sm.user_id
                   WHERE member_sm.shelf_id = s.id
                 ) member_rows
               ),
               '[]'::json
             ) AS members
-          FROM shelf_id s
-          JOIN shelf_members sm ON s.id = sm.shelf_id
+          FROM spaces s
+          JOIN space_members sm ON s.id = sm.shelf_id
           WHERE sm.user_id = ${userId}
           ORDER BY s.updated_at DESC NULLS LAST, s.created_at DESC
         `;
 
-        return res.json({ shelves: shelves.rows });
+        return res.json({ spaces: result.rows });
       }
 
       if (req.method === 'POST') {
-        const name = normalizeShelfName(req.body?.name);
+        const name = normalizeSpaceName(req.body?.name);
         if (!name) return res.status(400).json({ error: 'Name required' });
-        const shelfId = randomUUID();
+        const spaceId = randomUUID();
         const enabledSections = normalizeShelfSections(req.body?.enabledSections);
 
         const created = await sql`
-          INSERT INTO shelf_id (id, name, created_by, enabled_sections, updated_at)
-          VALUES (${shelfId}, ${name}, ${userId}, ${JSON.stringify(enabledSections)}::jsonb, NOW())
+          INSERT INTO spaces (id, name, created_by, enabled_sections, updated_at)
+          VALUES (${spaceId}, ${name}, ${userId}, ${JSON.stringify(enabledSections)}::jsonb, NOW())
           RETURNING id, name, created_by, logo_url AS logo, enabled_sections AS "enabledSections", created_at, updated_at
         `;
-        const shelf = created.rows[0];
+        const space = created.rows[0];
 
         await sql`
-          INSERT INTO shelf_members (shelf_id, user_id, role)
-          VALUES (${shelf.id}, ${userId}, 'owner')
+          INSERT INTO space_members (shelf_id, user_id, role)
+          VALUES (${space.id}, ${userId}, 'owner')
           ON CONFLICT (shelf_id, user_id) DO NOTHING
         `;
 
         await sql`
-          INSERT INTO shelf_data (shelf_id, data)
-          VALUES (${shelf.id}, ${JSON.stringify(DEFAULT_SHELF_DATA)}::jsonb)
+          INSERT INTO space_data (shelf_id, data)
+          VALUES (${space.id}, ${JSON.stringify(DEFAULT_SPACE_DATA)}::jsonb)
           ON CONFLICT (shelf_id) DO NOTHING
         `;
 
-        const joinCode = await createJoinCode(shelf.id);
+        const joinCode = await createJoinCode(space.id);
 
-        return res.status(201).json({ shelf: await getShelfSummary(shelf.id), joinCode });
+        return res.status(201).json({ shelf: await getSpaceSummary(space.id), joinCode });
       }
     }
 
     if (segments.length === 1 && segments[0] === 'join' && req.method === 'POST') {
-      const shelfId = req.body?.shelfId?.trim();
+      const spaceId = (req.body?.spaceId || req.body?.shelfId)?.trim();
       const joinCode = req.body?.joinCode?.trim().toUpperCase();
-      if (!shelfId || !joinCode) {
-        return res.status(400).json({ error: 'Shelf ID and join code are required' });
+      if (!spaceId || !joinCode) {
+        return res.status(400).json({ error: 'Space ID and join code are required' });
       }
 
       const ip = getClientIp(req);
       const [joinLimit, ipLimit] = await Promise.all([
         consumeRateLimit({
-          scope: 'shelf-join-code',
-          key: `${userId}:${normalizeRateLimitKey(shelfId)}:${ip}`,
+          scope: 'space-join-code',
+          key: `${userId}:${normalizeRateLimitKey(spaceId)}:${ip}`,
           ...JOIN_CODE_RATE_LIMIT
         }),
         consumeRateLimit({
-          scope: 'shelf-join-code-ip',
+          scope: 'space-join-code-ip',
           key: ip,
           ...JOIN_CODE_IP_RATE_LIMIT
         })
@@ -236,15 +236,15 @@ export default async function handler(req, res) {
         );
       }
 
-      const existingMember = await requireShelfMember(shelfId, userId);
+      const existingMember = await requireSpaceMember(spaceId, userId);
       if (existingMember) {
-        return res.status(409).json({ error: 'You are already a member of this shelf' });
+        return res.status(409).json({ error: 'You are already a member of this space' });
       }
 
       const codeMatch = await sql`
         SELECT id
-        FROM shelf_join_codes
-        WHERE shelf_id = ${shelfId}
+        FROM space_join_codes
+        WHERE shelf_id = ${spaceId}
           AND code = ${joinCode}
           AND is_used = false
           AND expires_at > NOW()
@@ -256,49 +256,49 @@ export default async function handler(req, res) {
       }
 
       await sql`
-        INSERT INTO shelf_members (shelf_id, user_id, role)
-        VALUES (${shelfId}, ${userId}, 'member')
+        INSERT INTO space_members (shelf_id, user_id, role)
+        VALUES (${spaceId}, ${userId}, 'member')
       `;
 
       await sql`
-        UPDATE shelf_join_codes
+        UPDATE space_join_codes
         SET is_used = true
         WHERE id = ${codeMatch.rows[0].id}
       `;
 
-      const shelf = await getShelfSummary(shelfId);
+      const space = await getSpaceSummary(spaceId);
 
-      return res.json({ success: true, shelf });
+      return res.json({ success: true, shelf: space });
     }
 
     if (segments.length === 1 && req.method === 'PATCH') {
-      const shelfId = segments[0];
-      const membership = await requireShelfMember(shelfId, userId);
-      if (!membership) return res.status(403).json({ error: 'Not a member of this shelf' });
+      const spaceId = segments[0];
+      const membership = await requireSpaceMember(spaceId, userId);
+      if (!membership) return res.status(403).json({ error: 'Not a member of this space' });
       if (membership.role !== 'owner') {
-        return res.status(403).json({ error: 'Only the shelf owner can update shelf settings' });
+        return res.status(403).json({ error: 'Only the space owner can update space settings' });
       }
 
-      const nextName = normalizeShelfName(req.body?.name);
+      const nextName = normalizeSpaceName(req.body?.name);
       const nextLogo = typeof req.body?.logo === 'string' ? sanitizeHttpUrl(req.body.logo) : undefined;
       const hasEnabledSections = Array.isArray(req.body?.enabledSections);
       const nextEnabledSections = hasEnabledSections ? normalizeShelfSections(req.body.enabledSections) : undefined;
 
       if (!nextName && nextLogo === undefined && !hasEnabledSections) {
-        return res.status(400).json({ error: 'At least one shelf setting is required' });
+        return res.status(400).json({ error: 'At least one space setting is required' });
       }
 
-      const existingShelf = await getShelfSummary(shelfId);
-      if (!existingShelf) return res.status(404).json({ error: 'Shelf not found' });
+      const existingSpace = await getSpaceSummary(spaceId);
+      if (!existingSpace) return res.status(404).json({ error: 'Space not found' });
 
       const updated = await sql`
-        UPDATE shelf_id
+        UPDATE spaces
         SET
-          name = ${nextName || existingShelf.name},
-          logo_url = ${nextLogo === undefined ? existingShelf.logo : nextLogo || null},
-          enabled_sections = ${JSON.stringify(nextEnabledSections || existingShelf.enabledSections || normalizeShelfSections())}::jsonb,
+          name = ${nextName || existingSpace.name},
+          logo_url = ${nextLogo === undefined ? existingSpace.logo : nextLogo || null},
+          enabled_sections = ${JSON.stringify(nextEnabledSections || existingSpace.enabledSections || normalizeShelfSections())}::jsonb,
           updated_at = NOW()
-        WHERE id = ${shelfId}
+        WHERE id = ${spaceId}
         RETURNING id, name, created_by, logo_url AS logo, enabled_sections AS "enabledSections", created_at, updated_at
       `;
 
@@ -306,57 +306,57 @@ export default async function handler(req, res) {
     }
 
     if (segments.length === 2 && segments[1] === 'share' && ['GET', 'POST'].includes(req.method)) {
-      const shelfId = segments[0];
-      const membership = await requireShelfMember(shelfId, userId);
-      if (!membership) return res.status(403).json({ error: 'Not a member of this shelf' });
+      const spaceId = segments[0];
+      const membership = await requireSpaceMember(spaceId, userId);
+      if (!membership) return res.status(403).json({ error: 'Not a member of this space' });
 
-      const shelf = await getShelfSummary(shelfId);
-      if (!shelf) return res.status(404).json({ error: 'Shelf not found' });
+      const space = await getSpaceSummary(spaceId);
+      if (!space) return res.status(404).json({ error: 'Space not found' });
 
-      let activeCode = await getLatestActiveJoinCode(shelfId);
+      let activeCode = await getLatestActiveJoinCode(spaceId);
 
       if (req.method === 'POST') {
         if (membership.role !== 'owner') {
-          return res.status(403).json({ error: 'Only the shelf owner can generate a new join code' });
+          return res.status(403).json({ error: 'Only the space owner can generate a new join code' });
         }
 
         await sql`
-          UPDATE shelf_join_codes
+          UPDATE space_join_codes
           SET is_used = true
-          WHERE shelf_id = ${shelfId}
+          WHERE shelf_id = ${spaceId}
             AND is_used = false
             AND expires_at > NOW()
         `;
 
-        await createJoinCode(shelfId);
-        activeCode = await getLatestActiveJoinCode(shelfId);
+        await createJoinCode(spaceId);
+        activeCode = await getLatestActiveJoinCode(spaceId);
       } else if (!activeCode) {
-        await createJoinCode(shelfId);
-        activeCode = await getLatestActiveJoinCode(shelfId);
+        await createJoinCode(spaceId);
+        activeCode = await getLatestActiveJoinCode(spaceId);
       }
 
       return res.json({
-        shelfId: shelf.id,
-        shelfName: shelf.name,
+        spaceId: space.id,
+        spaceName: space.name,
         joinCode: activeCode?.code || null,
         expiresAt: activeCode?.expires_at || null
       });
     }
 
     if (segments.length === 2 && segments[1] === 'data' && ['GET', 'POST'].includes(req.method)) {
-      const shelfId = segments[0];
-      const membership = await requireShelfMember(shelfId, userId);
-      if (!membership) return res.status(403).json({ error: 'Not a member of this shelf' });
+      const spaceId = segments[0];
+      const membership = await requireSpaceMember(spaceId, userId);
+      if (!membership) return res.status(403).json({ error: 'Not a member of this space' });
 
       if (req.method === 'GET') {
         const result = await sql`
           SELECT data
-          FROM shelf_data
-          WHERE shelf_id = ${shelfId}
+          FROM space_data
+          WHERE shelf_id = ${spaceId}
           LIMIT 1
         `;
 
-        return res.json(normalizeShelfData(result.rows[0]?.data || DEFAULT_SHELF_DATA));
+        return res.json(normalizeShelfData(result.rows[0]?.data || DEFAULT_SPACE_DATA));
       }
 
       const payload = req.body?.data;
@@ -366,51 +366,51 @@ export default async function handler(req, res) {
       const normalizedPayload = normalizeShelfData(payload);
 
       await sql`
-        INSERT INTO shelf_data (shelf_id, data, updated_at)
-        VALUES (${shelfId}, ${JSON.stringify(normalizedPayload)}::jsonb, NOW())
+        INSERT INTO space_data (shelf_id, data, updated_at)
+        VALUES (${spaceId}, ${JSON.stringify(normalizedPayload)}::jsonb, NOW())
         ON CONFLICT (shelf_id)
         DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
       `;
 
       await sql`
-        UPDATE shelf_id
+        UPDATE spaces
         SET updated_at = NOW()
-        WHERE id = ${shelfId}
+        WHERE id = ${spaceId}
       `;
 
       return res.json({ success: true });
     }
 
     if (segments.length === 2 && segments[1] === 'membership' && req.method === 'DELETE') {
-      const shelfId = segments[0];
-      const membership = await requireShelfMember(shelfId, userId);
-      if (!membership) return res.status(404).json({ error: 'Shelf not found' });
+      const spaceId = segments[0];
+      const membership = await requireSpaceMember(spaceId, userId);
+      if (!membership) return res.status(404).json({ error: 'Space not found' });
 
       await sql`
-        DELETE FROM shelf_members
-        WHERE shelf_id = ${shelfId} AND user_id = ${userId}
+        DELETE FROM space_members
+        WHERE shelf_id = ${spaceId} AND user_id = ${userId}
       `;
 
       const remainingMembers = await sql`
         SELECT COUNT(*)::int AS count
-        FROM shelf_members
-        WHERE shelf_id = ${shelfId}
+        FROM space_members
+        WHERE shelf_id = ${spaceId}
       `;
 
       if ((remainingMembers.rows[0]?.count || 0) === 0) {
         await sql`
-          DELETE FROM shelf_id
-          WHERE id = ${shelfId}
+          DELETE FROM spaces
+          WHERE id = ${spaceId}
         `;
       } else if (membership.role === 'owner') {
         await sql`
-          UPDATE shelf_members
+          UPDATE space_members
           SET role = 'owner'
-          WHERE shelf_id = ${shelfId}
+          WHERE shelf_id = ${spaceId}
             AND user_id = (
               SELECT user_id
-              FROM shelf_members
-              WHERE shelf_id = ${shelfId}
+              FROM space_members
+              WHERE shelf_id = ${spaceId}
               ORDER BY joined_at ASC
               LIMIT 1
             )

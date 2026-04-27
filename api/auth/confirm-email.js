@@ -75,7 +75,7 @@ export default async function handler(req, res) {
       return linkError(
         res,
         400,
-        'This confirmation link is not valid. Please use the latest email from Shared Shelf or start again.',
+        'This confirmation link is not valid. Please use the latest email from Couple Planner or start again.',
         { status: 'invalid', label: 'Return to sign in', target: 'signin' }
       );
     }
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       return linkError(
         res,
         400,
-        'This confirmation link is not valid. Please use the latest email from Shared Shelf or start again.',
+        'This confirmation link is not valid. Please use the latest email from Couple Planner or start again.',
         { status: 'invalid', label: 'Return to sign in', target: 'signin' }
       );
     }
@@ -134,7 +134,7 @@ export default async function handler(req, res) {
       return linkError(
         res,
         400,
-        'This confirmation link is not valid. Please use the latest email from Shared Shelf or start again.',
+        'This confirmation link is not valid. Please use the latest email from Couple Planner or start again.',
         { status: 'invalid', label: 'Return to sign in', target: 'signin' }
       );
     }

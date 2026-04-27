@@ -97,7 +97,7 @@ const LoadingScreen = ({ label = 'Loading...' }) => (
 
 const FailureScreen = ({
   eyebrow = 'Something went wrong',
-  title = 'Shared Shelf needs a moment',
+  title = 'Couple Planner needs a moment',
   message = 'We could not finish loading this part of the app. Try again, or head back to a safe place.',
   primaryLabel = 'Go home',
   primaryPath = '/',
@@ -161,7 +161,7 @@ class AppErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error) {
-    console.error('Shared Shelf render failure:', error);
+    console.error('Couple Planner render failure:', error);
   }
 
   render() {
@@ -170,7 +170,7 @@ class AppErrorBoundary extends React.Component {
         <FailureScreen
           eyebrow="App error"
           title="We hit a snag"
-          message="Shared Shelf could not finish rendering this screen. Your saved shelf data is not shown here, but you can go back to a safe place and try again."
+          message="Couple Planner could not finish rendering this screen. Your saved data is not shown here, but you can go back to a safe place and try again."
           primaryLabel="Go home"
           primaryPath="/"
           secondaryLabel="Report a bug"

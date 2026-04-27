@@ -162,7 +162,7 @@ const transformBookData = (doc) => ({
 // ============================================================================
 
 const getAuthToken = () => {
-  return localStorage.getItem('shared-shelf-auth-token') || sessionStorage.getItem('shared-shelf-auth-token');
+  return localStorage.getItem('couple-planner-auth-token') || sessionStorage.getItem('couple-planner-auth-token');
 };
 
 const getAuthorizedHeaders = (includeJson = false) => {
@@ -181,16 +181,16 @@ const getAuthorizedHeaders = (includeJson = false) => {
 };
 
 const clearAuthToken = () => {
-  localStorage.removeItem('shared-shelf-auth-token');
-  localStorage.removeItem('shared-shelf-user');
-  sessionStorage.removeItem('shared-shelf-auth-token');
+  localStorage.removeItem('couple-planner-auth-token');
+  localStorage.removeItem('couple-planner-user');
+  sessionStorage.removeItem('couple-planner-auth-token');
 };
 
 const setAuthToken = (token, persist = true) => {
   if (persist) {
-    localStorage.setItem('shared-shelf-auth-token', token);
+    localStorage.setItem('couple-planner-auth-token', token);
   } else {
-    sessionStorage.setItem('shared-shelf-auth-token', token);
+    sessionStorage.setItem('couple-planner-auth-token', token);
   }
 };
 
@@ -226,7 +226,7 @@ const loginUser = async (email, password, rememberMe) => {
     const data = await res.json();
     if (data.token && data.user) {
       setAuthToken(data.token, !!rememberMe);
-      localStorage.setItem('shared-shelf-user', JSON.stringify(data.user));
+      localStorage.setItem('couple-planner-user', JSON.stringify(data.user));
       return data.user;
     }
     return null;
@@ -342,7 +342,7 @@ const forgotPassword = async (email) => {
 
 const getCachedShelfData = (shelfId) => {
   try {
-    const cached = localStorage.getItem(`shelf-data-${shelfId}`);
+    const cached = localStorage.getItem(`space-data-${shelfId}`);
     return cached ? JSON.parse(cached) : null;
   } catch (error) {
     console.error('Error reading cached shelf data:', error);
@@ -352,7 +352,7 @@ const getCachedShelfData = (shelfId) => {
 
 const cacheShelfData = (shelfId, data) => {
   try {
-    localStorage.setItem(`shelf-data-${shelfId}`, JSON.stringify(data));
+    localStorage.setItem(`space-data-${shelfId}`, JSON.stringify(data));
   } catch (error) {
     console.error('Error caching shelf data locally:', error);
   }
@@ -360,10 +360,10 @@ const cacheShelfData = (shelfId, data) => {
 
 const getShelfData = async (shelfId) => {
   try {
-    const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
+    const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
     if (!token) return getCachedShelfData(shelfId);
 
-    const res = await fetch(`${API_BASE}/api/shelf/${shelfId}/data`, {
+    const res = await fetch(`${API_BASE}/api/space/${shelfId}/data`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -377,10 +377,10 @@ const getShelfData = async (shelfId) => {
 
 const persistShelfData = async (shelfId, data) => {
   try {
-    const token = getAuthToken() || sessionStorage.getItem('shared-shelf-auth-token');
+    const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
     if (!token) return false;
 
-    const res = await fetch(`${API_BASE}/api/shelf/${shelfId}/data`, {
+    const res = await fetch(`${API_BASE}/api/space/${shelfId}/data`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -432,7 +432,7 @@ const updateAccount = async ({ name, username }) => {
   }
 
   if (payload.user) {
-    localStorage.setItem('shared-shelf-user', JSON.stringify(payload.user));
+    localStorage.setItem('couple-planner-user', JSON.stringify(payload.user));
   }
 
   return payload.user;
@@ -440,13 +440,13 @@ const updateAccount = async ({ name, username }) => {
 
 const getUserShelves = async () => {
   try {
-    const res = await fetch(`${API_BASE}/api/shelf`, {
+    const res = await fetch(`${API_BASE}/api/space`, {
       headers: getAuthorizedHeaders()
     });
 
     if (!res.ok) return [];
     const payload = await res.json();
-    return payload.shelves || [];
+    return payload.spaces || [];
   } catch (error) {
     console.error('Error fetching shelves:', error);
     return [];
@@ -454,7 +454,7 @@ const getUserShelves = async () => {
 };
 
 const createShelf = async (name, enabledSections) => {
-  const res = await fetch(`${API_BASE}/api/shelf`, {
+  const res = await fetch(`${API_BASE}/api/space`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true),
     body: JSON.stringify({ name, enabledSections })
@@ -468,23 +468,23 @@ const createShelf = async (name, enabledSections) => {
   return payload;
 };
 
-const joinShelf = async (shelfId, joinCode) => {
-  const res = await fetch(`${API_BASE}/api/shelf/join`, {
+const joinShelf = async (spaceId, joinCode) => {
+  const res = await fetch(`${API_BASE}/api/space/join`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true),
-    body: JSON.stringify({ shelfId, joinCode })
+    body: JSON.stringify({ spaceId, joinCode })
   });
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to join shelf');
+    throw new Error(payload.error || 'Failed to join space');
   }
 
   return payload;
 };
 
 const updateShelf = async (shelfId, updates) => {
-  const res = await fetch(`${API_BASE}/api/shelf/${shelfId}`, {
+  const res = await fetch(`${API_BASE}/api/space/${shelfId}`, {
     method: 'PATCH',
     headers: getAuthorizedHeaders(true),
     body: JSON.stringify(updates)
@@ -498,21 +498,21 @@ const updateShelf = async (shelfId, updates) => {
   return payload.shelf || null;
 };
 
-const getShelfShareInfo = async (shelfId) => {
-  const res = await fetch(`${API_BASE}/api/shelf/${shelfId}/share`, {
+const getShelfShareInfo = async (spaceId) => {
+  const res = await fetch(`${API_BASE}/api/space/${spaceId}/share`, {
     headers: getAuthorizedHeaders()
   });
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to load shelf share details');
+    throw new Error(payload.error || 'Failed to load space share details');
   }
 
   return payload;
 };
 
-const regenerateShelfJoinCode = async (shelfId) => {
-  const res = await fetch(`${API_BASE}/api/shelf/${shelfId}/share`, {
+const regenerateShelfJoinCode = async (spaceId) => {
+  const res = await fetch(`${API_BASE}/api/space/${spaceId}/share`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true)
   });

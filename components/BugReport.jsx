@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useMemo } = React;
 const { Tv } = window;
 
-const SUPPORT_EMAIL = 'shared-shelf-support@proton.me';
+const SUPPORT_EMAIL = 'couple-planner-support@proton.me';
 
 function BugReportPage({ onNavigate, currentUser }) {
   const SiteFooter = window.SiteFooter;
@@ -47,7 +47,7 @@ function BugReportPage({ onNavigate, currentUser }) {
     event.preventDefault();
     if (!isSubmittable) return;
 
-    const subject = `Shared Shelf bug: ${title.trim()}`;
+    const subject = `Couple Planner bug: ${title.trim()}`;
     const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportBody)}`;
     setSubmitted(true);
     window.location.href = mailto;
@@ -82,7 +82,7 @@ function BugReportPage({ onNavigate, currentUser }) {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/30">
               <Tv size={18} />
             </span>
-            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Shared Shelf</span>
+            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Couple Planner</span>
           </a>
           <nav className="flex items-center gap-2 sm:gap-3">
             <a
@@ -93,11 +93,11 @@ function BugReportPage({ onNavigate, currentUser }) {
               Home
             </a>
             <a
-              href={currentUser ? '/shelf-selection/' : '/login'}
-              onClick={goTo(currentUser ? '/shelf-selection/' : '/login')}
+              href={currentUser ? '/space-selection/' : '/login'}
+              onClick={goTo(currentUser ? '/space-selection/' : '/login')}
               className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
             >
-              {currentUser ? 'Open Shared Shelf' : 'Sign in'}
+              {currentUser ? 'Open Couple Planner' : 'Sign in'}
             </a>
           </nav>
         </div>
