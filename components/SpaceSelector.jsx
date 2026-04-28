@@ -28,7 +28,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   const profileRef = useRef(null);
 
   useEffect(() => {
-    document.title = 'Couple Planner - Create or Join a Space';
+    document.title = 'Couple Planner - Select a Space';
   }, []);
 
   useEffect(() => {
