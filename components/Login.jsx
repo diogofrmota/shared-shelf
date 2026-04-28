@@ -388,7 +388,7 @@ function LoginScreen({ onLogin, onNavigate }) {
         <a
           href="/"
           onClick={handleHomeNavigation}
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:bg-white/25"
+          className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-white/90 transition hover:bg-white/25"
         >
           <span aria-hidden="true">&larr;</span>
           Back to homepage
@@ -677,7 +677,7 @@ function LoginScreen({ onLogin, onNavigate }) {
         )}
       </div>
 
-      <nav aria-label="Footer" className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold text-white/85">
+      <nav aria-label="Footer" className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-semibold text-white/85">
         <a href="/privacy-policy" onClick={(event) => { event.preventDefault(); if (typeof onNavigate === 'function') onNavigate('/privacy-policy'); else window.location.href = '/privacy-policy'; }} className="transition hover:text-white">
           Privacy Policy
         </a>
