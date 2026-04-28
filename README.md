@@ -22,7 +22,15 @@ All paths rewrite to `index.html`; routing is handled in `media-tracker.jsx`.
 | `/space-selection/` | Space list, create/join, profile, logout | Signed-in |
 | `/space/<space-id>/` | Main workspace with header, sections, settings, sharing | Signed-in |
 
-## Key API Routes (Vercel free plan ≤ 12 functions)
+## Key API Routes (Vercel Hobby plan: max 12 function files)
+
+Vercel Hobby deployments allow no more than 12 Serverless Function files. This repo intentionally keeps the API surface consolidated into 7 function files:
+
+- `api/auth/[...path].js` for all `/api/auth/*` routes.
+- `api/space/[...path].js` for all `/api/space/*` routes.
+- `api/search.js`, `api/tvdetails.js`, `api/nominatim.js`, `api/setup.js`, and `api/health.js`.
+
+When adding API behavior, route it through an existing catch-all unless a new function file is absolutely necessary.
 
 | Route | Purpose |
 | --- | --- |
@@ -33,6 +41,10 @@ All paths rewrite to `index.html`; routing is handled in `media-tracker.jsx`.
 | `PATCH /api/auth/me` | Update name/username |
 | `POST /api/auth/forgot-password` | Create reset token + email |
 | `POST /api/auth/reset-password` | Consume token, change password |
+| `POST /api/auth/change-password` | Signed-in password change |
+| `POST /api/auth/change-email` | Send new-email confirmation |
+| `POST /api/auth/confirm-email-change` | Confirm new account email |
+| `GET/POST /api/auth/email-preferences` | Unsubscribe from non-essential email |
 | `GET /api/space` | List user’s spaces |
 | `POST /api/space` | Create space + join code |
 | `POST /api/space/join` | Join space with ID + code |
@@ -48,11 +60,12 @@ All paths rewrite to `index.html`; routing is handled in `media-tracker.jsx`.
 | `GET/POST /api/setup` | DB schema init (requires `SETUP_TOKEN` in prod) |
 | `GET /api/health` | DB health check |
 
-Space routes are consolidated into `api/space/[...path].js` via `vercel.json` rewrites.
+Auth routes are dispatched by `api/auth/[...path].js`; individual auth handlers live in `lib/auth-routes/`. Space routes are consolidated into `api/space/[...path].js` via `vercel.json` rewrites.
 
 ## Data Model (tables created by `lib/db.js`)
 
-- `users`, `spaces`, `space_members`, `space_join_codes`, `space_data` (JSONB), `password_reset_tokens`, `email_verification_tokens`, `auth_rate_limits`
+- `users`, `spaces`, `space_members`, `space_join_codes`, `space_data` (JSONB), `password_reset_tokens`, `email_verification_tokens`, `email_change_tokens`, `auth_rate_limits`
+- `users.non_essential_email_opt_out` stores opt-out state for non-essential email. Required account/security email still sends.
 - A `shelves` view over `spaces` for compatibility; old `shelf_` tables are auto-migrated.
 
 Typical `space_data.data` JSONB shape:
@@ -86,6 +99,7 @@ Always add normalization/defaults so old saved data still renders.
 | `NOMINATIM_USER_AGENT` | Recommended | Required for Nominatim |
 | `RESEND_API_KEY` | Optional (email) | Confirm/reset emails |
 | `FROM_EMAIL` | Optional | Resend sender address (default: `noreply@coupleplanner.app`) |
+| `SUPPORT_EMAIL` | Optional | Support contact in transactional emails (default: `support@coupleplanner.app`) |
 | `APP_URL` | Yes (prod) | Base URL for auth/email links — set to `https://coupleplanner.app` |
 | `CORS_ORIGINS` | Optional | Extra allowed CORS origins (comma-separated, e.g. `https://www.coupleplanner.app`) |
 
@@ -111,10 +125,11 @@ curl -X POST https://coupleplanner.app/api/setup -H "X-Setup-Token: <token>"
 
 - All space APIs require Bearer JWT; membership enforced.
 - Login/reset responses are generic to avoid user enumeration.
+- Account confirmation, password reset, email-change, and welcome emails use Resend from server-only code. All links use `APP_URL`; welcome email includes non-essential unsubscribe/preferences handling.
 - TMDB & Nominatim proxies require JWT.
 - Space JSON normalizes missing fields; user text rendered through React text nodes, URLs restricted to `http`/`https`, images to `http`/`https`/`data:image`.
 - Tokens stored in `localStorage` (remembered) or `sessionStorage`; strictly avoid HTML rendering to prevent XSS.
-- Prefer updating `api/space/[...path].js` over adding new function files.
+- Prefer updating `api/auth/[...path].js`, `lib/auth-routes/`, or `api/space/[...path].js` over adding new function files.
 - Keep `space_` table references; the `shelves` view is only for legacy queries.
 - `lib/db.js` auto-migrates old tables; always create new tables with the `space_` prefix.
 - No bundler/TypeScript; plain JS/JSX in browser scripts.

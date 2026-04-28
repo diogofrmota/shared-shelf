@@ -1,5 +1,6 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
+const { BrandLogo } = window;
 
 const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon } = window;
 
@@ -61,17 +62,11 @@ const Header = ({
           className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:opacity-90 sm:max-w-xs"
           title="Back to your spaces"
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/25 sm:h-10 sm:w-10">
-            <Tv size={18} />
-          </span>
-          <span className="flex min-w-0 flex-col leading-tight">
-            <span className="truncate text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">
-              Couple Planner
-            </span>
-            <span className="truncate text-xs font-medium text-[#534340] sm:text-sm" title={shelfName || 'Your shelf'}>
-              {shelfName || 'Your shelf'}
-            </span>
-          </span>
+          <BrandLogo
+            subtitle={shelfName || 'Your shelf'}
+            markClassName="h-9 w-9 sm:h-10 sm:w-10"
+            textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
+          />
         </button>
 
         {/* Desktop nav */}

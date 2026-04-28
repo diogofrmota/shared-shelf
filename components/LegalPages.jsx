@@ -1,5 +1,5 @@
 const React = window.React;
-const { Tv } = window;
+const { BrandLogo } = window;
 
 function LegalPageShell({ title, lastUpdated, onNavigate, children }) {
   const SiteFooter = window.SiteFooter;
@@ -20,10 +20,7 @@ function LegalPageShell({ title, lastUpdated, onNavigate, children }) {
       <header className="sticky top-0 z-30 border-b border-[#E1D8D4]/70 bg-[#FFF8F5]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <a href="/" onClick={goTo('/')} className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/30">
-              <Tv size={18} />
-            </span>
-            <span className="text-lg font-extrabold tracking-tight text-[#410001]">Couple Planner</span>
+            <BrandLogo />
           </a>
           <nav className="flex items-center gap-2 sm:gap-3">
             <a

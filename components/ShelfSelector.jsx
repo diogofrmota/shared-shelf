@@ -1,5 +1,6 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
+const { BrandLogo } = window;
 
 function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, currentUser }) {
   const [shelves, setShelves] = useState([]);
@@ -205,13 +206,11 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
       <header className="border-b border-[#E1D8D4] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/25 sm:h-10 sm:w-10">
-              <Tv size={18} />
-            </span>
-            <div className="leading-tight">
-              <p className="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg">Couple Planner</p>
-              <p className="text-xs font-medium text-[#534340]">Your collaborative spaces</p>
-            </div>
+            <BrandLogo
+              subtitle="Your collaborative spaces"
+              markClassName="h-9 w-9 sm:h-10 sm:w-10"
+              textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
+            />
           </div>
 
           <div className="relative" ref={profileRef}>

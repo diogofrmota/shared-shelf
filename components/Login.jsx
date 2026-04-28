@@ -1,5 +1,6 @@
 const React = window.React;
 const { useState, useEffect } = React;
+const { BrandMark } = window;
 
 function LoginScreen({ onLogin, onNavigate }) {
   const initialMode = (() => {
@@ -395,8 +396,8 @@ function LoginScreen({ onLogin, onNavigate }) {
       </div>
       <div className="w-full max-w-md rounded-2xl border border-white/40 bg-[#FFF8F5] p-7 shadow-[0_24px_60px_rgba(65,0,1,0.32)] sm:p-9 animate-scale-in">
         <div className="mb-7 flex flex-col items-center text-center">
-          <a href="/" onClick={handleHomeNavigation} className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/30">
-            <Tv size={26} />
+          <a href="/" onClick={handleHomeNavigation} className="mb-4 inline-flex" aria-label="Couple Planner homepage">
+            <BrandMark className="h-14 w-14" rounded="rounded-2xl" />
           </a>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">Couple Planner</h1>
           <p className="mt-2 text-sm font-medium text-[#534340]">

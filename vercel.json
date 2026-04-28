@@ -7,6 +7,14 @@
   },
   "rewrites": [
     {
+      "source": "/api/auth",
+      "destination": "/api/auth/[...path]?path=__root__"
+    },
+    {
+      "source": "/api/auth/:path*",
+      "destination": "/api/auth/[...path]?path=:path*"
+    },
+    {
       "source": "/api/space",
       "destination": "/api/space/[...path]?path=__root__"
     },

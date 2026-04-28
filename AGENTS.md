@@ -8,13 +8,13 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 
 ## Critical Constraints
 
-- **Vercel free plan**: maximum 12 serverless function files. Consolidate space behaviour into `api/space/[...path].js`; do not add new function files unless absolutely necessary.
+- **Vercel free plan**: maximum 12 serverless function files. Current layout uses 7 files. Consolidate auth behaviour into `api/auth/[...path].js` + `lib/auth-routes/`, and space behaviour into `api/space/[...path].js`; do not add new function files unless absolutely necessary.
 - **No bundler or TypeScript**: plain `.js`/`.jsx` only; scripts loaded via `index.html` in a specific order.
 - **CDN-first**: React, Babel, Tailwind, Leaflet, Lucide come from CDNs. Don’t add new build steps or npm build scripts.
 - **localStorage caching**: preserve the existing cache/fallback when changing persistence; space data is cached locally.
 - **Data backward compatibility**: always add normalization/defaults when changing JSONB shape so old space data still renders.
 - **Secret keys**: never expose TMDB keys, JWT secrets, etc. in frontend files. Use proxy routes.
-- **`APP_URL`**: must be set to `https://coupleplanner.app` in Vercel production env vars. It is the source of truth for all auth/email links (account confirmation, password reset). The fallback in `lib/auth-shared.js` mirrors this value; always prefer the env var over the fallback in production.
+- **`APP_URL`**: must be set to `https://coupleplanner.app` in Vercel production env vars. It is the source of truth for all auth/email links (account confirmation, password reset, email preferences). The fallback in `lib/auth-shared.js` mirrors this value; always prefer the env var over the fallback in production.
 - **Space table naming**: use `spaces`, `space_members`, `space_join_codes`, `space_data` in new queries. The `shelves` view exists only for legacy code.
 - **Do not revert user changes** or unrelated work.
 
@@ -28,11 +28,12 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 
 ## Backend/API Guidance
 
-- Auth routes under `api/auth/`.
+- Auth routes are dispatched through `api/auth/[...path].js`; route handlers live in `lib/auth-routes/`. Keep public `/api/auth/*` URLs stable without adding per-route function files.
 - Space routes consolidated in `api/space/[...path].js`. The catch-all parses `req.query.path` (do not rename).
 - Always validate space membership before read/write (`getUserIdFromRequest`).
 - Owner-only actions (settings, share regeneration) check `space_members.role`.
 - Shared helpers in `lib/auth-shared.js` and `lib/db.js` — reuse them.
+- Email templates and Resend sending live in `lib/email-templates.js`. Required account/security email must send even if `users.non_essential_email_opt_out` is true; only non-essential email should honor that opt-out.
 - TMDB/Nominatim proxies require Bearer JWT; they are not public.
 - URL fields: normalize to `http`/`https`; image fields: `http`/`https`/`data:image`; escape text before inserting into Leaflet popups or similar non-React sinks.
 
