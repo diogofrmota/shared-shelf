@@ -299,8 +299,7 @@ function HomePage({ onNavigate }) {
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
-                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-                        style={{ color: audience.accent }}
+                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#410001]"
                       >
                         <Icon size={19} />
                       </span>
@@ -357,7 +356,7 @@ function HomePage({ onNavigate }) {
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Private by design</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Secure your data privately, only share with your partner.
+                Share your data privately with your partner.
               </h2>
             </div>
             <ol className="space-y-4">
