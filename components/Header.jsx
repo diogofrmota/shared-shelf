@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, PencilIcon } = window;
+const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, PencilIcon, Trash } = window;
 
 const Header = ({
   spaceName,
@@ -27,8 +27,9 @@ const Header = ({
   const [leavingSpace, setLeavingSpace] = useState(false);
   const [shareExpanded, setShareExpanded] = useState(false);
   const [shareInfo, setShareInfo] = useState(null);
-  const [shareLoading, setShareLoading] = useState(false);
   const [shareGenerating, setShareGenerating] = useState(false);
+  const [shareGeneratingType, setShareGeneratingType] = useState('');
+  const [shareGeneratedType, setShareGeneratedType] = useState('');
   const [shareError, setShareError] = useState('');
   const [copiedField, setCopiedField] = useState('');
   const [spaceSettingsExpanded, setSpaceSettingsExpanded] = useState(false);
@@ -74,6 +75,8 @@ const Header = ({
   useEffect(() => {
     setShareExpanded(false);
     setShareInfo(null);
+    setShareGeneratingType('');
+    setShareGeneratedType('');
     setShareError('');
     setCopiedField('');
     setSpaceSettingsExpanded(false);
@@ -204,26 +207,11 @@ const Header = ({
     }
   };
 
-  const loadShareInfo = async () => {
-    if (!space?.id) return;
-    setShareLoading(true);
-    setShareError('');
-    try {
-      const nextShareInfo = await getSpaceShareInfo(space.id);
-      setShareInfo(nextShareInfo);
-    } catch (err) {
-      setShareError(err?.message || 'Failed to load share details');
-    } finally {
-      setShareLoading(false);
-    }
-  };
-
   const toggleSharePanel = () => {
     setConfirmLeaveSpace(false);
     setSpaceSettingsExpanded(false);
-    const nextExpanded = !shareExpanded;
-    setShareExpanded(nextExpanded);
-    if (nextExpanded && !shareInfo && !shareLoading) loadShareInfo();
+    setShareError('');
+    setShareExpanded(prev => !prev);
   };
 
   const copyValue = async (label, value) => {
@@ -237,18 +225,20 @@ const Header = ({
     }
   };
 
-  const handleGenerateInviteLink = async () => {
+  const handleGenerateShare = async (type) => {
     if (!space?.id) return;
     setShareGenerating(true);
+    setShareGeneratingType(type);
     setShareError('');
     try {
       const nextShareInfo = await regenerateSpaceJoinCode(space.id);
       setShareInfo(nextShareInfo);
-      if (nextShareInfo?.inviteLink) copyValue('inviteLink', nextShareInfo.inviteLink);
+      setShareGeneratedType(type);
     } catch (err) {
-      setShareError(err?.message || 'Failed to generate invite link');
+      setShareError(err?.message || `Failed to generate ${type === 'code' ? 'join code' : 'invite link'}`);
     } finally {
       setShareGenerating(false);
+      setShareGeneratingType('');
     }
   };
 
@@ -332,8 +322,8 @@ const Header = ({
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     aria-expanded={spaceSettingsExpanded}
                   >
-                    <SettingsIcon size={18} />
-                    <span className="flex-1">Space settings</span>
+                    <PencilIcon size={18} />
+                    <span className="flex-1">Customize Space</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${spaceSettingsExpanded ? 'rotate-180' : ''}`}>
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
@@ -423,79 +413,76 @@ const Header = ({
                         aria-expanded={shareExpanded}
                       >
                         <ShareIcon size={18} />
-                        <span className="flex-1">Share space</span>
+                        <span className="flex-1">Share</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${shareExpanded ? 'rotate-180' : ''}`}>
                           <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
                       </button>
                       {shareExpanded && (
                         <div className="mx-1 mb-2 space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                          {shareLoading ? (
-                            <p className="py-4 text-center text-sm font-semibold text-[#534340]">Loading share details...</p>
-                          ) : (
-                            <>
-                              <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
-                                <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space ID</p>
-                                <div className="mt-2 flex items-center gap-2">
-                                  <code className="min-w-0 flex-1 break-all text-xs font-bold text-[#241A18]">{shareInfo?.spaceId || space?.id || 'Unavailable'}</code>
-                                  <button
-                                    type="button"
-                                    onClick={() => copyValue('spaceId', shareInfo?.spaceId || space?.id)}
-                                    className="min-h-[36px] rounded-lg border border-[#E1D8D4] bg-white px-2.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
-                                  >
-                                    {copiedField === 'spaceId' ? 'Copied' : 'Copy'}
-                                  </button>
-                                </div>
-                              </div>
+                          <div className="grid gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateShare('code')}
+                              disabled={shareGenerating || !canGenerateInvite}
+                              className="min-h-[40px] rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                            >
+                              {shareGenerating && shareGeneratingType === 'code' ? 'Generating...' : 'Generate code to join'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateShare('link')}
+                              disabled={shareGenerating || !canGenerateInvite}
+                              className="min-h-[40px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#E63B2E] transition hover:bg-white/80 disabled:opacity-60"
+                            >
+                              {shareGenerating && shareGeneratingType === 'link' ? 'Generating...' : 'Generate link to join'}
+                            </button>
+                          </div>
 
-                              <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div>
-                                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
-                                    <p className="mt-1 text-xs text-[#534340]">{formatExpiry(shareInfo?.expiresAt)}</p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => copyValue('joinCode', shareInfo?.joinCode)}
-                                    disabled={!shareInfo?.joinCode}
-                                    className="min-h-[36px] rounded-lg border border-[#E1D8D4] bg-white px-2.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
-                                  >
-                                    {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
-                                  </button>
-                                </div>
-                                <code className="mt-2 block break-all text-lg font-extrabold tracking-[0.2em] text-[#241A18]">{shareInfo?.joinCode || '--------'}</code>
-                              </div>
+                          {!canGenerateInvite && (
+                            <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#534340]">
+                              Only the space owner can generate join invites.
+                            </p>
+                          )}
 
-                              <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
-                                <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Invite link</p>
-                                <p className="mt-1 text-xs text-[#534340]">
-                                  {canGenerateInvite ? 'Generates a new one-use link valid for 7 days.' : 'Ask the space owner to generate a new invite link.'}
-                                </p>
-                                {shareInfo?.inviteLink && (
-                                  <code className="mt-2 block max-h-16 overflow-auto break-all rounded-lg bg-[#FFF8F5] p-2 text-xs font-semibold text-[#241A18]">
-                                    {shareInfo.inviteLink}
-                                  </code>
-                                )}
-                                <div className="mt-3 grid grid-cols-2 gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={handleGenerateInviteLink}
-                                    disabled={shareGenerating || !canGenerateInvite}
-                                    className="min-h-[40px] rounded-lg bg-[#E63B2E] px-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
-                                  >
-                                    {shareGenerating ? 'Generating...' : 'Generate invite link'}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => copyValue('inviteLink', shareInfo?.inviteLink)}
-                                    disabled={!shareInfo?.inviteLink}
-                                    className="min-h-[40px] rounded-lg border border-[#E1D8D4] bg-white px-2 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5] disabled:opacity-50"
-                                  >
-                                    {copiedField === 'inviteLink' ? 'Copied' : 'Copy link'}
-                                  </button>
+                          {shareGeneratedType === 'code' && shareInfo?.joinCode && (
+                            <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
+                                  <p className="mt-1 text-xs text-[#534340]">{formatExpiry(shareInfo?.expiresAt)}</p>
                                 </div>
+                                <button
+                                  type="button"
+                                  onClick={() => copyValue('joinCode', shareInfo.joinCode)}
+                                  className="min-h-[36px] rounded-lg border border-[#E1D8D4] bg-white px-2.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
+                                >
+                                  {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
+                                </button>
                               </div>
-                            </>
+                              <code className="mt-2 block break-all text-lg font-extrabold tracking-[0.2em] text-[#241A18]">{shareInfo.joinCode}</code>
+                            </div>
+                          )}
+
+                          {shareGeneratedType === 'link' && shareInfo?.inviteLink && (
+                            <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Invite link</p>
+                                  <p className="mt-1 text-xs text-[#534340]">{formatExpiry(shareInfo?.expiresAt)}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => copyValue('inviteLink', shareInfo.inviteLink)}
+                                  className="min-h-[36px] rounded-lg border border-[#E1D8D4] bg-white px-2.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
+                                >
+                                  {copiedField === 'inviteLink' ? 'Copied' : 'Copy'}
+                                </button>
+                              </div>
+                              <code className="mt-2 block max-h-20 overflow-auto break-all rounded-lg bg-[#FFF8F5] p-2 text-xs font-semibold text-[#241A18]">
+                                {shareInfo.inviteLink}
+                              </code>
+                            </div>
                           )}
                           {shareError && <p className="text-sm font-semibold text-[#C1121F]">{shareError}</p>}
                         </div>
@@ -505,7 +492,7 @@ const Header = ({
                   {onLeaveSpace && (
                     confirmLeaveSpace ? (
                       <div className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
-                        <p className="text-sm font-bold text-[#410001]">Leave shared space?</p>
+                        <p className="text-sm font-bold text-[#410001]">Exit space?</p>
                         <p className="mt-1 text-xs leading-5 text-[#534340]">
                           You will be removed and sent back to space selection.
                         </p>
@@ -524,7 +511,7 @@ const Header = ({
                             disabled={leavingSpace}
                             className="min-h-[40px] rounded-lg bg-[#C1121F] px-3 text-sm font-bold text-white transition hover:bg-[#A80F1A] disabled:opacity-60"
                           >
-                            {leavingSpace ? 'Leaving...' : 'Leave space'}
+                            {leavingSpace ? 'Exiting...' : 'Exit Space'}
                           </button>
                         </div>
                       </div>
@@ -536,8 +523,8 @@ const Header = ({
                         disabled={leavingSpace}
                         className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                       >
-                        <LogoutIcon size={18} />
-                        {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                        <Trash size={18} />
+                        {leavingSpace ? 'Exiting...' : 'Exit Space'}
                       </button>
                     )
                   )}

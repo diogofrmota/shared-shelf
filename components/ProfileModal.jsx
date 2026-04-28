@@ -1,5 +1,14 @@
 const React = window.React;
 const { useState, useEffect } = React;
+const {
+  UserIcon,
+  Close,
+  LogoutIcon,
+  updateAccount,
+  changePassword,
+  changeEmail,
+  checkUsernameAvailable
+} = window;
 
 // ============================================================================
 // PROFILE / SETTINGS / ACCOUNT MODAL
@@ -881,7 +890,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
           </button>
           <button
             type="button"
-            onClick={() => { onLogout(); onClose(); }}
+            onClick={() => { onLogout?.(); onClose?.(); }}
             className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
           >
             <LogoutIcon size={16} />
