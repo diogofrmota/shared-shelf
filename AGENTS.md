@@ -14,6 +14,7 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 - **localStorage caching**: preserve the existing cache/fallback when changing persistence; space data is cached locally.
 - **Data backward compatibility**: always add normalization/defaults when changing JSONB shape so old space data still renders.
 - **Secret keys**: never expose TMDB keys, JWT secrets, etc. in frontend files. Use proxy routes.
+- **`APP_URL`**: must be set to `https://coupleplanner.app` in Vercel production env vars. It is the source of truth for all auth/email links (account confirmation, password reset). The fallback in `lib/auth-shared.js` mirrors this value; always prefer the env var over the fallback in production.
 - **Space table naming**: use `spaces`, `space_members`, `space_join_codes`, `space_data` in new queries. The `shelves` view exists only for legacy code.
 - **Do not revert user changes** or unrelated work.
 

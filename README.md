@@ -85,8 +85,9 @@ Always add normalization/defaults so old saved data still renders.
 | `TMDB_API_KEY` | Yes (for media proxy) | Server-side key |
 | `NOMINATIM_USER_AGENT` | Recommended | Required for Nominatim |
 | `RESEND_API_KEY` | Optional (email) | Confirm/reset emails |
-| `FROM_EMAIL` | Optional | Resend sender |
-| `APP_URL` | Optional | Link base for emails |
+| `FROM_EMAIL` | Optional | Resend sender address (default: `noreply@coupleplanner.app`) |
+| `APP_URL` | Yes (prod) | Base URL for auth/email links — set to `https://coupleplanner.app` |
+| `CORS_ORIGINS` | Optional | Extra allowed CORS origins (comma-separated, e.g. `https://www.coupleplanner.app`) |
 
 ## Local Development
 
@@ -103,7 +104,7 @@ Full auth/persistence requires Vercel env + Postgres.
 Set required env vars, then call `/api/setup` with the setup token:
 
 ```powershell
-curl -X POST https://www.coupleplanner.app/api/setup -H "X-Setup-Token: <token>"
+curl -X POST https://coupleplanner.app/api/setup -H "X-Setup-Token: <token>"
 ```
 
 ## Security & Implementation Notes
