@@ -330,7 +330,7 @@ function HomePage({ onNavigate }) {
                     key={feature.title}
                     className="ss-card p-6 transition ss-card-hover"
                     style={{
-                      backgroundImage: `linear-gradient(to right, ${feature.bg} 0%, ${feature.bg}e6 100%)`,
+                      backgroundImage: `linear-gradient(to right, ${feature.bg} 0%, ${feature.bg}d9 100%)`,
                       borderColor: feature.border,
                       borderWidth: '3px'
                     }}
