@@ -208,7 +208,7 @@ function HomePage({ onNavigate }) {
                   src="/assets/brand-mark.svg"
                   alt=""
                   aria-hidden="true"
-                  className="h-12 w-12 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+                  className="brand-logo-hero h-12 w-12 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
                 />
                 <span>Couple Planner</span>
               </h1>
