@@ -527,7 +527,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     };
 
     const handleAccountSave = async (event) => {
-      event.preventDefault();
+      event?.preventDefault?.();
       const nextName = accountName.trim();
       const nextUsername = accountUsername.trim();
 
@@ -544,6 +544,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
         const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
         onSaveAccount?.(updatedUser);
         setAccountEditing(false);
+        setPwSection(false);
+        setEmailSection(false);
         setUsernameStatus(null);
       } catch (err) {
         setAccountError(err.message || 'Failed to update profile');
@@ -594,6 +596,273 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
         setEmailSaving(false);
       }
     };
+
+    const resetAccountEdit = () => {
+      setAccountEditing(false);
+      setAccountName(displayName);
+      setAccountUsername(username);
+      setAccountError('');
+      setUsernameStatus(null);
+      setPwSection(false);
+      setPwCurrent('');
+      setPwNew('');
+      setPwError('');
+      setPwSuccess('');
+      setEmailSection(false);
+      setNewEmail('');
+      setEmailError('');
+      setEmailSuccess('');
+    };
+
+    const accountShell = (content) => (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+        <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+          <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+                <UserIcon size={20} className="text-[#E63B2E]" />
+                Profile
+              </h2>
+              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profile">
+                <Close size={20} />
+              </button>
+            </div>
+          </div>
+          {content}
+        </div>
+        <ConfirmationDialog
+          isOpen={confirmLeaveSpace}
+          title="Leave shared space?"
+          message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
+          confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
+          cancelLabel="Stay"
+          tone="danger"
+          onConfirm={async () => {
+            setConfirmLeaveSpace(false);
+            if (!onLeaveSpace) return;
+            setLeavingSpace(true);
+            try {
+              await onLeaveSpace();
+              onClose();
+            } finally {
+              setLeavingSpace(false);
+            }
+          }}
+          onCancel={() => setConfirmLeaveSpace(false)}
+        />
+      </div>
+    );
+
+    if (accountEditing) {
+      return accountShell(
+        <div className="space-y-4 p-5">
+          <div>
+            <label className={labelCls} htmlFor="account-name">Name</label>
+            <input
+              id="account-name"
+              type="text"
+              value={accountName}
+              onChange={(event) => setAccountName(event.target.value)}
+              className={inputCls}
+              autoComplete="name"
+            />
+          </div>
+          <div>
+            <label className={labelCls} htmlFor="account-username">Username</label>
+            <input
+              id="account-username"
+              type="text"
+              value={accountUsername}
+              onChange={(event) => handleUsernameChange(event.target.value)}
+              className={inputCls}
+              autoComplete="username"
+              spellCheck={false}
+            />
+            {usernameStatus === 'checking'
+              ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+              : usernameStatus === 'available'
+                ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
+                : usernameStatus === 'taken'
+                  ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
+                  : null}
+          </div>
+          <div>
+            <label className={labelCls} htmlFor="account-email">Email</label>
+            <input
+              id="account-email"
+              type="email"
+              value={currentUser?.email || ''}
+              className={`${inputCls} text-[#534340]`}
+              autoComplete="email"
+              readOnly
+            />
+          </div>
+
+          <div className="rounded-xl border border-[#E1D8D4]">
+            <button
+              type="button"
+              onClick={() => { setPwSection(prev => !prev); setPwError(''); setPwSuccess(''); setPwCurrent(''); setPwNew(''); setEmailSection(false); }}
+              className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+            >
+              <span>Change password</span>
+              <span className="text-[#857370]" aria-hidden="true">{pwSection ? '^' : 'v'}</span>
+            </button>
+            {pwSection && (
+              <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangePassword}>
+                <div>
+                  <label className={labelCls} htmlFor="pw-current">Current password</label>
+                  <input
+                    id="pw-current"
+                    type="password"
+                    value={pwCurrent}
+                    onChange={(e) => setPwCurrent(e.target.value)}
+                    className={inputCls}
+                    autoComplete="current-password"
+                    placeholder="Current password"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls} htmlFor="pw-new">New password</label>
+                  <input
+                    id="pw-new"
+                    type="password"
+                    value={pwNew}
+                    onChange={(e) => setPwNew(e.target.value)}
+                    className={inputCls}
+                    autoComplete="new-password"
+                    placeholder="New password"
+                  />
+                  <p className="mt-1 text-xs text-[#857370]">At least 5 letters and 1 number</p>
+                </div>
+                {pwError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{pwError}</p>}
+                {pwSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{pwSuccess}</p>}
+                <button
+                  type="submit"
+                  disabled={pwSaving}
+                  className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                >
+                  {pwSaving ? 'Updating...' : 'Update password'}
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-[#E1D8D4]">
+            <button
+              type="button"
+              onClick={() => { setEmailSection(prev => !prev); setEmailError(''); setEmailSuccess(''); setNewEmail(''); setPwSection(false); }}
+              className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+            >
+              <span>Change email</span>
+              <span className="text-[#857370]" aria-hidden="true">{emailSection ? '^' : 'v'}</span>
+            </button>
+            {emailSection && (
+              <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangeEmail}>
+                <div>
+                  <label className={labelCls} htmlFor="new-email">New email address</label>
+                  <input
+                    id="new-email"
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className={inputCls}
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    spellCheck={false}
+                  />
+                  <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                </div>
+                {emailError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{emailError}</p>}
+                {emailSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{emailSuccess}</p>}
+                {!emailSuccess && (
+                  <button
+                    type="submit"
+                    disabled={emailSaving}
+                    className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                  >
+                    {emailSaving ? 'Sending...' : 'Send confirmation'}
+                  </button>
+                )}
+              </form>
+            )}
+          </div>
+
+          {accountError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{accountError}</p>}
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={resetAccountEdit}
+              className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+              disabled={accountSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleAccountSave}
+              className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+              disabled={accountSaving || usernameStatus === 'taken' || usernameStatus === 'checking'}
+            >
+              {accountSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return accountShell(
+      <div>
+        <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
+          <div className="mt-2 flex items-center gap-3">
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-sm font-extrabold text-white shadow-sm">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
+              <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
+              {currentUser?.email && <p className="truncate text-xs text-[#534340]" title={currentUser.email}>{currentUser.email}</p>}
+            </div>
+          </div>
+        </div>
+        <div className="p-2">
+          <button
+            type="button"
+            onClick={() => {
+              setAccountEditing(true);
+              setAccountName(displayName);
+              setAccountUsername(username);
+              setAccountError('');
+              setUsernameStatus(null);
+              setPwSection(false);
+              setEmailSection(false);
+            }}
+            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+          >
+            <UserIcon size={18} />
+            Edit profile
+          </button>
+          {onLeaveSpace && (
+            <button
+              type="button"
+              onClick={() => setConfirmLeaveSpace(true)}
+              disabled={leavingSpace}
+              className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+            >
+              Leave shared space
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => { onLogout(); onClose(); }}
+            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+          >
+            <LogoutIcon size={16} />
+            Log out
+          </button>
+        </div>
+      </div>
+    );
 
     return (
       <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">

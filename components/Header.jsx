@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon } = window;
+const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, ConfirmationDialog } = window;
 
 const Header = ({
   spaceName,
@@ -13,10 +13,19 @@ const Header = ({
   onAccountClick,
   onShareClick,
   onBackToSpaces,
+  currentUser,
+  onLogout,
+  onLeaveSpace,
   enabledSections
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [confirmLeaveSpace, setConfirmLeaveSpace] = useState(false);
+  const [leavingSpace, setLeavingSpace] = useState(false);
   const menuRef = useRef(null);
+  const settingsRef = useRef(null);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -28,6 +37,20 @@ const Header = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!settingsOpen && !profileOpen) return;
+    const handleClickOutside = (event) => {
+      if (settingsOpen && settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setSettingsOpen(false);
+      }
+      if (profileOpen && profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [settingsOpen, profileOpen]);
 
   const handleTabClick = (category, subTab) => {
     onCategoryChange(category, subTab);
@@ -52,6 +75,32 @@ const Header = ({
     : activeCategory === tab.category && activeSubTab === tab.id;
 
   const activeTabLabel = visibleNavTabs.find(isTabActive)?.label || 'Menu';
+  const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
+  const username = currentUser?.username || 'User';
+  const userInitial = displayName.trim().charAt(0).toUpperCase();
+
+  const openSettingsDropdown = () => {
+    setSettingsOpen(prev => !prev);
+    setProfileOpen(false);
+    setMenuOpen(false);
+  };
+
+  const openProfileDropdown = () => {
+    setProfileOpen(prev => !prev);
+    setSettingsOpen(false);
+    setMenuOpen(false);
+  };
+
+  const handleLeaveSpace = async () => {
+    if (!onLeaveSpace) return;
+    setLeavingSpace(true);
+    try {
+      await onLeaveSpace();
+      setProfileOpen(false);
+    } finally {
+      setLeavingSpace(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#E1D8D4] bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85">
@@ -99,34 +148,117 @@ const Header = ({
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {onShareClick && (
+          <div className="relative hidden sm:block" ref={settingsRef}>
             <button
-              onClick={onShareClick}
-              className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
-              title="Share space"
-              aria-label="Share space"
+              type="button"
+              onClick={openSettingsDropdown}
+              className="flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+              title="Settings"
+              aria-label="Settings"
+              aria-haspopup="menu"
+              aria-expanded={settingsOpen}
             >
-              <ShareIcon size={18} />
+              <SettingsIcon size={18} />
+              <span>Settings</span>
             </button>
-          )}
 
-          <button
-            onClick={onSettingsClick}
-            className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
-            title="Space settings"
-            aria-label="Space settings"
-          >
-            <SettingsIcon size={18} />
-          </button>
+            {settingsOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-12 z-50 w-56 origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+              >
+                <div className="p-1">
+                  <button
+                    role="menuitem"
+                    type="button"
+                    onClick={() => { onSettingsClick?.(); setSettingsOpen(false); }}
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                  >
+                    <SettingsIcon size={18} />
+                    Space settings
+                  </button>
+                  {onShareClick && (
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={() => { onShareClick?.(); setSettingsOpen(false); }}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <ShareIcon size={18} />
+                      Share space
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
-          <button
-            onClick={onAccountClick}
-            className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
-            title="Profile"
-            aria-label="Profile"
-          >
-            <UserIcon size={18} />
-          </button>
+          <div className="relative hidden sm:block" ref={profileRef}>
+            <button
+              type="button"
+              onClick={openProfileDropdown}
+              className="flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+              title="Profile"
+              aria-label="Profile"
+              aria-haspopup="menu"
+              aria-expanded={profileOpen}
+            >
+              <UserIcon size={18} />
+              <span>Profile</span>
+            </button>
+
+            {profileOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+              >
+                <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-sm font-extrabold text-white shadow-sm">
+                      {userInitial}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
+                      <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
+                      {currentUser?.email && <p className="truncate text-xs text-[#534340]" title={currentUser.email}>{currentUser.email}</p>}
+                    </div>
+                  </div>
+                </div>
+                <div className="p-2">
+                  <button
+                    role="menuitem"
+                    type="button"
+                    onClick={() => { onAccountClick?.(); setProfileOpen(false); }}
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                  >
+                    <UserIcon size={18} />
+                    Edit profile
+                  </button>
+                  {onLeaveSpace && (
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={() => setConfirmLeaveSpace(true)}
+                      disabled={leavingSpace}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                    >
+                      {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                    </button>
+                  )}
+                  <button
+                    role="menuitem"
+                    type="button"
+                    onClick={() => { onLogout?.(); setProfileOpen(false); }}
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                  >
+                    <LogoutIcon size={18} />
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Mobile menu trigger */}
           <div className="relative lg:hidden" ref={menuRef}>
@@ -173,23 +305,13 @@ const Header = ({
                   })}
                 </div>
                 <div className="border-t border-[#E1D8D4] p-1">
-                  {onShareClick && (
-                    <button
-                      role="menuitem"
-                      onClick={() => { onShareClick?.(); setMenuOpen(false); }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    >
-                      <ShareIcon size={18} />
-                      Share space
-                    </button>
-                  )}
                   <button
                     role="menuitem"
                     onClick={() => { onSettingsClick?.(); setMenuOpen(false); }}
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
-                    Space settings
+                    Settings
                   </button>
                   <button
                     role="menuitem"
@@ -215,6 +337,21 @@ const Header = ({
           </div>
         </div>
       </div>
+      {ConfirmationDialog && (
+        <ConfirmationDialog
+          isOpen={confirmLeaveSpace}
+          title="Leave shared space?"
+          message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
+          confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
+          cancelLabel="Stay"
+          tone="danger"
+          onConfirm={async () => {
+            setConfirmLeaveSpace(false);
+            await handleLeaveSpace();
+          }}
+          onCancel={() => setConfirmLeaveSpace(false)}
+        />
+      )}
     </header>
   );
 };

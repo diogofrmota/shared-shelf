@@ -172,6 +172,13 @@ const UserIcon = ({ size = 20, className = '' }) => (
   </svg>
 );
 
+const PencilIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+    <path d="m15 5 4 4"></path>
+  </svg>
+);
+
 const Camera = ({ size = 20, className = '' }) => (
   <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -194,5 +201,5 @@ const WifiOff = ({ size = 16, className = '' }) => (
 Object.assign(window, {
   CheckSquare, Search, Plus, Film, Tv, Book, CalendarIcon, MapPin,
   ChevronLeft, ChevronRight, Trash, LinkIcon, ShareIcon, ThreeDots, Close,
-  SettingsIcon, ChefHat, Utensils, Star, Eye, EyeOff, LogoutIcon, UserIcon, Camera, WifiOff
+  SettingsIcon, ChefHat, Utensils, Star, Eye, EyeOff, LogoutIcon, UserIcon, PencilIcon, Camera, WifiOff
 });

@@ -885,6 +885,9 @@ function MediaTracker() {
         onAccountClick={() => setAccountModalOpen(true)}
         onShareClick={() => setShareModalOpen(true)}
         onBackToSpaces={handleBackToSpaces}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onLeaveSpace={handleLeaveSpace}
         enabledSections={getEnabledSections(currentSpace)}
         profile={data?.profile}
       />
