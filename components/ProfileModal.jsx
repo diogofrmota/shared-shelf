@@ -65,7 +65,7 @@ const UserAvatar = ({ user, size = 40 }) => {
 const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
-const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, space, onSaveSpace, currentUser, onSaveAccount, onLogout, onBackToSpaces }) => {
+const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, space, onSaveSpace, currentUser, onSaveAccount, onLogout, onLeaveSpace }) => {
   const sectionOptions = [
     { id: 'calendar', label: 'Calendar' },
     { id: 'tasks', label: 'Tasks' },
@@ -89,6 +89,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
   const [accountError, setAccountError] = useState('');
   const [accountSaving, setAccountSaving] = useState(false);
   const [confirmRegenerateShare, setConfirmRegenerateShare] = useState(false);
+  const [confirmLeaveSpace, setConfirmLeaveSpace] = useState(false);
+  const [leavingSpace, setLeavingSpace] = useState(false);
 
   // Change-password sub-flow
   const [pwSection, setPwSection] = useState(false);
@@ -143,6 +145,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setEmailError('');
       setEmailSuccess('');
       setUsernameStatus(null);
+      setConfirmLeaveSpace(false);
+      setLeavingSpace(false);
     }
   }, [mode, isOpen, currentUser?.id, currentUser?.name, currentUser?.username, currentUser?.email]);
 
@@ -780,13 +784,14 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                     )}
                   </div>
 
-                  {onBackToSpaces && (
+                  {onLeaveSpace && (
                     <button
                       type="button"
-                      onClick={() => { onBackToSpaces(); onClose(); }}
-                      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      onClick={() => setConfirmLeaveSpace(true)}
+                      disabled={leavingSpace}
+                      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
                     >
-                      Back to spaces
+                      {leavingSpace ? 'Leaving...' : 'Leave shared space'}
                     </button>
                   )}
                   <button
@@ -802,6 +807,26 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             )}
           </div>
         </div>
+        <ConfirmationDialog
+          isOpen={confirmLeaveSpace}
+          title="Leave shared space?"
+          message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
+          confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
+          cancelLabel="Stay"
+          tone="danger"
+          onConfirm={async () => {
+            setConfirmLeaveSpace(false);
+            if (!onLeaveSpace) return;
+            setLeavingSpace(true);
+            try {
+              await onLeaveSpace();
+              onClose();
+            } finally {
+              setLeavingSpace(false);
+            }
+          }}
+          onCancel={() => setConfirmLeaveSpace(false)}
+        />
       </div>
     );
   }

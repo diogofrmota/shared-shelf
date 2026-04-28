@@ -470,6 +470,20 @@ function MediaTracker() {
     closeSpaceOverlays();
     navigateTo('/space-selection/', { skipPrompt: true });
   };
+  const handleLeaveSpace = async () => {
+    if (!currentSpace) return;
+    try {
+      await leaveSpace(currentSpace.id);
+    } catch (error) {
+      console.error('Failed to leave space:', error);
+      window.alert(error?.message || 'Failed to leave space. Please try again.');
+      return;
+    }
+    setCurrentSpace(null);
+    setData(null);
+    closeSpaceOverlays();
+    navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+  };
 
   const handleCategoryChange = (category, subTab) => {
     setActiveCategory(category);
@@ -923,7 +937,7 @@ function MediaTracker() {
         currentUser={currentUser}
         onSaveAccount={handleAccountUpdate}
         onLogout={handleLogout}
-        onBackToSpaces={handleBackToSpaces}
+        onLeaveSpace={handleLeaveSpace}
       />
       <ShareSpaceModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} space={currentSpace} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />

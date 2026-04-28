@@ -585,6 +585,24 @@ const regenerateSpaceJoinCode = async (spaceId) => {
   return payload;
 };
 
+const leaveSpace = async (spaceId) => {
+  const res = await fetch(`${API_BASE}/api/space/${spaceId}/membership`, {
+    method: 'DELETE',
+    headers: getAuthorizedHeaders(true)
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to leave space');
+  }
+
+  try {
+    localStorage.removeItem(`space-data-${spaceId}`);
+  } catch {}
+
+  return payload;
+};
+
 // ============================================================================
 // EXPORT ALL TO window
 // ============================================================================
@@ -620,5 +638,6 @@ Object.assign(window, {
   joinSpace,
   updateSpace,
   getSpaceShareInfo,
-  regenerateSpaceJoinCode
+  regenerateSpaceJoinCode,
+  leaveSpace
 });
