@@ -9,7 +9,6 @@ const {
   Tv
 } = window;
 
-const HOME_CARD_BG = '#FFE2F3';
 const HOME_CARD_BORDER = '#E89BC7';
 
 const FEATURES = [
@@ -295,7 +294,7 @@ function HomePage({ onNavigate }) {
                   <div
                     key={audience.title}
                     className="ss-card p-6"
-                    style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+                    style={{ backgroundColor: audience.bg, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
@@ -329,7 +328,7 @@ function HomePage({ onNavigate }) {
                   <div
                     key={feature.title}
                     className="ss-card p-6 transition ss-card-hover"
-                    style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+                    style={{ backgroundColor: feature.bg, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
                   >
                     <span
                       className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/70"
@@ -357,7 +356,7 @@ function HomePage({ onNavigate }) {
             <ol className="space-y-4">
               <li
                 className="ss-card flex items-start gap-4 p-5 sm:p-6"
-                style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+                style={{ borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
                 <div>
@@ -370,7 +369,7 @@ function HomePage({ onNavigate }) {
               </li>
               <li
                 className="ss-card flex items-start gap-4 p-5 sm:p-6"
-                style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+                style={{ borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
                 <div>
@@ -383,7 +382,7 @@ function HomePage({ onNavigate }) {
               </li>
               <li
                 className="ss-card flex items-start gap-4 p-5 sm:p-6"
-                style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+                style={{ borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
                 <div>
