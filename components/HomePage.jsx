@@ -184,16 +184,16 @@ function HomePage({ onNavigate }) {
             <a
               href="/login"
               onClick={goTo('/login')}
-              className="hidden rounded-xl border border-[#E63B2E]/40 bg-white px-4 py-2 text-sm font-bold text-[#A9372C] transition hover:border-[#E63B2E] hover:bg-[#FFDAD4]/40 sm:inline-flex"
+              className="inline-flex rounded-xl border border-[#E63B2E]/40 bg-white px-3 py-2 text-sm font-bold text-[#A9372C] transition hover:border-[#E63B2E] hover:bg-[#FFDAD4]/40 sm:px-4"
             >
-              Sign In
+              Login
             </a>
             <a
               href="/login?mode=signup"
               onClick={goTo('/login?mode=signup')}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] sm:px-4"
             >
-              Create Account
+              Register
             </a>
           </nav>
         </div>
@@ -210,7 +210,7 @@ function HomePage({ onNavigate }) {
                 Plan your life, together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                Couple Planner is a private, shared space just for you and your partner. Have a shared calendar, task list,
+                Couple Planner is a private, shared space for you and your partner. Have a shared calendar, task list,
                 saved locations, trips planner, recipes book, and track movies, tv shows and books. Everything synced in one place.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -234,19 +234,19 @@ function HomePage({ onNavigate }) {
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
                 <h2 className="text-2xl font-extrabold text-[#410001]">Main Features</h2>
                 <p className="mt-1 text-sm text-[#534340]">Couple Planner lets you manage your relashionship in one app.</p>
-                <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <ul className="mt-4 grid grid-cols-2 gap-2">
                   {HERO_SHARED_ITEMS.map((item) => {
                     const Icon = item.icon;
                     return (
                       <li
                         key={item.label}
-                        className="flex min-h-[58px] items-center gap-2.5 rounded-xl px-3 py-2 text-white shadow-md shadow-black/10"
+                        className="flex min-h-[50px] items-center gap-2 rounded-xl px-2 py-2 text-white shadow-md shadow-black/10 sm:min-h-[58px] sm:gap-2.5 sm:px-3"
                         style={{ backgroundColor: item.color }}
                       >
                         <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
                           <Icon size={20} strokeWidth={item.strokeWidth || 2} />
                         </span>
-                        <p className="min-w-0 text-sm font-extrabold">{item.label}</p>
+                        <p className="min-w-0 text-xs font-extrabold sm:text-sm">{item.label}</p>
                       </li>
                     );
                   })}
