@@ -232,11 +232,8 @@ function HomePage({ onNavigate }) {
             </div>
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
-                <div className="flex items-center justify-end">
-                  <span className="ss-tag">Your Private Dashboard</span>
-                </div>
-                <h2 className="mt-1 text-2xl font-extrabold text-[#410001]">Couple Planner - Main Features</h2>
-                <p className="mt-1 text-sm text-[#534340]">Manage your relashionship with one app.</p>
+                <h2 className="text-2xl font-extrabold text-[#410001]">Main Features</h2>
+                <p className="mt-1 text-sm text-[#534340]">Couple Planner lets you manage your relashionship in one app.</p>
                 <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {HERO_SHARED_ITEMS.map((item) => {
                     const Icon = item.icon;
