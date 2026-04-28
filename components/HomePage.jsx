@@ -182,18 +182,18 @@ function HomePage({ onNavigate }) {
           </nav>
           <nav className="flex items-center gap-2 sm:gap-3">
             <a
-              href="/login"
-              onClick={goTo('/login')}
-              className="inline-flex rounded-xl border border-[#E63B2E]/40 bg-white px-3 py-2 text-sm font-bold text-[#A9372C] transition hover:border-[#E63B2E] hover:bg-[#FFDAD4]/40 sm:px-4"
-            >
-              Login
-            </a>
-            <a
               href="/login?mode=signup"
               onClick={goTo('/login?mode=signup')}
               className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] sm:px-4"
             >
               Register
+            </a>
+            <a
+              href="/login"
+              onClick={goTo('/login')}
+              className="inline-flex rounded-xl border border-[#E63B2E]/40 bg-white px-3 py-2 text-sm font-bold text-[#A9372C] transition hover:border-[#E63B2E] hover:bg-[#FFDAD4]/40 sm:px-4"
+            >
+              Login
             </a>
           </nav>
         </div>
