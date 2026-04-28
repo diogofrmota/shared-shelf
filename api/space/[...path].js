@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from 'crypto';
 import {
+  APP_URL,
   consumeRateLimit,
   cors,
   errResponse,
@@ -89,6 +90,14 @@ async function getSpaceSummary(spaceId) {
 
 function generateJoinCode() {
   return randomBytes(6).toString('base64url').toUpperCase();
+}
+
+function buildInviteLink(spaceId, joinCode) {
+  if (!spaceId || !joinCode) return null;
+  const inviteUrl = new URL('/space-selection/', APP_URL);
+  inviteUrl.searchParams.set('inviteSpace', spaceId);
+  inviteUrl.searchParams.set('inviteCode', joinCode);
+  return inviteUrl.toString();
 }
 
 function sanitizeHttpUrl(value) {
@@ -357,7 +366,8 @@ export default async function handler(req, res) {
         spaceId: space.id,
         spaceName: space.name,
         joinCode: activeCode?.code || null,
-        expiresAt: activeCode?.expires_at || null
+        expiresAt: activeCode?.expires_at || null,
+        inviteLink: buildInviteLink(space.id, activeCode?.code)
       });
     }
 

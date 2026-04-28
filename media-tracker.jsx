@@ -254,7 +254,13 @@ function MediaTracker() {
         setCurrentSpace(null);
         setData(null);
       }
-      navigateTo('/space-selection/', { replace: true });
+      const params = new URLSearchParams(window.location.search);
+      const inviteSpace = params.get('inviteSpace');
+      const inviteCode = params.get('inviteCode');
+      const inviteQuery = inviteSpace && inviteCode
+        ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
+        : '';
+      navigateTo(`/space-selection/${inviteQuery}`, { replace: true });
       return;
     }
 
@@ -447,7 +453,13 @@ function MediaTracker() {
 
   const handleLogin = (user) => {
     setCurrentUser(user);
-    navigateTo('/space-selection/');
+    const params = new URLSearchParams(window.location.search);
+    const inviteSpace = params.get('inviteSpace');
+    const inviteCode = params.get('inviteCode');
+    const inviteQuery = inviteSpace && inviteCode
+      ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
+      : '';
+    navigateTo(`/space-selection/${inviteQuery}`);
   };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
@@ -691,15 +703,17 @@ function MediaTracker() {
     const previousSpace = currentSpace;
     setCurrentSpace(prev => ({ ...prev, ...newSettings }));
 
-    updateSpace(currentSpace.id, newSettings)
+    return updateSpace(currentSpace.id, newSettings)
       .then((updatedSpace) => {
         if (updatedSpace) {
           setCurrentSpace(updatedSpace);
         }
+        return updatedSpace;
       })
       .catch((error) => {
         console.error('Failed to persist space settings:', error);
         setCurrentSpace(previousSpace);
+        throw error;
       });
   };
 
@@ -739,13 +753,16 @@ function MediaTracker() {
 
   if (!currentUser) {
     if (accessIssue?.type === 'unauthorized') {
+      const loginTarget = `${window.location.pathname}${window.location.search || ''}`.startsWith('/space-selection/')
+        ? `/login${window.location.search || ''}`
+        : '/login';
       return (
         <FailureScreen
           eyebrow="Private page"
           title={accessIssue.title}
           message={accessIssue.message}
           primaryLabel="Sign in"
-          primaryPath="/login"
+          primaryPath={loginTarget}
           secondaryLabel="Go home"
           secondaryPath="/"
           onNavigate={navigateTo}
@@ -876,6 +893,7 @@ function MediaTracker() {
 
       <Header
         spaceName={currentSpace.name}
+        space={currentSpace}
         onEditSpace={() => setSettingsModalOpen(true)}
         activeCategory={activeCategory}
         activeSubTab={activeSubTab}
@@ -888,6 +906,7 @@ function MediaTracker() {
         currentUser={currentUser}
         onLogout={handleLogout}
         onLeaveSpace={handleLeaveSpace}
+        onSaveSpace={handleSaveSpaceSettings}
         enabledSections={getEnabledSections(currentSpace)}
         profile={data?.profile}
       />

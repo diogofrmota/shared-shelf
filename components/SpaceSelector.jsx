@@ -18,13 +18,18 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   const [code, setCode] = useState('');
   const [selectedSections, setSelectedSections] = useState(sectionOptions.map(section => section.id));
   const [error, setError] = useState('');
+  const [inviteNotice, setInviteNotice] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editingProfileField, setEditingProfileField] = useState(null); // null | 'name' | 'username'
+  const [editingProfileField, setEditingProfileField] = useState(null); // null | 'name' | 'username' | 'email'
   const [profileName, setProfileName] = useState('');
   const [profileUsername, setProfileUsername] = useState('');
   const [profileUsernameStatus, setProfileUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
+  const [profileNewEmail, setProfileNewEmail] = useState('');
+  const [profileEmailError, setProfileEmailError] = useState('');
+  const [profileEmailSuccess, setProfileEmailSuccess] = useState('');
+  const [profileEmailSaving, setProfileEmailSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const profileRef = useRef(null);
@@ -32,6 +37,18 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
 
   useEffect(() => {
     document.title = 'Couple Planner - Select a Space';
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const inviteSpace = params.get('inviteSpace');
+    const inviteCode = params.get('inviteCode');
+    if (!inviteSpace || !inviteCode) return;
+
+    setMode('join');
+    setSpaceId(inviteSpace);
+    setCode(inviteCode);
+    setInviteNotice('Invite link ready. Join this private space when you are ready.');
   }, []);
 
   useEffect(() => {
@@ -56,9 +73,12 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
       setProfileName(displayName);
       setProfileUsername(username);
       setProfileUsernameStatus(null);
+      setProfileNewEmail('');
+      setProfileEmailError('');
+      setProfileEmailSuccess('');
       setProfileError('');
     }
-  }, [profileOpen, currentUser?.id, displayName, username]);
+  }, [profileOpen, currentUser?.id, displayName, username, currentUser?.email]);
 
   useEffect(() => {
     return () => {
@@ -79,6 +99,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   const switchMode = (nextMode) => {
     setMode(nextMode);
     setError('');
+    if (nextMode !== 'join') setInviteNotice('');
   };
 
   const handleCreate = async (event) => {
@@ -179,6 +200,30 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     }
   };
 
+  const handleProfileEmailSave = async (event) => {
+    event.preventDefault();
+    const trimmedEmail = profileNewEmail.trim();
+
+    setProfileEmailError('');
+    setProfileEmailSuccess('');
+    setProfileError('');
+
+    if (!trimmedEmail) { setProfileEmailError('Email is required'); return; }
+    if (!trimmedEmail.includes('@')) { setProfileEmailError('Email must include @'); return; }
+
+    setProfileEmailSaving(true);
+    try {
+      const result = await changeEmail(trimmedEmail);
+      setProfileEmailSuccess(result.message || `A confirmation link has been sent to ${trimmedEmail}.`);
+      setProfileNewEmail('');
+      setEditingProfileField(null);
+    } catch (err) {
+      setProfileEmailError(err.message || 'Failed to initiate email change');
+    } finally {
+      setProfileEmailSaving(false);
+    }
+  };
+
   const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
   const SiteFooter = window.SiteFooter;
   const PencilIcon = window.PencilIcon;
@@ -238,6 +283,8 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                           onClick={() => {
                             setEditingProfileField('name');
                             setProfileName(displayName);
+                            setProfileEmailError('');
+                            setProfileEmailSuccess('');
                             setProfileError('');
                           }}
                           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
@@ -295,6 +342,8 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                             setEditingProfileField('username');
                             setProfileUsername(username);
                             setProfileUsernameStatus(null);
+                            setProfileEmailError('');
+                            setProfileEmailSuccess('');
                             setProfileError('');
                           }}
                           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
@@ -351,6 +400,72 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                       )}
                     </div>
 
+                    <div className="rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Email</p>
+                          <p className="mt-1 truncate font-semibold text-[#410001]" title={accountEmail}>{accountEmail}</p>
+                          {profileEmailSuccess && <p className="mt-1 break-words text-xs font-semibold text-[#2F855A]" role="status">{profileEmailSuccess}</p>}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProfileField('email');
+                            setProfileNewEmail('');
+                            setProfileEmailError('');
+                            setProfileEmailSuccess('');
+                            setProfileError('');
+                          }}
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          aria-label="Edit email"
+                          title="Edit email"
+                        >
+                          {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
+                        </button>
+                      </div>
+                      {editingProfileField === 'email' && (
+                        <form className="mt-3 space-y-3" onSubmit={handleProfileEmailSave}>
+                          <div>
+                            <input
+                              id="profile-email"
+                              type="email"
+                              value={profileNewEmail}
+                              onChange={(event) => setProfileNewEmail(event.target.value)}
+                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                              autoComplete="email"
+                              placeholder="you@example.com"
+                              spellCheck={false}
+                              aria-label="New email address"
+                            />
+                            <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                          </div>
+                          {profileEmailError && <p className="text-xs font-semibold text-[#C1121F]" role="alert">{profileEmailError}</p>}
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProfileField(null);
+                                setProfileNewEmail('');
+                                setProfileEmailError('');
+                                setProfileEmailSuccess('');
+                              }}
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              disabled={profileEmailSaving}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              disabled={profileEmailSaving}
+                            >
+                              {profileEmailSaving ? 'Sending...' : 'Send'}
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+
                     {profileError && <p className="text-sm font-semibold text-[#C1121F]">{profileError}</p>}
                     <div className="flex gap-2 pt-1">
                       <button
@@ -361,10 +476,13 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                           setProfileName(displayName);
                           setProfileUsername(username);
                           setProfileUsernameStatus(null);
+                          setProfileNewEmail('');
+                          setProfileEmailError('');
+                          setProfileEmailSuccess('');
                           setProfileError('');
                         }}
                         className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                        disabled={profileSaving}
+                        disabled={profileSaving || profileEmailSaving}
                       >
                         Cancel
                       </button>
@@ -380,6 +498,9 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                         setProfileName(displayName);
                         setProfileUsername(username);
                         setProfileUsernameStatus(null);
+                        setProfileNewEmail('');
+                        setProfileEmailError('');
+                        setProfileEmailSuccess('');
                         setProfileError('');
                       }}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
@@ -465,6 +586,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                     ))}
                   </div>
                 </div>
+                {inviteNotice && <p className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] px-3 py-2 text-sm font-semibold text-[#534340]">{inviteNotice}</p>}
                 {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
                 <button
                   type="submit"

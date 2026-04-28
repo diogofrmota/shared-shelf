@@ -126,6 +126,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setShareError('');
       setCopiedField('');
       setConfirmRegenerateShare(false);
+      setConfirmLeaveSpace(false);
+      setLeavingSpace(false);
     }
   }, [mode, isOpen, space]);
 
@@ -457,14 +459,50 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                 <p className="mt-1 text-sm text-[#534340]">
                   Leave this shared space and return to your space selection.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setConfirmLeaveSpace(true)}
-                  disabled={leavingSpace}
-                  className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
-                >
-                  {leavingSpace ? 'Leaving...' : 'Leave shared space'}
-                </button>
+                {confirmLeaveSpace ? (
+                  <div className="mt-4 rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
+                    <p className="text-sm font-bold text-[#410001]">Leave shared space?</p>
+                    <p className="mt-1 text-xs leading-5 text-[#534340]">
+                      You will be removed from this space. If no other members remain, the space and its data are deleted.
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmLeaveSpace(false)}
+                        disabled={leavingSpace}
+                        className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                      >
+                        Stay
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!onLeaveSpace) return;
+                          setLeavingSpace(true);
+                          try {
+                            await onLeaveSpace();
+                            onClose();
+                          } finally {
+                            setLeavingSpace(false);
+                          }
+                        }}
+                        disabled={leavingSpace}
+                        className="min-h-[44px] rounded-lg bg-[#C1121F] px-3 text-sm font-bold text-white transition hover:bg-[#A80F1A] disabled:opacity-60"
+                      >
+                        {leavingSpace ? 'Leaving...' : 'Leave space'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmLeaveSpace(true)}
+                    disabled={leavingSpace}
+                    className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
+                  >
+                    {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -488,26 +526,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               handleRegenerate();
             }}
             onCancel={() => setConfirmRegenerateShare(false)}
-          />
-          <ConfirmationDialog
-            isOpen={confirmLeaveSpace}
-            title="Leave shared space?"
-            message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
-            confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
-            cancelLabel="Stay"
-            tone="danger"
-            onConfirm={async () => {
-              setConfirmLeaveSpace(false);
-              if (!onLeaveSpace) return;
-              setLeavingSpace(true);
-              try {
-                await onLeaveSpace();
-                onClose();
-              } finally {
-                setLeavingSpace(false);
-              }
-            }}
-            onCancel={() => setConfirmLeaveSpace(false)}
           />
         </div>
       </div>

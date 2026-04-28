@@ -49,8 +49,8 @@ When adding API behavior, route it through an existing catch-all unless a new fu
 | `POST /api/space` | Create space + join code |
 | `POST /api/space/join` | Join space with ID + code |
 | `PATCH /api/space/:id` | Owner updates space settings |
-| `GET /api/space/:id/share` | Current share code |
-| `POST /api/space/:id/share` | Owner regenerates code |
+| `GET /api/space/:id/share` | Current share code and invite link |
+| `POST /api/space/:id/share` | Owner regenerates a one-use code/invite link |
 | `GET /api/space/:id/data` | Read space JSON data |
 | `POST /api/space/:id/data` | Save space JSON data |
 | `DELETE /api/space/:id/membership` | Leave space |
