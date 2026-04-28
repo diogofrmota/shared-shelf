@@ -9,67 +9,16 @@ const {
   Book
 } = window;
 
-const RELEASE_NOTES = [
-  {
-    version: 'v1.4',
-    date: 'April 2026',
-    title: 'Public homepage and bug reports',
-    items: [
-      'New public homepage that explains Couple Planner before you sign in.',
-      'Authentication moved to a dedicated /login page.',
-      'Privacy Policy and Terms of Service pages.',
-      'Simple bug report form at /report-a-bug.',
-      'Global footer with copyright and legal links.'
-    ]
-  },
-  {
-    version: 'v1.3',
-    date: 'February 2026',
-    title: 'Recurring activities and tasks',
-    items: [
-      'Daily, weekly, monthly, and yearly recurrence for calendar activities.',
-      'Recurring tasks track last-done time and stay active after completion.'
-    ]
-  },
-  {
-    version: 'v1.2',
-    date: 'December 2025',
-    title: 'Trip planning details',
-    items: [
-      'Trips support itinerary, bookings, notes, and packing lists.',
-      'Older trips render with safe defaults so existing data keeps working.'
-    ]
-  },
-  {
-    version: 'v1.1',
-    date: 'October 2025',
-    title: 'Email confirmation and password reset',
-    items: [
-      'New accounts confirm with an emailed link before signing in.',
-      'Forgot password sends a one-time reset link.'
-    ]
-  },
-  {
-    version: 'v1.0',
-    date: 'July 2025',
-    title: 'Couple Planner launch',
-    items: [
-      'Private shelves with calendar, tasks, locations, trips, recipes, and watchlist.',
-      'Invite space members with a one-time, seven-day join code.'
-    ]
-  }
-];
-
 const FEATURES = [
   {
     icon: CalendarIcon,
     title: 'Shared calendar',
-    description: 'Plan dates, anniversaries, and recurring routines on one calendar that everyone in the space sees.'
+    description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.'
   },
   {
     icon: CheckSquare,
     title: 'Tasks together',
-    description: 'Assign tasks, set due dates, repeat chores, and reorder priorities without losing track of what is done.'
+    description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.'
   },
   {
     icon: MapPin,
@@ -78,37 +27,70 @@ const FEATURES = [
   },
   {
     icon: Film,
-    title: 'Trips planning',
-    description: 'Keep itineraries, bookings, packing lists, and notes for upcoming and past trips in one place.'
+    title: 'Trip planning',
+    description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together — all in one place.'
   },
   {
     icon: ChefHat,
     title: 'Recipe collection',
-    description: 'Build a shared recipe book with ingredients, instructions, photos, prep time, and source links.'
+    description: 'Build a shared recipe book with ingredients, instructions, photos, prep time, and source links for the meals you cook together.'
   },
   {
     icon: Tv,
     title: 'Watchlist & reading',
-    description: 'Track movies, TV shows, and books with statuses, ratings, and TV show season progress.'
+    description: 'Track the movies, TV shows, and books you want to watch and read together, with statuses, ratings, and season progress.'
   }
 ];
 
 const AUDIENCES = [
   {
-    title: 'Couples',
-    description: 'Plan your week, weekend trips, restaurants to try, and the shows you want to watch together.'
+    title: 'Living together',
+    description: 'Coordinate the calendar, split chores, save the recipes you cook on weeknights, and keep date plans in one place.'
   },
   {
-    title: 'Families',
-    description: 'Coordinate calendars, recurring chores, packing lists, and family movie nights.'
+    title: 'Long-distance',
+    description: 'Stay in sync across schedules and time zones. Plan visits, save the trips you want to take, and queue what to watch on the next call.'
   },
   {
-    title: 'Roommates',
-    description: 'Share grocery runs, cleaning rotations, and bookmarked recipes without bouncing between apps.'
+    title: 'Newly dating',
+    description: 'Keep a running list of restaurants to try, films to watch, and weekend ideas — without losing them in a chat thread.'
   },
   {
-    title: 'Friend groups',
-    description: 'Keep a running list of places to visit, books to swap, and trip ideas you want to commit to.'
+    title: 'Married & busy',
+    description: 'Anniversaries, recurring errands, family trips, and the watchlist you never get to. Everything in one shared, private space.'
+  }
+];
+
+const HERO_PREVIEW = [
+  {
+    icon: CalendarIcon,
+    label: 'Saturday · Anniversary dinner, 20:00',
+    sub: 'Shared calendar event'
+  },
+  {
+    icon: CheckSquare,
+    label: 'Book the restaurant — Diogo',
+    sub: 'Task assigned, due Friday'
+  },
+  {
+    icon: Film,
+    label: 'Porto weekend · May 3–5',
+    sub: 'Trip with itinerary and packing list'
+  },
+  {
+    icon: MapPin,
+    label: 'Saved: Cervejaria Ramiro',
+    sub: 'Pinned on the shared map'
+  },
+  {
+    icon: ChefHat,
+    label: 'Sunday brunch · Pancakes',
+    sub: 'Recipe saved together'
+  },
+  {
+    icon: Tv,
+    label: 'Tonight · The Bear, S3 E2',
+    sub: 'Next on your watchlist'
   }
 ];
 
@@ -122,7 +104,21 @@ function HomePage({ onNavigate }) {
     }
   };
 
+  const scrollToId = (id) => (event) => {
+    if (event) event.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const SiteFooter = window.SiteFooter;
+
+  const navLinks = [
+    { id: 'what-it-is', label: 'What it is' },
+    { id: 'who-it-is-for', label: 'Who it is for' },
+    { id: 'features', label: 'Features' }
+  ];
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FBF2ED]">
@@ -136,11 +132,23 @@ function HomePage({ onNavigate }) {
             </span>
             <span className="text-lg font-extrabold tracking-tight text-[#410001]">Couple Planner</span>
           </a>
+          <nav className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.id}
+                href={`#${link.id}`}
+                onClick={scrollToId(link.id)}
+                className="rounded-xl px-3 py-2 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4]/50 hover:text-[#A9372C]"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
           <nav className="flex items-center gap-2 sm:gap-3">
             <a
               href="/login"
               onClick={goTo('/login')}
-              className="hidden rounded-xl px-3 py-2 text-sm font-bold text-[#534340] transition hover:text-[#E63B2E] sm:inline-flex"
+              className="hidden rounded-xl border border-[#E63B2E]/40 bg-white px-4 py-2 text-sm font-bold text-[#A9372C] transition hover:border-[#E63B2E] hover:bg-[#FFDAD4]/40 sm:inline-flex"
             >
               Sign in
             </a>
@@ -159,13 +167,14 @@ function HomePage({ onNavigate }) {
         <section className="app-auth-bg">
           <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-16 text-white sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-24">
             <div className="flex-1">
-              <span className="ss-tag mb-5 bg-white/20 text-white">Plan together</span>
+              <span className="ss-tag mb-5 bg-white/20 text-white">For the two of you</span>
               <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Organize your life,<br />together.
+                Plan your life,<br />together.
               </h1>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                Couple Planner is a private shared space for the people you plan with. Calendar, tasks, places, trips,
-                recipes, and watchlists for couples, families, roommates, and friend groups.
+                Couple Planner is a private, shared space just for you and your partner. One calendar, one task list,
+                one map of saved places, your trips, recipes, and the films and shows you want to watch — all in sync,
+                with nothing scattered across chats and screenshots.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
@@ -178,71 +187,74 @@ function HomePage({ onNavigate }) {
                 <a
                   href="/login"
                   onClick={goTo('/login')}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-white bg-transparent px-6 py-3 text-base font-bold text-white transition hover:bg-white hover:text-[#A9372C]"
                 >
                   Sign in
                 </a>
               </div>
+              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-white/80">
+                <span className="inline-flex items-center gap-2"><CalendarIcon size={16} /> Calendar</span>
+                <span className="inline-flex items-center gap-2"><CheckSquare size={16} /> Tasks</span>
+                <span className="inline-flex items-center gap-2"><MapPin size={16} /> Places</span>
+                <span className="inline-flex items-center gap-2"><Film size={16} /> Trips</span>
+                <span className="inline-flex items-center gap-2"><ChefHat size={16} /> Recipes</span>
+                <span className="inline-flex items-center gap-2"><Tv size={16} /> Watchlist</span>
+              </div>
             </div>
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">This week, together</p>
-                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">Lisbon getaway</h2>
-                <ul className="mt-5 space-y-3 text-sm">
-                  <li className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
-                    <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#FFDAD4] text-[#A9372C]">
-                      <CalendarIcon size={16} />
-                    </span>
-                    <div>
-                      <p className="font-bold text-[#410001]">Friday: train to Lisbon, 18:30</p>
-                      <p className="text-[#534340]">Calendar event shared with both of you.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
-                    <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#FFDAD4] text-[#A9372C]">
-                      <CheckSquare size={16} />
-                    </span>
-                    <div>
-                      <p className="font-bold text-[#410001]">Pack swimsuits — Mónica</p>
-                      <p className="text-[#534340]">Task assigned, due Friday morning.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
-                    <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#FFDAD4] text-[#A9372C]">
-                      <MapPin size={16} />
-                    </span>
-                    <div>
-                      <p className="font-bold text-[#410001]">Saved: Time Out Market</p>
-                      <p className="text-[#534340]">Pinned on the shared map for Saturday.</p>
-                    </div>
-                  </li>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">Your space, together</p>
+                  <span className="ss-tag">Live preview</span>
+                </div>
+                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">This week, together</h2>
+                <p className="mt-1 text-sm text-[#534340]">Everything the two of you are planning — in one place.</p>
+                <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  {HERO_PREVIEW.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <li key={item.label} className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
+                        <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#FFDAD4] text-[#A9372C]">
+                          <Icon size={16} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-[#410001]">{item.label}</p>
+                          <p className="truncate text-xs text-[#534340]">{item.sub}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-[#FFF8F5] py-16 sm:py-20">
+        <section id="what-it-is" className="scroll-mt-24 bg-[#FFF8F5] py-16 sm:py-20">
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-              A small shared space, just for the people who share your plans.
+              A small shared space, just for the two of you.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
-              Couple Planner gathers everything couples try to coordinate over chats and
-              screenshots — calendars, tasks, places, trips, recipes, and watchlists — into one private shared space.
-              Everyone in the space reads and writes the same content, so nothing gets lost between apps.
+              Couple Planner gathers everything couples try to coordinate over chats and screenshots —
+              your calendar, your tasks, the places you want to go, the trips you are planning, the recipes
+              you cook, and the films and shows you want to watch — into one private, shared space.
+              Both of you read and write the same content, so nothing slips between apps or threads.
             </p>
           </div>
         </section>
 
-        <section className="bg-[#FBF2ED] py-16 sm:py-20">
+        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FBF2ED] py-16 sm:py-20">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-10 text-center sm:mb-12">
               <span className="ss-tag mb-4">Who it is for</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Made for the people you plan with most.
+                Built for couples, at every stage.
               </h2>
+              <p className="mt-3 text-base text-[#534340] sm:text-lg">
+                However the two of you are doing life right now, Couple Planner adapts to it.
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
               {AUDIENCES.map((audience) => (
@@ -258,39 +270,39 @@ function HomePage({ onNavigate }) {
         <section className="bg-[#FFF8F5] py-16 sm:py-20">
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
             <div className="mb-10 text-center sm:mb-12">
-              <span className="ss-tag mb-4">Private shelves</span>
+              <span className="ss-tag mb-4">Private by design</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Your space, your people, your data.
+                Your space, your two, your data.
               </h2>
             </div>
             <ol className="space-y-5">
               <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Create or join a space</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Create your space and invite your partner</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Each space has a unique space ID and a one-time join code that expires after seven days. Share both
-                    with the people you want to invite. Owners can regenerate the code at any time.
+                    Each space has a unique ID and a one-time join code that expires after seven days. Send both to
+                    your partner and you are connected. The owner can regenerate the code at any time.
                   </p>
                 </div>
               </li>
               <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what the space includes</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what your space includes</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Turn on calendar, tasks, locations, trips, recipes, and watchlist per space. Disabled sections stay
-                    out of the way so each space stays focused on what its members actually use.
+                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per space. Hide what you
+                    don't use so your shared home screen stays focused on what actually matters to you both.
                   </p>
                 </div>
               </li>
               <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Members read and write the same space</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Both of you see and edit the same space</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Only invited members can see a space's content. Everyone in a space works against the same shared
-                    document, with offline cache so the app stays useful when the connection drops.
+                    Only the two of you can see what's inside. Every change is shared instantly, and an offline cache
+                    keeps the app useful even when the connection drops.
                   </p>
                 </div>
               </li>
@@ -298,12 +310,12 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section className="bg-[#FBF2ED] py-16 sm:py-20">
+        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-16 sm:py-20">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-10 text-center sm:mb-12">
               <span className="ss-tag mb-4">Features</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Everything a shared space can hold.
+                Everything the two of you can plan, in one place.
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
@@ -344,10 +356,10 @@ function HomePage({ onNavigate }) {
         <section className="bg-[#FFF8F5] py-16 sm:py-20">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
             <h2 className="text-2xl font-extrabold tracking-tight text-[#410001] sm:text-3xl">
-              Ready to start your space?
+              Ready to start your space, together?
             </h2>
             <p className="mt-3 text-base text-[#534340]">
-              Sign in if you already have an account, or create one to start your first space in minutes.
+              Sign in if you already have an account, or create one to start planning with your partner in minutes.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
@@ -365,39 +377,6 @@ function HomePage({ onNavigate }) {
                 Sign in
               </a>
             </div>
-          </div>
-        </section>
-
-        <section className="bg-[#FBF2ED] py-16 sm:py-20" id="release-notes">
-          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 text-center sm:mb-12">
-              <span className="ss-tag mb-4">Release notes</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                What is new on Couple Planner.
-              </h2>
-              <p className="mt-3 text-base text-[#534340]">
-                A short log of recent changes, in order from newest to oldest.
-              </p>
-            </div>
-            <ol className="space-y-4">
-              {RELEASE_NOTES.map((note) => (
-                <li key={note.version} className="ss-card p-5 sm:p-6">
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#E63B2E]">{note.version}</span>
-                    <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#857370]">{note.date}</span>
-                  </div>
-                  <h3 className="mt-1 text-lg font-extrabold text-[#410001]">{note.title}</h3>
-                  <ul className="mt-3 space-y-1.5 text-sm text-[#534340]">
-                    {note.items.map((item, index) => (
-                      <li key={index} className="flex gap-2">
-                        <span aria-hidden="true" className="mt-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#E63B2E]"></span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ol>
           </div>
         </section>
       </main>
