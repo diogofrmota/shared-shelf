@@ -90,6 +90,25 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
   const [accountSaving, setAccountSaving] = useState(false);
   const [confirmRegenerateShare, setConfirmRegenerateShare] = useState(false);
 
+  // Change-password sub-flow
+  const [pwSection, setPwSection] = useState(false);
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+
+  // Change-email sub-flow
+  const [emailSection, setEmailSection] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+
+  // Username availability in edit mode
+  const [usernameStatus, setUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
+  const usernameCheckRef = React.useRef(null);
+
   useEffect(() => {
     if (mode === 'profiles' && isOpen) {
       setUsers((profile?.users || []).map(u => ({ ...u })));
@@ -114,6 +133,16 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
       setAccountName(currentUser?.name || currentUser?.username || currentUser?.email || '');
       setAccountUsername(currentUser?.username || '');
       setAccountError('');
+      setPwSection(false);
+      setPwCurrent('');
+      setPwNew('');
+      setPwError('');
+      setPwSuccess('');
+      setEmailSection(false);
+      setNewEmail('');
+      setEmailError('');
+      setEmailSuccess('');
+      setUsernameStatus(null);
     }
   }, [mode, isOpen, currentUser?.id, currentUser?.name, currentUser?.username, currentUser?.email]);
 
@@ -450,17 +479,59 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     const username = currentUser?.username || 'User';
     const initials = displayName.trim().charAt(0).toUpperCase();
 
+    const validateProfileName = (v) => {
+      const t = v.trim();
+      if (!t) return 'Name is required';
+      if (t.length > 20) return 'Name must be 20 characters or fewer';
+      if (!/^[A-Za-z ]+$/.test(t)) return 'Name can only contain letters and spaces';
+      return '';
+    };
+
+    const validateProfileUsername = (v) => {
+      const t = v.trim();
+      if (!t) return 'Username is required';
+      if (t.length > 20) return 'Username must be 20 characters or fewer';
+      if (!/^[A-Za-z0-9]+$/.test(t)) return 'Username can only contain letters and numbers';
+      return '';
+    };
+
+    const validatePasswordValue = (v) => {
+      const letters = (v.match(/[A-Za-z]/g) || []).length;
+      if (letters < 5) return 'Password must include at least 5 letters';
+      if (!/\d/.test(v)) return 'Password must include at least 1 number';
+      return '';
+    };
+
+    const handleUsernameChange = (value) => {
+      setAccountUsername(value);
+      const trimmed = value.trim();
+      if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+      if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
+        setUsernameStatus(null);
+        return;
+      }
+      if (trimmed.toLowerCase() === (currentUser?.username || '').toLowerCase()) {
+        setUsernameStatus(null);
+        return;
+      }
+      setUsernameStatus('checking');
+      usernameCheckRef.current = setTimeout(async () => {
+        const result = await checkUsernameAvailable(trimmed, currentUser?.id || '');
+        if (result.available === null) { setUsernameStatus(null); return; }
+        setUsernameStatus(result.available ? 'available' : 'taken');
+      }, 450);
+    };
+
     const handleAccountSave = async (event) => {
       event.preventDefault();
       const nextName = accountName.trim();
       const nextUsername = accountUsername.trim();
 
-      if (!nextName) { setAccountError('Name is required'); return; }
-      if (nextName.length > 20) { setAccountError('Name must be 20 characters or fewer'); return; }
-      if (!/^[A-Za-z ]+$/.test(nextName)) { setAccountError('Name can only contain letters and spaces'); return; }
-      if (!nextUsername) { setAccountError('Username is required'); return; }
-      if (nextUsername.length > 20) { setAccountError('Username must be 20 characters or fewer'); return; }
-      if (!/^[A-Za-z0-9]+$/.test(nextUsername)) { setAccountError('Username can only contain letters and numbers'); return; }
+      const nameErr = validateProfileName(nextName);
+      if (nameErr) { setAccountError(nameErr); return; }
+      const usernameErr = validateProfileUsername(nextUsername);
+      if (usernameErr) { setAccountError(usernameErr); return; }
+      if (usernameStatus === 'taken') { setAccountError('Username already taken'); return; }
 
       setAccountSaving(true);
       setAccountError('');
@@ -469,6 +540,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
         const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
         onSaveAccount?.(updatedUser);
         setAccountEditing(false);
+        setUsernameStatus(null);
       } catch (err) {
         setAccountError(err.message || 'Failed to update profile');
       } finally {
@@ -476,10 +548,53 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
       }
     };
 
+    const handleChangePassword = async (event) => {
+      event.preventDefault();
+      setPwError('');
+      setPwSuccess('');
+
+      if (!pwCurrent) { setPwError('Current password is required'); return; }
+      const pwErr = validatePasswordValue(pwNew);
+      if (pwErr) { setPwError(pwErr); return; }
+
+      setPwSaving(true);
+      try {
+        const result = await changePassword(pwCurrent, pwNew);
+        setPwSuccess(result.message || 'Password updated successfully');
+        setPwCurrent('');
+        setPwNew('');
+      } catch (err) {
+        setPwError(err.message || 'Failed to change password');
+      } finally {
+        setPwSaving(false);
+      }
+    };
+
+    const handleChangeEmail = async (event) => {
+      event.preventDefault();
+      setEmailError('');
+      setEmailSuccess('');
+
+      const trimmedEmail = newEmail.trim();
+      if (!trimmedEmail) { setEmailError('Email is required'); return; }
+      if (!trimmedEmail.includes('@')) { setEmailError('Email must include @'); return; }
+
+      setEmailSaving(true);
+      try {
+        const result = await changeEmail(trimmedEmail);
+        setEmailSuccess(result.message || `Confirmation sent to ${trimmedEmail}`);
+        setNewEmail('');
+      } catch (err) {
+        setEmailError(err.message || 'Failed to initiate email change');
+      } finally {
+        setEmailSaving(false);
+      }
+    };
+
     return (
       <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-        <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
-          <div className="border-b border-[#E1D8D4] bg-white p-5">
+        <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+          <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
                 <UserIcon size={20} className="text-[#E63B2E]" />
@@ -510,16 +625,24 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     id="account-username"
                     type="text"
                     value={accountUsername}
-                    onChange={(event) => setAccountUsername(event.target.value)}
+                    onChange={(event) => handleUsernameChange(event.target.value)}
                     className={inputCls}
                     autoComplete="username"
+                    spellCheck={false}
                   />
+                  {usernameStatus === 'checking'
+                    ? <p className="mt-1 text-xs text-[#857370]">Checking availability…</p>
+                    : usernameStatus === 'available'
+                      ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
+                      : usernameStatus === 'taken'
+                        ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
+                        : null}
                 </div>
                 <div>
                   <p className={labelCls}>Email</p>
                   <p className="break-words text-sm font-semibold text-[#241A18]">{currentUser?.email || 'No email available'}</p>
                 </div>
-                {accountError && <p className="text-sm font-semibold text-[#C1121F]">{accountError}</p>}
+                {accountError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{accountError}</p>}
                 <div className="flex gap-3 pt-1">
                   <button
                     type="button"
@@ -528,6 +651,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                       setAccountName(displayName);
                       setAccountUsername(username);
                       setAccountError('');
+                      setUsernameStatus(null);
                     }}
                     className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                     disabled={accountSaving}
@@ -537,16 +661,16 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   <button
                     type="submit"
                     className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
-                    disabled={accountSaving}
+                    disabled={accountSaving || usernameStatus === 'taken' || usernameStatus === 'checking'}
                   >
                     {accountSaving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </form>
             ) : (
-              <>
-                <div className="mb-5 flex items-center gap-4 rounded-2xl bg-[#FFF8F5] p-4">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E63B2E] text-xl font-extrabold text-white shadow-md">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 rounded-2xl bg-[#FFF8F5] p-4">
+                  <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-xl font-extrabold text-white shadow-md">
                     {initials}
                   </span>
                   <div className="min-w-0">
@@ -559,11 +683,103 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                 <div className="space-y-2">
                   <button
                     type="button"
-                    onClick={() => setAccountEditing(true)}
+                    onClick={() => { setAccountEditing(true); setPwSection(false); setEmailSection(false); }}
                     className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
                   >
                     Edit profile
                   </button>
+
+                  {/* Change password section */}
+                  <div className="rounded-xl border border-[#E1D8D4]">
+                    <button
+                      type="button"
+                      onClick={() => { setPwSection(prev => !prev); setPwError(''); setPwSuccess(''); setPwCurrent(''); setPwNew(''); setEmailSection(false); }}
+                      className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <span>Change password</span>
+                      <span className="text-[#857370]" aria-hidden="true">{pwSection ? '▲' : '▼'}</span>
+                    </button>
+                    {pwSection && (
+                      <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangePassword}>
+                        <div>
+                          <label className={labelCls} htmlFor="pw-current">Current password</label>
+                          <input
+                            id="pw-current"
+                            type="password"
+                            value={pwCurrent}
+                            onChange={(e) => setPwCurrent(e.target.value)}
+                            className={inputCls}
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                          />
+                        </div>
+                        <div>
+                          <label className={labelCls} htmlFor="pw-new">New password</label>
+                          <input
+                            id="pw-new"
+                            type="password"
+                            value={pwNew}
+                            onChange={(e) => setPwNew(e.target.value)}
+                            className={inputCls}
+                            autoComplete="new-password"
+                            placeholder="••••••••"
+                          />
+                          <p className="mt-1 text-xs text-[#857370]">At least 5 letters and 1 number</p>
+                        </div>
+                        {pwError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{pwError}</p>}
+                        {pwSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{pwSuccess}</p>}
+                        <button
+                          type="submit"
+                          disabled={pwSaving}
+                          className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                        >
+                          {pwSaving ? 'Updating...' : 'Update password'}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+
+                  {/* Change email section */}
+                  <div className="rounded-xl border border-[#E1D8D4]">
+                    <button
+                      type="button"
+                      onClick={() => { setEmailSection(prev => !prev); setEmailError(''); setEmailSuccess(''); setNewEmail(''); setPwSection(false); }}
+                      className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <span>Change email</span>
+                      <span className="text-[#857370]" aria-hidden="true">{emailSection ? '▲' : '▼'}</span>
+                    </button>
+                    {emailSection && (
+                      <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangeEmail}>
+                        <div>
+                          <label className={labelCls} htmlFor="new-email">New email address</label>
+                          <input
+                            id="new-email"
+                            type="email"
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            className={inputCls}
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            spellCheck={false}
+                          />
+                          <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                        </div>
+                        {emailError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{emailError}</p>}
+                        {emailSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{emailSuccess}</p>}
+                        {!emailSuccess && (
+                          <button
+                            type="submit"
+                            disabled={emailSaving}
+                            className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                          >
+                            {emailSaving ? 'Sending...' : 'Send confirmation'}
+                          </button>
+                        )}
+                      </form>
+                    )}
+                  </div>
+
                   {onBackToShelves && (
                     <button
                       type="button"
@@ -582,7 +798,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     Log out
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
