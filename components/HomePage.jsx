@@ -207,12 +207,11 @@ function HomePage({ onNavigate }) {
                 Couple Planner
               </h1>
               <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-                Plan your life,<br />together.
+                Plan your life, together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                Couple Planner is a private, shared space just for you and your partner. One calendar, one task list,
-                one map of saved places, your trips planner, recipes book, and the movies and shows you want to watch. Everything synced in one place,
-                to manage your relashionship.
+                Couple Planner is a private, shared space just for you and your partner. Have a shared calendar, task list,
+                saved locations, trips planner, recipes book, and track movies, tv shows and books. Everything synced in one place.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
@@ -233,21 +232,21 @@ function HomePage({ onNavigate }) {
             </div>
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-end">
                   <span className="ss-tag">Private</span>
                 </div>
-                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">Couple Planner Features</h2>
-                <p className="mt-1 text-sm text-[#534340]">Keep your life in sync, all in one place.</p>
-                <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <h2 className="mt-1 text-2xl font-extrabold text-[#410001]">Couple Planner: Main Features</h2>
+                <p className="mt-1 text-sm text-[#534340]">Manage your relashionship with one app.</p>
+                <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {HERO_SHARED_ITEMS.map((item) => {
                     const Icon = item.icon;
                     return (
                       <li
                         key={item.label}
-                        className="flex min-h-[76px] items-center gap-3 rounded-xl p-3 text-white shadow-md shadow-black/10"
+                        className="flex min-h-[58px] items-center gap-2.5 rounded-xl px-3 py-2 text-white shadow-md shadow-black/10"
                         style={{ backgroundColor: item.color }}
                       >
-                        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
+                        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
                           <Icon size={20} strokeWidth={item.strokeWidth || 2} />
                         </span>
                         <p className="min-w-0 text-sm font-extrabold">{item.label}</p>
