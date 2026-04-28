@@ -60,29 +60,66 @@ const FEATURES = [
   }
 ];
 
+const AudienceHomeIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="m3 10 9-7 9 7"></path>
+    <path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"></path>
+    <path d="M9 21v-6h6v6"></path>
+  </svg>
+);
+
+const AudiencePlaneIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3.5S18.5 3 17 4.5L13.5 8 5.3 6.2 4 7.5l6.5 3.5L7 14.5l-3-.5-1 1 4 2 2 4 1-1-.5-3 3.5-3.5 3.5 6.5z"></path>
+  </svg>
+);
+
+const AudienceHeartIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path>
+  </svg>
+);
+
+const AudienceUsersIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
 const AUDIENCES = [
   {
+    icon: AudienceHomeIcon,
     title: 'Living together',
     description: 'Coordinate the calendar, split chores, save the recipes you cook on weeknights, and keep date plans in one place.',
     bg: '#FFE3DD',
-    border: '#F2A69B'
+    border: '#F2A69B',
+    accent: '#D8271C'
   },
   {
+    icon: AudiencePlaneIcon,
     title: 'Long-distance',
     description: 'Stay in sync across schedules and time zones. Plan visits, save the trips you want to take, and queue what to watch on the next call.',
     bg: '#E3EEFF',
-    border: '#9CBFF4'
+    border: '#9CBFF4',
+    accent: '#1D6BDA'
   },
   {
+    icon: AudienceHeartIcon,
     title: 'Newly dating',
     bg: '#FFE2F3',
     border: '#E89BC7',
+    accent: '#B8329B',
     description: 'Keep a running list of restaurants to try, films to watch, and weekend ideas — without losing them in a chat thread.'
   },
   {
+    icon: AudienceUsersIcon,
     title: 'Married & busy',
     bg: '#E3F5EA',
     border: '#95D3AC',
+    accent: '#00845F',
     description: 'Anniversaries, recurring errands, family trips, and the watchlist you never get to. Everything in one shared, private space.'
   }
 ];
@@ -164,7 +201,7 @@ function HomePage({ onNavigate }) {
 
       <main id="main-content" tabIndex="-1" className="flex-1">
         <section className="app-auth-bg">
-          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-16 text-white sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-24">
+          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-12 text-white sm:px-6 sm:py-14 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-16">
             <div className="flex-1">
               <span className="ss-tag mb-5 bg-white/20 text-white">For the two of you</span>
               <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -222,7 +259,7 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section id="what-it-is" className="scroll-mt-24 bg-[#FFF8F5] py-16 sm:py-20">
+        <section id="what-it-is" className="scroll-mt-24 bg-[#FFF8F5] py-12 sm:py-14">
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
@@ -237,9 +274,9 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FBF2ED] py-16 sm:py-20">
+        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FBF2ED] py-12 sm:py-14">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 text-center sm:mb-12">
+            <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Who it is for</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
                 Built for couples, at every stage.
@@ -249,23 +286,34 @@ function HomePage({ onNavigate }) {
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-              {AUDIENCES.map((audience) => (
-                <div
-                  key={audience.title}
-                  className="ss-card p-6"
-                  style={{ backgroundColor: audience.bg, borderColor: audience.border }}
-                >
-                  <h3 className="text-lg font-extrabold text-[#410001]">{audience.title}</h3>
-                  <p className="mt-2 text-sm text-[#534340]">{audience.description}</p>
-                </div>
-              ))}
+              {AUDIENCES.map((audience) => {
+                const Icon = audience.icon;
+                return (
+                  <div
+                    key={audience.title}
+                    className="ss-card p-6"
+                    style={{ backgroundColor: audience.bg, borderColor: audience.border }}
+                  >
+                    <div className="mb-3 flex items-center gap-3">
+                      <span
+                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/70"
+                        style={{ color: audience.accent }}
+                      >
+                        <Icon size={19} />
+                      </span>
+                      <h3 className="text-lg font-extrabold text-[#410001]">{audience.title}</h3>
+                    </div>
+                    <p className="text-sm text-[#534340]">{audience.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        <section className="bg-[#FFF8F5] py-16 sm:py-20">
+        <section className="bg-[#FFF8F5] py-12 sm:py-14">
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 text-center sm:mb-12">
+            <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Private by design</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
                 Your space, your two, your data.
@@ -306,9 +354,9 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-16 sm:py-20">
+        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-12 sm:py-14">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 text-center sm:mb-12">
+            <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Features</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
                 Everything the two of you need to plan, synced in one place.
@@ -338,7 +386,7 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section className="bg-[#FFF8F5] py-16 sm:py-20">
+        <section className="bg-[#FFF8F5] py-12 sm:py-14">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
             <h2 className="text-2xl font-extrabold tracking-tight text-[#410001] sm:text-3xl">
               Ready to start your space, together?
