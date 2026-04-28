@@ -5,13 +5,13 @@ const { BrandLogo } = window;
 const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon } = window;
 
 const Header = ({
-  shelfName,
+  spaceName,
   activeCategory,
   activeSubTab,
   onCategoryChange,
   onSettingsClick,
   onAccountClick,
-  onBackToShelves,
+  onBackToSpaces,
   enabledSections
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -55,15 +55,15 @@ const Header = ({
   return (
     <header className="sticky top-0 z-40 border-b border-[#E1D8D4] bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        {/* Brand + shelf name */}
+        {/* Brand + space name */}
         <button
           type="button"
-          onClick={onBackToShelves}
+          onClick={onBackToSpaces}
           className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:opacity-90 sm:max-w-xs"
           title="Back to your spaces"
         >
           <BrandLogo
-            subtitle={shelfName || 'Your shelf'}
+            subtitle={spaceName || 'Your space'}
             markClassName="h-9 w-9 sm:h-10 sm:w-10"
             textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
           />
@@ -101,8 +101,8 @@ const Header = ({
           <button
             onClick={onSettingsClick}
             className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
-            title="Shelf settings"
-            aria-label="Shelf settings"
+            title="Space settings"
+            aria-label="Space settings"
           >
             <SettingsIcon size={18} />
           </button>
@@ -167,7 +167,7 @@ const Header = ({
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
-                    Shelf settings
+                    Space settings
                   </button>
                   <button
                     role="menuitem"
@@ -177,14 +177,14 @@ const Header = ({
                     <UserIcon size={18} />
                     Profile
                   </button>
-                  {onBackToShelves && (
+                  {onBackToSpaces && (
                     <button
                       role="menuitem"
-                      onClick={() => { onBackToShelves?.(); setMenuOpen(false); }}
+                      onClick={() => { onBackToSpaces?.(); setMenuOpen(false); }}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
-                      Back to shelves
+                      Back to spaces
                     </button>
                   )}
                 </div>

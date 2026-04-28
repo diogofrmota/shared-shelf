@@ -94,7 +94,7 @@ function PrivacyPolicyPage({ onNavigate }) {
         <li>We do not sell or rent your personal data.</li>
         <li>We do not run advertising or third-party tracking on the app.</li>
         <li>
-          Shelf content is only visible to invited space members. We do not share private shelf content with anyone
+          Space content is only visible to invited space members. We do not share private space content with anyone
           else.
         </li>
       </ul>

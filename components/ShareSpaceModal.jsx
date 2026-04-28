@@ -1,7 +1,7 @@
 const React = window.React;
 const { useEffect, useState } = React;
 
-function ShareShelfModal({ isOpen, onClose, shelf }) {
+function ShareSpaceModal({ isOpen, onClose, space }) {
   const [shareInfo, setShareInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -10,7 +10,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !shelf?.id) {
+    if (!isOpen || !space?.id) {
       setShareInfo(null);
       setError('');
       setCopiedField('');
@@ -25,7 +25,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
       setError('');
 
       try {
-        const nextShareInfo = await getShelfShareInfo(shelf.id);
+        const nextShareInfo = await getSpaceShareInfo(space.id);
         if (active) setShareInfo(nextShareInfo);
       } catch (err) {
         if (active) setError(err?.message || 'Failed to load share details');
@@ -36,9 +36,9 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
 
     loadShareInfo();
     return () => { active = false; };
-  }, [isOpen, shelf?.id]);
+  }, [isOpen, space?.id]);
 
-  if (!isOpen || !shelf) return null;
+  if (!isOpen || !space) return null;
 
   const copyValue = async (label, value) => {
     try {
@@ -55,7 +55,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
     setError('');
 
     try {
-      const nextShareInfo = await regenerateShelfJoinCode(shelf.id);
+      const nextShareInfo = await regenerateSpaceJoinCode(space.id);
       setShareInfo(nextShareInfo);
     } catch (err) {
       setError(err?.message || 'Failed to generate a new code');
@@ -85,7 +85,7 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
 
         <div className="mb-4 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space</p>
-          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={shelf.name}>{shelf.name}</p>
+          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={space.name}>{space.name}</p>
         </div>
 
         {loading ? (
@@ -95,9 +95,9 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
             <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
               <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space ID</p>
               <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.spaceId || shelf.id}</code>
+                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.spaceId || space.id}</code>
                 <button
-                  onClick={() => copyValue('spaceId', shareInfo?.spaceId || shelf.id)}
+                  onClick={() => copyValue('spaceId', shareInfo?.spaceId || space.id)}
                   className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                 >
                   {copiedField === 'spaceId' ? 'Copied' : 'Copy'}
@@ -153,4 +153,4 @@ function ShareShelfModal({ isOpen, onClose, shelf }) {
   );
 }
 
-window.ShareShelfModal = ShareShelfModal;
+window.ShareSpaceModal = ShareSpaceModal;

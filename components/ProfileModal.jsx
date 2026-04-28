@@ -65,7 +65,7 @@ const UserAvatar = ({ user, size = 40 }) => {
 const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
-const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, shelf, onSaveShelf, currentUser, onSaveAccount, onLogout, onBackToShelves }) => {
+const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, space, onSaveSpace, currentUser, onSaveAccount, onLogout, onBackToSpaces }) => {
   const sectionOptions = [
     { id: 'calendar', label: 'Calendar' },
     { id: 'tasks', label: 'Tasks' },
@@ -76,7 +76,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
   ];
   const [users, setUsers] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
-  const [name, setName] = useState(shelf?.name || '');
+  const [name, setName] = useState(space?.name || '');
   const [selectedSections, setSelectedSections] = useState(sectionOptions.map(section => section.id));
   const [shareInfo, setShareInfo] = useState(null);
   const [shareLoading, setShareLoading] = useState(false);
@@ -118,14 +118,14 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
   useEffect(() => {
     if (mode === 'settings' && isOpen) {
-      setName(shelf?.name || '');
-      setSelectedSections(Array.isArray(shelf?.enabledSections) && shelf.enabledSections.length ? shelf.enabledSections : sectionOptions.map(section => section.id));
+      setName(space?.name || '');
+      setSelectedSections(Array.isArray(space?.enabledSections) && space.enabledSections.length ? space.enabledSections : sectionOptions.map(section => section.id));
       setShareInfo(null);
       setShareError('');
       setCopiedField('');
       setConfirmRegenerateShare(false);
     }
-  }, [mode, isOpen, shelf]);
+  }, [mode, isOpen, space]);
 
   useEffect(() => {
     if (mode === 'account' && isOpen) {
@@ -147,7 +147,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
   }, [mode, isOpen, currentUser?.id, currentUser?.name, currentUser?.username, currentUser?.email]);
 
   useEffect(() => {
-    if (mode !== 'settings' || !isOpen || !shelf?.id) return;
+    if (mode !== 'settings' || !isOpen || !space?.id) return;
 
     let active = true;
 
@@ -156,7 +156,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
       setShareError('');
 
       try {
-        const nextShareInfo = await getShelfShareInfo(shelf.id);
+        const nextShareInfo = await getSpaceShareInfo(space.id);
         if (active) setShareInfo(nextShareInfo);
       } catch (err) {
         if (active) setShareError(err?.message || 'Failed to load share details');
@@ -167,7 +167,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
 
     loadShareInfo();
     return () => { active = false; };
-  }, [mode, isOpen, shelf?.id]);
+  }, [mode, isOpen, space?.id]);
 
   if (!isOpen) return null;
 
@@ -303,10 +303,10 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     );
   }
 
-  // ---------- SETTINGS MODE (shelf name & share) ----------
+  // ---------- SETTINGS MODE (space name & share) ----------
   if (mode === 'settings') {
     const handleSave = () => {
-      onSaveShelf({ name: name.trim() || shelf?.name || 'Our Space', enabledSections: selectedSections });
+      onSaveSpace({ name: name.trim() || space?.name || 'Our Space', enabledSections: selectedSections });
       onClose();
     };
 
@@ -332,11 +332,11 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
     };
 
     const handleRegenerate = async () => {
-      if (!shelf?.id) return;
+      if (!space?.id) return;
       setRegeneratingShare(true);
       setShareError('');
       try {
-        const nextShareInfo = await regenerateShelfJoinCode(shelf.id);
+        const nextShareInfo = await regenerateSpaceJoinCode(space.id);
         setShareInfo(nextShareInfo);
       } catch (err) {
         setShareError(err?.message || 'Failed to generate a new code');
@@ -345,7 +345,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
       }
     };
 
-    const shelfId = shareInfo?.spaceId || shelf?.id || '';
+    const spaceId = shareInfo?.spaceId || space?.id || '';
     const joinCode = shareInfo?.joinCode || '';
 
     return (
@@ -415,10 +415,10 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                   <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space ID</p>
                     <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shelfId}</code>
+                      <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{spaceId}</code>
                       <button
                         type="button"
-                        onClick={() => copyValue('spaceId', shelfId)}
+                        onClick={() => copyValue('spaceId', spaceId)}
                         className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                       >
                         {copiedField === 'spaceId' ? 'Copied' : 'Copy'}
@@ -780,13 +780,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, she
                     )}
                   </div>
 
-                  {onBackToShelves && (
+                  {onBackToSpaces && (
                     <button
                       type="button"
-                      onClick={() => { onBackToShelves(); onClose(); }}
+                      onClick={() => { onBackToSpaces(); onClose(); }}
                       className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
-                      Back to shelves
+                      Back to spaces
                     </button>
                   )}
                   <button

@@ -186,33 +186,33 @@ const logout = () => {
 };
 
 // ============================================================================
-// SHELF DATA API
+// SPACE DATA API
 // ============================================================================
 
-const getShelfData = async (shelfId) => {
+const getSpaceData = async (spaceId) => {
   const token = getAuthToken();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/shelf/${shelfId}/data`, {
+    const res = await fetch(`${API_BASE_URL}/api/space/${spaceId}/data`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) return await res.json();
   } catch {}
   // Fallback to local cache if available
-  const cached = localStorage.getItem(`shelf-data-${shelfId}`);
+  const cached = localStorage.getItem(`space-data-${spaceId}`);
   if (cached) {
     try { return JSON.parse(cached); } catch {}
   }
   return null;
 };
 
-const saveShelfData = async (shelfId, data) => {
+const saveSpaceData = async (spaceId, data) => {
   // Local cache
   try {
-    localStorage.setItem(`shelf-data-${shelfId}`, JSON.stringify(data));
+    localStorage.setItem(`space-data-${spaceId}`, JSON.stringify(data));
   } catch {}
   const token = getAuthToken();
   try {
-    await fetch(`${API_BASE_URL}/api/shelf/${shelfId}/data`, {
+    await fetch(`${API_BASE_URL}/api/space/${spaceId}/data`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ data })
@@ -221,31 +221,31 @@ const saveShelfData = async (shelfId, data) => {
   } catch { return false; }
 };
 
-const getUserShelves = async () => {
+const getUserSpaces = async () => {
   const token = getAuthToken();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/shelf`, {
+    const res = await fetch(`${API_BASE_URL}/api/space`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
       const data = await res.json();
-      return data.shelves || [];
+      return data.spaces || [];
     }
   } catch {}
   return [];
 };
 
-const createShelf = async (name, enabledSections) => {
+const createSpace = async (name, enabledSections) => {
   const token = getAuthToken();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/shelf`, {
+    const res = await fetch(`${API_BASE_URL}/api/space`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ name, enabledSections })
     });
     if (res.ok) {
       const data = await res.json();
-      return data.shelf;
+      return data.space;
     }
   } catch {}
   return null;
@@ -384,7 +384,7 @@ Object.assign(window, {
   setAuthToken, getAuthToken, clearAuthToken,
   loginUser, registerUser, authenticateWithGoogle, authenticateWithApple,
   isAuthenticated, logout,
-  getShelfData, saveShelfData, getUserShelves, createShelf,
+  getSpaceData, saveSpaceData, getUserSpaces, createSpace,
   transformMovieData, transformAnimeData, transformBookData,
   searchMovies, searchTvShows, searchAnime, searchBooks,
   formatStatusLabel, getStatusOptions, getFilterOptions, getDefaultStatus,

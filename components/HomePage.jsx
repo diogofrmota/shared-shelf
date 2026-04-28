@@ -96,42 +96,6 @@ const HERO_SHARED_ITEMS = [
   { icon: Tv, label: 'Watchlist', color: '#6B52D9', strokeWidth: 2.8 }
 ];
 
-const HERO_ICON_COLORS = new Map(HERO_SHARED_ITEMS.map((item) => [item.icon, item.color]));
-const HERO_ICON_STROKES = new Map(HERO_SHARED_ITEMS.map((item) => [item.icon, item.strokeWidth || 2]));
-
-const HERO_PREVIEW = [
-  {
-    icon: CalendarIcon,
-    label: 'Saturday · Anniversary dinner, 20:00',
-    sub: 'Shared calendar event'
-  },
-  {
-    icon: CheckSquare,
-    label: 'Book the restaurant — Diogo',
-    sub: 'Task assigned, due Friday'
-  },
-  {
-    icon: Film,
-    label: 'Porto weekend · May 3–5',
-    sub: 'Trip with itinerary and packing list'
-  },
-  {
-    icon: MapPin,
-    label: 'Saved: Cervejaria Ramiro',
-    sub: 'Pinned on the shared map'
-  },
-  {
-    icon: ChefHat,
-    label: 'Sunday brunch · Pancakes',
-    sub: 'Recipe saved together'
-  },
-  {
-    icon: Tv,
-    label: 'Tonight · The Bear, S3 E2',
-    sub: 'Next on your watchlist'
-  }
-];
-
 function HomePage({ onNavigate }) {
   const goTo = (path) => (event) => {
     if (event) event.preventDefault();
@@ -211,21 +175,6 @@ function HomePage({ onNavigate }) {
                 one map of saved places, your trips planner, recipes book, and the movies and shows you want to watch. Everything synced in one place,
                 to manage your relashionship.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
-                {HERO_SHARED_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <span
-                      key={item.label}
-                      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 shadow-md shadow-black/15"
-                      style={{ backgroundColor: item.color }}
-                    >
-                      <Icon size={16} strokeWidth={item.strokeWidth || 2} />
-                      {item.label}
-                    </span>
-                  );
-                })}
-              </div>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
                   href="/login?mode=signup"
@@ -246,28 +195,24 @@ function HomePage({ onNavigate }) {
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">Create a Private Space</p>
-                  <span className="ss-tag">Shared Dashboard</span>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">Create a Shared Dashboard</p>
+                  <span className="ss-tag">Private</span>
                 </div>
                 <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">Couple Planner</h2>
                 <p className="mt-1 text-sm text-[#534340]">Everything the two of you are planning, in one place.</p>
                 <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                  {HERO_PREVIEW.map((item) => {
+                  {HERO_SHARED_ITEMS.map((item) => {
                     const Icon = item.icon;
-                    const itemColor = HERO_ICON_COLORS.get(item.icon);
-                    const strokeWidth = HERO_ICON_STROKES.get(item.icon);
                     return (
-                      <li key={item.label} className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
-                        <span
-                          className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white"
-                          style={{ backgroundColor: itemColor }}
-                        >
-                          <Icon size={16} strokeWidth={strokeWidth} />
+                      <li
+                        key={item.label}
+                        className="flex min-h-[76px] items-center gap-3 rounded-xl p-3 text-white shadow-md shadow-black/10"
+                        style={{ backgroundColor: item.color }}
+                      >
+                        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
+                          <Icon size={20} strokeWidth={item.strokeWidth || 2} />
                         </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-[#410001]">{item.label}</p>
-                          <p className="truncate text-xs text-[#534340]">{item.sub}</p>
-                        </div>
+                        <p className="min-w-0 text-sm font-extrabold">{item.label}</p>
                       </li>
                     );
                   })}

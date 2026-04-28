@@ -1,7 +1,7 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
+function JoinSpaceModal({ isOpen, onClose, onJoin, token }) {
   const sectionOptions = [
     { id: 'calendar', label: 'Calendar' },
     { id: 'tasks', label: 'Tasks' },
@@ -12,7 +12,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
   ];
   const [mode, setMode] = useState('create');
   const [name, setName] = useState('');
-  const [shelfId, setShelfId] = useState('');
+  const [spaceId, setSpaceId] = useState('');
   const [code, setCode] = useState('');
   const [selectedSections, setSelectedSections] = useState(sectionOptions.map(section => section.id));
   const [error, setError] = useState('');
@@ -22,7 +22,7 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
     if (!isOpen) {
       setMode('create');
       setName('');
-      setShelfId('');
+      setSpaceId('');
       setCode('');
       setSelectedSections(sectionOptions.map(section => section.id));
       setError('');
@@ -46,9 +46,9 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
     setLoading(true);
 
     try {
-      const created = await createShelf(name.trim(), selectedSections);
-      if (created?.shelf) {
-        onJoin(created.shelf);
+      const created = await createSpace(name.trim(), selectedSections);
+      if (created?.space) {
+        onJoin(created.space);
         onClose();
       } else {
         setError('Failed to create space');
@@ -66,9 +66,9 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
     setLoading(true);
 
     try {
-      const joined = await joinShelf(shelfId.trim(), code.trim());
-      if (joined?.shelf) {
-        onJoin(joined.shelf);
+      const joined = await joinSpace(spaceId.trim(), code.trim());
+      if (joined?.space) {
+        onJoin(joined.space);
         onClose();
       } else {
         setError('Invalid code');
@@ -177,8 +177,8 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
                 autoComplete="off"
                 spellCheck={false}
                 placeholder="Space ID"
-                value={shelfId}
-                onChange={e => setShelfId(e.target.value)}
+                value={spaceId}
+                onChange={e => setSpaceId(e.target.value)}
                 className={inputCls}
                 required
               />
@@ -222,4 +222,4 @@ function JoinShelfModal({ isOpen, onClose, onJoin, token }) {
   );
 }
 
-window.JoinShelfModal = JoinShelfModal;
+window.JoinSpaceModal = JoinSpaceModal;

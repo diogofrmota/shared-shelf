@@ -9,7 +9,7 @@ import {
   rateLimitResponse,
   sql
 } from '../../lib/auth-shared.js';
-import { DEFAULT_SPACE_DATA, initializeDatabase, normalizeShelfData, normalizeShelfSections } from '../../lib/db.js';
+import { DEFAULT_SPACE_DATA, initializeDatabase, normalizeSpaceData, normalizeSpaceSections } from '../../lib/db.js';
 
 const JOIN_CODE_RATE_LIMIT = { limit: 10, windowSeconds: 15 * 60 };
 const JOIN_CODE_IP_RATE_LIMIT = { limit: 60, windowSeconds: 15 * 60 };
@@ -180,7 +180,7 @@ export default async function handler(req, res) {
         const name = normalizeSpaceName(req.body?.name);
         if (!name) return res.status(400).json({ error: 'Name required' });
         const spaceId = randomUUID();
-        const enabledSections = normalizeShelfSections(req.body?.enabledSections);
+        const enabledSections = normalizeSpaceSections(req.body?.enabledSections);
 
         const created = await sql`
           INSERT INTO spaces (id, name, created_by, enabled_sections, updated_at)
@@ -203,7 +203,8 @@ export default async function handler(req, res) {
 
         const joinCode = await createJoinCode(space.id);
 
-        return res.status(201).json({ shelf: await getSpaceSummary(space.id), joinCode });
+        const createdSpace = await getSpaceSummary(space.id);
+        return res.status(201).json({ space: createdSpace, shelf: createdSpace, joinCode });
       }
     }
 
@@ -268,7 +269,7 @@ export default async function handler(req, res) {
 
       const space = await getSpaceSummary(spaceId);
 
-      return res.json({ success: true, shelf: space });
+      return res.json({ success: true, space, shelf: space });
     }
 
     if (segments.length === 1 && req.method === 'PATCH') {
@@ -282,7 +283,7 @@ export default async function handler(req, res) {
       const nextName = normalizeSpaceName(req.body?.name);
       const nextLogo = typeof req.body?.logo === 'string' ? sanitizeHttpUrl(req.body.logo) : undefined;
       const hasEnabledSections = Array.isArray(req.body?.enabledSections);
-      const nextEnabledSections = hasEnabledSections ? normalizeShelfSections(req.body.enabledSections) : undefined;
+      const nextEnabledSections = hasEnabledSections ? normalizeSpaceSections(req.body.enabledSections) : undefined;
 
       if (!nextName && nextLogo === undefined && !hasEnabledSections) {
         return res.status(400).json({ error: 'At least one space setting is required' });
@@ -296,13 +297,13 @@ export default async function handler(req, res) {
         SET
           name = ${nextName || existingSpace.name},
           logo_url = ${nextLogo === undefined ? existingSpace.logo : nextLogo || null},
-          enabled_sections = ${JSON.stringify(nextEnabledSections || existingSpace.enabledSections || normalizeShelfSections())}::jsonb,
+          enabled_sections = ${JSON.stringify(nextEnabledSections || existingSpace.enabledSections || normalizeSpaceSections())}::jsonb,
           updated_at = NOW()
         WHERE id = ${spaceId}
         RETURNING id, name, created_by, logo_url AS logo, enabled_sections AS "enabledSections", created_at, updated_at
       `;
 
-      return res.json({ shelf: updated.rows[0] });
+      return res.json({ space: updated.rows[0], shelf: updated.rows[0] });
     }
 
     if (segments.length === 2 && segments[1] === 'share' && ['GET', 'POST'].includes(req.method)) {
@@ -356,14 +357,14 @@ export default async function handler(req, res) {
           LIMIT 1
         `;
 
-        return res.json(normalizeShelfData(result.rows[0]?.data || DEFAULT_SPACE_DATA));
+        return res.json(normalizeSpaceData(result.rows[0]?.data || DEFAULT_SPACE_DATA));
       }
 
       const payload = req.body?.data;
       if (!payload || typeof payload !== 'object') {
         return res.status(400).json({ error: 'Data payload is required' });
       }
-      const normalizedPayload = normalizeShelfData(payload);
+      const normalizedPayload = normalizeSpaceData(payload);
 
       await sql`
         INSERT INTO space_data (shelf_id, data, updated_at)

@@ -21,7 +21,7 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 ## Frontend Guidance
 
 - Routing is handled by `media-tracker.jsx` and `vercel.json` rewrites. Keep both in sync when adding routes.
-- Main components: `Login.jsx` (`/login`), `ShelfSelector.jsx` (space list, create/join), `Header.jsx` (in-space nav), `CalendarView.jsx`, `TasksView.jsx`, `DatesView.jsx` (locations), `TripsView.jsx`, `RecipesView.jsx`, `MediaSectionsView.jsx`, etc.
+- Main components: `Login.jsx` (`/login`), `SpaceSelector.jsx` (space list, create/join), `Header.jsx` (in-space nav), `CalendarView.jsx`, `TasksView.jsx`, `DatesView.jsx` (locations), `TripsView.jsx`, `RecipesView.jsx`, `MediaSectionsView.jsx`, etc.
 - Visual design: warm red palette (`#E63B2E`), cream/off-white surfaces, Epilogue headings, Manrope body text. Use visible labels, accessible touch targets, and existing conventions.
 - When adding a new category/feature: update navigation (Header), add/edit modals, persistence, empty states, and data normalization together.
 - `window` globals are common; respect the script loading order in `index.html`.

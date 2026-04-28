@@ -9,7 +9,7 @@ const React = window.React;
 // their own /api routes instead of falling back to a hardcoded URL.
 const API_BASE = window.API_BASE_URL ?? '';
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-const pendingShelfSaves = new Map();
+const pendingSpaceSaves = new Map();
 
 const safeExternalUrl = (value) => {
   const raw = typeof value === 'string' ? value.trim() : '';
@@ -337,50 +337,50 @@ const forgotPassword = async (email) => {
 };
 
 // ============================================================================
-// SHELF DATA FUNCTIONS
+// SPACE DATA FUNCTIONS
 // ============================================================================
 
-const getCachedShelfData = (shelfId) => {
+const getCachedSpaceData = (spaceId) => {
   try {
-    const cached = localStorage.getItem(`space-data-${shelfId}`);
+    const cached = localStorage.getItem(`space-data-${spaceId}`);
     return cached ? JSON.parse(cached) : null;
   } catch (error) {
-    console.error('Error reading cached shelf data:', error);
+    console.error('Error reading cached space data:', error);
     return null;
   }
 };
 
-const cacheShelfData = (shelfId, data) => {
+const cacheSpaceData = (spaceId, data) => {
   try {
-    localStorage.setItem(`space-data-${shelfId}`, JSON.stringify(data));
+    localStorage.setItem(`space-data-${spaceId}`, JSON.stringify(data));
   } catch (error) {
-    console.error('Error caching shelf data locally:', error);
+    console.error('Error caching space data locally:', error);
   }
 };
 
-const getShelfData = async (shelfId) => {
+const getSpaceData = async (spaceId) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
-    if (!token) return getCachedShelfData(shelfId);
+    if (!token) return getCachedSpaceData(spaceId);
 
-    const res = await fetch(`${API_BASE}/api/space/${shelfId}/data`, {
+    const res = await fetch(`${API_BASE}/api/space/${spaceId}/data`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
-    if (!res.ok) return getCachedShelfData(shelfId);
+    if (!res.ok) return getCachedSpaceData(spaceId);
     return await res.json();
   } catch (error) {
-    console.error('Error fetching shelf data:', error);
-    return getCachedShelfData(shelfId);
+    console.error('Error fetching space data:', error);
+    return getCachedSpaceData(spaceId);
   }
 };
 
-const persistShelfData = async (shelfId, data) => {
+const persistSpaceData = async (spaceId, data) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
     if (!token) return false;
 
-    const res = await fetch(`${API_BASE}/api/space/${shelfId}/data`, {
+    const res = await fetch(`${API_BASE}/api/space/${spaceId}/data`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -391,19 +391,19 @@ const persistShelfData = async (shelfId, data) => {
     
     return res.ok;
   } catch (error) {
-    console.error('Error saving shelf data to API:', error);
+    console.error('Error saving space data to API:', error);
     return false;
   }
 };
 
-const saveShelfData = async (shelfId, data, { debounceMs = 700 } = {}) => {
-  cacheShelfData(shelfId, data);
+const saveSpaceData = async (spaceId, data, { debounceMs = 700 } = {}) => {
+  cacheSpaceData(spaceId, data);
 
   if (debounceMs <= 0) {
-    return persistShelfData(shelfId, data);
+    return persistSpaceData(spaceId, data);
   }
 
-  const previous = pendingShelfSaves.get(shelfId);
+  const previous = pendingSpaceSaves.get(spaceId);
   if (previous) {
     clearTimeout(previous.timeoutId);
     previous.resolve(false);
@@ -411,11 +411,11 @@ const saveShelfData = async (shelfId, data, { debounceMs = 700 } = {}) => {
 
   return new Promise((resolve) => {
     const timeoutId = window.setTimeout(async () => {
-      pendingShelfSaves.delete(shelfId);
-      resolve(await persistShelfData(shelfId, data));
+      pendingSpaceSaves.delete(spaceId);
+      resolve(await persistSpaceData(spaceId, data));
     }, debounceMs);
 
-    pendingShelfSaves.set(shelfId, { timeoutId, resolve });
+    pendingSpaceSaves.set(spaceId, { timeoutId, resolve });
   });
 };
 
@@ -498,7 +498,7 @@ const updateAccount = async ({ name, username }) => {
   return payload.user;
 };
 
-const getUserShelves = async () => {
+const getUserSpaces = async () => {
   try {
     const res = await fetch(`${API_BASE}/api/space`, {
       headers: getAuthorizedHeaders()
@@ -508,12 +508,12 @@ const getUserShelves = async () => {
     const payload = await res.json();
     return payload.spaces || [];
   } catch (error) {
-    console.error('Error fetching shelves:', error);
+    console.error('Error fetching spaces:', error);
     return [];
   }
 };
 
-const createShelf = async (name, enabledSections) => {
+const createSpace = async (name, enabledSections) => {
   const res = await fetch(`${API_BASE}/api/space`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true),
@@ -522,13 +522,13 @@ const createShelf = async (name, enabledSections) => {
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to create shelf');
+    throw new Error(payload.error || 'Failed to create space');
   }
 
-  return payload;
+  return { ...payload, space: payload.space || payload.shelf || null };
 };
 
-const joinShelf = async (spaceId, joinCode) => {
+const joinSpace = async (spaceId, joinCode) => {
   const res = await fetch(`${API_BASE}/api/space/join`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true),
@@ -540,11 +540,11 @@ const joinShelf = async (spaceId, joinCode) => {
     throw new Error(payload.error || 'Failed to join space');
   }
 
-  return payload;
+  return { ...payload, space: payload.space || payload.shelf || null };
 };
 
-const updateShelf = async (shelfId, updates) => {
-  const res = await fetch(`${API_BASE}/api/space/${shelfId}`, {
+const updateSpace = async (spaceId, updates) => {
+  const res = await fetch(`${API_BASE}/api/space/${spaceId}`, {
     method: 'PATCH',
     headers: getAuthorizedHeaders(true),
     body: JSON.stringify(updates)
@@ -552,13 +552,13 @@ const updateShelf = async (shelfId, updates) => {
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to update shelf');
+    throw new Error(payload.error || 'Failed to update space');
   }
 
-  return payload.shelf || null;
+  return payload.space || payload.shelf || null;
 };
 
-const getShelfShareInfo = async (spaceId) => {
+const getSpaceShareInfo = async (spaceId) => {
   const res = await fetch(`${API_BASE}/api/space/${spaceId}/share`, {
     headers: getAuthorizedHeaders()
   });
@@ -571,7 +571,7 @@ const getShelfShareInfo = async (spaceId) => {
   return payload;
 };
 
-const regenerateShelfJoinCode = async (spaceId) => {
+const regenerateSpaceJoinCode = async (spaceId) => {
   const res = await fetch(`${API_BASE}/api/space/${spaceId}/share`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true)
@@ -612,13 +612,13 @@ Object.assign(window, {
   checkUsernameAvailable,
   forgotPassword,
   resetPassword,
-  getCachedShelfData,
-  getShelfData,
-  saveShelfData,
-  getUserShelves,
-  createShelf,
-  joinShelf,
-  updateShelf,
-  getShelfShareInfo,
-  regenerateShelfJoinCode
+  getCachedSpaceData,
+  getSpaceData,
+  saveSpaceData,
+  getUserSpaces,
+  createSpace,
+  joinSpace,
+  updateSpace,
+  getSpaceShareInfo,
+  regenerateSpaceJoinCode
 });

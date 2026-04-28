@@ -2,12 +2,12 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, currentUser }) {
-  const [shelves, setShelves] = useState([]);
+function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, token, currentUser }) {
+  const [spaces, setSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
   const [manageMode, setManageMode] = useState(false);
-  const [removingShelfId, setRemovingShelfId] = useState('');
+  const [removingSpaceId, setRemovingSpaceId] = useState('');
   const [error, setError] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -15,7 +15,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   const [profileUsername, setProfileUsername] = useState('');
   const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
-  const [pendingShelfRemoval, setPendingShelfRemoval] = useState(null);
+  const [pendingSpaceRemoval, setPendingSpaceRemoval] = useState(null);
   const profileRef = useRef(null);
 
   const API_BASE = window.API_BASE_URL ?? '';
@@ -35,41 +35,41 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileOpen]);
 
-  const fetchShelves = async () => {
+  const fetchSpaces = async () => {
     try {
-      const nextShelves = await getUserShelves();
-      setShelves(nextShelves);
+      const nextSpaces = await getUserSpaces();
+      setSpaces(nextSpaces);
       setError('');
     } catch {
-      setError('Failed to load shelves');
+      setError('Failed to load spaces');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchShelves();
+    fetchSpaces();
   }, [token]);
 
-  const handleJoinShelf = (shelf) => {
-    if (shelf) {
-      setShelves(prev => {
-        const remaining = prev.filter(item => item.id !== shelf.id);
-        return [shelf, ...remaining];
+  const handleJoinSpace = (space) => {
+    if (space) {
+      setSpaces(prev => {
+        const remaining = prev.filter(item => item.id !== space.id);
+        return [space, ...remaining];
       });
-      onSelectShelf(shelf);
+      onSelectSpace(space);
       return;
     }
-    fetchShelves();
+    fetchSpaces();
   };
 
-  const removeShelfMembership = async (shelf) => {
+  const removeSpaceMembership = async (space) => {
     setError('');
-    setRemovingShelfId(shelf.id);
-    setPendingShelfRemoval(null);
+    setRemovingSpaceId(space.id);
+    setPendingSpaceRemoval(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/space/${shelf.id}/membership`, {
+      const res = await fetch(`${API_BASE}/api/space/${space.id}/membership`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -78,7 +78,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
       });
 
       if (res.ok) {
-        setShelves(prev => prev.filter(item => item.id !== shelf.id));
+        setSpaces(prev => prev.filter(item => item.id !== space.id));
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Failed to remove space');
@@ -86,12 +86,12 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
     } catch {
       setError('Connection error');
     } finally {
-      setRemovingShelfId('');
+      setRemovingSpaceId('');
     }
   };
 
-  const handleRemoveShelf = (shelf) => {
-    setPendingShelfRemoval(shelf);
+  const handleRemoveSpace = (space) => {
+    setPendingSpaceRemoval(space);
   };
 
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
@@ -195,7 +195,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
   );
 
   if (loading) {
-    return <LoadingScreen label="Loading your spaces..." />;
+    return <LoadingScreen label="Logging in ..." />;
   }
 
   const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
@@ -338,7 +338,7 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               <Plus size={16} />
               Create or join
             </button>
-            {shelves.length > 0 && (
+            {spaces.length > 0 && (
               <button
                 type="button"
                 onClick={() => setManageMode(prev => !prev)}
@@ -352,10 +352,10 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
               </button>
             )}
           </div>
-          <span className="text-sm font-medium text-[#534340]">{shelves.length} {shelves.length === 1 ? 'space' : 'spaces'}</span>
+          <span className="text-sm font-medium text-[#534340]">{spaces.length} {spaces.length === 1 ? 'space' : 'spaces'}</span>
         </div>
 
-        {shelves.length === 0 ? (
+        {spaces.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white p-10 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E]">
               <Plus size={28} />
@@ -375,24 +375,24 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {shelves.map(shelf => {
-              const shelfMembers = Array.isArray(shelf.members) && shelf.members.length
-                ? shelf.members
+            {spaces.map(space => {
+              const spaceMembers = Array.isArray(space.members) && space.members.length
+                ? space.members
                 : [currentUser].filter(Boolean);
               return (
-                <div key={shelf.id} className="group relative overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#410001]/10">
+                <div key={space.id} className="group relative overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#410001]/10">
                   {manageMode && (
                     <button
-                      onClick={() => handleRemoveShelf(shelf)}
-                      disabled={removingShelfId === shelf.id}
+                      onClick={() => handleRemoveSpace(space)}
+                      disabled={removingSpaceId === space.id}
                       className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#C1121F] text-white shadow-md transition hover:bg-[#A80F1A] disabled:opacity-50"
-                      aria-label={`Remove ${shelf.name}`}
+                      aria-label={`Remove ${space.name}`}
                     >
                       <TrashCanIcon />
                     </button>
                   )}
                   <button
-                    onClick={() => !manageMode && onSelectShelf(shelf)}
+                    onClick={() => !manageMode && onSelectSpace(space)}
                     disabled={manageMode}
                     className="block min-h-[44px] w-full text-left"
                   >
@@ -401,15 +401,15 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
                       aria-hidden="true"
                     >
                       <span className="text-4xl font-extrabold tracking-tight opacity-90">
-                        {shelf.name?.charAt(0).toUpperCase() || 'S'}
+                        {space.name?.charAt(0).toUpperCase() || 'S'}
                       </span>
                     </div>
                     <div className="p-5">
-                      <h3 className="line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={shelf.name}>{shelf.name}</h3>
+                      <h3 className="line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={space.name}>{space.name}</h3>
                       <div className="mt-3 flex items-center justify-between">
-                        <MemberStack members={shelfMembers} />
+                        <MemberStack members={spaceMembers} />
                         <span className="rounded-full bg-[#FFDAD4] px-2.5 py-0.5 text-xs font-bold text-[#410001]">
-                          {shelfMembers.length} {shelfMembers.length === 1 ? 'member' : 'members'}
+                          {spaceMembers.length} {spaceMembers.length === 1 ? 'member' : 'members'}
                         </span>
                       </div>
                     </div>
@@ -434,23 +434,23 @@ function ShelfSelector({ onSelectShelf, onBackToLogin, onUpdateUser, token, curr
         )}
       </main>
 
-      <JoinShelfModal
+      <JoinSpaceModal
         isOpen={joinOpen}
         onClose={() => setJoinOpen(false)}
-        onJoin={handleJoinShelf}
+        onJoin={handleJoinSpace}
         token={token}
       />
       <ConfirmationDialog
-        isOpen={Boolean(pendingShelfRemoval)}
+        isOpen={Boolean(pendingSpaceRemoval)}
         title="Remove space?"
-        message={`This removes "${pendingShelfRemoval?.name || 'this space'}" from your account. Other members can keep using it if they still have access.`}
-        confirmLabel={removingShelfId ? 'Removing...' : 'Remove space'}
+        message={`This removes "${pendingSpaceRemoval?.name || 'this space'}" from your account. Other members can keep using it if they still have access.`}
+        confirmLabel={removingSpaceId ? 'Removing...' : 'Remove space'}
         cancelLabel="Keep space"
-        onConfirm={() => pendingShelfRemoval && removeShelfMembership(pendingShelfRemoval)}
-        onCancel={() => setPendingShelfRemoval(null)}
+        onConfirm={() => pendingSpaceRemoval && removeSpaceMembership(pendingSpaceRemoval)}
+        onCancel={() => setPendingSpaceRemoval(null)}
       />
     </div>
   );
 }
 
-window.ShelfSelector = ShelfSelector;
+window.SpaceSelector = SpaceSelector;

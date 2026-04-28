@@ -7,9 +7,9 @@ const API_BASE = window.API_BASE_URL ?? '';
 const {
   PUBLIC_ROUTE_TYPES,
   STATIC_PUBLIC_ROUTE_TYPES,
-  defaultShelfData,
+  defaultSpaceData,
   getEnabledSections,
-  normalizeShelfDataForClient,
+  normalizeSpaceDataForClient,
   normalizeTask,
   normalizeWatchlistItem,
   readAppRoute,
@@ -18,7 +18,7 @@ const {
 
 function MediaTracker() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [currentShelf, setCurrentShelf] = useState(null);
+  const [currentSpace, setCurrentSpace] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [appRoute, setAppRoute] = useState(() => readAppRoute());
   const [routeLoading, setRouteLoading] = useState(false);
@@ -49,10 +49,10 @@ function MediaTracker() {
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
   const initialRouteRef = useRef(readAppRoute());
-  const directShelfHistorySeededRef = useRef(false);
+  const directSpaceHistorySeededRef = useRef(false);
   const currentUrlRef = useRef(`${window.location.pathname}${window.location.search}`);
   const appRouteRef = useRef(appRoute);
-  const hasOpenShelfDraftRef = useRef(false);
+  const hasOpenSpaceDraftRef = useRef(false);
 
   const requestConfirmation = (options, onConfirm) => {
     setConfirmation({
@@ -69,7 +69,7 @@ function MediaTracker() {
     return rawLabel ? `"${rawLabel}"` : fallback;
   };
 
-  const closeShelfOverlays = () => {
+  const closeSpaceOverlays = () => {
     setGlobalSearchOpen(false);
     setAddModalOpen(false);
     setAddCategory(null);
@@ -87,14 +87,14 @@ function MediaTracker() {
   };
 
   const shouldWarnBeforeRouteChange = (nextRoute) => (
-    hasOpenShelfDraftRef.current
-    && appRouteRef.current.type === 'shelf'
-    && (nextRoute.type !== 'shelf' || nextRoute.shelfId !== appRouteRef.current.shelfId)
+    hasOpenSpaceDraftRef.current
+    && appRouteRef.current.type === 'space'
+    && (nextRoute.type !== 'space' || nextRoute.spaceId !== appRouteRef.current.spaceId)
   );
 
   const confirmRouteChange = (nextRoute) => {
     if (!shouldWarnBeforeRouteChange(nextRoute)) return true;
-    return window.confirm('You have an open form or dialog in this shelf. Leave this page and discard anything not saved yet?');
+    return window.confirm('You have an open form or dialog in this space. Leave this page and discard anything not saved yet?');
   };
 
   const navigateTo = (target, { replace = false, skipPrompt = false } = {}) => {
@@ -120,8 +120,8 @@ function MediaTracker() {
       window.history[method]({ appRoutePath: nextRoute.path }, '', nextUrl);
     }
 
-    if (nextRoute.type !== 'shelf' || nextRoute.shelfId !== appRoute.shelfId) {
-      closeShelfOverlays();
+    if (nextRoute.type !== 'space' || nextRoute.spaceId !== appRoute.spaceId) {
+      closeSpaceOverlays();
     }
     setAppRoute(nextRoute);
     currentUrlRef.current = nextUrl;
@@ -148,8 +148,8 @@ function MediaTracker() {
         window.history.pushState({ appRoutePath: appRouteRef.current.path }, '', currentUrlRef.current);
         return;
       }
-      if (nextRoute.type !== 'shelf' || nextRoute.shelfId !== appRouteRef.current.shelfId) {
-        closeShelfOverlays();
+      if (nextRoute.type !== 'space' || nextRoute.spaceId !== appRouteRef.current.spaceId) {
+        closeSpaceOverlays();
       }
       setAppRoute(nextRoute);
       currentUrlRef.current = nextUrl;
@@ -171,8 +171,8 @@ function MediaTracker() {
   }, [appRoute]);
 
   useEffect(() => {
-    hasOpenShelfDraftRef.current = Boolean(
-      currentShelf && (
+    hasOpenSpaceDraftRef.current = Boolean(
+      currentSpace && (
         addModalOpen
         || editRecipeModalOpen
         || editTripModalOpen
@@ -186,7 +186,7 @@ function MediaTracker() {
       )
     );
   }, [
-    currentShelf,
+    currentSpace,
     addModalOpen,
     editRecipeModalOpen,
     editTripModalOpen,
@@ -201,7 +201,7 @@ function MediaTracker() {
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      if (!hasOpenShelfDraftRef.current) return;
+      if (!hasOpenSpaceDraftRef.current) return;
       event.preventDefault();
       event.returnValue = '';
     };
@@ -233,8 +233,8 @@ function MediaTracker() {
 
     if (!currentUser) {
       setRouteLoading(false);
-      if (currentShelf) {
-        setCurrentShelf(null);
+      if (currentSpace) {
+        setCurrentSpace(null);
         setData(null);
       }
       if (!PUBLIC_ROUTE_TYPES.has(appRoute.type)) {
@@ -248,8 +248,8 @@ function MediaTracker() {
     }
 
     if (appRoute.type === 'home' || appRoute.type === 'login') {
-      if (currentShelf) {
-        setCurrentShelf(null);
+      if (currentSpace) {
+        setCurrentSpace(null);
         setData(null);
       }
       navigateTo('/space-selection/', { replace: true });
@@ -257,11 +257,11 @@ function MediaTracker() {
     }
 
     if (
-      appRoute.type === 'shelf'
-      && initialRouteRef.current.type === 'shelf'
-      && !directShelfHistorySeededRef.current
+      appRoute.type === 'space'
+      && initialRouteRef.current.type === 'space'
+      && !directSpaceHistorySeededRef.current
     ) {
-      directShelfHistorySeededRef.current = true;
+      directSpaceHistorySeededRef.current = true;
       const currentUrl = `${appRoute.path}${window.location.search || ''}`;
       window.history.replaceState({ appRoutePath: '/space-selection/' }, '', '/space-selection/');
       window.history.pushState({ appRoutePath: appRoute.path }, '', currentUrl);
@@ -275,30 +275,30 @@ function MediaTracker() {
 
     if (appRoute.type === 'selection') {
       setRouteLoading(false);
-      if (currentShelf) {
-        setCurrentShelf(null);
+      if (currentSpace) {
+        setCurrentSpace(null);
         setData(null);
       }
-      closeShelfOverlays();
+      closeSpaceOverlays();
       return;
     }
 
-    if (appRoute.type === 'shelf') {
-      if (currentShelf?.id === appRoute.shelfId) {
+    if (appRoute.type === 'space') {
+      if (currentSpace?.id === appRoute.spaceId) {
         setRouteLoading(false);
         return;
       }
 
       let cancelled = false;
       setRouteLoading(true);
-      getUserShelves()
-        .then((shelves) => {
+      getUserSpaces()
+        .then((spaces) => {
           if (cancelled) return;
-          const matchingShelf = shelves.find((shelf) => shelf.id === appRoute.shelfId);
-          if (matchingShelf) {
-            setCurrentShelf(matchingShelf);
+          const matchingSpace = spaces.find((space) => space.id === appRoute.spaceId);
+          if (matchingSpace) {
+            setCurrentSpace(matchingSpace);
           } else {
-            setCurrentShelf(null);
+            setCurrentSpace(null);
             setData(null);
             setAccessIssue({
               type: 'forbidden',
@@ -309,7 +309,7 @@ function MediaTracker() {
         })
         .catch(() => {
           if (!cancelled) {
-            setCurrentShelf(null);
+            setCurrentSpace(null);
             setData(null);
             setAccessIssue({
               type: 'unrecoverable',
@@ -326,7 +326,7 @@ function MediaTracker() {
         cancelled = true;
       };
     }
-  }, [authLoading, currentUser?.id, appRoute.type, appRoute.shelfId, currentShelf?.id]);
+  }, [authLoading, currentUser?.id, appRoute.type, appRoute.spaceId, currentSpace?.id]);
 
   useEffect(() => {
     if (appRoute.type === 'not-found') {
@@ -351,49 +351,49 @@ function MediaTracker() {
     }
     if (!currentUser) {
       document.title = 'Couple Planner - Sync Your Life';
-    } else if (!currentShelf) {
+    } else if (!currentSpace) {
       document.title = 'Couple Planner - Your spaces';
     } else {
-      document.title = `Couple Planner - ${currentShelf.name}`;
+      document.title = `Couple Planner - ${currentSpace.name}`;
     }
-  }, [appRoute.type, currentUser, currentShelf]);
+  }, [appRoute.type, currentUser, currentSpace]);
 
   useEffect(() => {
-    if (!currentShelf) return;
+    if (!currentSpace) return;
 
-    const enabledSections = getEnabledSections(currentShelf);
+    const enabledSections = getEnabledSections(currentSpace);
     const activeSection = activeCategory === 'media' ? 'watchlist' : activeSubTab;
     if (enabledSections.includes(activeSection)) return;
 
     const nextView = sectionToView(enabledSections[0] || 'calendar');
     setActiveCategory(nextView.category);
     setActiveSubTab(nextView.subTab);
-  }, [currentShelf, activeCategory, activeSubTab]);
+  }, [currentSpace, activeCategory, activeSubTab]);
 
-  // Load data when shelf changes
+  // Load data when space changes
   useEffect(() => {
-    if (!currentShelf) return;
+    if (!currentSpace) return;
     let cancelled = false;
 
     const loadData = async () => {
       setLoading(true);
       dataEditedAfterLoadRef.current = false;
-      const cachedShelfData = window.getCachedShelfData?.(currentShelf.id);
-      if (cachedShelfData && !cancelled) {
+      const cachedSpaceData = window.getCachedSpaceData?.(currentSpace.id);
+      if (cachedSpaceData && !cancelled) {
         skipNextSaveRef.current = true;
-        setData(normalizeShelfDataForClient(cachedShelfData));
+        setData(normalizeSpaceDataForClient(cachedSpaceData));
         setLoading(false);
       }
 
-      const shelfData = await getShelfData(currentShelf.id);
+      const spaceData = await getSpaceData(currentSpace.id);
       if (cancelled) return;
       if (dataEditedAfterLoadRef.current) return;
 
       skipNextSaveRef.current = true;
-      if (shelfData) {
-        setData(normalizeShelfDataForClient(shelfData));
+      if (spaceData) {
+        setData(normalizeSpaceDataForClient(spaceData));
       } else {
-        setData(defaultShelfData());
+        setData(defaultSpaceData());
       }
       setLoading(false);
     };
@@ -402,21 +402,21 @@ function MediaTracker() {
     return () => {
       cancelled = true;
     };
-  }, [currentShelf]);
+  }, [currentSpace]);
 
   // Persist data
   useEffect(() => {
-    if (!currentShelf || !data) return;
+    if (!currentSpace || !data) return;
     if (skipNextSaveRef.current) {
       skipNextSaveRef.current = false;
       return;
     }
 
     dataEditedAfterLoadRef.current = true;
-    saveShelfData(currentShelf.id, data).then((saved) => {
+    saveSpaceData(currentSpace.id, data).then((saved) => {
       if (saved) setLastSynced(Date.now());
     });
-  }, [data, currentShelf?.id]);
+  }, [data, currentSpace?.id]);
 
   const handleLogin = (user) => {
     setCurrentUser(user);
@@ -426,21 +426,21 @@ function MediaTracker() {
   const handleLogout = () => {
     clearAuthToken();
     setCurrentUser(null);
-    setCurrentShelf(null);
+    setCurrentSpace(null);
     setData(null);
-    closeShelfOverlays();
+    closeSpaceOverlays();
     navigateTo('/', { replace: true, skipPrompt: true });
   };
-  const handleShelfSelect = (shelf) => {
-    setCurrentShelf(shelf);
+  const handleSpaceSelect = (space) => {
+    setCurrentSpace(space);
     setData(null);
-    navigateTo(`/space/${encodeURIComponent(shelf.id)}/`);
+    navigateTo(`/space/${encodeURIComponent(space.id)}/`);
   };
-  const handleBackToShelves = () => {
+  const handleBackToSpaces = () => {
     if (!confirmRouteChange(readAppRoute('/space-selection/'))) return;
-    setCurrentShelf(null);
+    setCurrentSpace(null);
     setData(null);
-    closeShelfOverlays();
+    closeSpaceOverlays();
     navigateTo('/space-selection/', { skipPrompt: true });
   };
 
@@ -645,20 +645,20 @@ function MediaTracker() {
     );
   };
 
-  // Update shelf settings (name)
-  const handleSaveShelfSettings = (newSettings) => {
-    const previousShelf = currentShelf;
-    setCurrentShelf(prev => ({ ...prev, ...newSettings }));
+  // Update space settings (name)
+  const handleSaveSpaceSettings = (newSettings) => {
+    const previousSpace = currentSpace;
+    setCurrentSpace(prev => ({ ...prev, ...newSettings }));
 
-    updateShelf(currentShelf.id, newSettings)
-      .then((updatedShelf) => {
-        if (updatedShelf) {
-          setCurrentShelf(updatedShelf);
+    updateSpace(currentSpace.id, newSettings)
+      .then((updatedSpace) => {
+        if (updatedSpace) {
+          setCurrentSpace(updatedSpace);
         }
       })
       .catch((error) => {
-        console.error('Failed to persist shelf settings:', error);
-        setCurrentShelf(previousShelf);
+        console.error('Failed to persist space settings:', error);
+        setCurrentSpace(previousSpace);
       });
   };
 
@@ -677,7 +677,7 @@ function MediaTracker() {
         eyebrow="404"
         title="This page is not in the app"
         message="The link may be mistyped, moved, or no longer available. Head back to a known place and keep planning from there."
-        primaryLabel={currentUser ? 'Go to shelves' : 'Go home'}
+        primaryLabel={currentUser ? 'Go to spaces' : 'Go home'}
         primaryPath={currentUser ? '/space-selection/' : '/'}
         secondaryLabel="Report a bug"
         secondaryPath="/report-a-bug"
@@ -727,9 +727,9 @@ function MediaTracker() {
     return (
       <FailureScreen
         eyebrow={accessIssue.type === 'forbidden' ? 'Access denied' : 'App error'}
-        title={accessIssue.title || 'We could not open this shelf'}
+        title={accessIssue.title || 'We could not open this space'}
         message={accessIssue.message || 'Couple Planner could not finish this request. Try again from a safe place.'}
-        primaryLabel="Go to shelves"
+        primaryLabel="Go to spaces"
         primaryPath="/space-selection/"
         secondaryLabel="Report a bug"
         secondaryPath="/report-a-bug"
@@ -737,13 +737,13 @@ function MediaTracker() {
       />
     );
   }
-  if (!currentShelf) {
+  if (!currentSpace) {
     return (
-      <ShelfSelector
+      <SpaceSelector
         userId={currentUser.id}
         currentUser={currentUser}
         token={getAuthToken()}
-        onSelectShelf={handleShelfSelect}
+        onSelectSpace={handleSpaceSelect}
         onUpdateUser={handleAccountUpdate}
         onBackToLogin={handleLogout}
       />
@@ -832,16 +832,16 @@ function MediaTracker() {
       <a href="#main-content" className="skip-link">Skip to content</a>
 
       <Header
-        shelfName={currentShelf.name}
-        onEditShelf={() => setSettingsModalOpen(true)}
+        spaceName={currentSpace.name}
+        onEditSpace={() => setSettingsModalOpen(true)}
         activeCategory={activeCategory}
         activeSubTab={activeSubTab}
         onCategoryChange={handleCategoryChange}
         onSubTabChange={(sub) => setActiveSubTab(sub)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
-        onBackToShelves={handleBackToShelves}
-        enabledSections={getEnabledSections(currentShelf)}
+        onBackToSpaces={handleBackToSpaces}
+        enabledSections={getEnabledSections(currentSpace)}
         profile={data?.profile}
       />
 
@@ -869,7 +869,7 @@ function MediaTracker() {
         profile={data?.profile}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
-      <GlobalAddModal isOpen={globalAddOpen} onClose={() => setGlobalAddOpen(false)} onSelect={handleGlobalAddSelect} enabledSections={getEnabledSections(currentShelf)} />
+      <GlobalAddModal isOpen={globalAddOpen} onClose={() => setGlobalAddOpen(false)} onSelect={handleGlobalAddSelect} enabledSections={getEnabledSections(currentSpace)} />
       {/* Use ProfileModal for different modes */}
       <ProfileModal
         mode="profiles"
@@ -882,8 +882,8 @@ function MediaTracker() {
         mode="settings"
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
-        shelf={currentShelf}
-        onSaveShelf={handleSaveShelfSettings}
+        space={currentSpace}
+        onSaveSpace={handleSaveSpaceSettings}
       />
       <ProfileModal
         mode="account"
@@ -892,7 +892,7 @@ function MediaTracker() {
         currentUser={currentUser}
         onSaveAccount={handleAccountUpdate}
         onLogout={handleLogout}
-        onBackToShelves={handleBackToShelves}
+        onBackToSpaces={handleBackToSpaces}
       />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
       <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />

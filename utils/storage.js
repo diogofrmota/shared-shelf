@@ -52,8 +52,8 @@ const logout = () => {
  * Retrieve stored data from localStorage.
  */
 const getStoredData = async () => {
-  // Legacy storage is local-only. Current cloud persistence is shelf-scoped
-  // through /api/shelf/:id/data and requires an authenticated shelf member.
+  // Legacy storage is local-only. Current cloud persistence is space-scoped
+  // through /api/space/:id/data and requires an authenticated space member.
   const cached = localStorage.getItem('media-tracker-data-cache');
   if (cached) {
     try { return JSON.parse(cached); } catch (e) {

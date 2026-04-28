@@ -1,4 +1,4 @@
-const DEFAULT_SHELF_SECTIONS = ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist'];
+const DEFAULT_SPACE_SECTIONS = ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist'];
 const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report', 'not-found']);
 const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report', 'not-found']);
 const LEGACY_PROFILE_COLOR_MAP = {
@@ -15,7 +15,7 @@ const LEGACY_PROFILE_COLOR_MAP = {
 
 const asArray = (value) => Array.isArray(value) ? value : [];
 
-function defaultShelfData() {
+function defaultSpaceData() {
   return {
     calendarEvents: [],
     tasks: [],
@@ -26,7 +26,7 @@ function defaultShelfData() {
     profile: {
       users: [
         { id: 'user-1', name: 'Diogo', avatar: '', color: '#E63B2E' },
-        { id: 'user-2', name: 'MÃƒÂ³nica', avatar: '', color: '#8C4F45' }
+        { id: 'user-2', name: 'Mónica', avatar: '', color: '#8C4F45' }
       ]
     }
   };
@@ -39,10 +39,10 @@ const normalizeProfileUsers = (users = []) => users.map((user, index) => ({
   color: LEGACY_PROFILE_COLOR_MAP[user.color] || user.color || (index % 2 === 0 ? '#E63B2E' : '#8C4F45')
 }));
 
-const getEnabledSections = (shelf) => (
-  Array.isArray(shelf?.enabledSections) && shelf.enabledSections.length
-    ? shelf.enabledSections
-    : DEFAULT_SHELF_SECTIONS
+const getEnabledSections = (space) => (
+  Array.isArray(space?.enabledSections) && space.enabledSections.length
+    ? space.enabledSections
+    : DEFAULT_SPACE_SECTIONS
 );
 
 const sectionToView = (section) => {
@@ -53,13 +53,13 @@ const sectionToView = (section) => {
 
 const readAppRoute = (pathname = window.location.pathname) => {
   const path = pathname || '/';
-  const shelfMatch = path.match(/^\/space\/([^/]+)\/?$/);
+  const spaceMatch = path.match(/^\/space\/([^/]+)\/?$/);
 
-  if (shelfMatch) {
+  if (spaceMatch) {
     return {
-      type: 'shelf',
-      shelfId: decodeURIComponent(shelfMatch[1]),
-      path: `/space/${shelfMatch[1]}/`
+      type: 'space',
+      spaceId: decodeURIComponent(spaceMatch[1]),
+      path: `/space/${spaceMatch[1]}/`
     };
   }
 
@@ -200,8 +200,8 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
   };
 };
 
-const normalizeShelfDataForClient = (shelfData = {}) => {
-  const raw = shelfData && typeof shelfData === 'object' ? shelfData : {};
+const normalizeSpaceDataForClient = (spaceData = {}) => {
+  const raw = spaceData && typeof spaceData === 'object' ? spaceData : {};
   const watchlistByKey = new Map();
   const addWatchlistItems = (items, fallbackCategory) => {
     asArray(items).forEach(item => {
@@ -241,7 +241,7 @@ const normalizeShelfDataForClient = (shelfData = {}) => {
       instructions: recipe?.instructions || ''
     })),
     watchlist: Array.from(watchlistByKey.values()),
-    profile: raw.profile || defaultShelfData().profile
+    profile: raw.profile || defaultSpaceData().profile
   };
 
   if (migrated.profile?.users) migrated.profile.users = normalizeProfileUsers(migrated.profile.users);
@@ -249,12 +249,12 @@ const normalizeShelfDataForClient = (shelfData = {}) => {
 };
 
 Object.assign(window, {
-  DEFAULT_SHELF_SECTIONS,
+  DEFAULT_SPACE_SECTIONS,
   PUBLIC_ROUTE_TYPES,
   STATIC_PUBLIC_ROUTE_TYPES,
-  defaultShelfData,
+  defaultSpaceData,
   getEnabledSections,
-  normalizeShelfDataForClient,
+  normalizeSpaceDataForClient,
   normalizeTask,
   normalizeWatchlistItem,
   readAppRoute,
