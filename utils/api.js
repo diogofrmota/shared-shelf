@@ -419,6 +419,66 @@ const saveShelfData = async (shelfId, data, { debounceMs = 700 } = {}) => {
   });
 };
 
+const changePassword = async (currentPassword, newPassword) => {
+  const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+    method: 'POST',
+    headers: getAuthorizedHeaders(true),
+    body: JSON.stringify({ currentPassword, newPassword })
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to change password');
+  }
+
+  return payload;
+};
+
+const changeEmail = async (newEmail) => {
+  const res = await fetch(`${API_BASE}/api/auth/change-email`, {
+    method: 'POST',
+    headers: getAuthorizedHeaders(true),
+    body: JSON.stringify({ newEmail })
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || 'Failed to initiate email change');
+  }
+
+  return payload;
+};
+
+const confirmEmailChange = async (token) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/confirm-email-change`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const data = await res.json().catch(() => ({}));
+    return {
+      success: res.ok,
+      message: data.message || data.error,
+      linkStatus: data.linkStatus
+    };
+  } catch {
+    return { success: false, message: 'Network error occurred.', linkStatus: 'network' };
+  }
+};
+
+const checkUsernameAvailable = async (username, excludeUserId = '') => {
+  try {
+    const params = new URLSearchParams({ username });
+    if (excludeUserId) params.set('excludeUserId', excludeUserId);
+    const res = await fetch(`${API_BASE}/api/auth/check-username?${params}`);
+    const data = await res.json().catch(() => ({}));
+    return { available: Boolean(data.available), reason: data.reason || '' };
+  } catch {
+    return { available: null, reason: '' };
+  }
+};
+
 const updateAccount = async ({ name, username }) => {
   const res = await fetch(`${API_BASE}/api/auth/me`, {
     method: 'PATCH',
@@ -546,6 +606,10 @@ Object.assign(window, {
   confirmEmail,
   validateResetToken,
   updateAccount,
+  changePassword,
+  changeEmail,
+  confirmEmailChange,
+  checkUsernameAvailable,
   forgotPassword,
   resetPassword,
   getCachedShelfData,

@@ -23,6 +23,8 @@ function LoginScreen({ onLogin, onNavigate }) {
   const [serverSuccess, setServerSuccess] = useState('');
   const [linkIssue, setLinkIssue] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
+  const usernameCheckRef = React.useRef(null);
 
   const resetLinkIssue = linkIssue?.type === 'reset';
   const confirmationLinkIssue = linkIssue?.type === 'confirm';
@@ -96,6 +98,35 @@ function LoginScreen({ onLogin, onNavigate }) {
         .finally(() => setLoading(false));
       return;
     }
+    const emailChangeToken = params.get('confirm_email_change');
+    if (emailChangeToken) {
+      setLoading(true);
+      confirmEmailChange(emailChangeToken)
+        .then((result) => {
+          window.history.replaceState({}, '', window.location.pathname);
+          if (result.success) {
+            setServerSuccess(result.message || 'Email address updated. You can now sign in with your new email.');
+          } else {
+            setLinkIssue({
+              type: 'emailChange',
+              status: result.linkStatus || 'invalid',
+              nextAction: { label: 'Return to sign in', target: 'signin' }
+            });
+            setServerError(result.message || 'This confirmation link is not valid.');
+          }
+        })
+        .catch(() => {
+          setLinkIssue({
+            type: 'emailChange',
+            status: 'network',
+            nextAction: { label: 'Return to sign in', target: 'signin' }
+          });
+          setServerError('Something went wrong confirming your email change. Please try again.');
+        })
+        .finally(() => setLoading(false));
+      return;
+    }
+
     if (requestedMode === 'signup' || requestedMode === 'register') {
       // Strip the mode param from the URL after consuming it.
       window.history.replaceState({}, '', window.location.pathname);
@@ -195,6 +226,21 @@ function LoginScreen({ onLogin, onNavigate }) {
       case 'newPassword': setNewPassword(value); break;
     }
     validateField(field, value);
+
+    if (field === 'username' && mode === 'signup') {
+      const trimmed = value.trim();
+      if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+      if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
+        setUsernameStatus(null);
+        return;
+      }
+      setUsernameStatus('checking');
+      usernameCheckRef.current = setTimeout(async () => {
+        const result = await checkUsernameAvailable(trimmed);
+        if (result.available === null) { setUsernameStatus(null); return; }
+        setUsernameStatus(result.available ? 'available' : 'taken');
+      }, 450);
+    }
   };
 
   const handleForgotPassword = async (event) => {
@@ -430,14 +476,14 @@ function LoginScreen({ onLogin, onNavigate }) {
             <div className="mb-6 flex gap-1.5 rounded-xl bg-[#FBF2ED] p-1.5">
               <button
                 type="button"
-                onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
+                onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); setUsernameStatus(null); }}
                 className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signin' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
-                onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
+                onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); setUsernameStatus(null); }}
                 className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signup' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
               >
                 Register
@@ -474,7 +520,15 @@ function LoginScreen({ onLogin, onNavigate }) {
                       onChange={(e) => handleInput('username', e.target.value)}
                       className={inputClass}
                     />
-                    {errors.username && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.username}</p>}
+                    {errors.username
+                      ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.username}</p>
+                      : usernameStatus === 'checking'
+                        ? <p className="mt-1 text-xs text-[#857370]">Checking availability…</p>
+                        : usernameStatus === 'available'
+                          ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
+                          : usernameStatus === 'taken'
+                            ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
+                            : null}
                   </div>
                 </>
               )}
@@ -574,7 +628,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               {mode === 'signin' ? 'New to Couple Planner?' : 'Already have an account?'}
               <button
                 type="button"
-                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); }}
+                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); setUsernameStatus(null); }}
                 className="ml-1 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
               >
                 {mode === 'signin' ? 'Register here' : 'Sign in'}
