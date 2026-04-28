@@ -254,12 +254,10 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
         <section className="mb-8 sm:mb-10 text-center">
           <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Welcome</p>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-            {mode === 'create' ? 'Create your shared space' : 'Join your partner\'s space'}
+            Create your shared space
           </h1>
           <p className="mt-3 text-base font-medium text-[#534340]">
-            {mode === 'create'
-              ? 'Start a new private space and pick what you want to plan together.'
-              : 'Enter the space ID and one-time join code your partner shared with you.'}
+            Start or join a private space and pick what you want to plan together.
           </p>
         </section>
 
@@ -281,89 +279,91 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
             </button>
           </div>
 
-          {mode === 'create' ? (
-            <form onSubmit={handleCreate} className="space-y-4" noValidate>
-              <div>
-                <label className={labelCls} htmlFor="create-space-name">Space name</label>
-                <input
-                  id="create-space-name"
-                  type="text"
-                  name="space-name"
-                  autoComplete="off"
-                  placeholder="Our space"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  className={inputCls}
-                  required
-                />
-              </div>
-              <div>
-                <p className={labelCls}>Shared items</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {sectionOptions.map(section => (
-                    <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
-                      <input
-                        type="checkbox"
-                        checked={selectedSections.includes(section.id)}
-                        onChange={() => toggleSection(section.id)}
-                        className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
-                      />
-                      <span>{section.label}</span>
-                    </label>
-                  ))}
+          <div className="min-h-[17.5rem]">
+            {mode === 'create' ? (
+              <form onSubmit={handleCreate} className="space-y-4" noValidate>
+                <div>
+                  <label className={labelCls} htmlFor="create-space-name">Space name</label>
+                  <input
+                    id="create-space-name"
+                    type="text"
+                    name="space-name"
+                    autoComplete="off"
+                    placeholder="Our space"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className={inputCls}
+                    required
+                  />
                 </div>
-              </div>
-              {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
-              >
-                {submitting ? 'Creating...' : 'Create space'}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleJoin} className="space-y-4" noValidate>
-              <div>
-                <label className={labelCls} htmlFor="join-space-id">Space ID</label>
-                <input
-                  id="join-space-id"
-                  type="text"
-                  name="space-id"
-                  autoComplete="off"
-                  spellCheck={false}
-                  placeholder="Space ID"
-                  value={spaceId}
-                  onChange={(event) => setSpaceId(event.target.value)}
-                  className={inputCls}
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="join-code">Join code</label>
-                <input
-                  id="join-code"
-                  type="text"
-                  name="join-code"
-                  autoComplete="off"
-                  spellCheck={false}
-                  placeholder="Join code"
-                  value={code}
-                  onChange={(event) => setCode(event.target.value)}
-                  className={inputCls}
-                  required
-                />
-              </div>
-              {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
-              >
-                {submitting ? 'Joining...' : 'Join space'}
-              </button>
-            </form>
-          )}
+                <div>
+                  <p className={labelCls}>Shared items</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {sectionOptions.map(section => (
+                      <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
+                        <input
+                          type="checkbox"
+                          checked={selectedSections.includes(section.id)}
+                          onChange={() => toggleSection(section.id)}
+                          className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                        />
+                        <span>{section.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+                >
+                  {submitting ? 'Creating...' : 'Create space'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleJoin} className="space-y-4" noValidate>
+                <div>
+                  <label className={labelCls} htmlFor="join-space-id">Space ID</label>
+                  <input
+                    id="join-space-id"
+                    type="text"
+                    name="space-id"
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder="Space ID"
+                    value={spaceId}
+                    onChange={(event) => setSpaceId(event.target.value)}
+                    className={inputCls}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className={labelCls} htmlFor="join-code">Join code</label>
+                  <input
+                    id="join-code"
+                    type="text"
+                    name="join-code"
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder="Join code"
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    className={inputCls}
+                    required
+                  />
+                </div>
+                {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+                >
+                  {submitting ? 'Joining...' : 'Join space'}
+                </button>
+              </form>
+            )}
+          </div>
 
           <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
             {mode === 'create' ? 'Have a join code from your partner?' : 'Want to start a new space instead?'}
