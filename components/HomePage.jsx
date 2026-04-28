@@ -6,72 +6,98 @@ const {
   MapPin,
   Film,
   ChefHat,
-  Tv,
-  Book
+  Tv
 } = window;
 
 const FEATURES = [
   {
     icon: CalendarIcon,
     title: 'Shared calendar',
-    description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.'
+    description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.',
+    bg: '#FFE4E0',
+    border: '#F5ADA5',
+    accent: '#D8271C'
   },
   {
     icon: CheckSquare,
     title: 'Tasks together',
-    description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.'
+    description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.',
+    bg: '#E1F5EE',
+    border: '#91D7BF',
+    accent: '#00845F'
   },
   {
     icon: MapPin,
     title: 'Places to go',
-    description: 'Save restaurants, bars, and date ideas on a shared map with categories, photos, ratings, and notes.'
+    description: 'Save restaurants, bars, and date ideas on a shared map with categories, photos, ratings, and notes.',
+    bg: '#FFE8D7',
+    border: '#F2B27A',
+    accent: '#D65A00'
   },
   {
     icon: Film,
     title: 'Trip planning',
+    bg: '#E4EEFF',
+    border: '#9CBFF4',
+    accent: '#1D6BDA',
     description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together — all in one place.'
   },
   {
     icon: ChefHat,
     title: 'Recipe collection',
-    description: 'Build a shared recipe book with ingredients, instructions, photos, prep time, and source links for the meals you cook together.'
+    description: 'Build a shared recipe book with ingredients, instructions, photos, prep time, and source links for the meals you cook together.',
+    bg: '#FFE4F6',
+    border: '#EAA3D6',
+    accent: '#B8329B'
   },
   {
     icon: Tv,
     title: 'Watchlist & reading',
-    description: 'Track the movies, TV shows, and books you want to watch and read together, with statuses, ratings, and season progress.'
+    description: 'Track the movies, TV shows, and books you want to watch and read together, with statuses, ratings, and season progress.',
+    bg: '#ECE8FF',
+    border: '#B9ADF2',
+    accent: '#6B52D9'
   }
 ];
 
 const AUDIENCES = [
   {
     title: 'Living together',
-    description: 'Coordinate the calendar, split chores, save the recipes you cook on weeknights, and keep date plans in one place.'
+    description: 'Coordinate the calendar, split chores, save the recipes you cook on weeknights, and keep date plans in one place.',
+    bg: '#FFE3DD',
+    border: '#F2A69B'
   },
   {
     title: 'Long-distance',
-    description: 'Stay in sync across schedules and time zones. Plan visits, save the trips you want to take, and queue what to watch on the next call.'
+    description: 'Stay in sync across schedules and time zones. Plan visits, save the trips you want to take, and queue what to watch on the next call.',
+    bg: '#E3EEFF',
+    border: '#9CBFF4'
   },
   {
     title: 'Newly dating',
+    bg: '#FFE2F3',
+    border: '#E89BC7',
     description: 'Keep a running list of restaurants to try, films to watch, and weekend ideas — without losing them in a chat thread.'
   },
   {
     title: 'Married & busy',
+    bg: '#E3F5EA',
+    border: '#95D3AC',
     description: 'Anniversaries, recurring errands, family trips, and the watchlist you never get to. Everything in one shared, private space.'
   }
 ];
 
 const HERO_SHARED_ITEMS = [
-  { icon: CalendarIcon, label: 'Calendar', color: '#8B1E16' },
-  { icon: CheckSquare, label: 'Tasks', color: '#1F5D4A' },
-  { icon: MapPin, label: 'Places', color: '#7A3D0F' },
-  { icon: Film, label: 'Trips', color: '#244F8F' },
-  { icon: ChefHat, label: 'Recipes', color: '#6C2D67' },
-  { icon: Tv, label: 'Watchlist', color: '#4E3B16' }
+  { icon: CalendarIcon, label: 'Calendar', color: '#D8271C' },
+  { icon: CheckSquare, label: 'Tasks', color: '#00845F' },
+  { icon: MapPin, label: 'Places', color: '#D65A00' },
+  { icon: Film, label: 'Trips', color: '#1D6BDA', strokeWidth: 2.8 },
+  { icon: ChefHat, label: 'Recipes', color: '#B8329B' },
+  { icon: Tv, label: 'Watchlist', color: '#6B52D9', strokeWidth: 2.8 }
 ];
 
 const HERO_ICON_COLORS = new Map(HERO_SHARED_ITEMS.map((item) => [item.icon, item.color]));
+const HERO_ICON_STROKES = new Map(HERO_SHARED_ITEMS.map((item) => [item.icon, item.strokeWidth || 2]));
 
 const HERO_PREVIEW = [
   {
@@ -185,6 +211,21 @@ function HomePage({ onNavigate }) {
                 one map of saved places, your trips planner, recipes book, and the movies and shows you want to watch. Everything synced in one place,
                 to manage your relashionship.
               </p>
+              <div className="mt-8 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
+                {HERO_SHARED_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <span
+                      key={item.label}
+                      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 shadow-md shadow-black/15"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <Icon size={16} strokeWidth={item.strokeWidth || 2} />
+                      {item.label}
+                    </span>
+                  );
+                })}
+              </div>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
                   href="/login?mode=signup"
@@ -201,21 +242,6 @@ function HomePage({ onNavigate }) {
                   Sign in
                 </a>
               </div>
-              <div className="mt-8 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
-                {HERO_SHARED_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <span
-                      key={item.label}
-                      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 shadow-md shadow-black/15"
-                      style={{ backgroundColor: item.color }}
-                    >
-                      <Icon size={16} />
-                      {item.label}
-                    </span>
-                  );
-                })}
-              </div>
             </div>
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
@@ -229,13 +255,14 @@ function HomePage({ onNavigate }) {
                   {HERO_PREVIEW.map((item) => {
                     const Icon = item.icon;
                     const itemColor = HERO_ICON_COLORS.get(item.icon);
+                    const strokeWidth = HERO_ICON_STROKES.get(item.icon);
                     return (
                       <li key={item.label} className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
                         <span
                           className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white"
                           style={{ backgroundColor: itemColor }}
                         >
-                          <Icon size={16} />
+                          <Icon size={16} strokeWidth={strokeWidth} />
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-[#410001]">{item.label}</p>
@@ -254,12 +281,12 @@ function HomePage({ onNavigate }) {
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-              A small shared space, just for the two of you.
+              A private shared space, just for the two of you.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
-              Couple Planner gathers everything couples try to coordinate over chats and screenshots —
-              your calendar, your tasks, the places you want to go, the trips you are planning, the recipes
-              you cook, and the films and shows you want to watch — into one private, shared space.
+              Couple Planner gathers everything couples try to coordinate, such as
+              your calendar, your tasks, the places you want to go on dates, the trips you are planning, the recipes
+              you cook, and the films and shows you are watching or books you are reading together into one private, shared space.
               Both of you read and write the same content, so nothing slips between apps or threads.
             </p>
           </div>
@@ -278,7 +305,11 @@ function HomePage({ onNavigate }) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
               {AUDIENCES.map((audience) => (
-                <div key={audience.title} className="ss-card p-6">
+                <div
+                  key={audience.title}
+                  className="ss-card p-6"
+                  style={{ backgroundColor: audience.bg, borderColor: audience.border }}
+                >
                   <h3 className="text-lg font-extrabold text-[#410001]">{audience.title}</h3>
                   <p className="mt-2 text-sm text-[#534340]">{audience.description}</p>
                 </div>
@@ -335,15 +366,22 @@ function HomePage({ onNavigate }) {
             <div className="mb-10 text-center sm:mb-12">
               <span className="ss-tag mb-4">Features</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Everything the two of you can plan, in one place.
+                Everything the two of you need to plan, synced in one place.
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
               {FEATURES.map((feature) => {
                 const Icon = feature.icon;
                 return (
-                  <div key={feature.title} className="ss-card p-6 transition ss-card-hover">
-                    <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFDAD4] text-[#E63B2E]">
+                  <div
+                    key={feature.title}
+                    className="ss-card p-6 transition ss-card-hover"
+                    style={{ backgroundColor: feature.bg, borderColor: feature.border }}
+                  >
+                    <span
+                      className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/70"
+                      style={{ color: feature.accent }}
+                    >
                       <Icon size={20} />
                     </span>
                     <h3 className="text-lg font-extrabold text-[#410001]">{feature.title}</h3>
@@ -351,24 +389,6 @@ function HomePage({ onNavigate }) {
                   </div>
                 );
               })}
-            </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-              <div className="ss-card flex items-center gap-3 p-4">
-                <Tv size={18} className="text-[#E63B2E]" />
-                <p className="text-sm font-semibold text-[#410001]">TV shows with progress</p>
-              </div>
-              <div className="ss-card flex items-center gap-3 p-4">
-                <Film size={18} className="text-[#E63B2E]" />
-                <p className="text-sm font-semibold text-[#410001]">Movies you want to watch</p>
-              </div>
-              <div className="ss-card flex items-center gap-3 p-4">
-                <Book size={18} className="text-[#E63B2E]" />
-                <p className="text-sm font-semibold text-[#410001]">Books, reading and read</p>
-              </div>
-              <div className="ss-card flex items-center gap-3 p-4">
-                <MapPin size={18} className="text-[#E63B2E]" />
-                <p className="text-sm font-semibold text-[#410001]">Places saved on a map</p>
-              </div>
             </div>
           </div>
         </section>
@@ -385,7 +405,7 @@ function HomePage({ onNavigate }) {
               <a
                 href="/login?mode=signup"
                 onClick={goTo('/login?mode=signup')}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-6 py-3 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-6 py-3 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] hover:text-white"
               >
                 Create account
               </a>
