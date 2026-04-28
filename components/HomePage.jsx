@@ -299,7 +299,7 @@ function HomePage({ onNavigate }) {
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
-                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/70"
+                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
                         style={{ color: audience.accent }}
                       >
                         <Icon size={19} />
@@ -335,13 +335,15 @@ function HomePage({ onNavigate }) {
                       borderWidth: '3px'
                     }}
                   >
-                    <span
-                      className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/70"
-                      style={{ color: feature.accent }}
-                    >
-                      <Icon size={20} />
-                    </span>
-                    <h3 className="text-lg font-extrabold text-[#410001]">{feature.title}</h3>
+                    <div className="mb-4 flex items-center gap-3">
+                      <span
+                        className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/70"
+                        style={{ color: feature.accent }}
+                      >
+                        <Icon size={20} />
+                      </span>
+                      <h3 className="text-lg font-extrabold text-[#410001]">{feature.title}</h3>
+                    </div>
                     <p className="mt-2 text-sm text-[#534340]">{feature.description}</p>
                   </div>
                 );
