@@ -904,6 +904,7 @@ function MediaTracker() {
         onShareClick={() => setShareModalOpen(true)}
         onBackToSpaces={handleBackToSpaces}
         currentUser={currentUser}
+        onUpdateUser={handleAccountUpdate}
         onLogout={handleLogout}
         onLeaveSpace={handleLeaveSpace}
         onSaveSpace={handleSaveSpaceSettings}
