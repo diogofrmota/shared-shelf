@@ -2,26 +2,33 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate, token, currentUser }) {
-  const [spaces, setSpaces] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [joinOpen, setJoinOpen] = useState(false);
-  const [manageMode, setManageMode] = useState(false);
-  const [removingSpaceId, setRemovingSpaceId] = useState('');
+function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate, currentUser }) {
+  const sectionOptions = [
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'tasks', label: 'Tasks' },
+    { id: 'locations', label: 'Locations' },
+    { id: 'trips', label: 'Trips' },
+    { id: 'recipes', label: 'Recipes' },
+    { id: 'watchlist', label: 'Watchlist' }
+  ];
+
+  const [mode, setMode] = useState('create'); // 'create' | 'join'
+  const [name, setName] = useState('');
+  const [spaceId, setSpaceId] = useState('');
+  const [code, setCode] = useState('');
+  const [selectedSections, setSelectedSections] = useState(sectionOptions.map(section => section.id));
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileName, setProfileName] = useState('');
   const [profileUsername, setProfileUsername] = useState('');
   const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
-  const [pendingSpaceRemoval, setPendingSpaceRemoval] = useState(null);
   const profileRef = useRef(null);
 
-  const API_BASE = window.API_BASE_URL ?? '';
-
   useEffect(() => {
-    document.title = 'Couple Planner - Create/ Join a Space';
+    document.title = 'Couple Planner - Create or Join a Space';
   }, []);
 
   useEffect(() => {
@@ -35,65 +42,6 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileOpen]);
 
-  const fetchSpaces = async () => {
-    try {
-      const nextSpaces = await getUserSpaces();
-      setSpaces(nextSpaces);
-      setError('');
-    } catch {
-      setError('Failed to load spaces');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSpaces();
-  }, [token]);
-
-  const handleJoinSpace = (space) => {
-    if (space) {
-      setSpaces(prev => {
-        const remaining = prev.filter(item => item.id !== space.id);
-        return [space, ...remaining];
-      });
-      onSelectSpace(space);
-      return;
-    }
-    fetchSpaces();
-  };
-
-  const removeSpaceMembership = async (space) => {
-    setError('');
-    setRemovingSpaceId(space.id);
-    setPendingSpaceRemoval(null);
-
-    try {
-      const res = await fetch(`${API_BASE}/api/space/${space.id}/membership`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (res.ok) {
-        setSpaces(prev => prev.filter(item => item.id !== space.id));
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Failed to remove space');
-      }
-    } catch {
-      setError('Connection error');
-    } finally {
-      setRemovingSpaceId('');
-    }
-  };
-
-  const handleRemoveSpace = (space) => {
-    setPendingSpaceRemoval(space);
-  };
-
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
   const username = currentUser?.username || 'User';
 
@@ -105,6 +53,59 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
       setProfileError('');
     }
   }, [profileOpen, currentUser?.id, displayName, username]);
+
+  const toggleSection = (sectionId) => {
+    setSelectedSections(prev => {
+      if (prev.includes(sectionId)) {
+        const next = prev.filter(id => id !== sectionId);
+        return next.length ? next : prev;
+      }
+      return [...prev, sectionId];
+    });
+  };
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setError('');
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const created = await createSpace(name.trim(), selectedSections);
+      if (created?.space) {
+        onSelectSpace(created.space);
+      } else {
+        setError('Failed to create space');
+      }
+    } catch (err) {
+      setError(err?.message || 'Connection error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleJoin = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const joined = await joinSpace(spaceId.trim(), code.trim());
+      if (joined?.space) {
+        onSelectSpace(joined.space);
+      } else {
+        setError('Invalid code');
+      }
+    } catch (err) {
+      setError(err?.message || 'Connection error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleProfileSave = async (event) => {
     event.preventDefault();
@@ -132,74 +133,11 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     }
   };
 
-  const avatarPalette = [
-    { bg: '#FFB4A9', text: '#410001' },
-    { bg: '#FFDAD4', text: '#410001' },
-    { bg: '#FBD08A', text: '#3A2C05' },
-    { bg: '#A7C957', text: '#24340D' },
-    { bg: '#8ECAE6', text: '#073B4C' },
-    { bg: '#F7A8B8', text: '#4A1020' },
-    { bg: '#90DBF4', text: '#063949' },
-    { bg: '#E63B2E', text: '#FFFFFF' }
-  ];
-
-  const getMemberName = (member) => (
-    member?.name || member?.displayName || member?.username || member?.email || 'User'
-  );
-
-  const getAvatarStyle = (member) => {
-    const seed = String(member?.id || getMemberName(member))
-      .split('')
-      .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    const color = avatarPalette[seed % avatarPalette.length];
-    return { backgroundColor: color.bg, color: color.text };
-  };
-
-  const MemberStack = ({ members, max = 3 }) => {
-    const visible = members.slice(0, max);
-    const overflow = Math.max(0, members.length - visible.length);
-    return (
-      <div className="flex -space-x-2">
-        {visible.map((member, idx) => {
-          const name = getMemberName(member);
-          const initial = name.trim().charAt(0).toUpperCase() || '?';
-          return (
-            <span
-              key={member?.id || `${name}-${idx}`}
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-bold shadow-sm"
-              style={getAvatarStyle(member)}
-              title={name}
-              aria-label={name}
-            >
-              {initial}
-            </span>
-          );
-        })}
-        {overflow > 0 && (
-          <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-[#410001] text-[10px] font-bold text-white shadow-sm">
-            +{overflow}
-          </span>
-        )}
-      </div>
-    );
-  };
-
-  const TrashCanIcon = ({ size = 16 }) => (
-    <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 6h18" />
-      <path d="M8 6V4h8v2" />
-      <path d="M19 6l-1 14H6L5 6" />
-      <path d="M10 11v5" />
-      <path d="M14 11v5" />
-    </svg>
-  );
-
-  if (loading) {
-    return <LoadingScreen label="Logging in ..." />;
-  }
-
   const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
   const SiteFooter = window.SiteFooter;
+
+  const inputCls = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+  const labelCls = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FBF2ED] text-[#241A18]">
@@ -312,144 +250,134 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        {/* Hero */}
-        <section className="mb-8 sm:mb-10">
+      <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <section className="mb-8 sm:mb-10 text-center">
           <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Welcome</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl lg:text-5xl">Join your shared dashboard</h1>
-          <p className="mt-3 max-w-2xl text-base font-medium text-[#534340]">
-            Open an existing private space, or create a new one together.
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+            {mode === 'create' ? 'Create your shared space' : 'Join your partner\'s space'}
+          </h1>
+          <p className="mt-3 text-base font-medium text-[#534340]">
+            {mode === 'create'
+              ? 'Start a new private space and pick what you want to plan together.'
+              : 'Enter the space ID and one-time join code your partner shared with you.'}
           </p>
         </section>
 
-        {error && (
-          <div className="mb-6 rounded-2xl border border-[#FFB4A9] bg-[#FFDAD4] px-4 py-3 text-sm font-semibold text-[#410001]">
-            {error}
-          </div>
-        )}
-
-        {/* Action bar */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
+        <div className="rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-sm sm:p-8">
+          <div className="mb-6 flex gap-1.5 rounded-xl bg-[#FBF2ED] p-1.5">
             <button
               type="button"
-              onClick={() => { setError(''); setJoinOpen(true); }}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+              onClick={() => switchMode('create')}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'create' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
             >
-              <Plus size={16} />
-              Create or join
+              Create
             </button>
-            {spaces.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setManageMode(prev => !prev)}
-                className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition ${
-                  manageMode
-                    ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#410001]'
-                    : 'border-[#E1D8D4] bg-white text-[#410001] hover:bg-[#FFF8F5]'
-                }`}
-              >
-                {manageMode ? 'Done managing' : 'Manage spaces'}
-              </button>
-            )}
-          </div>
-          <span className="text-sm font-medium text-[#534340]">{spaces.length} {spaces.length === 1 ? 'space' : 'spaces'}</span>
-        </div>
-
-        {spaces.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white p-10 text-center shadow-sm">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E]">
-              <Plus size={28} />
-            </div>
-            <h2 className="text-xl font-bold text-[#410001]">No spaces yet</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-[#534340]">
-              Create a shared space, or join one with a space ID and code.
-            </p>
             <button
               type="button"
-              onClick={() => { setError(''); setJoinOpen(true); }}
-              className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+              onClick={() => switchMode('join')}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'join' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
             >
-              <Plus size={16} />
-              Create your first space
+              Join
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {spaces.map(space => {
-              const spaceMembers = Array.isArray(space.members) && space.members.length
-                ? space.members
-                : [currentUser].filter(Boolean);
-              return (
-                <div key={space.id} className="group relative overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#410001]/10">
-                  {manageMode && (
-                    <button
-                      onClick={() => handleRemoveSpace(space)}
-                      disabled={removingSpaceId === space.id}
-                      className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-[#C1121F] text-white shadow-md transition hover:bg-[#A80F1A] disabled:opacity-50"
-                      aria-label={`Remove ${space.name}`}
-                    >
-                      <TrashCanIcon />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => !manageMode && onSelectSpace(space)}
-                    disabled={manageMode}
-                    className="block min-h-[44px] w-full text-left"
-                  >
-                    <div
-                      className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[#A9372C] via-[#E63B2E] to-[#8C4F45] text-white"
-                      aria-hidden="true"
-                    >
-                      <span className="text-4xl font-extrabold tracking-tight opacity-90">
-                        {space.name?.charAt(0).toUpperCase() || 'S'}
-                      </span>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={space.name}>{space.name}</h3>
-                      <div className="mt-3 flex items-center justify-between">
-                        <MemberStack members={spaceMembers} />
-                        <span className="rounded-full bg-[#FFDAD4] px-2.5 py-0.5 text-xs font-bold text-[#410001]">
-                          {spaceMembers.length} {spaceMembers.length === 1 ? 'member' : 'members'}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
+
+          {mode === 'create' ? (
+            <form onSubmit={handleCreate} className="space-y-4" noValidate>
+              <div>
+                <label className={labelCls} htmlFor="create-space-name">Space name</label>
+                <input
+                  id="create-space-name"
+                  type="text"
+                  name="space-name"
+                  autoComplete="off"
+                  placeholder="Our space"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  className={inputCls}
+                  required
+                />
+              </div>
+              <div>
+                <p className={labelCls}>Shared items</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionOptions.map(section => (
+                    <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
+                      <input
+                        type="checkbox"
+                        checked={selectedSections.includes(section.id)}
+                        onChange={() => toggleSection(section.id)}
+                        className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                      />
+                      <span>{section.label}</span>
+                    </label>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+              {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+              >
+                {submitting ? 'Creating...' : 'Create space'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleJoin} className="space-y-4" noValidate>
+              <div>
+                <label className={labelCls} htmlFor="join-space-id">Space ID</label>
+                <input
+                  id="join-space-id"
+                  type="text"
+                  name="space-id"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="Space ID"
+                  value={spaceId}
+                  onChange={(event) => setSpaceId(event.target.value)}
+                  className={inputCls}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="join-code">Join code</label>
+                <input
+                  id="join-code"
+                  type="text"
+                  name="join-code"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="Join code"
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                  className={inputCls}
+                  required
+                />
+              </div>
+              {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+              >
+                {submitting ? 'Joining...' : 'Join space'}
+              </button>
+            </form>
+          )}
 
-            {/* Add tile */}
+          <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
+            {mode === 'create' ? 'Have a join code from your partner?' : 'Want to start a new space instead?'}
             <button
               type="button"
-              onClick={() => { setError(''); setJoinOpen(true); }}
-              className="group flex min-h-[224px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#E63B2E]/60 bg-white text-[#E63B2E] transition hover:-translate-y-1 hover:border-[#E63B2E] hover:bg-[#FFF8F5] hover:shadow-lg hover:shadow-[#410001]/10"
-              aria-label="Create or join a space"
+              onClick={() => switchMode(mode === 'create' ? 'join' : 'create')}
+              className="ml-1 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
             >
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
-                <Plus size={26} />
-              </span>
-              <span className="text-base font-extrabold text-[#410001]">Add or join a space</span>
+              {mode === 'create' ? 'Join a space' : 'Create one'}
             </button>
-          </div>
-        )}
+          </p>
+        </div>
       </main>
 
-      <JoinSpaceModal
-        isOpen={joinOpen}
-        onClose={() => setJoinOpen(false)}
-        onJoin={handleJoinSpace}
-        token={token}
-      />
-      <ConfirmationDialog
-        isOpen={Boolean(pendingSpaceRemoval)}
-        title="Remove space?"
-        message={`This removes "${pendingSpaceRemoval?.name || 'this space'}" from your account. Other members can keep using it if they still have access.`}
-        confirmLabel={removingSpaceId ? 'Removing...' : 'Remove space'}
-        cancelLabel="Keep space"
-        onConfirm={() => pendingSpaceRemoval && removeSpaceMembership(pendingSpaceRemoval)}
-        onCancel={() => setPendingSpaceRemoval(null)}
-      />
       {SiteFooter ? <SiteFooter onNavigate={onNavigate} /> : null}
     </div>
   );

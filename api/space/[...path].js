@@ -28,6 +28,16 @@ function getPathSegments(req) {
     .filter((value) => value && value !== '__root__');
 }
 
+async function userHasSpace(userId) {
+  const result = await sql`
+    SELECT 1
+    FROM space_members
+    WHERE user_id = ${userId}
+    LIMIT 1
+  `;
+  return result.rows.length > 0;
+}
+
 async function requireSpaceMember(spaceId, userId) {
   const result = await sql`
     SELECT role
@@ -177,6 +187,9 @@ export default async function handler(req, res) {
       }
 
       if (req.method === 'POST') {
+        if (await userHasSpace(userId)) {
+          return res.status(409).json({ error: 'You already belong to a space. Each user can only have one space.' });
+        }
         const name = normalizeSpaceName(req.body?.name);
         if (!name) return res.status(400).json({ error: 'Name required' });
         const spaceId = randomUUID();
@@ -240,6 +253,10 @@ export default async function handler(req, res) {
       const existingMember = await requireSpaceMember(spaceId, userId);
       if (existingMember) {
         return res.status(409).json({ error: 'You are already a member of this space' });
+      }
+
+      if (await userHasSpace(userId)) {
+        return res.status(409).json({ error: 'You already belong to a space. Each user can only have one space.' });
       }
 
       const codeMatch = await sql`

@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon } = window;
+const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon } = window;
 
 const Header = ({
   spaceName,
@@ -11,6 +11,7 @@ const Header = ({
   onCategoryChange,
   onSettingsClick,
   onAccountClick,
+  onShareClick,
   onBackToSpaces,
   enabledSections
 }) => {
@@ -98,6 +99,17 @@ const Header = ({
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {onShareClick && (
+            <button
+              onClick={onShareClick}
+              className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
+              title="Share space"
+              aria-label="Share space"
+            >
+              <ShareIcon size={18} />
+            </button>
+          )}
+
           <button
             onClick={onSettingsClick}
             className="hidden h-11 w-11 items-center justify-center rounded-lg text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] sm:flex"
@@ -161,6 +173,16 @@ const Header = ({
                   })}
                 </div>
                 <div className="border-t border-[#E1D8D4] p-1">
+                  {onShareClick && (
+                    <button
+                      role="menuitem"
+                      onClick={() => { onShareClick?.(); setMenuOpen(false); }}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <ShareIcon size={18} />
+                      Share space
+                    </button>
+                  )}
                   <button
                     role="menuitem"
                     onClick={() => { onSettingsClick?.(); setMenuOpen(false); }}

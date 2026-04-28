@@ -37,6 +37,7 @@ function MediaTracker() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
@@ -77,6 +78,7 @@ function MediaTracker() {
     setProfileModalOpen(false);
     setSettingsModalOpen(false);
     setAccountModalOpen(false);
+    setShareModalOpen(false);
     setEditRecipeModalOpen(false);
     setEditingRecipe(null);
     setEditTripModalOpen(false);
@@ -274,13 +276,38 @@ function MediaTracker() {
     }
 
     if (appRoute.type === 'selection') {
-      setRouteLoading(false);
-      if (currentSpace) {
-        setCurrentSpace(null);
-        setData(null);
-      }
-      closeSpaceOverlays();
-      return;
+      let cancelled = false;
+      setRouteLoading(true);
+      getUserSpaces()
+        .then((spaces) => {
+          if (cancelled) return;
+          if (spaces.length > 0) {
+            const target = spaces[0];
+            setCurrentSpace(null);
+            setData(null);
+            navigateTo(`/space/${encodeURIComponent(target.id)}/`, { replace: true, skipPrompt: true });
+            return;
+          }
+          if (currentSpace) {
+            setCurrentSpace(null);
+            setData(null);
+          }
+          closeSpaceOverlays();
+          setRouteLoading(false);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          if (currentSpace) {
+            setCurrentSpace(null);
+            setData(null);
+          }
+          closeSpaceOverlays();
+          setRouteLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     if (appRoute.type === 'space') {
@@ -842,6 +869,7 @@ function MediaTracker() {
         onSubTabChange={(sub) => setActiveSubTab(sub)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
+        onShareClick={() => setShareModalOpen(true)}
         onBackToSpaces={handleBackToSpaces}
         enabledSections={getEnabledSections(currentSpace)}
         profile={data?.profile}
@@ -897,6 +925,7 @@ function MediaTracker() {
         onLogout={handleLogout}
         onBackToSpaces={handleBackToSpaces}
       />
+      <ShareSpaceModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} space={currentSpace} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
       <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />
       <ConfirmationDialog
