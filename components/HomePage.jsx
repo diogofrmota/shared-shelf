@@ -9,6 +9,9 @@ const {
   Tv
 } = window;
 
+const HOME_CARD_BG = '#FFE2F3';
+const HOME_CARD_BORDER = '#E89BC7';
+
 const FEATURES = [
   {
     icon: CalendarIcon,
@@ -201,7 +204,7 @@ function HomePage({ onNavigate }) {
 
       <main id="main-content" tabIndex="-1" className="flex-1">
         <section className="app-auth-bg">
-          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-12 text-white sm:px-6 sm:py-14 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-16">
+          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-10 text-white sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-14">
             <div className="flex-1">
               <span className="ss-tag mb-5 bg-white/20 text-white">For the two of you</span>
               <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -259,7 +262,7 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section id="what-it-is" className="scroll-mt-24 bg-[#FFF8F5] py-12 sm:py-14">
+        <section id="what-it-is" className="scroll-mt-24 bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
@@ -274,7 +277,7 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FBF2ED] py-12 sm:py-14">
+        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FBF2ED] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Who it is for</span>
@@ -292,7 +295,7 @@ function HomePage({ onNavigate }) {
                   <div
                     key={audience.title}
                     className="ss-card p-6"
-                    style={{ backgroundColor: audience.bg, borderColor: audience.border }}
+                    style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
@@ -311,50 +314,7 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section className="bg-[#FFF8F5] py-12 sm:py-14">
-          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 text-center sm:mb-10">
-              <span className="ss-tag mb-4">Private by design</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Your space, your two, your data.
-              </h2>
-            </div>
-            <ol className="space-y-5">
-              <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
-                <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Create your space and invite your partner</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
-                    Each space has a unique ID and a one-time join code that expires after seven days. Send both to
-                    your partner and you are connected. The owner can regenerate the code at any time.
-                  </p>
-                </div>
-              </li>
-              <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
-                <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what your space includes</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
-                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per space. Hide what you
-                    don't use so your shared home screen stays focused on what actually matters to you both.
-                  </p>
-                </div>
-              </li>
-              <li className="ss-card flex items-start gap-4 p-5 sm:p-6">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
-                <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Both of you see and edit the same space</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
-                    Only the two of you can see what's inside. Every change is shared instantly, and an offline cache
-                    keeps the app useful even when the connection drops.
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </section>
-
-        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-12 sm:py-14">
+        <section id="features" className="scroll-mt-24 bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Features</span>
@@ -369,7 +329,7 @@ function HomePage({ onNavigate }) {
                   <div
                     key={feature.title}
                     className="ss-card p-6 transition ss-card-hover"
-                    style={{ backgroundColor: feature.bg, borderColor: feature.border }}
+                    style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
                   >
                     <span
                       className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/70"
@@ -386,7 +346,59 @@ function HomePage({ onNavigate }) {
           </div>
         </section>
 
-        <section className="bg-[#FFF8F5] py-12 sm:py-14">
+        <section className="bg-[#FBF2ED] py-10 sm:py-12">
+          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 text-center sm:mb-10">
+              <span className="ss-tag mb-4">Private by design</span>
+              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+                Your space, your two, your data.
+              </h2>
+            </div>
+            <ol className="space-y-4">
+              <li
+                className="ss-card flex items-start gap-4 p-5 sm:p-6"
+                style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+              >
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
+                <div>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Create your space and invite your partner</h3>
+                  <p className="mt-1 text-sm text-[#534340]">
+                    Each space has a unique ID and a one-time join code that expires after seven days. Send both to
+                    your partner and you are connected. The owner can regenerate the code at any time.
+                  </p>
+                </div>
+              </li>
+              <li
+                className="ss-card flex items-start gap-4 p-5 sm:p-6"
+                style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+              >
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
+                <div>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what your space includes</h3>
+                  <p className="mt-1 text-sm text-[#534340]">
+                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per space. Hide what you
+                    don't use so your shared home screen stays focused on what actually matters to you both.
+                  </p>
+                </div>
+              </li>
+              <li
+                className="ss-card flex items-start gap-4 p-5 sm:p-6"
+                style={{ backgroundColor: HOME_CARD_BG, borderColor: HOME_CARD_BORDER, borderWidth: '2px' }}
+              >
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
+                <div>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Both of you see and edit the same space</h3>
+                  <p className="mt-1 text-sm text-[#534340]">
+                    Only the two of you can see what's inside. Every change is shared instantly, and an offline cache
+                    keeps the app useful even when the connection drops.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <section className="bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
             <h2 className="text-2xl font-extrabold tracking-tight text-[#410001] sm:text-3xl">
               Ready to start your space, together?
