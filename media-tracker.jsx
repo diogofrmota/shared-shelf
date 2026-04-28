@@ -350,7 +350,7 @@ function MediaTracker() {
       return;
     }
     if (!currentUser) {
-      document.title = 'Couple Planner - Plan together';
+      document.title = 'Couple Planner - Sync Your Life';
     } else if (!currentShelf) {
       document.title = 'Couple Planner - Your spaces';
     } else {

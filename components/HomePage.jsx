@@ -62,6 +62,17 @@ const AUDIENCES = [
   }
 ];
 
+const HERO_SHARED_ITEMS = [
+  { icon: CalendarIcon, label: 'Calendar', color: '#8B1E16' },
+  { icon: CheckSquare, label: 'Tasks', color: '#1F5D4A' },
+  { icon: MapPin, label: 'Places', color: '#7A3D0F' },
+  { icon: Film, label: 'Trips', color: '#244F8F' },
+  { icon: ChefHat, label: 'Recipes', color: '#6C2D67' },
+  { icon: Tv, label: 'Watchlist', color: '#4E3B16' }
+];
+
+const HERO_ICON_COLORS = new Map(HERO_SHARED_ITEMS.map((item) => [item.icon, item.color]));
+
 const HERO_PREVIEW = [
   {
     icon: CalendarIcon,
@@ -171,8 +182,8 @@ function HomePage({ onNavigate }) {
               </h1>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is a private, shared space just for you and your partner. One calendar, one task list,
-                one map of saved places, your trips, recipes, and the films and shows you want to watch — all in sync,
-                with nothing scattered across chats and screenshots.
+                one map of saved places, your trips planner, recipes book, and the movies and shows you want to watch. Everything synced in one place,
+                to manage your relashionship.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
@@ -190,29 +201,40 @@ function HomePage({ onNavigate }) {
                   Sign in
                 </a>
               </div>
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-white/80">
-                <span className="inline-flex items-center gap-2"><CalendarIcon size={16} /> Calendar</span>
-                <span className="inline-flex items-center gap-2"><CheckSquare size={16} /> Tasks</span>
-                <span className="inline-flex items-center gap-2"><MapPin size={16} /> Places</span>
-                <span className="inline-flex items-center gap-2"><Film size={16} /> Trips</span>
-                <span className="inline-flex items-center gap-2"><ChefHat size={16} /> Recipes</span>
-                <span className="inline-flex items-center gap-2"><Tv size={16} /> Watchlist</span>
+              <div className="mt-8 flex flex-wrap items-center gap-2 text-sm font-bold text-white">
+                {HERO_SHARED_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <span
+                      key={item.label}
+                      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 shadow-md shadow-black/15"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </span>
+                  );
+                })}
               </div>
             </div>
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">Your space, together</p>
-                  <span className="ss-tag">Live preview</span>
+                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">Create a Private Space</p>
+                  <span className="ss-tag">Shared Dashboard</span>
                 </div>
-                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">This week, together</h2>
-                <p className="mt-1 text-sm text-[#534340]">Everything the two of you are planning — in one place.</p>
+                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">Couple Planner</h2>
+                <p className="mt-1 text-sm text-[#534340]">Everything the two of you are planning, in one place.</p>
                 <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   {HERO_PREVIEW.map((item) => {
                     const Icon = item.icon;
+                    const itemColor = HERO_ICON_COLORS.get(item.icon);
                     return (
                       <li key={item.label} className="flex items-start gap-3 rounded-xl bg-[#FFF8F5] p-3">
-                        <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#FFDAD4] text-[#A9372C]">
+                        <span
+                          className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-white"
+                          style={{ backgroundColor: itemColor }}
+                        >
                           <Icon size={16} />
                         </span>
                         <div className="min-w-0">
