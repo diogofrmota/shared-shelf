@@ -77,6 +77,7 @@ const Header = ({
   const activeTabLabel = visibleNavTabs.find(isTabActive)?.label || 'Menu';
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
   const username = currentUser?.username || 'User';
+  const accountEmail = currentUser?.email || 'Email unavailable';
   const userInitial = displayName.trim().charAt(0).toUpperCase();
 
   const openSettingsDropdown = () => {
@@ -97,6 +98,7 @@ const Header = ({
     try {
       await onLeaveSpace();
       setProfileOpen(false);
+      setSettingsOpen(false);
     } finally {
       setLeavingSpace(false);
     }
@@ -165,9 +167,21 @@ const Header = ({
             {settingsOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-56 origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
               >
-                <div className="p-1">
+                <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Space controls</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow-sm">
+                      <SettingsIcon size={18} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-bold text-[#410001]" title={spaceName || 'Your space'}>{spaceName || 'Your space'}</p>
+                      <p className="truncate text-xs text-[#534340]">Settings and sharing</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-2">
                   <button
                     role="menuitem"
                     type="button"
@@ -188,6 +202,18 @@ const Header = ({
                       Share space
                     </button>
                   )}
+                  {onLeaveSpace && (
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={() => { setSettingsOpen(false); setConfirmLeaveSpace(true); }}
+                      disabled={leavingSpace}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                    >
+                      <LogoutIcon size={18} />
+                      {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -198,13 +224,13 @@ const Header = ({
               type="button"
               onClick={openProfileDropdown}
               className="flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-              title="Profile"
-              aria-label="Profile"
+              title="Account"
+              aria-label="Account"
               aria-haspopup="menu"
               aria-expanded={profileOpen}
             >
               <UserIcon size={18} />
-              <span>Profile</span>
+              <span>Account</span>
             </button>
 
             {profileOpen && (
@@ -221,7 +247,7 @@ const Header = ({
                     <div className="min-w-0">
                       <p className="truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
                       <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
-                      {currentUser?.email && <p className="truncate text-xs text-[#534340]" title={currentUser.email}>{currentUser.email}</p>}
+                      <p className="truncate text-xs text-[#534340]" title={accountEmail}>{accountEmail}</p>
                     </div>
                   </div>
                 </div>
@@ -235,17 +261,6 @@ const Header = ({
                     <UserIcon size={18} />
                     Edit profile
                   </button>
-                  {onLeaveSpace && (
-                    <button
-                      role="menuitem"
-                      type="button"
-                      onClick={() => setConfirmLeaveSpace(true)}
-                      disabled={leavingSpace}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
-                    >
-                      {leavingSpace ? 'Leaving...' : 'Leave shared space'}
-                    </button>
-                  )}
                   <button
                     role="menuitem"
                     type="button"
@@ -319,7 +334,7 @@ const Header = ({
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <UserIcon size={18} />
-                    Profile
+                    Account
                   </button>
                   {onBackToSpaces && (
                     <button

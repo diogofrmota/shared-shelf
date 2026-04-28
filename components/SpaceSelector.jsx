@@ -47,6 +47,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
 
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
   const username = currentUser?.username || 'User';
+  const accountEmail = currentUser?.email || 'Email unavailable';
 
   useEffect(() => {
     if (profileOpen) {
@@ -204,11 +205,12 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
               onClick={() => setProfileOpen(prev => !prev)}
               className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FFDAD4] text-sm font-bold text-[#410001] shadow-sm transition hover:bg-[#FFB4A9] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Account"
+              aria-label="Account"
               aria-haspopup="menu"
               aria-expanded={profileOpen}
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E63B2E] text-xs font-bold text-white">{userInitial}</span>
-              <span className="hidden truncate text-[#410001] sm:inline" title="Profile">Profile</span>
+              <span className="hidden truncate text-[#410001] sm:inline" title="Account">Account</span>
             </button>
 
             {profileOpen && (
@@ -219,7 +221,8 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                 <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
                   <p className="mt-1 truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
-                  <p className="truncate text-xs text-[#534340]" title={currentUser?.email || username}>{currentUser?.email || username}</p>
+                  <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
+                  <p className="truncate text-xs text-[#534340]" title={accountEmail}>{accountEmail}</p>
                 </div>
 
                 {isEditingProfile ? (

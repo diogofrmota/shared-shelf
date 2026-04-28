@@ -450,6 +450,23 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
               {shareError && <p className="mt-3 text-sm font-semibold text-[#C1121F]">{shareError}</p>}
             </div>
+
+            {onLeaveSpace && (
+              <div className="rounded-2xl border border-[#E1D8D4] bg-white p-4">
+                <h3 className="text-base font-extrabold text-[#410001]">Shared space access</h3>
+                <p className="mt-1 text-sm text-[#534340]">
+                  Leave this shared space and return to your space selection.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setConfirmLeaveSpace(true)}
+                  disabled={leavingSpace}
+                  className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
+                >
+                  {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
             <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
@@ -471,6 +488,26 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               handleRegenerate();
             }}
             onCancel={() => setConfirmRegenerateShare(false)}
+          />
+          <ConfirmationDialog
+            isOpen={confirmLeaveSpace}
+            title="Leave shared space?"
+            message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
+            confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
+            cancelLabel="Stay"
+            tone="danger"
+            onConfirm={async () => {
+              setConfirmLeaveSpace(false);
+              if (!onLeaveSpace) return;
+              setLeavingSpace(true);
+              try {
+                await onLeaveSpace();
+                onClose();
+              } finally {
+                setLeavingSpace(false);
+              }
+            }}
+            onCancel={() => setConfirmLeaveSpace(false)}
           />
         </div>
       </div>
@@ -632,26 +669,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
           </div>
           {content}
         </div>
-        <ConfirmationDialog
-          isOpen={confirmLeaveSpace}
-          title="Leave shared space?"
-          message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
-          confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
-          cancelLabel="Stay"
-          tone="danger"
-          onConfirm={async () => {
-            setConfirmLeaveSpace(false);
-            if (!onLeaveSpace) return;
-            setLeavingSpace(true);
-            try {
-              await onLeaveSpace();
-              onClose();
-            } finally {
-              setLeavingSpace(false);
-            }
-          }}
-          onCancel={() => setConfirmLeaveSpace(false)}
-        />
       </div>
     );
 
@@ -844,16 +861,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <UserIcon size={18} />
             Edit profile
           </button>
-          {onLeaveSpace && (
-            <button
-              type="button"
-              onClick={() => setConfirmLeaveSpace(true)}
-              disabled={leavingSpace}
-              className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
-            >
-              Leave shared space
-            </button>
-          )}
           <button
             type="button"
             onClick={() => { onLogout(); onClose(); }}
@@ -1055,16 +1062,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                     )}
                   </div>
 
-                  {onLeaveSpace && (
-                    <button
-                      type="button"
-                      onClick={() => setConfirmLeaveSpace(true)}
-                      disabled={leavingSpace}
-                      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
-                    >
-                      {leavingSpace ? 'Leaving...' : 'Leave shared space'}
-                    </button>
-                  )}
                   <button
                     type="button"
                     onClick={() => { onLogout(); onClose(); }}
@@ -1078,26 +1075,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             )}
           </div>
         </div>
-        <ConfirmationDialog
-          isOpen={confirmLeaveSpace}
-          title="Leave shared space?"
-          message="You will be removed from this space and sent back to space selection. If no other members remain, the space and its data are deleted."
-          confirmLabel={leavingSpace ? 'Leaving...' : 'Leave space'}
-          cancelLabel="Stay"
-          tone="danger"
-          onConfirm={async () => {
-            setConfirmLeaveSpace(false);
-            if (!onLeaveSpace) return;
-            setLeavingSpace(true);
-            try {
-              await onLeaveSpace();
-              onClose();
-            } finally {
-              setLeavingSpace(false);
-            }
-          }}
-          onCancel={() => setConfirmLeaveSpace(false)}
-        />
       </div>
     );
   }
