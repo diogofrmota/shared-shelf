@@ -329,7 +329,11 @@ function HomePage({ onNavigate }) {
                   <div
                     key={feature.title}
                     className="ss-card p-6 transition ss-card-hover"
-                    style={{ backgroundColor: feature.bg, borderColor: feature.border, borderWidth: '3px' }}
+                    style={{
+                      backgroundImage: `linear-gradient(to right, ${feature.bg} 0%, ${feature.bg}e6 100%)`,
+                      borderColor: feature.border,
+                      borderWidth: '3px'
+                    }}
                   >
                     <span
                       className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/70"
