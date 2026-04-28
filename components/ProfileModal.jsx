@@ -131,7 +131,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
   useEffect(() => {
     if (mode === 'account' && isOpen) {
-      setAccountEditing(false);
+      setAccountEditing(true);
       setAccountName(currentUser?.name || currentUser?.username || currentUser?.email || '');
       setAccountUsername(currentUser?.username || '');
       setAccountError('');
@@ -547,6 +547,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
         setPwSection(false);
         setEmailSection(false);
         setUsernameStatus(null);
+        onClose?.();
       } catch (err) {
         setAccountError(err.message || 'Failed to update profile');
       } finally {
@@ -612,6 +613,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setNewEmail('');
       setEmailError('');
       setEmailSuccess('');
+      onClose?.();
     };
 
     const accountShell = (content) => (
