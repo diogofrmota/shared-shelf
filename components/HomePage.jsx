@@ -12,7 +12,7 @@ const {
 const FEATURES = [
   {
     icon: CalendarIcon,
-    title: 'Shared calendar',
+    title: 'Shared Calendar',
     description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.',
     bg: '#FFE4E0',
     border: '#F5ADA5',
@@ -20,7 +20,7 @@ const FEATURES = [
   },
   {
     icon: CheckSquare,
-    title: 'Tasks together',
+    title: 'Tasks List',
     description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.',
     bg: '#E1F5EE',
     border: '#91D7BF',
@@ -28,32 +28,32 @@ const FEATURES = [
   },
   {
     icon: MapPin,
-    title: 'Places to go',
-    description: 'Save restaurants, bars, and date ideas on a shared map with categories, photos, ratings, and notes.',
+    title: 'Favourite Locations',
+    description: 'Save restaurants, bars, and date ideas on a shared map with categories, ratings, and notes.',
     bg: '#FFE8D7',
     border: '#F2B27A',
     accent: '#D65A00'
   },
   {
     icon: Film,
-    title: 'Trip planning',
+    title: 'Plan Your Next Trip',
     bg: '#E4EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
-    description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together — all in one place.'
+    description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together.'
   },
   {
     icon: ChefHat,
-    title: 'Recipe collection',
-    description: 'Build a shared recipe book with ingredients, instructions, photos, prep time, and source links for the meals you cook together.',
+    title: 'Recipe Collection',
+    description: 'Build a shared recipe book with ingredients, instructions, prep time, and source links for the meals you cook together.',
     bg: '#FFE4F6',
     border: '#EAA3D6',
     accent: '#B8329B'
   },
   {
     icon: Tv,
-    title: 'Watchlist & reading',
-    description: 'Track the movies, TV shows, and books you want to watch and read together, with statuses, ratings, and season progress.',
+    title: 'Watchlist & Reading',
+    description: 'Track the movies, TV shows and books you want to watch and read together, with statuses, ratings, and season progress.',
     bg: '#ECE8FF',
     border: '#B9ADF2',
     accent: '#6B52D9'
@@ -92,7 +92,7 @@ const AudienceUsersIcon = ({ size = 20, className = '' }) => (
 const AUDIENCES = [
   {
     icon: AudienceHomeIcon,
-    title: 'Living together',
+    title: 'Living Together',
     description: 'Coordinate the calendar, split chores, save the recipes you cook on weeknights, and keep date plans in one place.',
     bg: '#FFE3DD',
     border: '#F2A69B',
@@ -101,26 +101,26 @@ const AUDIENCES = [
   {
     icon: AudiencePlaneIcon,
     title: 'Long-distance',
-    description: 'Stay in sync across schedules and time zones. Plan visits, save the trips you want to take, and queue what to watch on the next call.',
+    description: 'Stay in sync across the world. Plan visits, save the trips you want to take, and queue what to watch on the next call.',
     bg: '#E3EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA'
   },
   {
     icon: AudienceHeartIcon,
-    title: 'Newly dating',
+    title: 'Newly Dating',
     bg: '#FFE2F3',
     border: '#E89BC7',
     accent: '#B8329B',
-    description: 'Keep a running list of restaurants to try, films to watch, and weekend ideas — without losing them in a chat thread.'
+    description: 'Keep a running list of restaurants to try, films to watch, and weekend ideas.'
   },
   {
     icon: AudienceUsersIcon,
-    title: 'Married & busy',
+    title: 'Married',
     bg: '#E3F5EA',
     border: '#95D3AC',
     accent: '#00845F',
-    description: 'Anniversaries, recurring errands, family trips, and the watchlist you never get to. Everything in one shared, private space.'
+    description: 'Anniversaries, recurring errands, family trips, and the watchlist of movies you want to watch.'
   }
 ];
 
@@ -233,9 +233,9 @@ function HomePage({ onNavigate }) {
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
                 <div className="flex items-center justify-end">
-                  <span className="ss-tag">Private</span>
+                  <span className="ss-tag">Your Private Dashboard</span>
                 </div>
-                <h2 className="mt-1 text-2xl font-extrabold text-[#410001]">Couple Planner: Main Features</h2>
+                <h2 className="mt-1 text-2xl font-extrabold text-[#410001]">Couple Planner - Main Features</h2>
                 <p className="mt-1 text-sm text-[#534340]">Manage your relashionship with one app.</p>
                 <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {HERO_SHARED_ITEMS.map((item) => {
@@ -266,10 +266,10 @@ function HomePage({ onNavigate }) {
               A private shared space, just for the two of you.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
-              Couple Planner gathers everything couples try to coordinate, such as
-              your calendar, your tasks, the places you want to go on dates, the trips you are planning, the recipes
-              you cook, and the films and shows you are watching or books you are reading together into one private, shared space.
-              Both of you read and write the same content, so nothing slips between apps or threads.
+              Couple Planner brings together everything you coordinate as a couple, including 
+              your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into 
+              one private space. Both partners can read and update the same content, so nothing 
+              gets lost across apps or messages.
             </p>
           </div>
         </section>
@@ -316,7 +316,7 @@ function HomePage({ onNavigate }) {
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Features</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Everything the two of you need to plan, synced in one place.
+                Plan your relationship, synced in one place.
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
@@ -348,7 +348,7 @@ function HomePage({ onNavigate }) {
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Private by design</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Your space, your two, your data.
+                Secure your data privately, only share with your partner.
               </h2>
             </div>
             <ol className="space-y-4">
@@ -360,7 +360,7 @@ function HomePage({ onNavigate }) {
                 <div>
                   <h3 className="text-lg font-extrabold text-[#410001]">Create your space and invite your partner</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Each space has a unique ID and a one-time join code that expires after seven days. Send both to
+                    Each space has a unique ID and a one-time join code. Send both to
                     your partner and you are connected. The owner can regenerate the code at any time.
                   </p>
                 </div>
@@ -373,7 +373,7 @@ function HomePage({ onNavigate }) {
                 <div>
                   <h3 className="text-lg font-extrabold text-[#410001]">Choose what your space includes</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per space. Hide what you
+                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per space, you decide. Hide what you
                     don't use so your shared home screen stays focused on what actually matters to you both.
                   </p>
                 </div>
@@ -384,10 +384,9 @@ function HomePage({ onNavigate }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Both of you see and edit the same space</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Both of you see and edit the same information</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Only the two of you can see what's inside. Every change is shared instantly, and an offline cache
-                    keeps the app useful even when the connection drops.
+                    Only the two of you can see what's inside. Every change is shared instantly.
                   </p>
                 </div>
               </li>
@@ -398,10 +397,10 @@ function HomePage({ onNavigate }) {
         <section className="bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
             <h2 className="text-2xl font-extrabold tracking-tight text-[#410001] sm:text-3xl">
-              Ready to start your space, together?
+              Ready to manage your relationship, together?
             </h2>
             <p className="mt-3 text-base text-[#534340]">
-              Sign in if you already have an account, or create one to start planning with your partner in minutes.
+              Sign in if you already have an account, or create one to start planning with your partner.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
