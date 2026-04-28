@@ -42,7 +42,6 @@ const Header = ({
   const menuRef = useRef(null);
   const settingsRef = useRef(null);
   const profileRef = useRef(null);
-  const usernameCheckRef = useRef(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -566,178 +565,32 @@ const Header = ({
                   </div>
                 </div>
 
-                {isEditingProfile ? (
-                  <div className="space-y-3 p-4 text-left text-sm">
-                    <div className="rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Name</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={displayName}>{displayName}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingProfileField('name');
-                            setProfileName(displayName);
-                            setProfileError('');
-                          }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
-                          aria-label="Edit name"
-                          title="Edit name"
-                        >
-                          <PencilIcon size={16} />
-                        </button>
-                      </div>
-                      {editingProfileField === 'name' && (
-                        <form className="mt-3 space-y-3" onSubmit={handleProfileSave}>
-                          <input
-                            id="profile-name"
-                            type="text"
-                            value={profileName}
-                            onChange={(event) => setProfileName(event.target.value)}
-                            className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
-                            autoComplete="name"
-                            aria-label="Name"
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingProfileField(null);
-                                setProfileName(displayName);
-                                setProfileError('');
-                              }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                              disabled={profileSaving}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
-                              disabled={profileSaving}
-                            >
-                              {profileSaving ? 'Saving...' : 'Save'}
-                            </button>
-                          </div>
-                        </form>
-                      )}
-                    </div>
-
-                    <div className="rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Username</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={username}>{username}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingProfileField('username');
-                            setProfileUsername(username);
-                            setProfileUsernameStatus(null);
-                            setProfileError('');
-                          }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
-                          aria-label="Edit username"
-                          title="Edit username"
-                        >
-                          <PencilIcon size={16} />
-                        </button>
-                      </div>
-                      {editingProfileField === 'username' && (
-                        <form className="mt-3 space-y-3" onSubmit={handleProfileSave}>
-                          <div>
-                            <input
-                              id="profile-username"
-                              type="text"
-                              value={profileUsername}
-                              onChange={(event) => handleProfileUsernameChange(event.target.value)}
-                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
-                              autoComplete="username"
-                              spellCheck={false}
-                              aria-label="Username"
-                            />
-                            {profileUsernameStatus === 'checking'
-                              ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
-                              : profileUsernameStatus === 'available'
-                                ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
-                                : profileUsernameStatus === 'taken'
-                                  ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
-                                  : null}
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingProfileField(null);
-                                setProfileUsername(username);
-                                setProfileUsernameStatus(null);
-                                setProfileError('');
-                              }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                              disabled={profileSaving}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
-                              disabled={profileSaving || profileUsernameStatus === 'taken' || profileUsernameStatus === 'checking'}
-                            >
-                              {profileSaving ? 'Saving...' : 'Save'}
-                            </button>
-                          </div>
-                        </form>
-                      )}
-                    </div>
-
-                    {profileError && <p className="text-sm font-semibold text-[#C1121F]">{profileError}</p>}
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditingProfile(false);
-                          setEditingProfileField(null);
-                          setProfileName(displayName);
-                          setProfileUsername(username);
-                          setProfileUsernameStatus(null);
-                          setProfileError('');
-                        }}
-                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                        disabled={profileSaving}
-                      >
-                        Back
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-2">
+                <div className="p-2">
+                  {onAccountClick && (
                     <button
                       type="button"
                       onClick={() => {
-                        setIsEditingProfile(true);
-                        setEditingProfileField(null);
-                        setProfileName(displayName);
-                        setProfileUsername(username);
-                        setProfileUsernameStatus(null);
-                        setProfileError('');
+                        onAccountClick?.();
+                        setProfileOpen(false);
                       }}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <UserIcon size={18} />
-                      Edit profile
+                      Manage account
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => { onLogout?.(); setProfileOpen(false); }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    >
-                      <LogoutIcon size={18} />
-                      Log out
-                    </button>
-                  </div>
-                )}
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onLogout?.();
+                      setProfileOpen(false);
+                    }}
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                  >
+                    <LogoutIcon size={18} />
+                    Log out
+                  </button>
+                </div>
               </div>
             )}
           </div>
