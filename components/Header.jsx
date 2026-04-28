@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, ConfirmationDialog } = window;
+const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, ConfirmationDialog, PencilIcon } = window;
 
 const Header = ({
   spaceName,
@@ -23,9 +23,18 @@ const Header = ({
   const [profileOpen, setProfileOpen] = useState(false);
   const [confirmLeaveSpace, setConfirmLeaveSpace] = useState(false);
   const [leavingSpace, setLeavingSpace] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editingProfileField, setEditingProfileField] = useState(null);
+  const [profileName, setProfileName] = useState('');
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profileUsernameStatus, setProfileUsernameStatus] = useState(null);
+  const [profileError, setProfileError] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [settingsExpanded, setSettingsExpanded] = useState(null);
   const menuRef = useRef(null);
   const settingsRef = useRef(null);
   const profileRef = useRef(null);
+  const usernameCheckRef = useRef(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -51,6 +60,22 @@ const Header = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [settingsOpen, profileOpen]);
+
+  useEffect(() => {
+    if (profileOpen && !isEditingProfile) {
+      setProfileName(displayName);
+      setProfileUsername(username);
+      setEditingProfileField(null);
+      setProfileUsernameStatus(null);
+      setProfileError('');
+    }
+  }, [profileOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+    };
+  }, []);
 
   const handleTabClick = (category, subTab) => {
     onCategoryChange(category, subTab);
@@ -101,6 +126,65 @@ const Header = ({
       setSettingsOpen(false);
     } finally {
       setLeavingSpace(false);
+    }
+  };
+
+  const handleProfileUsernameChange = (value) => {
+    setProfileUsername(value);
+    const trimmed = value.trim();
+
+    if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+    if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
+      setProfileUsernameStatus(null);
+      return;
+    }
+    if (trimmed.toLowerCase() === (currentUser?.username || '').toLowerCase()) {
+      setProfileUsernameStatus(null);
+      return;
+    }
+
+    setProfileUsernameStatus('checking');
+    usernameCheckRef.current = setTimeout(async () => {
+      const result = await checkUsernameAvailable(trimmed, currentUser?.id || '');
+      if (result.available === null) {
+        setProfileUsernameStatus(null);
+        return;
+      }
+      setProfileUsernameStatus(result.available ? 'available' : 'taken');
+    }, 450);
+  };
+
+  const handleProfileSave = async (event) => {
+    event.preventDefault();
+    const nextName = profileName.trim();
+    const nextUsername = profileUsername.trim();
+
+    if (editingProfileField === 'name') {
+      if (!nextName) { setProfileError('Name is required'); return; }
+      if (nextName.length > 20) { setProfileError('Name must be 20 characters or fewer'); return; }
+      if (!/^[A-Za-z ]+$/.test(nextName)) { setProfileError('Name can only contain letters and spaces'); return; }
+    }
+    if (editingProfileField === 'username') {
+      if (!nextUsername) { setProfileError('Username is required'); return; }
+      if (nextUsername.length > 20) { setProfileError('Username must be 20 characters or fewer'); return; }
+      if (!/^[A-Za-z0-9]+$/.test(nextUsername)) { setProfileError('Username can only contain letters and numbers'); return; }
+      if (profileUsernameStatus === 'taken') { setProfileError('Username already taken'); return; }
+      if (profileUsernameStatus === 'checking') { setProfileError('Username availability is still being checked'); return; }
+    }
+
+    setProfileSaving(true);
+    setProfileError('');
+
+    try {
+      const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
+      setProfileName(updatedUser?.name || nextName);
+      setProfileUsername(updatedUser?.username || nextUsername);
+      setEditingProfileField(null);
+      setProfileUsernameStatus(null);
+    } catch (err) {
+      setProfileError(err.message || 'Failed to update profile');
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -169,50 +253,87 @@ const Header = ({
                 role="menu"
                 className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
               >
-                <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Space controls</p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow-sm">
-                      <SettingsIcon size={18} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-base font-bold text-[#410001]" title={spaceName || 'Your space'}>{spaceName || 'Your space'}</p>
-                      <p className="truncate text-xs text-[#534340]">Settings and sharing</p>
-                    </div>
-                  </div>
-                </div>
                 <div className="p-2">
                   <button
                     role="menuitem"
                     type="button"
-                    onClick={() => { onSettingsClick?.(); setSettingsOpen(false); }}
+                    onClick={() => setSettingsExpanded(settingsExpanded === 'space' ? null : 'space')}
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
                     Space settings
                   </button>
+                  {settingsExpanded === 'space' && (
+                    <div className="border-t border-[#E1D8D4] p-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => { onSettingsClick?.(); setSettingsOpen(false); setSettingsExpanded(null); }}
+                        className="flex min-h-[40px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#410001]"
+                      >
+                        Open space settings
+                      </button>
+                    </div>
+                  )}
                   {onShareClick && (
-                    <button
-                      role="menuitem"
-                      type="button"
-                      onClick={() => { onShareClick?.(); setSettingsOpen(false); }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    >
-                      <ShareIcon size={18} />
-                      Share space
-                    </button>
+                    <>
+                      <button
+                        role="menuitem"
+                        type="button"
+                        onClick={() => setSettingsExpanded(settingsExpanded === 'share' ? null : 'share')}
+                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      >
+                        <ShareIcon size={18} />
+                        Share space
+                      </button>
+                      {settingsExpanded === 'share' && (
+                        <div className="border-t border-[#E1D8D4] p-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={() => { onShareClick?.(); setSettingsOpen(false); setSettingsExpanded(null); }}
+                            className="flex min-h-[40px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#410001]"
+                          >
+                            Share space details
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                   {onLeaveSpace && (
-                    <button
-                      role="menuitem"
-                      type="button"
-                      onClick={() => { setSettingsOpen(false); setConfirmLeaveSpace(true); }}
-                      disabled={leavingSpace}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
-                    >
-                      <LogoutIcon size={18} />
-                      {leavingSpace ? 'Leaving...' : 'Leave shared space'}
-                    </button>
+                    <>
+                      <button
+                        role="menuitem"
+                        type="button"
+                        onClick={() => setSettingsExpanded(settingsExpanded === 'leave' ? null : 'leave')}
+                        disabled={leavingSpace}
+                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                      >
+                        <LogoutIcon size={18} />
+                        {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                      </button>
+                      {settingsExpanded === 'leave' && (
+                        <div className="border-t border-[#E1D8D4] p-2 mt-2">
+                          <p className="text-xs text-[#534340] mb-2">Are you sure you want to leave this space?</p>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSettingsExpanded(null)}
+                              className="flex-1 min-h-[40px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-xs font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              disabled={leavingSpace}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setConfirmLeaveSpace(true); setSettingsOpen(false); setSettingsExpanded(null); }}
+                              disabled={leavingSpace}
+                              className="flex-1 min-h-[40px] rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                            >
+                              Leave
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -251,26 +372,179 @@ const Header = ({
                     </div>
                   </div>
                 </div>
-                <div className="p-2">
-                  <button
-                    role="menuitem"
-                    type="button"
-                    onClick={() => { onAccountClick?.(); setProfileOpen(false); }}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                  >
-                    <UserIcon size={18} />
-                    Edit profile
-                  </button>
-                  <button
-                    role="menuitem"
-                    type="button"
-                    onClick={() => { onLogout?.(); setProfileOpen(false); }}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                  >
-                    <LogoutIcon size={18} />
-                    Log out
-                  </button>
-                </div>
+
+                {isEditingProfile ? (
+                  <div className="space-y-3 p-4 text-left text-sm">
+                    <div className="rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Name</p>
+                          <p className="mt-1 truncate font-semibold text-[#410001]" title={displayName}>{displayName}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProfileField('name');
+                            setProfileName(displayName);
+                            setProfileError('');
+                          }}
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          aria-label="Edit name"
+                          title="Edit name"
+                        >
+                          <PencilIcon size={16} />
+                        </button>
+                      </div>
+                      {editingProfileField === 'name' && (
+                        <form className="mt-3 space-y-3" onSubmit={handleProfileSave}>
+                          <input
+                            id="profile-name"
+                            type="text"
+                            value={profileName}
+                            onChange={(event) => setProfileName(event.target.value)}
+                            className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                            autoComplete="name"
+                            aria-label="Name"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProfileField(null);
+                                setProfileName(displayName);
+                                setProfileError('');
+                              }}
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              disabled={profileSaving}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              disabled={profileSaving}
+                            >
+                              {profileSaving ? 'Saving...' : 'Save'}
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Username</p>
+                          <p className="mt-1 truncate font-semibold text-[#410001]" title={username}>{username}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProfileField('username');
+                            setProfileUsername(username);
+                            setProfileUsernameStatus(null);
+                            setProfileError('');
+                          }}
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          aria-label="Edit username"
+                          title="Edit username"
+                        >
+                          <PencilIcon size={16} />
+                        </button>
+                      </div>
+                      {editingProfileField === 'username' && (
+                        <form className="mt-3 space-y-3" onSubmit={handleProfileSave}>
+                          <div>
+                            <input
+                              id="profile-username"
+                              type="text"
+                              value={profileUsername}
+                              onChange={(event) => handleProfileUsernameChange(event.target.value)}
+                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                              autoComplete="username"
+                              spellCheck={false}
+                              aria-label="Username"
+                            />
+                            {profileUsernameStatus === 'checking'
+                              ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+                              : profileUsernameStatus === 'available'
+                                ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
+                                : profileUsernameStatus === 'taken'
+                                  ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
+                                  : null}
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProfileField(null);
+                                setProfileUsername(username);
+                                setProfileUsernameStatus(null);
+                                setProfileError('');
+                              }}
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              disabled={profileSaving}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              disabled={profileSaving || profileUsernameStatus === 'taken' || profileUsernameStatus === 'checking'}
+                            >
+                              {profileSaving ? 'Saving...' : 'Save'}
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+
+                    {profileError && <p className="text-sm font-semibold text-[#C1121F]">{profileError}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setEditingProfileField(null);
+                          setProfileName(displayName);
+                          setProfileUsername(username);
+                          setProfileUsernameStatus(null);
+                          setProfileError('');
+                        }}
+                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                        disabled={profileSaving}
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingProfile(true);
+                        setEditingProfileField(null);
+                        setProfileName(displayName);
+                        setProfileUsername(username);
+                        setProfileUsernameStatus(null);
+                        setProfileError('');
+                      }}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <UserIcon size={18} />
+                      Edit profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { onLogout?.(); setProfileOpen(false); }}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <LogoutIcon size={18} />
+                      Log out
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
