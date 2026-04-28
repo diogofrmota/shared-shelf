@@ -186,14 +186,14 @@ function HomePage({ onNavigate }) {
               onClick={goTo('/login')}
               className="hidden rounded-xl border border-[#E63B2E]/40 bg-white px-4 py-2 text-sm font-bold text-[#A9372C] transition hover:border-[#E63B2E] hover:bg-[#FFDAD4]/40 sm:inline-flex"
             >
-              Sign in
+              Sign In
             </a>
             <a
               href="/login?mode=signup"
               onClick={goTo('/login?mode=signup')}
               className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
             >
-              Create account
+              Create Account
             </a>
           </nav>
         </div>
@@ -203,10 +203,12 @@ function HomePage({ onNavigate }) {
         <section className="app-auth-bg">
           <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-10 text-white sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-14">
             <div className="flex-1">
-              <span className="ss-tag mb-5 bg-white/20 text-white">For the two of you</span>
               <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Plan your life,<br />together.
+                Couple Planner
               </h1>
+              <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
+                Plan your life,<br />together.
+              </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is a private, shared space just for you and your partner. One calendar, one task list,
                 one map of saved places, your trips planner, recipes book, and the movies and shows you want to watch. Everything synced in one place,
@@ -218,25 +220,24 @@ function HomePage({ onNavigate }) {
                   onClick={goTo('/login?mode=signup')}
                   className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFF8F5]"
                 >
-                  Create your account
+                  Create Account
                 </a>
                 <a
                   href="/login"
                   onClick={goTo('/login')}
                   className="inline-flex items-center gap-2 rounded-xl border-2 border-white bg-transparent px-6 py-3 text-base font-bold text-white transition hover:bg-white hover:text-[#A9372C]"
                 >
-                  Sign in
+                  Sign In
                 </a>
               </div>
             </div>
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">Create a Shared Dashboard</p>
                   <span className="ss-tag">Private</span>
                 </div>
-                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">Couple Planner</h2>
-                <p className="mt-1 text-sm text-[#534340]">Everything the two of you are planning, in one place.</p>
+                <h2 className="mt-2 text-2xl font-extrabold text-[#410001]">Couple Planner Features</h2>
+                <p className="mt-1 text-sm text-[#534340]">Keep your life in sync, all in one place.</p>
                 <ul className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   {HERO_SHARED_ITEMS.map((item) => {
                     const Icon = item.icon;
@@ -292,7 +293,7 @@ function HomePage({ onNavigate }) {
                   <div
                     key={audience.title}
                     className="ss-card p-6"
-                    style={{ backgroundColor: audience.bg, borderColor: audience.border, borderWidth: '3px' }}
+                    style={{ borderWidth: '3px' }}
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
@@ -409,14 +410,14 @@ function HomePage({ onNavigate }) {
                 onClick={goTo('/login?mode=signup')}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-6 py-3 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] hover:text-white"
               >
-                Create account
+                Create Account
               </a>
               <a
                 href="/login"
                 onClick={goTo('/login')}
                 className="inline-flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-6 py-3 text-base font-bold text-[#410001] transition hover:bg-[#FBF2ED]"
               >
-                Sign in
+                Sign In
               </a>
             </div>
           </div>
