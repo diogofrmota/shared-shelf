@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#E63B2E">
   <meta property="og:site_name" content="Couple Planner">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Couple Planner - Sync Your Life">
+  <meta property="og:title" content="Couple Planner - Homepage">
   <meta property="og:description" content="A private planning space for couples with shared calendar, tasks, places, trips, recipes, and watchlist.">
   <meta property="og:url" content="https://coupleplanner.app/">
   <meta property="og:image" content="https://coupleplanner.app/assets/social-preview.png">
@@ -17,10 +17,10 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Couple Planner brand preview">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Couple Planner - Sync Your Life">
+  <meta name="twitter:title" content="Couple Planner - Homepage">
   <meta name="twitter:description" content="A private planning space for couples with shared calendar, tasks, places, trips, recipes, and watchlist.">
   <meta name="twitter:image" content="https://coupleplanner.app/assets/social-preview.png">
-  <title>Couple Planner - Sync Your Life</title>
+  <title>Couple Planner - Homepage</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://unpkg.com">
@@ -68,12 +68,19 @@
       --app-shadow-sm: 0 2px 8px rgba(230, 59, 46, 0.04);
       --app-shadow-md: 0 8px 24px rgba(230, 59, 46, 0.10);
       --app-shadow-lg: 0 18px 36px rgba(65, 0, 1, 0.14);
+      --app-page-background:
+        radial-gradient(circle at 0% 0%, rgba(255, 180, 169, 0.18), transparent 35%),
+        radial-gradient(circle at 100% 0%, rgba(251, 208, 119, 0.10), transparent 30%),
+        linear-gradient(180deg, #FFF8F5 0%, #FBF2ED 100%);
 
       color-scheme: light;
     }
 
     html {
-      background: var(--app-surface-tint);
+      min-height: 100%;
+      background: var(--app-page-background);
+      background-attachment: fixed;
+      overscroll-behavior-y: none;
       scroll-behavior: smooth;
     }
 
@@ -81,12 +88,11 @@
       margin: 0;
       padding: 0;
       overflow-x: hidden;
+      overscroll-behavior-y: none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: rgba(230, 59, 46, 0.18);
-      background:
-        radial-gradient(circle at 0% 0%, rgba(255, 180, 169, 0.18), transparent 35%),
-        radial-gradient(circle at 100% 0%, rgba(251, 208, 119, 0.10), transparent 30%),
-        linear-gradient(180deg, #FFF8F5 0%, #FBF2ED 100%);
+      background: var(--app-page-background);
+      background-attachment: fixed;
       color: var(--app-text);
       font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       min-height: 100vh;

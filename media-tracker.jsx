@@ -350,9 +350,9 @@ function MediaTracker() {
       return;
     }
     if (!currentUser) {
-      document.title = 'Couple Planner - Sync Your Life';
+      document.title = 'Couple Planner - Homepage';
     } else if (!currentSpace) {
-      document.title = 'Couple Planner - Your spaces';
+      document.title = 'Couple Planner - Create/ Join a Space';
     } else {
       document.title = `Couple Planner - ${currentSpace.name}`;
     }
@@ -745,6 +745,7 @@ function MediaTracker() {
         token={getAuthToken()}
         onSelectSpace={handleSpaceSelect}
         onUpdateUser={handleAccountUpdate}
+        onNavigate={navigateTo}
         onBackToLogin={handleLogout}
       />
     );
@@ -826,6 +827,7 @@ function MediaTracker() {
     }
     return null;
   };
+  const SiteFooter = window.SiteFooter;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FBF2ED]">
@@ -853,6 +855,7 @@ function MediaTracker() {
         {renderPageAddButton()}
         {renderContent()}
       </main>
+      {SiteFooter ? <SiteFooter onNavigate={navigateTo} /> : null}
 
       {/* Modals */}
       <GlobalSearchModal isOpen={globalSearchOpen} onClose={() => setGlobalSearchOpen(false)} data={data} setActiveTab={(tab) => { /* map old tab to new category/sub */ }} />

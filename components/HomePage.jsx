@@ -203,8 +203,14 @@ function HomePage({ onNavigate }) {
         <section className="app-auth-bg">
           <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-10 text-white sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-14">
             <div className="flex-1">
-              <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Couple Planner
+              <h1 className="flex items-center gap-3 text-4xl font-extrabold leading-tight tracking-tight text-white sm:gap-4 sm:text-5xl lg:text-6xl">
+                <img
+                  src="/assets/brand-mark.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="h-12 w-12 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+                />
+                <span>Couple Planner</span>
               </h1>
               <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
                 Plan your life, together.

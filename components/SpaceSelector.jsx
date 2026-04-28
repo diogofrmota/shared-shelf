@@ -2,7 +2,7 @@ const React = window.React;
 const { useState, useEffect, useRef } = React;
 const { BrandLogo } = window;
 
-function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, token, currentUser }) {
+function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate, token, currentUser }) {
   const [spaces, setSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -21,7 +21,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, token, curr
   const API_BASE = window.API_BASE_URL ?? '';
 
   useEffect(() => {
-    document.title = 'Couple Planner - Your spaces';
+    document.title = 'Couple Planner - Create/ Join a Space';
   }, []);
 
   useEffect(() => {
@@ -199,15 +199,16 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, token, curr
   }
 
   const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
+  const SiteFooter = window.SiteFooter;
 
   return (
-    <div className="min-h-screen bg-[#FBF2ED] text-[#241A18]">
+    <div className="flex min-h-screen flex-col bg-[#FBF2ED] text-[#241A18]">
       {/* Top header */}
       <header className="border-b border-[#E1D8D4] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <BrandLogo
-              subtitle="Your collaborative spaces"
+              subtitle="Plan your life together"
               markClassName="h-9 w-9 sm:h-10 sm:w-10"
               textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
             />
@@ -311,13 +312,13 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, token, curr
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         {/* Hero */}
         <section className="mb-8 sm:mb-10">
-          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Your spaces</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl lg:text-5xl">Join your shared space</h1>
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Welcome</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl lg:text-5xl">Join your shared dashboard</h1>
           <p className="mt-3 max-w-2xl text-base font-medium text-[#534340]">
-            Open an existing space to keep planning, or create a new one together.
+            Open an existing private space, or create a new one together.
           </p>
         </section>
 
@@ -449,6 +450,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, token, curr
         onConfirm={() => pendingSpaceRemoval && removeSpaceMembership(pendingSpaceRemoval)}
         onCancel={() => setPendingSpaceRemoval(null)}
       />
+      {SiteFooter ? <SiteFooter onNavigate={onNavigate} /> : null}
     </div>
   );
 }
