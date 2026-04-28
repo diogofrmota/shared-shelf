@@ -17,7 +17,6 @@ Requirements:
 - Update auth/profile API routes using existing shared auth helpers.
 
 Preserve existing profile editing behavior for name and username.
-Keep AGENTS.md and README.md updated.
 
 ## Prompt 2: Transactional Emails And Welcome Email
 
