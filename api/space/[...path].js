@@ -43,7 +43,7 @@ async function requireSpaceMember(spaceId, userId) {
   const result = await sql`
     SELECT role
     FROM space_members
-    WHERE shelf_id = ${spaceId} AND user_id = ${userId}
+    WHERE space_id = ${spaceId} AND user_id = ${userId}
     LIMIT 1
   `;
 
@@ -75,7 +75,7 @@ async function getSpaceSummary(spaceId) {
             SELECT u.id, u.display_name AS name, u.username, sm.role, sm.joined_at
             FROM space_members sm
             JOIN users u ON u.id = sm.user_id
-            WHERE sm.shelf_id = s.id
+            WHERE sm.space_id = s.id
           ) member_rows
         ),
         '[]'::json
@@ -121,7 +121,7 @@ async function createJoinCode(spaceId) {
   const code = generateJoinCode();
 
   await sql`
-    INSERT INTO space_join_codes (shelf_id, code, is_used, expires_at)
+    INSERT INTO space_join_codes (space_id, code, is_used, expires_at)
     VALUES (${spaceId}, ${code}, false, NOW() + INTERVAL '7 days')
   `;
 
@@ -132,7 +132,7 @@ async function getLatestActiveJoinCode(spaceId) {
   const result = await sql`
     SELECT id, code, expires_at, created_at
     FROM space_join_codes
-    WHERE shelf_id = ${spaceId}
+    WHERE space_id = ${spaceId}
       AND is_used = false
       AND expires_at > NOW()
     ORDER BY created_at DESC
@@ -181,13 +181,13 @@ export default async function handler(req, res) {
                   SELECT u.id, u.display_name AS name, u.username, member_sm.role, member_sm.joined_at
                   FROM space_members member_sm
                   JOIN users u ON u.id = member_sm.user_id
-                  WHERE member_sm.shelf_id = s.id
+                  WHERE member_sm.space_id = s.id
                 ) member_rows
               ),
               '[]'::json
             ) AS members
           FROM spaces s
-          JOIN space_members sm ON s.id = sm.shelf_id
+          JOIN space_members sm ON s.id = sm.space_id
           WHERE sm.user_id = ${userId}
           ORDER BY s.updated_at DESC NULLS LAST, s.created_at DESC
         `;
@@ -213,15 +213,15 @@ export default async function handler(req, res) {
         const space = created.rows[0];
 
         await sql`
-          INSERT INTO space_members (shelf_id, user_id, role)
+          INSERT INTO space_members (space_id, user_id, role)
           VALUES (${space.id}, ${userId}, 'owner')
-          ON CONFLICT (shelf_id, user_id) DO NOTHING
+          ON CONFLICT (space_id, user_id) DO NOTHING
         `;
 
         await sql`
-          INSERT INTO space_data (shelf_id, data)
+          INSERT INTO space_data (space_id, data)
           VALUES (${space.id}, ${JSON.stringify(DEFAULT_SPACE_DATA)}::jsonb)
-          ON CONFLICT (shelf_id) DO NOTHING
+          ON CONFLICT (space_id) DO NOTHING
         `;
 
         const joinCode = await createJoinCode(space.id);
@@ -272,7 +272,7 @@ export default async function handler(req, res) {
       const codeMatch = await sql`
         SELECT id
         FROM space_join_codes
-        WHERE shelf_id = ${spaceId}
+        WHERE space_id = ${spaceId}
           AND code = ${joinCode}
           AND is_used = false
           AND expires_at > NOW()
@@ -284,7 +284,7 @@ export default async function handler(req, res) {
       }
 
       await sql`
-        INSERT INTO space_members (shelf_id, user_id, role)
+        INSERT INTO space_members (space_id, user_id, role)
         VALUES (${spaceId}, ${userId}, 'member')
       `;
 
@@ -354,7 +354,7 @@ export default async function handler(req, res) {
         await sql`
           UPDATE space_join_codes
           SET is_used = true
-          WHERE shelf_id = ${spaceId}
+          WHERE space_id = ${spaceId}
             AND is_used = false
             AND expires_at > NOW()
         `;
@@ -384,7 +384,7 @@ export default async function handler(req, res) {
         const result = await sql`
           SELECT data
           FROM space_data
-          WHERE shelf_id = ${spaceId}
+          WHERE space_id = ${spaceId}
           LIMIT 1
         `;
 
@@ -398,9 +398,9 @@ export default async function handler(req, res) {
       const normalizedPayload = normalizeSpaceData(payload);
 
       await sql`
-        INSERT INTO space_data (shelf_id, data, updated_at)
+        INSERT INTO space_data (space_id, data, updated_at)
         VALUES (${spaceId}, ${JSON.stringify(normalizedPayload)}::jsonb, NOW())
-        ON CONFLICT (shelf_id)
+        ON CONFLICT (space_id)
         DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
       `;
 
@@ -420,13 +420,13 @@ export default async function handler(req, res) {
 
       await sql`
         DELETE FROM space_members
-        WHERE shelf_id = ${spaceId} AND user_id = ${userId}
+        WHERE space_id = ${spaceId} AND user_id = ${userId}
       `;
 
       const remainingMembers = await sql`
         SELECT COUNT(*)::int AS count
         FROM space_members
-        WHERE shelf_id = ${spaceId}
+        WHERE space_id = ${spaceId}
       `;
 
       if ((remainingMembers.rows[0]?.count || 0) === 0) {
@@ -438,11 +438,11 @@ export default async function handler(req, res) {
         await sql`
           UPDATE space_members
           SET role = 'owner'
-          WHERE shelf_id = ${spaceId}
+          WHERE space_id = ${spaceId}
             AND user_id = (
               SELECT user_id
               FROM space_members
-              WHERE shelf_id = ${spaceId}
+              WHERE space_id = ${spaceId}
               ORDER BY joined_at ASC
               LIMIT 1
             )

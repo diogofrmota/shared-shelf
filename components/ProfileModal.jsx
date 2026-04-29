@@ -9,57 +9,21 @@ const getProfileModalShell = () => window.getWindowComponent?.('ModalShell', win
 
 const AVATAR_COLORS = ['#E63B2E', '#A9372C', '#8C4F45', '#FFB4A9', '#FBD08A', '#A7C957'];
 
-const getAvatarTextColor = (backgroundColor) => {
-  if (!backgroundColor || !/^#([0-9a-f]{6})$/i.test(backgroundColor)) {
-    return '#ffffff';
-  }
-  const hex = backgroundColor.slice(1);
-  const red = parseInt(hex.slice(0, 2), 16);
-  const green = parseInt(hex.slice(2, 4), 16);
-  const blue = parseInt(hex.slice(4, 6), 16);
-  const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
-  return brightness > 150 ? '#241A18' : '#FFFFFF';
-};
-
-const UserAvatar = ({ user, size = 40 }) => {
-  const initials = (user.name || '?')
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+const ProfileColorDot = ({ user, size = 40 }) => {
   const color = user.color || AVATAR_COLORS[0];
-  const [imgError, setImgError] = useState(false);
-  const safeAvatar = window.safeImageUrl?.(user.avatar) || '';
-
-  if (safeAvatar && !imgError) {
-    return (
-      <img
-        src={safeAvatar}
-        alt={user.name}
-        width={size}
-        height={size}
-        loading="lazy"
-        decoding="async"
-        style={{ width: size, height: size, minWidth: size }}
-        className="flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
-        onError={() => setImgError(true)}
-      />
-    );
-  }
-
+  const initial = (user.name || '?').charAt(0).toUpperCase();
   return (
     <div
       style={{
         width: size,
         height: size,
-        minWidth: size,
         background: color,
-        color: getAvatarTextColor(color)
+        color: window.getAvatarTextColor?.(color) || '#fff',
+        fontSize: Math.max(10, size * 0.38)
       }}
-      className="flex flex-shrink-0 items-center justify-center rounded-full border-2 border-white font-bold shadow-sm"
+      className="flex flex-shrink-0 items-center justify-center rounded-full font-bold"
     >
-      <span style={{ fontSize: Math.max(10, size * 0.35) }}>{initials}</span>
+      {initial}
     </div>
   );
 };
@@ -241,7 +205,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               <div key={user.id} className="rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-shrink-0">
-                    <UserAvatar user={user} size={48} />
+                    <ProfileColorDot user={user} size={48} />
                     <button
                       onClick={() => setExpandedId(expandedId === user.id ? null : user.id)}
                       className="absolute -bottom-3 -right-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#CC302F]"
@@ -274,30 +238,18 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                 </div>
 
                 {expandedId === user.id && (
-                  <div className="mt-3 space-y-3 border-t border-[#E1D8D4] pt-3">
-                    <div>
-                      <label className={labelCls}>Avatar URL (optional)</label>
-                      <input
-                        type="url"
-                        value={user.avatar || ''}
-                        onChange={(e) => updateUser(user.id, 'avatar', e.target.value)}
-                        placeholder="https://example.com/photo.jpg"
-                        className={inputCls}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Color</label>
-                      <div className="flex flex-wrap gap-2">
-                        {AVATAR_COLORS.map(color => (
-                          <button
-                            key={color}
-                            onClick={() => updateUser(user.id, 'color', color)}
-                            style={{ background: color }}
-                            className={`h-11 w-11 rounded-full transition ${user.color === color ? 'ring-2 ring-[#E63B2E] ring-offset-2 ring-offset-white scale-110' : 'hover:scale-105'}`}
-                            aria-label={`Choose color ${color}`}
-                          />
-                        ))}
-                      </div>
+                  <div className="mt-3 border-t border-[#E1D8D4] pt-3">
+                    <label className={labelCls}>Color</label>
+                    <div className="flex flex-wrap gap-2">
+                      {AVATAR_COLORS.map(color => (
+                        <button
+                          key={color}
+                          onClick={() => updateUser(user.id, 'color', color)}
+                          style={{ background: color }}
+                          className={`h-11 w-11 rounded-full transition ${user.color === color ? 'ring-2 ring-[#E63B2E] ring-offset-2 ring-offset-white scale-110' : 'hover:scale-105'}`}
+                          aria-label={`Choose color ${color}`}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
@@ -927,4 +879,4 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
   return null;
 };
 
-Object.assign(window, { AVATAR_COLORS, UserAvatar, ProfileModal });
+Object.assign(window, { AVATAR_COLORS, ProfileModal });

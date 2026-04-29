@@ -175,73 +175,6 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
   );
 };
 
-const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
-  const [formData, setFormData] = useState(recipe || {});
-
-  useEffect(() => {
-    if (recipe) setFormData(recipe);
-  }, [recipe]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({ ...formData });
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  const fieldCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
-  const ModalShell = getRecipeModalShell();
-  const Close = getRecipeComponent('Close');
-
-  return (
-    <ModalShell
-      isOpen={isOpen}
-      onClose={onClose}
-      ariaLabel="Edit recipe"
-      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
-    >
-        <div className="flex items-center justify-between border-b border-[#E1D8D4] p-5">
-          <h2 className="text-xl font-extrabold text-[#410001]">Edit recipe</h2>
-          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit recipe">
-            <Close size={22} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Recipe name *</label>
-            <input type="text" value={formData.name || ''} className={fieldCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Prep time</label>
-            <input type="text" value={formData.prepTime || ''} className={fieldCls} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Photo URL</label>
-            <input type="text" value={formData.photo || ''} className={fieldCls} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Recipe link</label>
-            <input type="url" value={formData.link || ''} className={fieldCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Ingredients</label>
-            <textarea value={formData.ingredients || ''} className={`${fieldCls} font-mono text-sm`} rows="4" onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Instructions</label>
-            <textarea value={formData.instructions || ''} className={fieldCls} rows="4" onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
-          </div>
-          <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
-            <button type="submit" className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]">Save changes</button>
-          </div>
-        </form>
-    </ModalShell>
-  );
-};
-
 const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
   const [query, setQuery] = useState('');
   const [detailRecipe, setDetailRecipe] = useState(null);
@@ -321,4 +254,4 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
   );
 };
 
-Object.assign(window, { RecipeCard, RecipeDetailModal, EditRecipeModal, RecipesView });
+Object.assign(window, { RecipeCard, RecipeDetailModal, RecipesView });
