@@ -145,7 +145,7 @@ const FailureScreen = ({
           </div>
         </section>
       </main>
-      {typeof SiteFooter === 'function' && <SiteFooter onNavigate={onNavigate} />}
+      {typeof window.SiteFooter === 'function' && <window.SiteFooter onNavigate={onNavigate} />}
     </div>
   );
 };
@@ -199,13 +199,20 @@ const ConfirmationDialog = ({
   useEffect(() => {
     if (!isOpen) return;
     const previousActiveElement = document.activeElement;
+    const isVisible = (el) => {
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return false;
+      const style = window.getComputedStyle(el);
+      return style.visibility !== 'hidden' && style.display !== 'none';
+    };
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onCancel?.();
+      if (event.key === 'Escape') { onCancel?.(); return; }
       if (event.key !== 'Tab') return;
 
       const focusable = dialogRef.current
         ? Array.from(dialogRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
-          .filter(element => !element.disabled && element.offsetParent !== null)
+          .filter(element => !element.disabled && isVisible(element))
         : [];
       if (!focusable.length) return;
 
@@ -221,13 +228,16 @@ const ConfirmationDialog = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    window.setTimeout(() => confirmButtonRef.current?.focus(), 0);
+    const focusTimer = window.setTimeout(() => confirmButtonRef.current?.focus(), 0);
 
     return () => {
+      window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', handleKeyDown);
       previousActiveElement?.focus?.();
     };
-  }, [isOpen, onCancel]);
+    // Only re-run when the dialog opens/closes, so changes in onCancel identity
+    // don't tear down the focus trap and re-focus the previous element mid-dialog.
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -288,12 +298,14 @@ const ConfirmationDialog = ({
 };
 
 const UserAvatar = ({ user, size = 32 }) => {
-  const safeAvatar = window.safeImageUrl?.(user.avatar) || '';
+  const safeUser = user || {};
+  const displayName = safeUser.name || safeUser.username || safeUser.email || '?';
+  const safeAvatar = window.safeImageUrl?.(safeUser.avatar) || '';
   if (safeAvatar) {
     return (
       <img
         src={safeAvatar}
-        alt={user.name}
+        alt={displayName}
         loading="lazy"
         decoding="async"
         className="rounded-full object-cover flex-shrink-0"
@@ -301,17 +313,18 @@ const UserAvatar = ({ user, size = 32 }) => {
       />
     );
   }
+  const color = safeUser.color || '#E63B2E';
   return (
     <div
       className="flex flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
       style={{
         width: size,
         height: size,
-        backgroundColor: user.color || '#E63B2E',
-        color: getAvatarTextColor(user.color || '#E63B2E')
+        backgroundColor: color,
+        color: getAvatarTextColor(color)
       }}
     >
-      {user.name.charAt(0).toUpperCase()}
+      {(displayName.charAt(0) || '?').toUpperCase()}
     </div>
   );
 };

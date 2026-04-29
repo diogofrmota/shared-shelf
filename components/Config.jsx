@@ -1,5 +1,4 @@
 const React = window.React;
-const { useState, useEffect, useRef } = React;
 
 // ============================================================================
 // CONFIGURATION
@@ -178,8 +177,18 @@ const transformAnimeData = (item) => ({
   type: 'Tv Show'
 });
 
+const stableBookFallbackId = (doc) => {
+  const seed = `${doc.title || ''}|${doc.first_publish_year || ''}|${(doc.author_name || []).join(',')}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  return `fallback-${(hash >>> 0).toString(36)}`;
+};
+
 const transformBookData = (doc) => ({
-  id: `book-${doc.key?.replace('/works/', '') || Math.random().toString(36).slice(2)}`,
+  id: `book-${doc.key?.replace('/works/', '') || stableBookFallbackId(doc)}`,
   title: doc.title || 'Unknown Title',
   thumbnail: doc.cover_i
     ? `${API_CONFIG.OPEN_LIBRARY.COVERS_URL}/${doc.cover_i}-M.jpg`
@@ -222,7 +231,7 @@ const searchTvShows = async (query) => {
       ? (tmdbResponse.value.results || []).filter(i => i.media_type === 'tv').map(transformMovieData)
       : [];
     const animeResults = animeData.status === 'fulfilled'
-      ? (animeData.value.data || []).map(transformAnimeData)
+      ? ((animeData.value && animeData.value.data) || []).map(transformAnimeData)
       : [];
     return [...tvResults, ...animeResults];
   } catch (error) {
@@ -268,7 +277,7 @@ const searchAnime = async (query) => {
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error('Failed to fetch anime');
     const data = await response.json();
-    return data.data.map(item => transformAnimeData(item));
+    return (data?.data || []).map(item => transformAnimeData(item));
   } catch (error) {
     console.error('Anime search error:', error);
     return [];

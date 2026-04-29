@@ -4,6 +4,24 @@ const { BrandLogo } = window;
 
 const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, PencilIcon, Trash } = window;
 
+const HEADER_NAV_TABS = [
+  { id: 'calendar', label: 'Calendar', category: 'plan', icon: CalendarIcon },
+  { id: 'tasks', label: 'Tasks', category: 'plan', icon: CheckSquare },
+  { id: 'locations', label: 'Locations', category: 'go', icon: MapPin },
+  { id: 'trips', label: 'Trips', category: 'go', icon: Film },
+  { id: 'recipes', label: 'Recipes', category: 'go', icon: ChefHat },
+  { id: 'media', label: 'Watchlist', category: 'media', icon: Tv }
+];
+
+const HEADER_SECTION_OPTIONS = [
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'locations', label: 'Locations' },
+  { id: 'trips', label: 'Trips' },
+  { id: 'recipes', label: 'Recipes' },
+  { id: 'watchlist', label: 'Watchlist' }
+];
+
 const Header = ({
   spaceName,
   space,
@@ -110,22 +128,8 @@ const Header = ({
     setMenuOpen(false);
   };
 
-  const navTabs = [
-    { id: 'calendar', label: 'Calendar', category: 'plan', icon: CalendarIcon },
-    { id: 'tasks', label: 'Tasks', category: 'plan', icon: CheckSquare },
-    { id: 'locations', label: 'Locations', category: 'go', icon: MapPin },
-    { id: 'trips', label: 'Trips', category: 'go', icon: Film },
-    { id: 'recipes', label: 'Recipes', category: 'go', icon: ChefHat },
-    { id: 'media', label: 'Watchlist', category: 'media', icon: Tv }
-  ];
-  const sectionOptions = [
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'tasks', label: 'Tasks' },
-    { id: 'locations', label: 'Locations' },
-    { id: 'trips', label: 'Trips' },
-    { id: 'recipes', label: 'Recipes' },
-    { id: 'watchlist', label: 'Watchlist' }
-  ];
+  const navTabs = HEADER_NAV_TABS;
+  const sectionOptions = HEADER_SECTION_OPTIONS;
   const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
     ? enabledSections
     : ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist']);
@@ -140,8 +144,8 @@ const Header = ({
   const username = currentUser?.username || 'User';
   const accountEmail = currentUser?.email || 'Email unavailable';
   const userInitial = displayName.trim().charAt(0).toUpperCase();
-  const canGenerateInvite = !space?.role || space.role === 'owner';
-  const canEditSpaceSettings = !space?.role || space.role === 'owner';
+  const canGenerateInvite = space?.role === 'owner';
+  const canEditSpaceSettings = space?.role === 'owner';
 
   useEffect(() => {
     if (profileOpen) {
@@ -155,7 +159,9 @@ const Header = ({
       setProfileEmailSuccess('');
       setProfileError('');
     }
-  }, [profileOpen, currentUser?.id, displayName, username, currentUser?.email]);
+    // Only re-run on open/close transitions and user identity change, so in-progress
+    // edits to name/username aren't clobbered when currentUser updates mid-edit.
+  }, [profileOpen, currentUser?.id]);
 
   useEffect(() => {
     return () => {
@@ -262,12 +268,16 @@ const Header = ({
 
     setProfileUsernameStatus('checking');
     usernameCheckRef.current = setTimeout(async () => {
-      const result = await checkUsernameAvailable(trimmed, currentUser?.id || '');
-      if (result.available === null) {
+      try {
+        const result = await checkUsernameAvailable(trimmed, currentUser?.id);
+        if (!result || result.available == null) {
+          setProfileUsernameStatus(null);
+          return;
+        }
+        setProfileUsernameStatus(result.available ? 'available' : 'taken');
+      } catch {
         setProfileUsernameStatus(null);
-        return;
       }
-      setProfileUsernameStatus(result.available ? 'available' : 'taken');
     }, 450);
   };
 
@@ -479,7 +489,7 @@ const Header = ({
                             aria-label={editingSpaceName ? 'Done editing space name' : 'Edit space name'}
                             title={editingSpaceName ? 'Done' : 'Edit space name'}
                           >
-                            {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
+                            <PencilIcon size={16} />
                           </button>
                         </div>
                       </div>
@@ -696,7 +706,7 @@ const Header = ({
                           aria-label="Edit name"
                           title="Edit name"
                         >
-                          {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
+                          <PencilIcon size={16} />
                         </button>
                       </div>
                       {editingProfileField === 'name' && (
@@ -755,7 +765,7 @@ const Header = ({
                           aria-label="Edit username"
                           title="Edit username"
                         >
-                          {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
+                          <PencilIcon size={16} />
                         </button>
                       </div>
                       {editingProfileField === 'username' && (
@@ -825,7 +835,7 @@ const Header = ({
                           aria-label="Edit email"
                           title="Edit email"
                         >
-                          {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
+                          <PencilIcon size={16} />
                         </button>
                       </div>
                       {editingProfileField === 'email' && (
