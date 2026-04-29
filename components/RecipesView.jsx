@@ -82,7 +82,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
           {recipe.ingredients && (
             <div>
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Ingredients</h3>
-              <p className="whitespace-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#241A18]">
+              <p className="whiteDashboard-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#241A18]">
                 {recipe.ingredients}
               </p>
             </div>
@@ -91,7 +91,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
           {recipe.instructions && (
             <div>
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Instructions</h3>
-              <p className="whitespace-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#241A18]">
+              <p className="whiteDashboard-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#241A18]">
                 {recipe.instructions}
               </p>
             </div>

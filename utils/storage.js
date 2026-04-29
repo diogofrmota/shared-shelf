@@ -42,12 +42,12 @@ const authenticate = async (username, password) => {
     });
 
     const data = await response.json();
-    
+
     if (data.authenticated) {
       localStorage.setItem('couple-planner-legacy-auth', 'true');
       return true;
     }
-    
+
     return false;
   } catch (error) {
     console.error('Authentication error:', error);
@@ -69,8 +69,8 @@ const logout = () => {
  * Retrieve stored data from localStorage.
  */
 const getStoredData = async () => {
-  // Legacy storage is local-only. Current cloud persistence is space-scoped
-  // through /api/space/:id/data and requires an authenticated space member.
+  // Legacy storage is local-only. Current cloud persistence is dashboard-scoped
+  // through /api/dashboard/:id/data and requires an authenticated dashboard member.
   try {
     const stored = localStorage.getItem(LEGACY_STORAGE_KEY);
     if (stored) return JSON.parse(stored);
@@ -84,7 +84,7 @@ const getStoredData = async () => {
       console.error('Failed to parse cached data:', e);
     }
   }
-  
+
   return createDefaultStoredData();
 };
 

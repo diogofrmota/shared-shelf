@@ -249,7 +249,7 @@ const TripDetailModal = ({ trip, onClose, onEdit }) => {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <TripDetailSection title="Notes">
-              {trip.notes ? <p className="whitespace-pre-wrap text-sm text-[#534340]">{trip.notes}</p> : <p className="text-sm text-[#857370]">No notes yet.</p>}
+              {trip.notes ? <p className="whiteDashboard-pre-wrap text-sm text-[#534340]">{trip.notes}</p> : <p className="text-sm text-[#857370]">No notes yet.</p>}
             </TripDetailSection>
 
             <TripDetailSection title="Packing">

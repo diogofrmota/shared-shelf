@@ -1,7 +1,7 @@
 const React = window.React;
 const { useEffect, useRef, useState } = React;
 
-function ShareSpaceModal({ isOpen, onClose, space }) {
+function ShareDashboardModal({ isOpen, onClose, dashboard }) {
   const [shareInfo, setShareInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -11,7 +11,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
   const copiedTimeoutRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen || !space?.id) {
+    if (!isOpen || !dashboard?.id) {
       setShareInfo(null);
       setError('');
       setCopiedField('');
@@ -26,7 +26,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
       setError('');
 
       try {
-        const nextShareInfo = await window.getSpaceShareInfo?.(space.id);
+        const nextShareInfo = await window.getDashboardShareInfo?.(dashboard.id);
         if (active) setShareInfo(nextShareInfo);
       } catch (err) {
         if (active) setError(err?.message || 'Failed to load share details');
@@ -37,14 +37,14 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
 
     loadShareInfo();
     return () => { active = false; };
-  }, [isOpen, space?.id]);
+  }, [isOpen, dashboard?.id]);
 
   useEffect(() => () => {
     if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current);
   }, []);
 
-  if (!isOpen || !space) return null;
-  const canGenerateInvite = shareInfo?.canGenerateInvite ?? space?.role === 'owner';
+  if (!isOpen || !dashboard) return null;
+  const canGenerateInvite = shareInfo?.canGenerateInvite ?? dashboard?.role === 'owner';
 
   const copyValue = async (label, value) => {
     try {
@@ -63,7 +63,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
     setError('');
 
     try {
-      const nextShareInfo = await window.regenerateSpaceJoinCode?.(space.id);
+      const nextShareInfo = await window.regenerateDashboardJoinCode?.(dashboard.id);
       setShareInfo(nextShareInfo);
     } catch (err) {
       setError(err?.message || 'Failed to generate a new code');
@@ -80,16 +80,16 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
       isOpen={isOpen}
       onClose={onClose}
       zClass="z-[180]"
-      ariaLabel="Share space"
+      ariaLabel="Share dashboard"
       dialogClassName="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30"
     >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-[#410001]">Share space</h2>
+            <h2 className="text-xl font-extrabold text-[#410001]">Share dashboard</h2>
             <p className="mt-1 text-sm text-[#534340]">
               {canGenerateInvite
-                ? 'Share this space ID and one-time code so someone else can join.'
-                : 'Only the space owner can create or refresh join codes.'}
+                ? 'Share this dashboard ID and one-time code so someone else can join.'
+                : 'Only the dashboard owner can create or refresh join codes.'}
             </p>
           </div>
           <button
@@ -102,8 +102,8 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
         </div>
 
         <div className="mb-4 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space</p>
-          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={space.name}>{space.name}</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard</p>
+          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={dashboard.name}>{dashboard.name}</p>
         </div>
 
         {loading ? (
@@ -111,14 +111,14 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
         ) : (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space ID</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard ID</p>
               <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.spaceId || space.id}</code>
+                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.dashboardId || dashboard.id}</code>
                 <button
-                  onClick={() => copyValue('spaceId', shareInfo?.spaceId || space.id)}
+                  onClick={() => copyValue('dashboardId', shareInfo?.dashboardId || dashboard.id)}
                   className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                 >
-                  {copiedField === 'spaceId' ? 'Copied' : 'Copy'}
+                  {copiedField === 'dashboardId' ? 'Copied' : 'Copy'}
                 </button>
               </div>
             </div>
@@ -172,4 +172,4 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
   );
 }
 
-window.ShareSpaceModal = ShareSpaceModal;
+window.ShareDashboardModal = ShareDashboardModal;

@@ -13,27 +13,27 @@ const HEADER_NAV_TABS = [
 ];
 
 const Header = ({
-  spaceName,
-  space,
+  dashboardName,
+  dashboard,
   activeCategory,
   activeSubTab,
   onCategoryChange,
   onSettingsClick,
   onAccountClick,
   onShareClick,
-  onBackToSpaces,
+  onBackToDashboards,
   currentUser,
   onUpdateUser,
   onLogout,
-  onLeaveSpace,
-  onSaveSpace,
+  onLeaveDashboard,
+  onSaveDashboard,
   enabledSections
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [confirmLeaveSpace, setConfirmLeaveSpace] = useState(false);
-  const [leavingSpace, setLeavingSpace] = useState(false);
+  const [confirmLeaveDashboard, setConfirmLeaveDashboard] = useState(false);
+  const [leavingDashboard, setLeavingDashboard] = useState(false);
   const [shareExpanded, setShareExpanded] = useState(false);
   const [shareInfo, setShareInfo] = useState(null);
   const [shareGenerating, setShareGenerating] = useState(false);
@@ -41,9 +41,9 @@ const Header = ({
   const [shareGeneratedType, setShareGeneratedType] = useState('');
   const [shareError, setShareError] = useState('');
   const [copiedField, setCopiedField] = useState('');
-  const [spaceSettingsExpanded, setSpaceSettingsExpanded] = useState(false);
-  const [editingSpaceName, setEditingSpaceName] = useState(false);
-  const [settingsName, setSettingsName] = useState(spaceName || '');
+  const [DashboardSettingsExpanded, setDashboardSettingsExpanded] = useState(false);
+  const [editingDashboardName, setEditingDashboardName] = useState(false);
+  const [settingsName, setSettingsName] = useState(dashboardName || '');
   const [settingsSections, setSettingsSections] = useState(Array.isArray(enabledSections) && enabledSections.length ? enabledSections : []);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsError, setSettingsError] = useState('');
@@ -81,9 +81,9 @@ const Header = ({
     const handleClickOutside = (event) => {
       if (settingsOpen && settingsRef.current && !settingsRef.current.contains(event.target)) {
         setSettingsOpen(false);
-        setConfirmLeaveSpace(false);
+        setConfirmLeaveDashboard(false);
         setShareExpanded(false);
-        setSpaceSettingsExpanded(false);
+        setDashboardSettingsExpanded(false);
       }
       if (profileOpen && profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
@@ -100,15 +100,15 @@ const Header = ({
     setShareGeneratedType('');
     setShareError('');
     setCopiedField('');
-    setSpaceSettingsExpanded(false);
-    setEditingSpaceName(false);
+    setDashboardSettingsExpanded(false);
+    setEditingDashboardName(false);
     setSettingsError('');
     setSettingsSaved(false);
-  }, [space?.id]);
+  }, [dashboard?.id]);
 
   useEffect(() => {
-    setSettingsName(spaceName || '');
-  }, [spaceName]);
+    setSettingsName(dashboardName || '');
+  }, [dashboardName]);
 
   useEffect(() => {
     setSettingsSections(Array.isArray(enabledSections) && enabledSections.length ? enabledSections : []);
@@ -142,8 +142,8 @@ const Header = ({
   const username = currentUser?.username || 'User';
   const accountEmail = currentUser?.email || 'Email unavailable';
   const userInitial = displayName.trim().charAt(0).toUpperCase();
-  const canGenerateInvite = space?.role === 'owner';
-  const canEditSpaceSettings = space?.role === 'owner';
+  const canGenerateInvite = dashboard?.role === 'owner';
+  const canEditDashboardSettings = dashboard?.role === 'owner';
 
   useEffect(() => {
     if (profileOpen) {
@@ -172,9 +172,9 @@ const Header = ({
     setSettingsOpen(prev => {
       const nextOpen = !prev;
       if (!nextOpen) {
-        setConfirmLeaveSpace(false);
+        setConfirmLeaveDashboard(false);
         setShareExpanded(false);
-        setSpaceSettingsExpanded(false);
+        setDashboardSettingsExpanded(false);
       }
       return nextOpen;
     });
@@ -185,33 +185,33 @@ const Header = ({
   const openProfileDropdown = () => {
     setProfileOpen(prev => !prev);
     setSettingsOpen(false);
-    setConfirmLeaveSpace(false);
+    setConfirmLeaveDashboard(false);
     setShareExpanded(false);
-    setSpaceSettingsExpanded(false);
+    setDashboardSettingsExpanded(false);
     setMenuOpen(false);
   };
 
-  const handleLeaveSpace = async () => {
-    if (!onLeaveSpace) return;
-    setLeavingSpace(true);
+  const handleLeaveDashboard = async () => {
+    if (!onLeaveDashboard) return;
+    setLeavingDashboard(true);
     try {
-      await onLeaveSpace();
+      await onLeaveDashboard();
       setProfileOpen(false);
       setSettingsOpen(false);
-      setConfirmLeaveSpace(false);
+      setConfirmLeaveDashboard(false);
       setShareExpanded(false);
-      setSpaceSettingsExpanded(false);
+      setDashboardSettingsExpanded(false);
     } finally {
-      setLeavingSpace(false);
+      setLeavingDashboard(false);
     }
   };
 
-  const toggleSpaceSettingsPanel = () => {
+  const toggleDashboardSettingsPanel = () => {
     setShareExpanded(false);
-    setConfirmLeaveSpace(false);
+    setConfirmLeaveDashboard(false);
     setSettingsError('');
     setSettingsSaved(false);
-    setSpaceSettingsExpanded(prev => !prev);
+    setDashboardSettingsExpanded(prev => !prev);
   };
 
   const toggleSettingsSection = (sectionId) => {
@@ -226,27 +226,27 @@ const Header = ({
   };
 
   const handleSaveSettings = async () => {
-    if (!onSaveSpace || settingsSaving || !canEditSpaceSettings) return;
-    const nextName = settingsName.trim() || spaceName || 'Our Space';
+    if (!onSaveDashboard || settingsSaving || !canEditDashboardSettings) return;
+    const nextName = settingsName.trim() || dashboardName || 'Our dashboard';
     setSettingsSaving(true);
     setSettingsError('');
     setSettingsSaved(false);
     try {
-      await onSaveSpace({ name: nextName, enabledSections: settingsSections });
+      await onSaveDashboard({ name: nextName, enabledSections: settingsSections });
       setSettingsName(nextName);
-      setEditingSpaceName(false);
+      setEditingDashboardName(false);
       setSettingsSaved(true);
       window.setTimeout(() => setSettingsSaved(false), 1500);
     } catch (err) {
-      setSettingsError(err?.message || 'Failed to save space settings');
+      setSettingsError(err?.message || 'Failed to save dashboard settings');
     } finally {
       setSettingsSaving(false);
     }
   };
 
   const toggleSharePanel = () => {
-    setConfirmLeaveSpace(false);
-    setSpaceSettingsExpanded(false);
+    setConfirmLeaveDashboard(false);
+    setDashboardSettingsExpanded(false);
     setShareError('');
     setShareExpanded(prev => !prev);
   };
@@ -355,12 +355,12 @@ const Header = ({
   };
 
   const handleGenerateShare = async (type) => {
-    if (!space?.id || !canGenerateInvite) return;
+    if (!dashboard?.id || !canGenerateInvite) return;
     setShareGenerating(true);
     setShareGeneratingType(type);
     setShareError('');
     try {
-      const nextShareInfo = await window.regenerateSpaceJoinCode?.(space.id);
+      const nextShareInfo = await window.regenerateDashboardJoinCode?.(dashboard.id);
       setShareInfo(nextShareInfo);
       setShareGeneratedType(type);
     } catch (err) {
@@ -381,10 +381,10 @@ const Header = ({
   return (
     <header className="sticky top-0 z-40 border-b border-[#E1D8D4] bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        {/* Brand + space name */}
+        {/* Brand + dashboard name */}
         <div className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1">
           <BrandLogo
-            subtitle={spaceName || 'Your space'}
+            subtitle={dashboardName || 'Your dashboard'}
             markClassName="h-9 w-9 sm:h-10 sm:w-10"
             textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
           />
@@ -439,28 +439,28 @@ const Header = ({
                 className="absolute right-0 top-12 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
               >
                 <div className="p-2">
-                  {canEditSpaceSettings && (
+                  {canEditDashboardSettings && (
                     <button
                       role="menuitem"
                       type="button"
-                      onClick={toggleSpaceSettingsPanel}
+                      onClick={toggleDashboardSettingsPanel}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                      aria-expanded={spaceSettingsExpanded}
+                      aria-expanded={DashboardSettingsExpanded}
                     >
                       <PencilIcon size={18} />
-                      <span className="flex-1">Customize Space</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${spaceSettingsExpanded ? 'rotate-180' : ''}`}>
+                      <span className="flex-1">Customize dashboard</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${DashboardSettingsExpanded ? 'rotate-180' : ''}`}>
                         <polyline points="6 9 12 15 18 9"></polyline>
                       </svg>
                     </button>
                   )}
-                  {canEditSpaceSettings && spaceSettingsExpanded && (
+                  {canEditDashboardSettings && DashboardSettingsExpanded && (
                     <div className="mx-1 mb-2 space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
                       <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space name</p>
-                            {editingSpaceName ? (
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard name</p>
+                            {editingDashboardName ? (
                               <input
                                 type="text"
                                 value={settingsName}
@@ -469,25 +469,25 @@ const Header = ({
                                   setSettingsSaved(false);
                                 }}
                                 className="mt-2 w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#241A18] outline-none transition focus:border-[#E63B2E]"
-                                placeholder="Our space"
+                                placeholder="Our dashboard"
                                 maxLength={80}
                                 autoFocus
                               />
                             ) : (
-                              <p className="mt-1 truncate text-sm font-extrabold text-[#410001]" title={settingsName || spaceName || 'Our Space'}>{settingsName || spaceName || 'Our Space'}</p>
+                              <p className="mt-1 truncate text-sm font-extrabold text-[#410001]" title={settingsName || dashboardName || 'Our dashboard'}>{settingsName || dashboardName || 'Our dashboard'}</p>
                             )}
                           </div>
                           <button
                             type="button"
                             onClick={() => {
-                              setEditingSpaceName(prev => !prev);
+                              setEditingDashboardName(prev => !prev);
                               setSettingsError('');
                               setSettingsSaved(false);
                             }}
-                            disabled={!canEditSpaceSettings || settingsSaving}
+                            disabled={!canEditDashboardSettings || settingsSaving}
                             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:opacity-50"
-                            aria-label={editingSpaceName ? 'Done editing space name' : 'Edit space name'}
-                            title={editingSpaceName ? 'Done' : 'Edit space name'}
+                            aria-label={editingDashboardName ? 'Done editing dashboard name' : 'Edit dashboard name'}
+                            title={editingDashboardName ? 'Done' : 'Edit dashboard name'}
                           >
                             <PencilIcon size={16} />
                           </button>
@@ -503,7 +503,7 @@ const Header = ({
                                 type="checkbox"
                                 checked={settingsSections.includes(section.id)}
                                 onChange={() => toggleSettingsSection(section.id)}
-                                disabled={!canEditSpaceSettings || settingsSaving}
+                                disabled={!canEditDashboardSettings || settingsSaving}
                                 className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
                               />
                               <span>{section.label}</span>
@@ -512,9 +512,9 @@ const Header = ({
                         </div>
                       </div>
 
-                      {!canEditSpaceSettings && (
+                      {!canEditDashboardSettings && (
                         <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#534340]">
-                          Only the space owner can change these settings.
+                          Only the dashboard owner can change these settings.
                         </p>
                       )}
                       {settingsError && <p className="text-sm font-semibold text-[#C1121F]">{settingsError}</p>}
@@ -522,7 +522,7 @@ const Header = ({
                       <button
                         type="button"
                         onClick={handleSaveSettings}
-                        disabled={settingsSaving || !canEditSpaceSettings}
+                        disabled={settingsSaving || !canEditDashboardSettings}
                         className="min-h-[40px] w-full rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                       >
                         {settingsSaving ? 'Saving...' : 'Save changes'}
@@ -567,7 +567,7 @@ const Header = ({
 
                           {!canGenerateInvite && (
                             <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#534340]">
-                              Only the space owner can generate join invites.
+                              Only the dashboard owner can generate join invites.
                             </p>
                           )}
 
@@ -615,29 +615,29 @@ const Header = ({
                       )}
                     </div>
                   )}
-                  {onLeaveSpace && (
-                    confirmLeaveSpace ? (
+                  {onLeaveDashboard && (
+                    confirmLeaveDashboard ? (
                       <div className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
-                        <p className="text-sm font-bold text-[#410001]">Exit space?</p>
+                        <p className="text-sm font-bold text-[#410001]">Exit dashboard?</p>
                         <p className="mt-1 text-xs leading-5 text-[#534340]">
-                          You will be removed and sent back to space selection.
+                          You will be removed and sent back to dashboard selection.
                         </p>
                         <div className="mt-3 grid grid-cols-2 gap-2">
                           <button
                             type="button"
-                            onClick={() => setConfirmLeaveSpace(false)}
-                            disabled={leavingSpace}
+                            onClick={() => setConfirmLeaveDashboard(false)}
+                            disabled={leavingDashboard}
                             className="min-h-[40px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                           >
                             Stay
                           </button>
                           <button
                             type="button"
-                            onClick={handleLeaveSpace}
-                            disabled={leavingSpace}
+                            onClick={handleLeaveDashboard}
+                            disabled={leavingDashboard}
                             className="min-h-[40px] rounded-lg bg-[#C1121F] px-3 text-sm font-bold text-white transition hover:bg-[#A80F1A] disabled:opacity-60"
                           >
-                            {leavingSpace ? 'Exiting...' : 'Exit Space'}
+                            {leavingDashboard ? 'Exiting...' : 'Exit dashboard'}
                           </button>
                         </div>
                       </div>
@@ -645,12 +645,12 @@ const Header = ({
                       <button
                         role="menuitem"
                         type="button"
-                        onClick={() => { setSpaceSettingsExpanded(false); setShareExpanded(false); setConfirmLeaveSpace(true); }}
-                        disabled={leavingSpace}
+                        onClick={() => { setDashboardSettingsExpanded(false); setShareExpanded(false); setConfirmLeaveDashboard(true); }}
+                        disabled={leavingDashboard}
                         className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                       >
                         <Trash size={18} />
-                        {leavingSpace ? 'Exiting...' : 'Exit Space'}
+                        {leavingDashboard ? 'Exiting...' : 'Exit dashboard'}
                       </button>
                     )
                   )}
@@ -1011,14 +1011,14 @@ const Header = ({
                     <UserIcon size={18} />
                     Account
                   </button>
-                  {onBackToSpaces && (
+                  {onBackToDashboards && (
                     <button
                       role="menuitem"
-                      onClick={() => { onBackToSpaces?.(); setMenuOpen(false); }}
+                      onClick={() => { onBackToDashboards?.(); setMenuOpen(false); }}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
-                      Back to spaces
+                      Back to dashboards
                     </button>
                   )}
                 </div>

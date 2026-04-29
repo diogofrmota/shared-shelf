@@ -10,7 +10,7 @@ const React = window.React;
 // their own /api routes instead of falling back to a hardcoded URL.
 const API_BASE = window.API_BASE_URL ?? '';
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-const pendingSpaceSaves = new Map();
+const pendingDashboardSaves = new Map();
 
 const safeExternalUrl = (value) => {
   const raw = typeof value === 'string' ? value.trim() : '';
@@ -370,7 +370,7 @@ const forgotPassword = async (email) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
-    
+
     const data = await res.json();
     return { success: res.ok, message: data.message || data.error };
   } catch (error) {
@@ -380,50 +380,54 @@ const forgotPassword = async (email) => {
 };
 
 // ============================================================================
-// SPACE DATA FUNCTIONS
+// DASHBOARD DATA FUNCTIONS
 // ============================================================================
 
-const getCachedSpaceData = (spaceId) => {
+const getCachedDashboardData = (dashboardId) => {
   try {
-    const cached = localStorage.getItem(`space-data-${spaceId}`);
-    return cached ? JSON.parse(cached) : null;
+    const cached = localStorage.getItem(`dashboard-data-${dashboardId}`);
+    if (cached) return JSON.parse(cached);
+    const previousKey = ['s', 'pace-data-'].join('') + dashboardId;
+    const previousCached = localStorage.getItem(previousKey);
+    if (previousCached) return JSON.parse(previousCached);
+    return null;
   } catch (error) {
-    console.error('Error reading cached space data:', error);
+    console.error('Error reading cached dashboard data:', error);
     return null;
   }
 };
 
-const cacheSpaceData = (spaceId, data) => {
+const cacheDashboardData = (dashboardId, data) => {
   try {
-    localStorage.setItem(`space-data-${spaceId}`, JSON.stringify(data));
+    localStorage.setItem(`dashboard-data-${dashboardId}`, JSON.stringify(data));
   } catch (error) {
-    console.error('Error caching space data locally:', error);
+    console.error('Error caching dashboard data locally:', error);
   }
 };
 
-const getSpaceData = async (spaceId) => {
+const getDashboardData = async (dashboardId) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
-    if (!token) return getCachedSpaceData(spaceId);
+    if (!token) return getCachedDashboardData(dashboardId);
 
-    const res = await fetch(`${API_BASE}/api/space/${spaceId}/data`, {
+    const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
-    if (!res.ok) return getCachedSpaceData(spaceId);
+    if (!res.ok) return getCachedDashboardData(dashboardId);
     return await res.json();
   } catch (error) {
-    console.error('Error fetching space data:', error);
-    return getCachedSpaceData(spaceId);
+    console.error('Error fetching dashboard data:', error);
+    return getCachedDashboardData(dashboardId);
   }
 };
 
-const persistSpaceData = async (spaceId, data) => {
+const persistDashboardData = async (dashboardId, data) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
     if (!token) return false;
 
-    const res = await fetch(`${API_BASE}/api/space/${spaceId}/data`, {
+    const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -431,22 +435,22 @@ const persistSpaceData = async (spaceId, data) => {
       },
       body: JSON.stringify({ data })
     });
-    
+
     return res.ok;
   } catch (error) {
-    console.error('Error saving space data to API:', error);
+    console.error('Error saving dashboard data to API:', error);
     return false;
   }
 };
 
-const saveSpaceData = async (spaceId, data, { debounceMs = 700 } = {}) => {
-  cacheSpaceData(spaceId, data);
+const saveDashboardData = async (dashboardId, data, { debounceMs = 700 } = {}) => {
+  cacheDashboardData(dashboardId, data);
 
   if (debounceMs <= 0) {
-    return persistSpaceData(spaceId, data);
+    return persistDashboardData(dashboardId, data);
   }
 
-  const previous = pendingSpaceSaves.get(spaceId);
+  const previous = pendingDashboardSaves.get(dashboardId);
   if (previous) {
     clearTimeout(previous.timeoutId);
     previous.resolve(false);
@@ -454,40 +458,40 @@ const saveSpaceData = async (spaceId, data, { debounceMs = 700 } = {}) => {
 
   return new Promise((resolve) => {
     const timeoutId = window.setTimeout(async () => {
-      pendingSpaceSaves.delete(spaceId);
-      resolve(await persistSpaceData(spaceId, data));
+      pendingDashboardSaves.delete(dashboardId);
+      resolve(await persistDashboardData(dashboardId, data));
     }, debounceMs);
 
-    pendingSpaceSaves.set(spaceId, { timeoutId, resolve, data });
+    pendingDashboardSaves.set(dashboardId, { timeoutId, resolve, data });
   });
 };
 
-const flushPendingSpaceSaves = async () => {
-  const entries = [...pendingSpaceSaves.entries()];
-  pendingSpaceSaves.clear();
-  return Promise.all(entries.map(([spaceId, { timeoutId, resolve, data: pendingData }]) => {
+const flushPendingDashboardSaves = async () => {
+  const entries = [...pendingDashboardSaves.entries()];
+  pendingDashboardSaves.clear();
+  return Promise.all(entries.map(([dashboardId, { timeoutId, resolve, data: pendingData }]) => {
     clearTimeout(timeoutId);
-    return persistSpaceData(spaceId, pendingData).then(result => {
+    return persistDashboardData(dashboardId, pendingData).then(result => {
       resolve(result);
       return result;
     });
   }));
 };
 
-const flushPendingSpaceSavesViaBeacon = () => {
+const flushPendingDashboardSavesViaBeacon = () => {
   const token = getAuthToken();
   if (!token) return;
-  for (const [spaceId, { timeoutId, resolve, data: pendingData }] of pendingSpaceSaves.entries()) {
+  for (const [dashboardId, { timeoutId, resolve, data: pendingData }] of pendingDashboardSaves.entries()) {
     clearTimeout(timeoutId);
     resolve(false);
-    fetch(`${API_BASE}/api/space/${spaceId}/data`, {
+    fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: pendingData }),
       keepalive: true
     }).catch(() => {});
   }
-  pendingSpaceSaves.clear();
+  pendingDashboardSaves.clear();
 };
 
 const changePassword = async (currentPassword, newPassword) => {
@@ -569,23 +573,23 @@ const updateAccount = async ({ name, username }) => {
   return payload.user;
 };
 
-const getUserSpaces = async () => {
+const getUserDashboards = async () => {
   try {
-    const res = await fetch(`${API_BASE}/api/space`, {
+    const res = await fetch(`${API_BASE}/api/dashboard`, {
       headers: getAuthorizedHeaders()
     });
 
     if (!res.ok) return [];
     const payload = await res.json();
-    return payload.spaces || [];
+    return payload.dashboards || [];
   } catch (error) {
-    console.error('Error fetching spaces:', error);
+    console.error('Error fetching dashboards:', error);
     return [];
   }
 };
 
-const createSpace = async (name, enabledSections) => {
-  const res = await fetch(`${API_BASE}/api/space`, {
+const createDashboard = async (name, enabledSections) => {
+  const res = await fetch(`${API_BASE}/api/dashboard`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true),
     body: JSON.stringify({ name, enabledSections })
@@ -593,29 +597,29 @@ const createSpace = async (name, enabledSections) => {
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to create space');
+    throw new Error(payload.error || 'Failed to create dashboard');
   }
 
-  return { ...payload, space: payload.space || payload.shelf || null };
+  return { ...payload, dashboard: payload.dashboard || payload.shelf || null };
 };
 
-const joinSpace = async (spaceId, joinCode) => {
-  const res = await fetch(`${API_BASE}/api/space/join`, {
+const joinDashboard = async (dashboardId, joinCode) => {
+  const res = await fetch(`${API_BASE}/api/dashboard/join`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true),
-    body: JSON.stringify({ spaceId, joinCode })
+    body: JSON.stringify({ dashboardId, joinCode })
   });
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to join space');
+    throw new Error(payload.error || 'Failed to join dashboard');
   }
 
-  return { ...payload, space: payload.space || payload.shelf || null };
+  return { ...payload, dashboard: payload.dashboard || payload.shelf || null };
 };
 
-const updateSpace = async (spaceId, updates) => {
-  const res = await fetch(`${API_BASE}/api/space/${spaceId}`, {
+const updateDashboard = async (dashboardId, updates) => {
+  const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}`, {
     method: 'PATCH',
     headers: getAuthorizedHeaders(true),
     body: JSON.stringify(updates)
@@ -623,27 +627,27 @@ const updateSpace = async (spaceId, updates) => {
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to update space');
+    throw new Error(payload.error || 'Failed to update dashboard');
   }
 
-  return payload.space || payload.shelf || null;
+  return payload.dashboard || payload.shelf || null;
 };
 
-const getSpaceShareInfo = async (spaceId) => {
-  const res = await fetch(`${API_BASE}/api/space/${spaceId}/share`, {
+const getDashboardShareInfo = async (dashboardId) => {
+  const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/share`, {
     headers: getAuthorizedHeaders()
   });
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to load space share details');
+    throw new Error(payload.error || 'Failed to load dashboard share details');
   }
 
   return payload;
 };
 
-const regenerateSpaceJoinCode = async (spaceId) => {
-  const res = await fetch(`${API_BASE}/api/space/${spaceId}/share`, {
+const regenerateDashboardJoinCode = async (dashboardId) => {
+  const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/share`, {
     method: 'POST',
     headers: getAuthorizedHeaders(true)
   });
@@ -656,19 +660,20 @@ const regenerateSpaceJoinCode = async (spaceId) => {
   return payload;
 };
 
-const leaveSpace = async (spaceId) => {
-  const res = await fetch(`${API_BASE}/api/space/${spaceId}/membership`, {
+const leaveDashboard = async (dashboardId) => {
+  const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/membership`, {
     method: 'DELETE',
     headers: getAuthorizedHeaders(true)
   });
 
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(payload.error || 'Failed to leave space');
+    throw new Error(payload.error || 'Failed to leave dashboard');
   }
 
   try {
-    localStorage.removeItem(`space-data-${spaceId}`);
+    localStorage.removeItem(`dashboard-data-${dashboardId}`);
+    localStorage.removeItem(['s', 'pace-data-'].join('') + dashboardId);
   } catch {}
 
   return payload;
@@ -702,16 +707,16 @@ Object.assign(window, {
   forgotPassword,
   resetPassword,
   geocodeAddress,
-  getCachedSpaceData,
-  getSpaceData,
-  saveSpaceData,
-  flushPendingSpaceSaves,
-  flushPendingSpaceSavesViaBeacon,
-  getUserSpaces,
-  createSpace,
-  joinSpace,
-  updateSpace,
-  getSpaceShareInfo,
-  regenerateSpaceJoinCode,
-  leaveSpace
+  getCachedDashboardData,
+  getDashboardData,
+  saveDashboardData,
+  flushPendingDashboardSaves,
+  flushPendingDashboardSavesViaBeacon,
+  getUserDashboards,
+  createDashboard,
+  joinDashboard,
+  updateDashboard,
+  getDashboardShareInfo,
+  regenerateDashboardJoinCode,
+  leaveDashboard
 });

@@ -7,9 +7,9 @@ const API_BASE = window.API_BASE_URL ?? '';
 const {
   PUBLIC_ROUTE_TYPES,
   STATIC_PUBLIC_ROUTE_TYPES,
-  defaultSpaceData,
+  defaultDashboardData,
   getEnabledSections,
-  normalizeSpaceDataForClient,
+  normalizeDashboardDataForClient,
   normalizeTask,
   normalizeWatchlistItem,
   readAppRoute,
@@ -18,7 +18,7 @@ const {
 
 function MediaTracker() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [currentSpace, setCurrentSpace] = useState(null);
+  const [currentDashboard, setCurrentDashboard] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [appRoute, setAppRoute] = useState(() => readAppRoute());
   const [routeLoading, setRouteLoading] = useState(false);
@@ -47,10 +47,10 @@ function MediaTracker() {
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
   const initialRouteRef = useRef(readAppRoute());
-  const directSpaceHistorySeededRef = useRef(false);
+  const directDashboardHistorySeededRef = useRef(false);
   const currentUrlRef = useRef(`${window.location.pathname}${window.location.search}`);
   const appRouteRef = useRef(appRoute);
-  const hasOpenSpaceDraftRef = useRef(false);
+  const hasOpenDashboardDraftRef = useRef(false);
 
   const requestConfirmation = (options, onConfirm) => {
     setConfirmation({
@@ -67,7 +67,7 @@ function MediaTracker() {
     return rawLabel ? `"${rawLabel}"` : fallback;
   };
 
-  const closeSpaceOverlays = () => {
+  const closeDashboardOverlays = () => {
     setAddModalOpen(false);
     setAddCategory(null);
     setSettingsModalOpen(false);
@@ -83,14 +83,14 @@ function MediaTracker() {
   };
 
   const shouldWarnBeforeRouteChange = (nextRoute) => (
-    hasOpenSpaceDraftRef.current
-    && appRouteRef.current.type === 'space'
-    && (nextRoute.type !== 'space' || nextRoute.spaceId !== appRouteRef.current.spaceId)
+    hasOpenDashboardDraftRef.current
+    && appRouteRef.current.type === 'dashboard'
+    && (nextRoute.type !== 'dashboard' || nextRoute.dashboardId !== appRouteRef.current.dashboardId)
   );
 
   const confirmRouteChange = (nextRoute) => {
     if (!shouldWarnBeforeRouteChange(nextRoute)) return true;
-    return window.confirm('You have an open form or dialog in this space. Leave this page and discard anything not saved yet?');
+    return window.confirm('You have an open form or dialog in this dashboard. Leave this page and discard anything not saved yet?');
   };
 
   const navigateTo = (target, { replace = false, skipPrompt = false } = {}) => {
@@ -116,8 +116,8 @@ function MediaTracker() {
       window.history[method]({ appRoutePath: nextRoute.path }, '', nextUrl);
     }
 
-    if (nextRoute.type !== 'space' || nextRoute.spaceId !== appRoute.spaceId) {
-      closeSpaceOverlays();
+    if (nextRoute.type !== 'dashboard' || nextRoute.dashboardId !== appRoute.dashboardId) {
+      closeDashboardOverlays();
     }
     setAppRoute(nextRoute);
     currentUrlRef.current = nextUrl;
@@ -144,8 +144,8 @@ function MediaTracker() {
         window.history.pushState({ appRoutePath: appRouteRef.current.path }, '', currentUrlRef.current);
         return;
       }
-      if (nextRoute.type !== 'space' || nextRoute.spaceId !== appRouteRef.current.spaceId) {
-        closeSpaceOverlays();
+      if (nextRoute.type !== 'dashboard' || nextRoute.dashboardId !== appRouteRef.current.dashboardId) {
+        closeDashboardOverlays();
       }
       setAppRoute(nextRoute);
       currentUrlRef.current = nextUrl;
@@ -167,8 +167,8 @@ function MediaTracker() {
   }, [appRoute]);
 
   useEffect(() => {
-    hasOpenSpaceDraftRef.current = Boolean(
-      currentSpace && (
+    hasOpenDashboardDraftRef.current = Boolean(
+      currentDashboard && (
         addModalOpen
         || editRecipeModalOpen
         || editTripModalOpen
@@ -179,7 +179,7 @@ function MediaTracker() {
       )
     );
   }, [
-    currentSpace,
+    currentDashboard,
     addModalOpen,
     editRecipeModalOpen,
     editTripModalOpen,
@@ -191,8 +191,8 @@ function MediaTracker() {
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      flushPendingSpaceSavesViaBeacon();
-      if (!hasOpenSpaceDraftRef.current) return;
+      flushPendingDashboardSavesViaBeacon();
+      if (!hasOpenDashboardDraftRef.current) return;
       event.preventDefault();
       event.returnValue = '';
     };
@@ -224,45 +224,45 @@ function MediaTracker() {
 
     if (!currentUser) {
       setRouteLoading(false);
-      if (currentSpace) {
-        setCurrentSpace(null);
+      if (currentDashboard) {
+        setCurrentDashboard(null);
         setData(null);
       }
       if (!PUBLIC_ROUTE_TYPES.has(appRoute.type)) {
         setAccessIssue({
           type: 'unauthorized',
           title: 'Sign in to keep going',
-          message: 'This part of Couple Planner is private. Sign in first, then you can open your spaces safely.'
+          message: 'This part of Couple Planner is private. Sign in first, then you can open your dashboards safely.'
         });
       }
       return;
     }
 
     if (appRoute.type === 'login') {
-      if (currentSpace) {
-        setCurrentSpace(null);
+      if (currentDashboard) {
+        setCurrentDashboard(null);
         setData(null);
       }
       const params = new URLSearchParams(window.location.search);
-      const inviteSpace = params.get('inviteSpace');
+      const inviteDashboard = params.get('inviteDashboard');
       const inviteCode = params.get('inviteCode');
-      const inviteQuery = inviteSpace && inviteCode
-        ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
+      const inviteQuery = inviteDashboard && inviteCode
+        ? `?inviteDashboard=${encodeURIComponent(inviteDashboard)}&inviteCode=${encodeURIComponent(inviteCode)}`
         : '';
       if (!inviteQuery) {
         let cancelled = false;
         setRouteLoading(true);
-        getUserSpaces()
-          .then((spaces) => {
+        getUserDashboards()
+          .then((dashboards) => {
             if (cancelled) return;
-            if (spaces.length > 0) {
-              navigateTo(`/space/${encodeURIComponent(spaces[0].id)}/`, { replace: true, skipPrompt: true });
+            if (dashboards.length > 0) {
+              navigateTo(`/dashboard/${encodeURIComponent(dashboards[0].id)}/`, { replace: true, skipPrompt: true });
             } else {
-              navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+              navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
             }
           })
           .catch(() => {
-            if (!cancelled) navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+            if (!cancelled) navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
           })
           .finally(() => {
             if (!cancelled) setRouteLoading(false);
@@ -271,13 +271,13 @@ function MediaTracker() {
           cancelled = true;
         };
       }
-      navigateTo(`/space-selection/${inviteQuery}`, { replace: true });
+      navigateTo(`/dashboard-selection/${inviteQuery}`, { replace: true });
       return;
     }
 
     if (appRoute.type === 'home') {
-      if (currentSpace) {
-        setCurrentSpace(null);
+      if (currentDashboard) {
+        setCurrentDashboard(null);
         setData(null);
       }
       setRouteLoading(false);
@@ -285,13 +285,13 @@ function MediaTracker() {
     }
 
     if (
-      appRoute.type === 'space'
-      && initialRouteRef.current.type === 'space'
-      && !directSpaceHistorySeededRef.current
+      appRoute.type === 'dashboard'
+      && initialRouteRef.current.type === 'dashboard'
+      && !directDashboardHistorySeededRef.current
     ) {
-      directSpaceHistorySeededRef.current = true;
+      directDashboardHistorySeededRef.current = true;
       const currentUrl = `${appRoute.path}${window.location.search || ''}`;
-      window.history.replaceState({ appRoutePath: '/space-selection/' }, '', '/space-selection/');
+      window.history.replaceState({ appRoutePath: '/dashboard-selection/' }, '', '/dashboard-selection/');
       window.history.pushState({ appRoutePath: appRoute.path }, '', currentUrl);
       currentUrlRef.current = currentUrl;
     }
@@ -304,30 +304,30 @@ function MediaTracker() {
     if (appRoute.type === 'selection') {
       let cancelled = false;
       setRouteLoading(true);
-      getUserSpaces()
-        .then((spaces) => {
+      getUserDashboards()
+        .then((dashboards) => {
           if (cancelled) return;
-          if (spaces.length > 0) {
-            const target = spaces[0];
-            setCurrentSpace(null);
+          if (dashboards.length > 0) {
+            const target = dashboards[0];
+            setCurrentDashboard(null);
             setData(null);
-            navigateTo(`/space/${encodeURIComponent(target.id)}/`, { replace: true, skipPrompt: true });
+            navigateTo(`/dashboard/${encodeURIComponent(target.id)}/`, { replace: true, skipPrompt: true });
             return;
           }
-          if (currentSpace) {
-            setCurrentSpace(null);
+          if (currentDashboard) {
+            setCurrentDashboard(null);
             setData(null);
           }
-          closeSpaceOverlays();
+          closeDashboardOverlays();
           setRouteLoading(false);
         })
         .catch(() => {
           if (cancelled) return;
-          if (currentSpace) {
-            setCurrentSpace(null);
+          if (currentDashboard) {
+            setCurrentDashboard(null);
             setData(null);
           }
-          closeSpaceOverlays();
+          closeDashboardOverlays();
           setRouteLoading(false);
         });
 
@@ -336,38 +336,38 @@ function MediaTracker() {
       };
     }
 
-    if (appRoute.type === 'space') {
-      if (currentSpace?.id === appRoute.spaceId) {
+    if (appRoute.type === 'dashboard') {
+      if (currentDashboard?.id === appRoute.dashboardId) {
         setRouteLoading(false);
         return;
       }
 
       let cancelled = false;
       setRouteLoading(true);
-      getUserSpaces()
-        .then((spaces) => {
+      getUserDashboards()
+        .then((dashboards) => {
           if (cancelled) return;
-          const matchingSpace = spaces.find((space) => space.id === appRoute.spaceId);
-          if (matchingSpace) {
-            setCurrentSpace(matchingSpace);
+          const matchingDashboard = dashboards.find((dashboard) => dashboard.id === appRoute.dashboardId);
+          if (matchingDashboard) {
+            setCurrentDashboard(matchingDashboard);
           } else {
-            setCurrentSpace(null);
+            setCurrentDashboard(null);
             setData(null);
             setAccessIssue({
               type: 'forbidden',
-              title: 'You do not have access to this space',
-              message: 'The space may have been removed, or your account is not a member of it anymore.'
+              title: 'You do not have access to this dashboard',
+              message: 'The dashboard may have been removed, or your account is not a member of it anymore.'
             });
           }
         })
         .catch(() => {
           if (!cancelled) {
-            setCurrentSpace(null);
+            setCurrentDashboard(null);
             setData(null);
             setAccessIssue({
               type: 'unrecoverable',
-              title: 'We could not check that space',
-              message: 'Couple Planner could not confirm your access right now. Try again from space selection.'
+              title: 'We could not check that dashboard',
+              message: 'Couple Planner could not confirm your access right now. Try again from dashboard selection.'
             });
           }
         })
@@ -379,7 +379,7 @@ function MediaTracker() {
         cancelled = true;
       };
     }
-  }, [authLoading, currentUser?.id, appRoute.type, appRoute.spaceId, currentSpace?.id]);
+  }, [authLoading, currentUser?.id, appRoute.type, appRoute.dashboardId, currentDashboard?.id]);
 
   useEffect(() => {
     if (appRoute.type === 'not-found') {
@@ -404,49 +404,49 @@ function MediaTracker() {
     }
     if (!currentUser) {
       document.title = 'Couple Planner - Homepage';
-    } else if (!currentSpace) {
-      document.title = 'Couple Planner - Create/ Join a Space';
+    } else if (!currentDashboard) {
+      document.title = 'Couple Planner - Create/ Join a dashboard';
     } else {
-      document.title = `Couple Planner - ${currentSpace.name}`;
+      document.title = `Couple Planner - ${currentDashboard.name}`;
     }
-  }, [appRoute.type, currentUser, currentSpace]);
+  }, [appRoute.type, currentUser, currentDashboard]);
 
   useEffect(() => {
-    if (!currentSpace) return;
+    if (!currentDashboard) return;
 
-    const enabledSections = getEnabledSections(currentSpace);
+    const enabledSections = getEnabledSections(currentDashboard);
     const activeSection = activeCategory === 'media' ? 'watchlist' : activeSubTab;
     if (enabledSections.includes(activeSection)) return;
 
     const nextView = sectionToView(enabledSections[0] || 'calendar');
     setActiveCategory(nextView.category);
     setActiveSubTab(nextView.subTab);
-  }, [currentSpace, activeCategory, activeSubTab]);
+  }, [currentDashboard, activeCategory, activeSubTab]);
 
-  // Load data when space changes
+  // Load data when dashboard changes
   useEffect(() => {
-    if (!currentSpace) return;
+    if (!currentDashboard) return;
     let cancelled = false;
 
     const loadData = async () => {
       setLoading(true);
       dataEditedAfterLoadRef.current = false;
-      const cachedSpaceData = window.getCachedSpaceData?.(currentSpace.id);
-      if (cachedSpaceData && !cancelled) {
+      const cachedDashboardData = window.getCachedDashboardData?.(currentDashboard.id);
+      if (cachedDashboardData && !cancelled) {
         skipNextSaveRef.current = true;
-        setData(normalizeSpaceDataForClient(cachedSpaceData));
+        setData(normalizeDashboardDataForClient(cachedDashboardData));
         setLoading(false);
       }
 
-      const spaceData = await getSpaceData(currentSpace.id);
+      const DashboardData = await getDashboardData(currentDashboard.id);
       if (cancelled) return;
       if (dataEditedAfterLoadRef.current) return;
 
       skipNextSaveRef.current = true;
-      if (spaceData) {
-        setData(normalizeSpaceDataForClient(spaceData));
+      if (DashboardData) {
+        setData(normalizeDashboardDataForClient(DashboardData));
       } else {
-        setData(defaultSpaceData());
+        setData(defaultDashboardData());
       }
       setLoading(false);
     };
@@ -455,42 +455,42 @@ function MediaTracker() {
     return () => {
       cancelled = true;
     };
-  }, [currentSpace]);
+  }, [currentDashboard]);
 
   // Persist data
   useEffect(() => {
-    if (!currentSpace || !data) return;
+    if (!currentDashboard || !data) return;
     if (skipNextSaveRef.current) {
       skipNextSaveRef.current = false;
       return;
     }
 
     dataEditedAfterLoadRef.current = true;
-    saveSpaceData(currentSpace.id, data).then((saved) => {
+    saveDashboardData(currentDashboard.id, data).then((saved) => {
       if (saved) setLastSynced(Date.now());
     });
-  }, [data, currentSpace?.id]);
+  }, [data, currentDashboard?.id]);
 
   const handleLogin = async (user) => {
     setCurrentUser(user);
     const params = new URLSearchParams(window.location.search);
-    const inviteSpace = params.get('inviteSpace');
+    const inviteDashboard = params.get('inviteDashboard');
     const inviteCode = params.get('inviteCode');
-    const inviteQuery = inviteSpace && inviteCode
-      ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
+    const inviteQuery = inviteDashboard && inviteCode
+      ? `?inviteDashboard=${encodeURIComponent(inviteDashboard)}&inviteCode=${encodeURIComponent(inviteCode)}`
       : '';
     if (inviteQuery) {
-      navigateTo(`/space-selection/${inviteQuery}`);
+      navigateTo(`/dashboard-selection/${inviteQuery}`);
       return;
     }
 
     setRouteLoading(true);
     try {
-      const spaces = await getUserSpaces();
-      if (spaces.length > 0) {
-        navigateTo(`/space/${encodeURIComponent(spaces[0].id)}/`, { replace: true, skipPrompt: true });
+      const dashboards = await getUserDashboards();
+      if (dashboards.length > 0) {
+        navigateTo(`/dashboard/${encodeURIComponent(dashboards[0].id)}/`, { replace: true, skipPrompt: true });
       } else {
-        navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+        navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
       }
     } finally {
       setRouteLoading(false);
@@ -498,40 +498,40 @@ function MediaTracker() {
   };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
-    flushPendingSpaceSavesViaBeacon();
+    flushPendingDashboardSavesViaBeacon();
     clearAuthToken();
     setCurrentUser(null);
-    setCurrentSpace(null);
+    setCurrentDashboard(null);
     setData(null);
-    closeSpaceOverlays();
+    closeDashboardOverlays();
     navigateTo('/', { replace: true, skipPrompt: true });
   };
-  const handleSpaceSelect = (space) => {
-    setCurrentSpace(space);
+  const handleDashboardSelect = (dashboard) => {
+    setCurrentDashboard(dashboard);
     setData(null);
-    navigateTo(`/space/${encodeURIComponent(space.id)}/`);
+    navigateTo(`/dashboard/${encodeURIComponent(dashboard.id)}/`);
   };
-  const handleBackToSpaces = async () => {
-    if (!confirmRouteChange(readAppRoute('/space-selection/'))) return;
-    await flushPendingSpaceSaves();
-    setCurrentSpace(null);
+  const handleBackToDashboards = async () => {
+    if (!confirmRouteChange(readAppRoute('/dashboard-selection/'))) return;
+    await flushPendingDashboardSaves();
+    setCurrentDashboard(null);
     setData(null);
-    closeSpaceOverlays();
-    navigateTo('/space-selection/', { skipPrompt: true });
+    closeDashboardOverlays();
+    navigateTo('/dashboard-selection/', { skipPrompt: true });
   };
-  const handleLeaveSpace = async () => {
-    if (!currentSpace) return;
+  const handleLeaveDashboard = async () => {
+    if (!currentDashboard) return;
     try {
-      await leaveSpace(currentSpace.id);
+      await leaveDashboard(currentDashboard.id);
     } catch (error) {
-      console.error('Failed to leave space:', error);
-      window.alert(error?.message || 'Failed to leave space. Please try again.');
+      console.error('Failed to leave dashboard:', error);
+      window.alert(error?.message || 'Failed to leave dashboard. Please try again.');
       return;
     }
-    setCurrentSpace(null);
+    setCurrentDashboard(null);
     setData(null);
-    closeSpaceOverlays();
-    navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+    closeDashboardOverlays();
+    navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
   };
 
   const handleCategoryChange = (category, subTab) => {
@@ -586,8 +586,8 @@ function MediaTracker() {
     requestConfirmation({
       title: isRecurring ? 'Delete recurring activity?' : 'Delete activity?',
       message: isRecurring
-        ? `${getItemLabel(sourceEvent, 'This activity')} and all of its occurrences will be deleted from this space.`
-        : `${getItemLabel(sourceEvent, 'This activity')} will be deleted from this space.`,
+        ? `${getItemLabel(sourceEvent, 'This activity')} and all of its occurrences will be deleted from this dashboard.`
+        : `${getItemLabel(sourceEvent, 'This activity')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => {
       setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.filter(e => e.id !== id) }));
@@ -602,7 +602,7 @@ function MediaTracker() {
     const trip = (data?.trips || []).find(t => t.id === id);
     requestConfirmation({
       title: 'Delete trip?',
-      message: `${getItemLabel(trip, 'This trip')} will be deleted from this space.`,
+      message: `${getItemLabel(trip, 'This trip')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, trips: prev.trips.filter(t => t.id !== id) })));
   };
@@ -615,7 +615,7 @@ function MediaTracker() {
     const recipe = (data?.recipes || []).find(r => r.id === id);
     requestConfirmation({
       title: 'Delete recipe?',
-      message: `${getItemLabel(recipe, 'This recipe')} will be deleted from this space.`,
+      message: `${getItemLabel(recipe, 'This recipe')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, recipes: prev.recipes.filter(r => r.id !== id) })));
   };
@@ -652,7 +652,7 @@ function MediaTracker() {
     const place = (data?.locations || []).find(p => p.id === id);
     requestConfirmation({
       title: 'Delete location?',
-      message: `${getItemLabel(place, 'This location')} will be deleted from this space.`,
+      message: `${getItemLabel(place, 'This location')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) })));
   };
@@ -719,7 +719,7 @@ function MediaTracker() {
     const task = (data?.tasks || []).find(t => t.id === id);
     requestConfirmation({
       title: 'Delete task?',
-      message: `${getItemLabel(task, 'This task')} will be deleted from this space.`,
+      message: `${getItemLabel(task, 'This task')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) })));
   };
@@ -775,26 +775,26 @@ function MediaTracker() {
     );
   };
 
-  // Update space settings (name)
-  const handleSaveSpaceSettings = (newSettings) => {
-    const previousSpace = currentSpace;
-    setCurrentSpace(prev => ({ ...prev, ...newSettings }));
+  // Update dashboard settings (name)
+  const handleSaveDashboardSettings = (newSettings) => {
+    const previousDashboard = currentDashboard;
+    setCurrentDashboard(prev => ({ ...prev, ...newSettings }));
 
-    return updateSpace(currentSpace.id, newSettings)
-      .then((updatedSpace) => {
-        if (updatedSpace) {
-          setCurrentSpace(prev => ({
+    return updateDashboard(currentDashboard.id, newSettings)
+      .then((updatedDashboard) => {
+        if (updatedDashboard) {
+          setCurrentDashboard(prev => ({
             ...prev,
-            ...updatedSpace,
-            role: updatedSpace.role || prev?.role,
-            members: Array.isArray(updatedSpace.members) ? updatedSpace.members : prev?.members
+            ...updatedDashboard,
+            role: updatedDashboard.role || prev?.role,
+            members: Array.isArray(updatedDashboard.members) ? updatedDashboard.members : prev?.members
           }));
         }
-        return updatedSpace;
+        return updatedDashboard;
       })
       .catch((error) => {
-        console.error('Failed to persist space settings:', error);
-        setCurrentSpace(previousSpace);
+        console.error('Failed to persist dashboard settings:', error);
+        setCurrentDashboard(previousDashboard);
         throw error;
       });
   };
@@ -812,7 +812,7 @@ function MediaTracker() {
   const BugReportPage = window.getWindowComponent?.('BugReportPage', window.MissingComponent) || window.MissingComponent;
   const LoginScreen = window.getWindowComponent?.('LoginScreen', window.MissingComponent) || window.MissingComponent;
   const HomePage = window.getWindowComponent?.('HomePage', window.MissingComponent) || window.MissingComponent;
-  const SpaceSelector = window.getWindowComponent?.('SpaceSelector', window.MissingComponent) || window.MissingComponent;
+  const DashboardSelector = window.getWindowComponent?.('DashboardSelector', window.MissingComponent) || window.MissingComponent;
   const TasksView = window.getWindowComponent?.('TasksView', window.MissingComponent) || window.MissingComponent;
   const CalendarView = window.getWindowComponent?.('CalendarView', window.MissingComponent) || window.MissingComponent;
   const DatesView = window.getWindowComponent?.('DatesView', window.MissingComponent) || window.MissingComponent;
@@ -823,7 +823,7 @@ function MediaTracker() {
   const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
   const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
   const ProfileModal = window.getWindowComponent?.('ProfileModal', window.MissingComponent) || window.MissingComponent;
-  const ShareSpaceModal = window.getWindowComponent?.('ShareSpaceModal', window.MissingComponent) || window.MissingComponent;
+  const ShareDashboardModal = window.getWindowComponent?.('ShareDashboardModal', window.MissingComponent) || window.MissingComponent;
   const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
   const EditTripModal = window.getWindowComponent?.('EditTripModal', window.MissingComponent) || window.MissingComponent;
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
@@ -837,8 +837,8 @@ function MediaTracker() {
         eyebrow="404"
         title="This page is not in the app"
         message="The link may be mistyped, moved, or no longer available. Head back to a known place and keep planning from there."
-        primaryLabel={currentUser ? 'Go to spaces' : 'Go home'}
-        primaryPath={currentUser ? '/space-selection/' : '/'}
+        primaryLabel={currentUser ? 'Go to dashboards' : 'Go home'}
+        primaryPath={currentUser ? '/dashboard-selection/' : '/'}
         secondaryLabel="Report a bug"
         secondaryPath="/report-a-bug"
         onNavigate={navigateTo}
@@ -858,7 +858,7 @@ function MediaTracker() {
 
   if (!currentUser) {
     if (accessIssue?.type === 'unauthorized') {
-      const loginTarget = `${window.location.pathname}${window.location.search || ''}`.startsWith('/space-selection/')
+      const loginTarget = `${window.location.pathname}${window.location.search || ''}`.startsWith('/dashboard-selection/')
         ? `/login${window.location.search || ''}`
         : '/login';
       return (
@@ -884,7 +884,7 @@ function MediaTracker() {
     return <HomePage onNavigate={navigateTo} currentUser={currentUser} onUpdateUser={handleAccountUpdate} onLogout={handleLogout} />;
   }
 
-  // Signed-in users on the login route are on their way to /space-selection/.
+  // Signed-in users on the login route are on their way to /dashboard-selection/.
   if (appRoute.type === 'login') {
     return <LoadingScreen label="Loading..." />;
   }
@@ -894,22 +894,22 @@ function MediaTracker() {
     return (
       <FailureScreen
         eyebrow={accessIssue.type === 'forbidden' ? 'Access denied' : 'App error'}
-        title={accessIssue.title || 'We could not open this space'}
+        title={accessIssue.title || 'We could not open this dashboard'}
         message={accessIssue.message || 'Couple Planner could not finish this request. Try again from a safe place.'}
-        primaryLabel="Go to spaces"
-        primaryPath="/space-selection/"
+        primaryLabel="Go to dashboards"
+        primaryPath="/dashboard-selection/"
         secondaryLabel="Report a bug"
         secondaryPath="/report-a-bug"
         onNavigate={navigateTo}
       />
     );
   }
-  if (!currentSpace) {
+  if (!currentDashboard) {
     return (
-      <SpaceSelector
+      <DashboardSelector
         userId={currentUser.id}
         currentUser={currentUser}
-        onSelectSpace={handleSpaceSelect}
+        onSelectDashboard={handleDashboardSelect}
         onUpdateUser={handleAccountUpdate}
         onNavigate={navigateTo}
         onBackToLogin={handleLogout}
@@ -998,22 +998,22 @@ function MediaTracker() {
       <a href="#main-content" className="skip-link">Skip to content</a>
 
       <Header
-        spaceName={currentSpace.name}
-        space={currentSpace}
-        onEditSpace={() => setSettingsModalOpen(true)}
+        dashboardName={currentDashboard.name}
+        dashboard={currentDashboard}
+        onEditDashboard={() => setSettingsModalOpen(true)}
         activeCategory={activeCategory}
         activeSubTab={activeSubTab}
         onCategoryChange={handleCategoryChange}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
         onShareClick={() => setShareModalOpen(true)}
-        onBackToSpaces={handleBackToSpaces}
+        onBackToDashboards={handleBackToDashboards}
         currentUser={currentUser}
         onUpdateUser={handleAccountUpdate}
         onLogout={handleLogout}
-        onLeaveSpace={handleLeaveSpace}
-        onSaveSpace={handleSaveSpaceSettings}
-        enabledSections={getEnabledSections(currentSpace)}
+        onLeaveDashboard={handleLeaveDashboard}
+        onSaveDashboard={handleSaveDashboardSettings}
+        enabledSections={getEnabledSections(currentDashboard)}
         profile={data?.profile}
       />
 
@@ -1045,8 +1045,8 @@ function MediaTracker() {
         mode="settings"
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
-        space={currentSpace}
-        onSaveSpace={handleSaveSpaceSettings}
+        dashboard={currentDashboard}
+        onSaveDashboard={handleSaveDashboardSettings}
       />
       <ProfileModal
         mode="account"
@@ -1055,9 +1055,9 @@ function MediaTracker() {
         currentUser={currentUser}
         onSaveAccount={handleAccountUpdate}
         onLogout={handleLogout}
-        onLeaveSpace={handleLeaveSpace}
+        onLeaveDashboard={handleLeaveDashboard}
       />
-      <ShareSpaceModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} space={currentSpace} />
+      <ShareDashboardModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} dashboard={currentDashboard} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
       <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />
       <ConfirmationDialog

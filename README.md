@@ -1,6 +1,6 @@
 # Couple Planner
 
-Lightweight Vercel-hosted web app for couples to plan together. Users create a private shared space, invite their partner, and manage calendar, tasks, locations, trips, recipes, and a watchlist (movies, TV, books).
+Lightweight Vercel-hosted web app for couples to plan together. Users create a private shared dashboard, invite their partner, and manage calendar, tasks, locations, trips, recipes, and a watchlist (movies, TV, books).
 
 ## Tech Stack
 
@@ -15,21 +15,21 @@ All paths rewrite to `index.html`; routing is handled in `media-tracker.jsx`.
 
 | Path | Purpose | Auth |
 | --- | --- | --- |
-| `/` | Public homepage (hero, features, release notes, footer). Signed-in users → `/space-selection/`. | Public |
-| `/login` | Sign in, register, forgot/reset password, account confirmation. `?mode=signup`, `?reset_token`, `?confirm_token`. Signed-in → `/space-selection/` | Public |
+| `/` | Public homepage (hero, features, release notes, footer). Signed-in users → `/dashboard-selection/`. | Public |
+| `/login` | Sign in, register, forgot/reset password, account confirmation. `?mode=signup`, `?reset_token`, `?confirm_token`. Signed-in → `/dashboard-selection/` | Public |
 | `/privacy-policy`, `/terms-of-service` | Static legal pages with global footer | Public |
 | `/report-a-bug` | Bug report form (opens email client) | Public |
-| `/space-selection/` | Space list, create/join, profile, logout | Signed-in |
-| `/space/<space-id>/` | Main workspace with header, sections, settings, sharing | Signed-in |
+| `/dashboard-selection/` | dashboard list, create/join, profile, logout | Signed-in |
+| `/dashboard/<dashboard-id>/` | Main workspace with header, sections, settings, sharing | Signed-in |
 
-Route workflow note: after login, users who already belong to a space are sent directly to `/space/<space-id>/`. `/space-selection/` is for signed-in users who do not yet have a private space, or for invite links before joining.
+Route workflow note: after login, users who already belong to a dashboard are sent directly to `/dashboard/<dashboard-id>/`. `/dashboard-selection/` is for signed-in users who do not yet have a private dashboard, or for invite links before joining.
 
 ## Key API Routes (Vercel Hobby plan: max 12 function files)
 
 Vercel Hobby deployments allow no more than 12 Serverless Function files. This repo intentionally keeps the API surface consolidated into 7 function files:
 
 - `api/auth/[...path].js` for all `/api/auth/*` routes.
-- `api/space/[...path].js` for all `/api/space/*` routes.
+- `api/dashboard/[...path].js` for all `/api/dashboard/*` routes.
 - `api/search.js`, `api/tvdetails.js`, `api/nominatim.js`, `api/setup.js`, and `api/health.js`.
 
 When adding API behavior, route it through an existing catch-all unless a new function file is absolutely necessary.
@@ -47,34 +47,34 @@ When adding API behavior, route it through an existing catch-all unless a new fu
 | `POST /api/auth/change-email` | Send new-email confirmation |
 | `POST /api/auth/confirm-email-change` | Confirm new account email |
 | `GET/POST /api/auth/email-preferences` | Unsubscribe from non-essential email |
-| `GET /api/space` | List user’s spaces |
-| `POST /api/space` | Create space + join code |
-| `POST /api/space/join` | Join space with ID + code |
-| `PATCH /api/space/:id` | Owner updates space settings |
-| `GET /api/space/:id/share` | Current share code and invite link |
-| `POST /api/space/:id/share` | Owner regenerates a one-use code/invite link |
-| `GET /api/space/:id/data` | Read space JSON data |
-| `POST /api/space/:id/data` | Save space JSON data |
-| `DELETE /api/space/:id/membership` | Leave space |
+| `GET /api/dashboard` | List user’s dashboards |
+| `POST /api/dashboard` | Create dashboard + join code |
+| `POST /api/dashboard/join` | Join dashboard with ID + code |
+| `PATCH /api/dashboard/:id` | Owner updates dashboard settings |
+| `GET /api/dashboard/:id/share` | Current share code and invite link |
+| `POST /api/dashboard/:id/share` | Owner regenerates a one-use code/invite link |
+| `GET /api/dashboard/:id/data` | Read dashboard JSON data |
+| `POST /api/dashboard/:id/data` | Save dashboard JSON data |
+| `DELETE /api/dashboard/:id/membership` | Leave dashboard |
 | `GET /api/search` | TMDB proxy |
 | `GET /api/tvdetails` | TMDB TV details proxy |
 | `GET /api/nominatim` | Nominatim proxy |
 | `GET/POST /api/setup` | DB schema init (requires `SETUP_TOKEN` in prod) |
 | `GET /api/health` | DB health check |
 
-Auth routes are dispatched by `api/auth/[...path].js`; individual auth handlers live in `lib/auth-routes/`. Space routes are consolidated into `api/space/[...path].js` via `vercel.json` rewrites.
+Auth routes are dispatched by `api/auth/[...path].js`; individual auth handlers live in `lib/auth-routes/`. dashboard routes are consolidated into `api/dashboard/[...path].js` via `vercel.json` rewrites.
 
-Share route note: `GET /api/space/:id/share` returns the current read-only share state and never creates a join code. Owners use `POST /api/space/:id/share` to create or refresh the one-use code and invite link. Members receive a read-only response with `canGenerateInvite: false`.
+Share route note: `GET /api/dashboard/:id/share` returns the current read-only share state and never creates a join code. Owners use `POST /api/dashboard/:id/share` to create or refresh the one-use code and invite link. Members receive a read-only response with `canGenerateInvite: false`.
 
 Browser configuration is intentionally kept in loaded global scripts (`components/Config.jsx` and `utils/api.js`). Do not add root ES module config/helper files unless the app gains a bundler or explicit module loading.
 
 ## Data Model (tables created by `lib/db.js`)
 
-- `users`, `spaces`, `space_members`, `space_join_codes`, `space_data` (JSONB), `password_reset_tokens`, `email_verification_tokens`, `email_change_tokens`, `auth_rate_limits`
+- `users`, `dashboards`, `dashboard_members`, `dashboard_join_codes`, `dashboard_data` (JSONB), `password_reset_tokens`, `email_verification_tokens`, `email_change_tokens`, `auth_rate_limits`
 - `users.non_essential_email_opt_out` stores opt-out state for non-essential email. Required account/security email still sends.
-- A `shelves` view over `spaces` for compatibility; old `shelf_` tables are auto-migrated.
+- A `shelves` view over `dashboards` for compatibility; old `shelf_` tables are auto-migrated.
 
-Typical `space_data.data` JSONB shape:
+Typical `dashboard_data.data` JSONB shape:
 
 ```json
 {
@@ -130,17 +130,17 @@ curl -X POST https://coupleplanner.app/api/setup -H "X-Setup-Token: <token>"
 
 ## Security & Implementation Notes
 
-- All space APIs require Bearer JWT; membership enforced.
+- All dashboard APIs require Bearer JWT; membership enforced.
 - Login/reset responses are generic to avoid user enumeration.
 - Account confirmation, password reset, email-change, and welcome emails use Resend from server-only code. All links use `APP_URL`; welcome email includes non-essential unsubscribe/preferences handling.
 - TMDB & Nominatim proxies require JWT.
-- Space JSON normalizes missing fields; user text rendered through React text nodes, URLs restricted to `http`/`https`, images to `http`/`https`/`data:image`.
+- dashboard JSON normalizes missing fields; user text rendered through React text nodes, URLs restricted to `http`/`https`, images to `http`/`https`/`data:image`.
 - Tokens stored in `localStorage` (remembered) or `sessionStorage`; strictly avoid HTML rendering to prevent XSS.
-- Prefer updating `api/auth/[...path].js`, `lib/auth-routes/`, or `api/space/[...path].js` over adding new function files.
-- Keep `space_` table references; the `shelves` view is only for legacy queries.
-- `lib/db.js` auto-migrates old tables; always create new tables with the `space_` prefix.
+- Prefer updating `api/auth/[...path].js`, `lib/auth-routes/`, or `api/dashboard/[...path].js` over adding new function files.
+- Keep `dashboard_` table references; the `shelves` view is only for legacy queries.
+- `lib/db.js` auto-migrates old tables; always create new tables with the `dashboard_` prefix.
 - No bundler/TypeScript; plain JS/JSX in browser scripts.
 - Recurring events/tasks render occurrences from base data; deleting/editing affects the whole series.
 - Keep local cache behavior intact when modifying persistence.
 - All UI component files in `components/`; `utils/` for helpers.
-- `vercel.json` maps frontend routes and `/api/space` catch-all, with `maxDuration: 10` for functions.
+- `vercel.json` maps frontend routes and `/api/dashboard` catch-all, with `maxDuration: 10` for functions.

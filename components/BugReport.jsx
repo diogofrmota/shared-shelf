@@ -90,8 +90,8 @@ function BugReportPage({ onNavigate, currentUser }) {
               Home
             </a>
             <a
-              href={currentUser ? '/space-selection/' : '/login'}
-              onClick={goTo(currentUser ? '/space-selection/' : '/login')}
+              href={currentUser ? '/dashboard-selection/' : '/login'}
+              onClick={goTo(currentUser ? '/dashboard-selection/' : '/login')}
               className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
             >
               {currentUser ? 'Open Couple Planner' : 'Sign in'}
@@ -168,7 +168,7 @@ function BugReportPage({ onNavigate, currentUser }) {
 
               <div className="rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#857370]">Preview</p>
-                <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-[#241A18]">{reportBody}</pre>
+                <pre className="mt-2 max-h-48 overflow-auto whiteDashboard-pre-wrap text-xs leading-relaxed text-[#241A18]">{reportBody}</pre>
               </div>
 
               {submitted && (

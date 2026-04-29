@@ -417,7 +417,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                   {formatRecurrence(ev) && (
                     <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#857370]">{formatRecurrence(ev)}</p>
                   )}
-                  {ev.description && <p className="mt-2 whitespace-pre-wrap text-sm text-[#534340]">{ev.description}</p>}
+                  {ev.description && <p className="mt-2 whiteDashboard-pre-wrap text-sm text-[#534340]">{ev.description}</p>}
                 </div>
               </li>
             ))}

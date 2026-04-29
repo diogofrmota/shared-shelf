@@ -177,11 +177,11 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
             {currentUser ? (
               <>
                 <a
-                  href="/space-selection/"
-                  onClick={goTo('/space-selection/')}
+                  href="/dashboard-selection/"
+                  onClick={goTo('/dashboard-selection/')}
                   className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
                 >
-                  Go to Dashboard
+                  Go to dashboard
                 </a>
 
                 <div className="relative" ref={profileRef}>
@@ -417,16 +417,16 @@ function PrivacyPolicyPage({ onNavigate, currentUser, onUpdateUser, onLogout }) 
       <h2 className={sectionHeadingClass}>What we collect</h2>
       <ul className={listClass}>
         <li>Account information you provide: name, username, email, and a hashed password.</li>
-        <li>Space content you create: calendar activities, tasks, locations, trips, recipes, and watchlist items.</li>
+        <li>dashboard content you create: calendar activities, tasks, locations, trips, recipes, and watchlist items.</li>
         <li>
           Technical data needed to run the app: session tokens stored in your browser, basic request logs from the
-          hosting platform, and database records for your spaces and memberships.
+          hosting platform, and database records for your dashboards and memberships.
         </li>
       </ul>
 
       <h2 className={sectionHeadingClass}>How we use it</h2>
       <ul className={listClass}>
-        <li>To sign you in and let you read and write the spaces you belong to.</li>
+        <li>To sign you in and let you read and write the dashboards you belong to.</li>
         <li>To send transactional email such as account confirmation and password reset links.</li>
         <li>To keep the app available, debug failures, and prevent abuse.</li>
       </ul>
@@ -436,7 +436,7 @@ function PrivacyPolicyPage({ onNavigate, currentUser, onUpdateUser, onLogout }) 
         <li>We do not sell or rent your personal data.</li>
         <li>We do not run advertising or third-party tracking on the app.</li>
         <li>
-          Space content is only visible to invited space members. We do not share private space content with anyone
+          dashboard content is only visible to invited dashboard members. We do not share private dashboard content with anyone
           else.
         </li>
       </ul>
@@ -448,7 +448,7 @@ function PrivacyPolicyPage({ onNavigate, currentUser, onUpdateUser, onLogout }) 
       </p>
       <ul className={listClass}>
         <li>Vercel for hosting the website and serverless API.</li>
-        <li>Vercel Postgres / Neon for storing your account, space metadata, and space content.</li>
+        <li>Vercel Postgres / Neon for storing your account, dashboard metadata, and dashboard content.</li>
         <li>Resend for sending account confirmation and password reset emails when configured.</li>
         <li>TMDB, Open Library, Jikan, and OpenStreetMap Nominatim for media and location lookups you trigger.</li>
       </ul>
@@ -456,9 +456,9 @@ function PrivacyPolicyPage({ onNavigate, currentUser, onUpdateUser, onLogout }) 
       <h2 className={sectionHeadingClass}>Your choices</h2>
       <ul className={listClass}>
         <li>You can update your name and username from the account modal.</li>
-        <li>You can leave a space at any time from the space selection page.</li>
+        <li>You can leave a dashboard at any time from the dashboard selection page.</li>
         <li>
-          To delete your account or any space you own, contact us through the bug report page and ask. We will respond
+          To delete your account or any dashboard you own, contact us through the bug report page and ask. We will respond
           and act on the request manually.
         </li>
       </ul>
@@ -488,8 +488,8 @@ function TermsOfServicePage({ onNavigate, currentUser, onUpdateUser, onLogout })
 
       <h2 className={sectionHeadingClass}>Your content</h2>
       <ul className={listClass}>
-        <li>You keep ownership of the content you add to your spaces.</li>
-        <li>You give Couple Planner the limited permission needed to store, display, and back up that content for space members.</li>
+        <li>You keep ownership of the content you add to your dashboards.</li>
+        <li>You give Couple Planner the limited permission needed to store, display, and back up that content for dashboard members.</li>
         <li>You confirm that your content does not break the law and does not violate other people's rights.</li>
       </ul>
 

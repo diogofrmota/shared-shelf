@@ -8,20 +8,20 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 
 ## Critical Constraints
 
-- **Vercel free plan**: maximum 12 serverless function files. Current layout uses 7 files. Consolidate auth behaviour into `api/auth/[...path].js` + `lib/auth-routes/`, and space behaviour into `api/space/[...path].js`; do not add new function files unless absolutely necessary.
+- **Vercel free plan**: maximum 12 serverless function files. Current layout uses 7 files. Consolidate auth behaviour into `api/auth/[...path].js` + `lib/auth-routes/`, and dashboard behaviour into `api/dashboard/[...path].js`; do not add new function files unless absolutely necessary.
 - **No bundler or TypeScript**: plain `.js`/`.jsx` only; scripts loaded via `index.html` in a specific order.
 - **CDN-first**: React, Babel, Tailwind, Leaflet, Lucide come from CDNs. Don’t add new build steps or npm build scripts.
-- **localStorage caching**: preserve the existing cache/fallback when changing persistence; space data is cached locally.
-- **Data backward compatibility**: always add normalization/defaults when changing JSONB shape so old space data still renders.
+- **localStorage caching**: preserve the existing cache/fallback when changing persistence; dashboard data is cached locally.
+- **Data backward compatibility**: always add normalization/defaults when changing JSONB shape so old dashboard data still renders.
 - **Secret keys**: never expose TMDB keys, JWT secrets, etc. in frontend files. Use proxy routes.
 - **`APP_URL`**: must be set to `https://coupleplanner.app` in Vercel production env vars. It is the source of truth for all auth/email links (account confirmation, password reset, email preferences). The fallback in `lib/auth-shared.js` mirrors this value; always prefer the env var over the fallback in production.
-- **Space table naming**: use `spaces`, `space_members`, `space_join_codes`, `space_data` in new queries. The `shelves` view exists only for legacy code.
+- **dashboard table naming**: use `dashboards`, `dashboard_members`, `dashboard_join_codes`, `dashboard_data` in new queries. The `shelves` view exists only for legacy code.
 - **Do not revert user changes** or unrelated work.
 
 ## Frontend Guidance
 
 - Routing is handled by `media-tracker.jsx` and `vercel.json` rewrites. Keep both in sync when adding routes.
-- Main components: `Login.jsx` (`/login`), `SpaceSelector.jsx` (space list, create/join), `Header.jsx` (in-space nav), `CalendarView.jsx`, `TasksView.jsx`, `DatesView.jsx` (locations), `TripsView.jsx`, `RecipesView.jsx`, `MediaSectionsView.jsx`, etc.
+- Main components: `Login.jsx` (`/login`), `DashboardSelector.jsx` (dashboard list, create/join), `Header.jsx` (in-dashboard nav), `CalendarView.jsx`, `TasksView.jsx`, `DatesView.jsx` (locations), `TripsView.jsx`, `RecipesView.jsx`, `MediaSectionsView.jsx`, etc.
 - Visual design: warm red palette (`#E63B2E`), cream/off-white surfaces, Epilogue headings, Manrope body text. Use visible labels, accessible touch targets, and existing conventions.
 - When adding a new category/feature: update navigation (Header), add/edit modals, persistence, empty states, and data normalization together.
 - `window` globals are common; respect the script loading order in `index.html`.
@@ -29,9 +29,9 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 ## Backend/API Guidance
 
 - Auth routes are dispatched through `api/auth/[...path].js`; route handlers live in `lib/auth-routes/`. Keep public `/api/auth/*` URLs stable without adding per-route function files.
-- Space routes consolidated in `api/space/[...path].js`. The catch-all parses `req.query.path` (do not rename).
-- Always validate space membership before read/write (`getUserIdFromRequest`).
-- Owner-only actions (settings, share regeneration) check `space_members.role`.
+- dashboard routes consolidated in `api/dashboard/[...path].js`. The catch-all parses `req.query.path` (do not rename).
+- Always validate dashboard membership before read/write (`getUserIdFromRequest`).
+- Owner-only actions (settings, share regeneration) check `dashboard_members.role`.
 - Shared helpers in `lib/auth-shared.js` and `lib/db.js` — reuse them.
 - Email templates and Resend sending live in `lib/email-templates.js`. Required account/security email must send even if `users.non_essential_email_opt_out` is true; only non-essential email should honor that opt-out.
 - TMDB/Nominatim proxies require Bearer JWT; they are not public.
@@ -59,7 +59,7 @@ Checklist:
 - Public pages (`/`, `/login`, `/privacy-policy`, etc.) render with footer; signed-in redirects work.
 - `/login?mode=signup` opens on register tab.
 - Login, registration, password reset, and confirmation screens render.
-- Space list/create/join/share/settings/profile flows still work.
+- dashboard list/create/join/share/settings/profile flows still work.
 - Add/edit/delete flows for calendar, tasks, locations, trips, recipes, watchlist still work.
 - Media search still works.
 - Offline/localStorage fallback still shows cached data.

@@ -313,11 +313,11 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           {currentUser ? (
             <div className="flex items-center gap-2 sm:gap-3">
               <a
-                href="/space-selection/"
-                onClick={goTo('/space-selection/')}
+                href="/dashboard-selection/"
+                onClick={goTo('/dashboard-selection/')}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] sm:px-4"
               >
-                Go to Dashboard
+                Go to dashboard
               </a>
               <div className="relative" ref={profileRef}>
                 <button
@@ -540,7 +540,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 Plan your life, together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                Couple Planner is a private, shared space for you and your partner. Have a shared calendar, task list,
+                Couple Planner is a private, shared dashboard for you and your partner. Have a shared calendar, task list,
                 saved locations, trip planning, a recipe book, and a shared list for movies, TV shows, and books. Everything synced in one place.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -590,12 +590,12 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-              A private shared space, just for the two of you.
+              A private shared dashboard, just for the two of you.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
-              Couple Planner brings together everything you coordinate as a couple, including 
-              your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into 
-              one private space. Both partners can read and update the same content, so nothing 
+              Couple Planner brings together everything you coordinate as a couple, including
+              your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
+              one private dashboard. Both partners can read and update the same content, so nothing
               gets lost across apps or messages.
             </p>
           </div>
@@ -690,9 +690,9 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Create your space and invite your partner</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Create your dashboard and invite your partner</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Each space has a unique ID and a one-time join code. Send both to
+                    Each dashboard has a unique ID and a one-time join code. Send both to
                     your partner and you are connected. The owner can regenerate the code at any time.
                   </p>
                 </div>
@@ -703,9 +703,9 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what your space includes</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what your dashboard includes</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per space, you decide. Hide what you
+                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per dashboard, you decide. Hide what you
                     don't use so your shared home screen stays focused on what actually matters to you both.
                   </p>
                 </div>

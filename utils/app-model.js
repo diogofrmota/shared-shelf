@@ -1,4 +1,4 @@
-const DEFAULT_SPACE_SECTIONS = ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist'];
+const DEFAULT_DASHBOARD_SECTIONS = ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist'];
 const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report', 'not-found']);
 const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report', 'not-found']);
 const LEGACY_PROFILE_COLOR_MAP = {
@@ -15,7 +15,7 @@ const LEGACY_PROFILE_COLOR_MAP = {
 
 const asArray = (value) => Array.isArray(value) ? value : [];
 
-function defaultSpaceData() {
+function defaultDashboardData() {
   return {
     calendarEvents: [],
     tasks: [],
@@ -39,10 +39,10 @@ const normalizeProfileUsers = (users = []) => users.map((user, index) => ({
   color: LEGACY_PROFILE_COLOR_MAP[user.color] || user.color || (index % 2 === 0 ? '#E63B2E' : '#8C4F45')
 }));
 
-const getEnabledSections = (space) => (
-  Array.isArray(space?.enabledSections) && space.enabledSections.length
-    ? space.enabledSections
-    : DEFAULT_SPACE_SECTIONS
+const getEnabledSections = (dashboard) => (
+  Array.isArray(dashboard?.enabledSections) && dashboard.enabledSections.length
+    ? dashboard.enabledSections
+    : DEFAULT_DASHBOARD_SECTIONS
 );
 
 const sectionToView = (section) => {
@@ -53,17 +53,17 @@ const sectionToView = (section) => {
 
 const readAppRoute = (pathname = window.location.pathname) => {
   const path = pathname || '/';
-  const spaceMatch = path.match(/^\/space\/([^/]+)\/?$/);
+  const dashboardMatch = path.match(/^\/dashboard\/([^/]+)\/?$/);
 
-  if (spaceMatch) {
+  if (dashboardMatch) {
     return {
-      type: 'space',
-      spaceId: decodeURIComponent(spaceMatch[1]),
-      path: `/space/${spaceMatch[1]}/`
+      type: 'dashboard',
+      dashboardId: decodeURIComponent(dashboardMatch[1]),
+      path: `/dashboard/${dashboardMatch[1]}/`
     };
   }
 
-  if (/^\/space-selection\/?$/.test(path)) return { type: 'selection', path: '/space-selection/' };
+  if (/^\/dashboard-selection\/?$/.test(path)) return { type: 'selection', path: '/dashboard-selection/' };
   if (/^\/login\/?$/.test(path)) return { type: 'login', path: '/login' };
   if (/^\/privacy-policy\/?$/.test(path)) return { type: 'privacy', path: '/privacy-policy' };
   if (/^\/terms-of-service\/?$/.test(path)) return { type: 'terms', path: '/terms-of-service' };
@@ -200,8 +200,8 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
   };
 };
 
-const normalizeSpaceDataForClient = (spaceData = {}) => {
-  const raw = spaceData && typeof spaceData === 'object' ? spaceData : {};
+const normalizeDashboardDataForClient = (DashboardData = {}) => {
+  const raw = DashboardData && typeof DashboardData === 'object' ? DashboardData : {};
   const watchlistByKey = new Map();
   const addWatchlistItems = (items, fallbackCategory) => {
     asArray(items).forEach(item => {
@@ -241,7 +241,7 @@ const normalizeSpaceDataForClient = (spaceData = {}) => {
       instructions: recipe?.instructions || ''
     })),
     watchlist: Array.from(watchlistByKey.values()),
-    profile: raw.profile || defaultSpaceData().profile
+    profile: raw.profile || defaultDashboardData().profile
   };
 
   if (migrated.profile?.users) migrated.profile.users = normalizeProfileUsers(migrated.profile.users);
@@ -249,12 +249,12 @@ const normalizeSpaceDataForClient = (spaceData = {}) => {
 };
 
 Object.assign(window, {
-  DEFAULT_SPACE_SECTIONS,
+  DEFAULT_DASHBOARD_SECTIONS,
   PUBLIC_ROUTE_TYPES,
   STATIC_PUBLIC_ROUTE_TYPES,
-  defaultSpaceData,
+  defaultDashboardData,
   getEnabledSections,
-  normalizeSpaceDataForClient,
+  normalizeDashboardDataForClient,
   normalizeTask,
   normalizeWatchlistItem,
   readAppRoute,

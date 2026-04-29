@@ -15,23 +15,23 @@
       "destination": "/api/auth/[...path]?path=:path*"
     },
     {
-      "source": "/api/space",
-      "destination": "/api/space/[...path]?path=__root__"
+      "source": "/api/dashboard",
+      "destination": "/api/dashboard/[...path]?path=__root__"
     },
     {
-      "source": "/api/space/:path*",
-      "destination": "/api/space/[...path]?path=:path*"
+      "source": "/api/dashboard/:path*",
+      "destination": "/api/dashboard/[...path]?path=:path*"
     },
     {
-      "source": "/space-selection",
+      "source": "/dashboard-selection",
       "destination": "/index.html"
     },
     {
-      "source": "/space-selection/",
+      "source": "/dashboard-selection/",
       "destination": "/index.html"
     },
     {
-      "source": "/space/:path*",
+      "source": "/dashboard/:path*",
       "destination": "/index.html"
     },
     {

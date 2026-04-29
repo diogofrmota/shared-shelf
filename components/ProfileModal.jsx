@@ -31,7 +31,7 @@ const ProfileColorDot = ({ user, size = 40 }) => {
 const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
-const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, space, onSaveSpace, currentUser, onSaveAccount, onLogout, onLeaveSpace }) => {
+const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, dashboard, onSaveDashboard, currentUser, onSaveAccount, onLogout, onLeaveDashboard }) => {
   const sectionOptions = window.SECTION_OPTIONS || [];
   const ModalShell = getProfileModalShell();
   const UserIcon = getProfileComponent('UserIcon');
@@ -44,7 +44,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
   const [users, setUsers] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
-  const [name, setName] = useState(space?.name || '');
+  const [name, setName] = useState(dashboard?.name || '');
   const [selectedSections, setSelectedSections] = useState(sectionOptions.map(section => section.id));
   const [shareInfo, setShareInfo] = useState(null);
   const [shareLoading, setShareLoading] = useState(false);
@@ -57,8 +57,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
   const [accountError, setAccountError] = useState('');
   const [accountSaving, setAccountSaving] = useState(false);
   const [confirmRegenerateShare, setConfirmRegenerateShare] = useState(false);
-  const [confirmLeaveSpace, setConfirmLeaveSpace] = useState(false);
-  const [leavingSpace, setLeavingSpace] = useState(false);
+  const [confirmLeaveDashboard, setConfirmLeaveDashboard] = useState(false);
+  const [leavingDashboard, setLeavingDashboard] = useState(false);
 
   // Change-password sub-flow
   const [pwSection, setPwSection] = useState(false);
@@ -89,16 +89,16 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
   useEffect(() => {
     if (mode === 'settings' && isOpen) {
-      setName(space?.name || '');
-      setSelectedSections(Array.isArray(space?.enabledSections) && space.enabledSections.length ? space.enabledSections : sectionOptions.map(section => section.id));
+      setName(dashboard?.name || '');
+      setSelectedSections(Array.isArray(dashboard?.enabledSections) && dashboard.enabledSections.length ? dashboard.enabledSections : sectionOptions.map(section => section.id));
       setShareInfo(null);
       setShareError('');
       setCopiedField('');
       setConfirmRegenerateShare(false);
-      setConfirmLeaveSpace(false);
-      setLeavingSpace(false);
+      setConfirmLeaveDashboard(false);
+      setLeavingDashboard(false);
     }
-  }, [mode, isOpen, space]);
+  }, [mode, isOpen, dashboard]);
 
   useEffect(() => {
     if (mode === 'account' && isOpen) {
@@ -116,8 +116,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setEmailError('');
       setEmailSuccess('');
       setUsernameStatus(null);
-      setConfirmLeaveSpace(false);
-      setLeavingSpace(false);
+      setConfirmLeaveDashboard(false);
+      setLeavingDashboard(false);
     }
     // Intentionally only re-runs when modal opens or user identity changes,
     // so that in-progress edits to name/username are not clobbered by parent re-renders.
@@ -129,7 +129,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
   }, []);
 
   useEffect(() => {
-    if (mode !== 'settings' || !isOpen || !space?.id) return;
+    if (mode !== 'settings' || !isOpen || !dashboard?.id) return;
 
     let active = true;
 
@@ -138,7 +138,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setShareError('');
 
       try {
-        const nextShareInfo = await window.getSpaceShareInfo?.(space.id);
+        const nextShareInfo = await window.getDashboardShareInfo?.(dashboard.id);
         if (active) setShareInfo(nextShareInfo);
       } catch (err) {
         if (active) setShareError(err?.message || 'Failed to load share details');
@@ -149,7 +149,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
     loadShareInfo();
     return () => { active = false; };
-  }, [mode, isOpen, space?.id]);
+  }, [mode, isOpen, dashboard?.id]);
 
   if (!isOpen) return null;
 
@@ -192,7 +192,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                   <UserIcon size={20} className="text-[#E63B2E]" />
                   Profiles
                 </h2>
-                <p className="mt-0.5 text-xs text-[#534340]">Manage who uses this shared space.</p>
+                <p className="mt-0.5 text-xs text-[#534340]">Manage who uses this shared dashboard.</p>
               </div>
               <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profiles">
                 <Close size={20} />
@@ -277,13 +277,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     );
   }
 
-  // ---------- SETTINGS MODE (space name & share) ----------
+  // ---------- SETTINGS MODE (dashboard name & share) ----------
   if (mode === 'settings') {
-    const canEditSpaceSettings = space?.role === 'owner';
-    const canGenerateInvite = shareInfo?.canGenerateInvite ?? space?.role === 'owner';
+    const canEditDashboardSettings = dashboard?.role === 'owner';
+    const canGenerateInvite = shareInfo?.canGenerateInvite ?? dashboard?.role === 'owner';
     const handleSave = () => {
-      if (!canEditSpaceSettings) return;
-      onSaveSpace({ name: name.trim() || space?.name || 'Our Space', enabledSections: selectedSections });
+      if (!canEditDashboardSettings) return;
+      onSaveDashboard({ name: name.trim() || dashboard?.name || 'Our dashboard', enabledSections: selectedSections });
       onClose();
     };
 
@@ -309,11 +309,11 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     };
 
     const handleRegenerate = async () => {
-      if (!space?.id || !canGenerateInvite) return;
+      if (!dashboard?.id || !canGenerateInvite) return;
       setRegeneratingShare(true);
       setShareError('');
       try {
-        const nextShareInfo = await window.regenerateSpaceJoinCode?.(space.id);
+        const nextShareInfo = await window.regenerateDashboardJoinCode?.(dashboard.id);
         setShareInfo(nextShareInfo);
       } catch (err) {
         setShareError(err?.message || 'Failed to generate a new code');
@@ -322,7 +322,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       }
     };
 
-    const spaceId = shareInfo?.spaceId || space?.id || '';
+    const dashboardId = shareInfo?.dashboardId || dashboard?.id || '';
     const joinCode = shareInfo?.joinCode || '';
 
     return (
@@ -330,13 +330,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
         isOpen={isOpen}
         onClose={onClose}
         zClass="z-[200]"
-        ariaLabel="Space settings"
+        ariaLabel="dashboard settings"
         dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
       >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
             <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
               <SettingsIcon size={20} className="text-[#E63B2E]" />
-              Space settings
+              dashboard settings
             </h2>
             <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close settings">
               <Close size={20} />
@@ -344,15 +344,15 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
           </div>
           <div className="space-y-5 p-5">
             <div>
-              <label className={labelCls} htmlFor="space-name">Space name</label>
+              <label className={labelCls} htmlFor="dashboard-name">dashboard name</label>
               <input
-                id="space-name"
+                id="dashboard-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Our space name"
+                placeholder="Our dashboard name"
                 className={inputCls}
-                disabled={!canEditSpaceSettings}
+                disabled={!canEditDashboardSettings}
               />
             </div>
 
@@ -365,7 +365,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
                       onChange={() => toggleSection(section.id)}
-                      disabled={!canEditSpaceSettings}
+                      disabled={!canEditDashboardSettings}
                       className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
                     />
                     <span>{section.label}</span>
@@ -377,11 +377,11 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <div className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
               <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="text-base font-extrabold text-[#410001]">Share space</h3>
+                  <h3 className="text-base font-extrabold text-[#410001]">Share dashboard</h3>
                   <p className="mt-1 text-sm text-[#534340]">
                     {canGenerateInvite
-                      ? 'Share this space ID and one-time code so someone else can join.'
-                      : 'Only the space owner can create or refresh join codes.'}
+                      ? 'Share this dashboard ID and one-time code so someone else can join.'
+                      : 'Only the dashboard owner can create or refresh join codes.'}
                   </p>
                 </div>
                 {canGenerateInvite && (
@@ -401,15 +401,15 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               ) : (
                 <div className="space-y-3">
                   <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
-                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Space ID</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard ID</p>
                     <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{spaceId}</code>
+                      <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{dashboardId}</code>
                       <button
                         type="button"
-                        onClick={() => copyValue('spaceId', spaceId)}
+                        onClick={() => copyValue('dashboardId', dashboardId)}
                         className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
                       >
-                        {copiedField === 'spaceId' ? 'Copied' : 'Copy'}
+                        {copiedField === 'dashboardId' ? 'Copied' : 'Copy'}
                       </button>
                     </div>
                   </div>
@@ -435,23 +435,23 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               {shareError && <p className="mt-3 text-sm font-semibold text-[#C1121F]">{shareError}</p>}
             </div>
 
-            {onLeaveSpace && (
+            {onLeaveDashboard && (
               <div className="rounded-2xl border border-[#E1D8D4] bg-white p-4">
-                <h3 className="text-base font-extrabold text-[#410001]">Shared space access</h3>
+                <h3 className="text-base font-extrabold text-[#410001]">Shared dashboard access</h3>
                 <p className="mt-1 text-sm text-[#534340]">
-                  Leave this shared space and return to your space selection.
+                  Leave this shared dashboard and return to your dashboard selection.
                 </p>
-                {confirmLeaveSpace ? (
+                {confirmLeaveDashboard ? (
                   <div className="mt-4 rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
-                    <p className="text-sm font-bold text-[#410001]">Leave shared space?</p>
+                    <p className="text-sm font-bold text-[#410001]">Leave shared dashboard?</p>
                     <p className="mt-1 text-xs leading-5 text-[#534340]">
-                      You will be removed from this space. If no other members remain, the space and its data are deleted.
+                      You will be removed from this dashboard. If no other members remain, the dashboard and its data are deleted.
                     </p>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => setConfirmLeaveSpace(false)}
-                        disabled={leavingSpace}
+                        onClick={() => setConfirmLeaveDashboard(false)}
+                        disabled={leavingDashboard}
                         className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                       >
                         Stay
@@ -459,30 +459,30 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                       <button
                         type="button"
                         onClick={async () => {
-                          if (!onLeaveSpace) return;
-                          setLeavingSpace(true);
+                          if (!onLeaveDashboard) return;
+                          setLeavingDashboard(true);
                           try {
-                            await onLeaveSpace();
+                            await onLeaveDashboard();
                             onClose();
                           } finally {
-                            setLeavingSpace(false);
+                            setLeavingDashboard(false);
                           }
                         }}
-                        disabled={leavingSpace}
+                        disabled={leavingDashboard}
                         className="min-h-[44px] rounded-lg bg-[#C1121F] px-3 text-sm font-bold text-white transition hover:bg-[#A80F1A] disabled:opacity-60"
                       >
-                        {leavingSpace ? 'Leaving...' : 'Leave space'}
+                        {leavingDashboard ? 'Leaving...' : 'Leave dashboard'}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setConfirmLeaveSpace(true)}
-                    disabled={leavingSpace}
+                    onClick={() => setConfirmLeaveDashboard(true)}
+                    disabled={leavingDashboard}
                     className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
                   >
-                    {leavingSpace ? 'Leaving...' : 'Leave shared space'}
+                    {leavingDashboard ? 'Leaving...' : 'Leave shared dashboard'}
                   </button>
                 )}
               </div>
@@ -492,7 +492,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} disabled={!canEditSpaceSettings} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60">
+            <button onClick={handleSave} disabled={!canEditDashboardSettings} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60">
               Save changes
             </button>
           </div>

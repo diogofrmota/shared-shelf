@@ -1,12 +1,12 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
 
-function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate, currentUser }) {
+function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onNavigate, currentUser }) {
   const sectionOptions = window.SECTION_OPTIONS || [];
 
   const [mode, setMode] = useState('create'); // 'create' | 'join'
   const [name, setName] = useState('');
-  const [spaceId, setSpaceId] = useState('');
+  const [dashboardId, setDashboardId] = useState('');
   const [code, setCode] = useState('');
   const [selectedSections, setSelectedSections] = useState(sectionOptions.map(section => section.id));
   const [error, setError] = useState('');
@@ -29,19 +29,19 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   const usernameCheckSeqRef = useRef(0);
 
   useEffect(() => {
-    document.title = 'Couple Planner - Select a Space';
+    document.title = 'Couple Planner - Select a dashboard';
   }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const inviteSpace = params.get('inviteSpace');
+    const inviteDashboard = params.get('inviteDashboard');
     const inviteCode = params.get('inviteCode');
-    if (!inviteSpace || !inviteCode) return;
+    if (!inviteDashboard || !inviteCode) return;
 
     setMode('join');
-    setSpaceId(inviteSpace);
+    setDashboardId(inviteDashboard);
     setCode(inviteCode);
-    setInviteNotice('Invite link ready. Join this private space when you are ready.');
+    setInviteNotice('Invite link ready. Join this private dashboard when you are ready.');
   }, []);
 
   useEffect(() => {
@@ -104,11 +104,11 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     setSubmitting(true);
 
     try {
-      const created = await window.createSpace?.(name.trim(), selectedSections);
-      if (created?.space) {
-        onSelectSpace(created.space);
+      const created = await window.createDashboard?.(name.trim(), selectedSections);
+      if (created?.dashboard) {
+        onSelectDashboard(created.dashboard);
       } else {
-        setError('Failed to create space');
+        setError('Failed to create dashboard');
       }
     } catch (err) {
       setError(err?.message || 'Connection error');
@@ -123,9 +123,9 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     setSubmitting(true);
 
     try {
-      const joined = await window.joinSpace?.(spaceId.trim(), code.trim());
-      if (joined?.space) {
-        onSelectSpace(joined.space);
+      const joined = await window.joinDashboard?.(dashboardId.trim(), code.trim());
+      if (joined?.dashboard) {
+        onSelectDashboard(joined.dashboard);
       } else {
         setError('Invalid code');
       }
@@ -535,10 +535,10 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
         <section className="mb-8 sm:mb-10 text-center">
           <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Welcome</p>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-            Create your shared space
+            Create your shared dashboard
           </h1>
           <p className="mt-3 text-base font-medium text-[#534340]">
-            Start or join a private space and pick what you want to plan together.
+            Start or join a private dashboard and pick what you want to plan together.
           </p>
         </section>
 
@@ -564,13 +564,13 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
             {mode === 'create' ? (
               <form onSubmit={handleCreate} className="space-y-4" noValidate>
                 <div>
-                  <label className={labelCls} htmlFor="create-space-name">Space name</label>
+                  <label className={labelCls} htmlFor="create-dashboard-name">dashboard name</label>
                   <input
-                    id="create-space-name"
+                    id="create-dashboard-name"
                     type="text"
-                    name="space-name"
+                    name="dashboard-name"
                     autoComplete="off"
-                    placeholder="Our space"
+                    placeholder="Our dashboard"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     className={inputCls}
@@ -600,22 +600,22 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                   disabled={submitting}
                   className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-50"
                 >
-                  {submitting ? 'Creating...' : 'Create space'}
+                  {submitting ? 'Creating...' : 'Create dashboard'}
                 </button>
               </form>
             ) : (
               <form onSubmit={handleJoin} className="space-y-4" noValidate>
                 <div>
-                  <label className={labelCls} htmlFor="join-space-id">Space ID</label>
+                  <label className={labelCls} htmlFor="join-dashboard-id">dashboard ID</label>
                   <input
-                    id="join-space-id"
+                    id="join-dashboard-id"
                     type="text"
-                    name="space-id"
+                    name="dashboard-id"
                     autoComplete="off"
                     spellCheck={false}
-                    placeholder="Space ID"
-                    value={spaceId}
-                    onChange={(event) => setSpaceId(event.target.value)}
+                    placeholder="dashboard ID"
+                    value={dashboardId}
+                    onChange={(event) => setDashboardId(event.target.value)}
                     className={inputCls}
                     required
                   />
@@ -641,20 +641,20 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
                   disabled={submitting}
                   className="w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-50"
                 >
-                  {submitting ? 'Joining...' : 'Join space'}
+                  {submitting ? 'Joining...' : 'Join dashboard'}
                 </button>
               </form>
             )}
           </div>
 
           <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
-            {mode === 'create' ? 'Have a join code from your partner?' : 'Want to start a new space instead?'}
+            {mode === 'create' ? 'Have a join code from your partner?' : 'Want to start a new dashboard instead?'}
             <button
               type="button"
               onClick={() => switchMode(mode === 'create' ? 'join' : 'create')}
               className="ml-1 font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
             >
-              {mode === 'create' ? 'Join a space' : 'Create one'}
+              {mode === 'create' ? 'Join a dashboard' : 'Create one'}
             </button>
           </p>
         </div>
@@ -665,4 +665,4 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   );
 }
 
-window.SpaceSelector = SpaceSelector;
+window.DashboardSelector = DashboardSelector;
