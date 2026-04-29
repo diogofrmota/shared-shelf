@@ -291,8 +291,8 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
 
   const navLinks = [
     { id: 'what-it-is', label: 'What it is' },
-    { id: 'who-it-is-for', label: 'Who it is for' },
-    { id: 'features', label: 'Features' }
+    { id: 'features', label: 'Features' },
+    { id: 'who-it-is-for', label: 'Who it is for' }
   ];
 
   return (
@@ -611,7 +611,45 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           </div>
         </section>
 
-        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FBF2ED] py-10 sm:py-12">
+        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-10 sm:py-12">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 text-center sm:mb-10">
+              <span className="ss-tag mb-4">Features</span>
+              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+                Plan your relationship, synced in one place.
+              </h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+              {FEATURES.map((feature) => {
+                const Icon = getHomeComponent(feature.icon);
+                return (
+                  <div
+                    key={feature.title}
+                    className="ss-card p-6 transition ss-card-hover"
+                    style={{
+                      backgroundColor: feature.accent,
+                      backgroundImage: `linear-gradient(135deg, ${feature.accent} 0%, ${feature.accent} 68%, ${feature.fade} 100%)`,
+                      borderColor: feature.accent,
+                      borderWidth: '3px'
+                    }}
+                  >
+                    <div className="mb-4 flex items-center gap-3">
+                      <span
+                        className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm"
+                      >
+                        <Icon size={20} />
+                      </span>
+                      <h3 className="text-lg font-extrabold text-white">{feature.title}</h3>
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-white/90">{feature.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Who it is for</span>
@@ -640,44 +678,6 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                       <h3 className="text-lg font-extrabold text-[#410001]">{scenario.title}</h3>
                     </div>
                     <p className="text-sm text-[#534340]">{scenario.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="scroll-mt-24 bg-[#FFF8F5] py-10 sm:py-12">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 text-center sm:mb-10">
-              <span className="ss-tag mb-4">Features</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Plan your relationship, synced in one place.
-              </h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-              {FEATURES.map((feature) => {
-                const Icon = getHomeComponent(feature.icon);
-                return (
-                  <div
-                    key={feature.title}
-                    className="ss-card p-6 transition ss-card-hover"
-                    style={{
-                      backgroundColor: feature.accent,
-                      backgroundImage: `linear-gradient(135deg, ${feature.accent} 0%, ${feature.accent} 42%, ${feature.fade} 100%)`,
-                      borderColor: feature.accent,
-                      borderWidth: '3px'
-                    }}
-                  >
-                    <div className="mb-4 flex items-center gap-3">
-                      <span
-                        className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm"
-                      >
-                        <Icon size={20} />
-                      </span>
-                      <h3 className="text-lg font-extrabold text-white">{feature.title}</h3>
-                    </div>
-                    <p className="mt-2 text-sm font-medium text-white/90">{feature.description}</p>
                   </div>
                 );
               })}
