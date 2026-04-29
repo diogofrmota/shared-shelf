@@ -30,6 +30,69 @@ const FormField = ({ label, required, children }) => (
 const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const selectCls = inputCls;
 
+const formatDateForInput = (isoDate) => {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+const parseDateInput = (displayValue) => {
+  const match = String(displayValue || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return '';
+  const [, dayRaw, monthRaw, yearRaw] = match;
+  const day = Number(dayRaw);
+  const month = Number(monthRaw);
+  const year = Number(yearRaw);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return '';
+  return `${yearRaw}-${monthRaw}-${dayRaw}`;
+};
+
+const formatDateDigits = (value) => {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+};
+
+const DateInput = ({ value, onChange, required = false, autoFocus = false }) => {
+  const [displayValue, setDisplayValue] = useState(formatDateForInput(value));
+
+  useEffect(() => {
+    setDisplayValue(formatDateForInput(value));
+  }, [value]);
+
+  const handleChange = (e) => {
+    const nextDisplayValue = formatDateDigits(e.target.value);
+    const nextIsoValue = parseDateInput(nextDisplayValue);
+    setDisplayValue(nextDisplayValue);
+    onChange(nextIsoValue);
+    e.target.setCustomValidity(
+      nextDisplayValue && nextDisplayValue.length === 10 && !nextIsoValue
+        ? 'Enter a valid date as dd/mm/yyyy.'
+        : ''
+    );
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      placeholder="dd/mm/yyyy"
+      className={inputCls}
+      value={displayValue}
+      onChange={handleChange}
+      pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+      required={required}
+      autoFocus={autoFocus}
+    />
+  );
+};
+
+const isMultiDayCalendarEvent = (formData = {}) => (
+  Boolean(formData.date && formData.endDate && formData.endDate > formData.date)
+);
+
 const createTripItemId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const emptyItineraryItem = () => ({ id: createTripItemId('itinerary'), date: '', time: '', title: '', notes: '' });
 const emptyBookingItem = () => ({ id: createTripItemId('booking'), type: 'accommodation', title: '', link: '', notes: '' });
@@ -111,15 +174,19 @@ const buildEventRecurrence = (formData = {}) => {
   };
 };
 
-const buildCalendarEventPayload = (formData = {}) => ({
-  title: formData.title || '',
-  date: formData.date || '',
-  startDate: formData.date || '',
-  endDate: formData.endDate || formData.date || '',
-  time: formData.time || '',
-  description: formData.description || '',
-  recurrence: buildEventRecurrence(formData)
-});
+const buildCalendarEventPayload = (formData = {}) => {
+  const multiDay = isMultiDayCalendarEvent(formData);
+  const endDate = formData.endDate && formData.endDate >= formData.date ? formData.endDate : formData.date;
+  return {
+    title: formData.title || '',
+    date: formData.date || '',
+    startDate: formData.date || '',
+    endDate: endDate || '',
+    time: multiDay ? '' : formData.time || '',
+    description: formData.description || '',
+    recurrence: buildEventRecurrence(formData)
+  };
+};
 
 const getTaskRecurrenceFrequency = (formData = {}) => {
   const frequency = formData.taskRecurrenceFrequency || formData.recurrence?.frequency || 'weekly';
@@ -136,7 +203,7 @@ const CalendarRecurrenceFields = ({ formData, setFormData, editing = false }) =>
 
   return (
     <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-      <FormField label="Repeat">
+      <FormField label="Does it repeat?">
         <select
           className={selectCls}
           value={frequency}
@@ -154,12 +221,9 @@ const CalendarRecurrenceFields = ({ formData, setFormData, editing = false }) =>
       {frequency !== 'none' && (
         <>
           <FormField label="Repeat until">
-            <input
-              type="date"
-              className={inputCls}
-              min={formData.date || undefined}
+            <DateInput
               value={formData.recurrenceUntil || ''}
-              onChange={(e) => setFormData({ ...formData, recurrenceUntil: e.target.value })}
+              onChange={(recurrenceUntil) => setFormData({ ...formData, recurrenceUntil })}
             />
           </FormField>
           <p className="text-xs font-medium text-[#857370]">
@@ -327,10 +391,14 @@ const TripPlanningFields = ({ formData, setFormData }) => (
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showTaskOptions, setShowTaskOptions] = useState(false);
+  const [showCalendarOptions, setShowCalendarOptions] = useState(false);
 
   useEffect(() => {
     setFormData({});
     setIsSaving(false);
+    setShowTaskOptions(false);
+    setShowCalendarOptions(false);
   }, [isOpen, activeTab]);
 
   const getModalTitle = () => {
@@ -431,7 +499,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
   const ModalShell = getModalShell();
   const CloseIcon = getComponent('Close');
+  const ChevronRightIcon = getComponent('ChevronRight');
   const dateCategories = window.DATE_CATEGORIES || [];
+  const isCalendarMultiDay = isMultiDayCalendarEvent(formData);
 
   return (
     <ModalShell
@@ -457,35 +527,23 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Description">
                 <textarea rows="3" placeholder="Optional details…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </FormField>
-              <FormField label="Assign to">
-                <div className="flex flex-wrap gap-2">
-                  {(profile?.users || [{ id: 'user-1', name: 'User 1', color: '#E63B2E' }, { id: 'user-2', name: 'User 2', color: '#8C4F45' }]).map(u => {
-                    const userName = u.name || u.username || 'User';
-                    return (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, assignedTo: formData.assignedTo === u.id ? null : u.id })}
-                        className={`flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition ${
-                          formData.assignedTo === u.id
-                            ? 'border-transparent text-white'
-                            : 'border-[#E1D8D4] bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
-                        }`}
-                        style={formData.assignedTo === u.id ? { backgroundColor: u.color, borderColor: u.color } : {}}
-                      >
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: u.color }}>
-                          {userName.charAt(0)}
-                        </span>
-                        <span className="truncate" title={userName}>{userName}</span>
-                      </button>
-                    );
-                  })}
+              <button
+                type="button"
+                onClick={() => setShowTaskOptions(open => !open)}
+                className="flex min-h-[44px] w-full items-center justify-between rounded-lg border border-[#E1D8D4] bg-[#FFF8F5] px-3 py-2 text-sm font-bold text-[#410001] transition hover:border-[#FFB4A9] hover:bg-[#FFDAD4]/35"
+                aria-expanded={showTaskOptions}
+              >
+                <span>More options</span>
+                <ChevronRightIcon size={18} className={`transition ${showTaskOptions ? 'rotate-90' : ''}`} />
+              </button>
+              {showTaskOptions && (
+                <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                  <FormField label="Due date">
+                    <DateInput value={formData.dueDate || ''} onChange={(dueDate) => setFormData({ ...formData, dueDate })} />
+                  </FormField>
+                  <TaskRecurrenceFields formData={formData} setFormData={setFormData} />
                 </div>
-              </FormField>
-              <FormField label="Due date">
-                <input type="date" className={inputCls} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} />
-              </FormField>
-              <TaskRecurrenceFields formData={formData} setFormData={setFormData} />
+              )}
             </>
           )}
 
@@ -495,21 +553,43 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
               </FormField>
               <FormField label="Date" required>
-                <input type="date" className={inputCls} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+                <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />
               </FormField>
-              <FormField label="End date">
-                <input type="date" className={inputCls} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
-              </FormField>
-              <FormField label="Time">
-                <select className={selectCls} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
-                  <option value="">— none —</option>
-                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </FormField>
-              <CalendarRecurrenceFields formData={formData} setFormData={setFormData} />
-              <FormField label="Description">
-                <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-              </FormField>
+              {!isCalendarMultiDay && (
+                <FormField label="Time">
+                  <select className={selectCls} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
+                    <option value="">- none -</option>
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </FormField>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowCalendarOptions(open => !open)}
+                className="flex min-h-[44px] w-full items-center justify-between rounded-lg border border-[#E1D8D4] bg-[#FFF8F5] px-3 py-2 text-sm font-bold text-[#410001] transition hover:border-[#FFB4A9] hover:bg-[#FFDAD4]/35"
+                aria-expanded={showCalendarOptions}
+              >
+                <span>More options</span>
+                <ChevronRightIcon size={18} className={`transition ${showCalendarOptions ? 'rotate-90' : ''}`} />
+              </button>
+              {showCalendarOptions && (
+                <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                  <FormField label="End date">
+                    <DateInput
+                      value={formData.endDate || ''}
+                      onChange={(endDate) => setFormData({
+                        ...formData,
+                        endDate,
+                        time: endDate && endDate > formData.date ? '' : formData.time
+                      })}
+                    />
+                  </FormField>
+                  <CalendarRecurrenceFields formData={formData} setFormData={setFormData} />
+                  <FormField label="Description">
+                    <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+                  </FormField>
+                </div>
+              )}
             </>
           )}
 
@@ -630,6 +710,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   if (!isOpen || !event) return null;
   const ModalShell = getModalShell();
   const CloseIcon = getComponent('Close');
+  const isCalendarMultiDay = isMultiDayCalendarEvent(formData);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -662,17 +743,26 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
             <input type="text" className={inputCls} value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
           </FormField>
           <FormField label="Date" required>
-            <input type="date" className={inputCls} value={formData.date || ''} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+            <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />
           </FormField>
           <FormField label="End date">
-            <input type="date" className={inputCls} value={formData.endDate || ''} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
+            <DateInput
+              value={formData.endDate || ''}
+              onChange={(endDate) => setFormData({
+                ...formData,
+                endDate,
+                time: endDate && endDate > formData.date ? '' : formData.time
+              })}
+            />
           </FormField>
-          <FormField label="Time">
-            <select className={selectCls} value={formData.time || ''} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
-              <option value="">— none —</option>
-              {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </FormField>
+          {!isCalendarMultiDay && (
+            <FormField label="Time">
+              <select className={selectCls} value={formData.time || ''} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
+                <option value="">- none -</option>
+                {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </FormField>
+          )}
           <CalendarRecurrenceFields formData={formData} setFormData={setFormData} editing />
           <FormField label="Description">
             <textarea rows="3" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />

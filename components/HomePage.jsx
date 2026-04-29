@@ -537,11 +537,13 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <span>Couple Planner</span>
               </h1>
               <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-                Plan your life, together.
+                Plan your life together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                Couple Planner is a private, shared dashboard for you and your partner. Have a shared calendar, task list,
-                saved locations, trip planning, a recipe book, and a shared list for movies, TV shows, and books. Everything synced in one place.
+                Couple Planner is an app that lets you and your partner create a shared 
+                dashboard. In this private space, you can create a shared calendar, task 
+                list, date locations, trip plans, and a movies and TV shows tracker, all 
+                synced in one place.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
@@ -590,13 +592,13 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-              A private shared dashboard, just for the two of you.
+              A shared dashboard, to sync your life with your partner.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
               your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
               one private dashboard. Both partners can read and update the same content, so nothing
-              gets lost across apps or messages.
+              gets lost across multiple apps or messages.
             </p>
           </div>
         </section>
