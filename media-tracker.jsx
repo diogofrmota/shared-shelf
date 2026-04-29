@@ -249,7 +249,7 @@ function MediaTracker() {
       return;
     }
 
-    if (appRoute.type === 'home' || appRoute.type === 'login') {
+    if (appRoute.type === 'login') {
       if (currentSpace) {
         setCurrentSpace(null);
         setData(null);
@@ -261,6 +261,15 @@ function MediaTracker() {
         ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
         : '';
       navigateTo(`/space-selection/${inviteQuery}`, { replace: true });
+      return;
+    }
+
+    if (appRoute.type === 'home') {
+      if (currentSpace) {
+        setCurrentSpace(null);
+        setData(null);
+      }
+      setRouteLoading(false);
       return;
     }
 
@@ -852,8 +861,12 @@ function MediaTracker() {
     return <HomePage onNavigate={navigateTo} />;
   }
 
-  // Signed-in users on public landing routes are on their way to /space-selection/.
-  if (appRoute.type === 'home' || appRoute.type === 'login') {
+  if (appRoute.type === 'home') {
+    return <HomePage onNavigate={navigateTo} currentUser={currentUser} onUpdateUser={handleAccountUpdate} onLogout={handleLogout} />;
+  }
+
+  // Signed-in users on the login route are on their way to /space-selection/.
+  if (appRoute.type === 'login') {
     return <LoadingScreen label="Loading..." />;
   }
 
