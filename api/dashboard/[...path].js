@@ -14,9 +14,16 @@ import { DEFAULT_DASHBOARD_DATA, initializeDatabase, normalizeDashboardData, nor
 
 const JOIN_CODE_RATE_LIMIT = { limit: 10, windowSeconds: 15 * 60 };
 const JOIN_CODE_IP_RATE_LIMIT = { limit: 60, windowSeconds: 15 * 60 };
+let schemaPromise = null;
 
 async function ensureSchema() {
-  await initializeDatabase();
+  if (!schemaPromise) {
+    schemaPromise = initializeDatabase().catch((error) => {
+      schemaPromise = null;
+      throw error;
+    });
+  }
+  await schemaPromise;
 }
 
 function getPathSegments(req) {

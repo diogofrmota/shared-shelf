@@ -11,6 +11,55 @@ const React = window.React;
 const API_BASE = window.API_BASE_URL ?? '';
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9Ijc1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWUyOTNiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
 const pendingDashboardSaves = new Map();
+let userDashboardsCache = { userId: '', dashboards: [], timestamp: 0 };
+let userDashboardsFetch = null;
+const USER_DASHBOARDS_CACHE_TTL = 10000;
+
+const perfLog = (label, details = {}) => {
+  if (!window?.console?.debug) return;
+  const elapsed = Math.round(performance.now());
+  console.debug(`[perf] ${label}`, { elapsedMs: elapsed, ...details });
+};
+
+const getStoredUser = () => {
+  try {
+    const raw = localStorage.getItem('couple-planner-user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getDashboardsCacheKey = (userId = getStoredUser()?.id) => (
+  userId ? `couple-planner-dashboards-${userId}` : ''
+);
+
+const getCachedUserDashboards = (userId = getStoredUser()?.id) => {
+  if (!userId) return [];
+  if (userDashboardsCache.userId === userId && Array.isArray(userDashboardsCache.dashboards)) {
+    return userDashboardsCache.dashboards;
+  }
+
+  try {
+    const cached = localStorage.getItem(getDashboardsCacheKey(userId));
+    if (!cached) return [];
+    const payload = JSON.parse(cached);
+    const dashboards = Array.isArray(payload?.dashboards) ? payload.dashboards : [];
+    userDashboardsCache = { userId, dashboards, timestamp: payload?.timestamp || 0 };
+    return dashboards;
+  } catch {
+    return [];
+  }
+};
+
+const cacheUserDashboards = (dashboards, userId = getStoredUser()?.id) => {
+  if (!userId || !Array.isArray(dashboards)) return;
+  const timestamp = Date.now();
+  userDashboardsCache = { userId, dashboards, timestamp };
+  try {
+    localStorage.setItem(getDashboardsCacheKey(userId), JSON.stringify({ dashboards, timestamp }));
+  } catch {}
+};
 
 const safeExternalUrl = (value) => {
   const raw = typeof value === 'string' ? value.trim() : '';
@@ -270,6 +319,9 @@ const loginUser = async (email, password, rememberMe) => {
     if (data.token && data.user) {
       setAuthToken(data.token, !!rememberMe);
       localStorage.setItem('couple-planner-user', JSON.stringify(data.user));
+      if (Array.isArray(data.dashboards)) {
+        cacheUserDashboards(data.dashboards, data.user.id);
+      }
       return data.user;
     }
     return null;
@@ -601,18 +653,42 @@ const updateAccount = async ({ name, username }) => {
 };
 
 const getUserDashboards = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/api/dashboard`, {
-      headers: getAuthorizedHeaders()
-    });
+  const userId = getStoredUser()?.id || '';
+  const cached = getCachedUserDashboards(userId);
+  const cacheAge = userDashboardsCache.userId === userId ? Date.now() - userDashboardsCache.timestamp : Infinity;
 
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.dashboards || [];
-  } catch (error) {
-    console.error('Error fetching dashboards:', error);
-    return [];
+  if (cached.length > 0 && cacheAge < USER_DASHBOARDS_CACHE_TTL) {
+    perfLog('dashboards cache hit', { count: cached.length, cacheAge });
+    return cached;
   }
+
+  if (userDashboardsFetch) {
+    perfLog('dashboards fetch deduped');
+    return userDashboardsFetch;
+  }
+
+  perfLog('dashboards fetch start');
+  userDashboardsFetch = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/dashboard`, {
+        headers: getAuthorizedHeaders()
+      });
+
+      if (!res.ok) return cached;
+      const payload = await res.json();
+      const dashboards = payload.dashboards || [];
+      cacheUserDashboards(dashboards, userId);
+      perfLog('dashboards fetch done', { count: dashboards.length });
+      return dashboards;
+    } catch (error) {
+      console.error('Error fetching dashboards:', error);
+      return cached;
+    } finally {
+      userDashboardsFetch = null;
+    }
+  })();
+
+  return userDashboardsFetch;
 };
 
 const createDashboard = async (name, enabledSections) => {
@@ -739,6 +815,8 @@ Object.assign(window, {
   saveDashboardData,
   flushPendingDashboardSaves,
   flushPendingDashboardSavesViaBeacon,
+  perfLog,
+  getCachedUserDashboards,
   getUserDashboards,
   createDashboard,
   joinDashboard,

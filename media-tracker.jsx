@@ -240,6 +240,14 @@ function MediaTracker() {
         ? `?inviteDashboard=${encodeURIComponent(inviteDashboard)}&inviteCode=${encodeURIComponent(inviteCode)}`
         : '';
       if (!inviteQuery) {
+        const cachedDashboards = window.getCachedUserDashboards?.(currentUser.id) || [];
+        if (cachedDashboards.length > 0) {
+          window.perfLog?.('login route redirected from dashboard cache', { count: cachedDashboards.length });
+          navigateTo(`/dashboard/${encodeURIComponent(cachedDashboards[0].id)}/`, { replace: true, skipPrompt: true });
+          getUserDashboards().catch(() => {});
+          return;
+        }
+
         let cancelled = false;
         setRouteLoading(true);
         getUserDashboards()
@@ -329,11 +337,28 @@ function MediaTracker() {
     if (appRoute.type === 'dashboard') {
       if (currentDashboard?.id === appRoute.dashboardId) {
         setRouteLoading(false);
+        getUserDashboards()
+          .then((dashboards) => {
+            const matchingDashboard = dashboards.find((dashboard) => dashboard.id === appRoute.dashboardId);
+            if (matchingDashboard) {
+              setCurrentDashboard(matchingDashboard);
+            }
+          })
+          .catch(() => {});
         return;
       }
 
       let cancelled = false;
-      setRouteLoading(true);
+      const cachedDashboards = window.getCachedUserDashboards?.(currentUser.id) || [];
+      const cachedDashboard = cachedDashboards.find((dashboard) => dashboard.id === appRoute.dashboardId);
+      if (cachedDashboard) {
+        window.perfLog?.('dashboard shell rendered from cache', { dashboardId: appRoute.dashboardId });
+        setCurrentDashboard(cachedDashboard);
+        setRouteLoading(false);
+      } else {
+        setRouteLoading(true);
+      }
+
       getUserDashboards()
         .then((dashboards) => {
           if (cancelled) return;
@@ -429,10 +454,13 @@ function MediaTracker() {
         setLoading(false);
       } else {
         // Only show loading if no cached data
-        setLoading(true);
+        skipNextSaveRef.current = true;
+        setData(defaultDashboardData());
+        setLoading(false);
       }
 
       // Fetch fresh data in background
+      window.perfLog?.('dashboard data fetch start', { dashboardId: currentDashboard.id });
       const DashboardData = await getDashboardData(currentDashboard.id);
       if (cancelled) return;
       if (dataEditedAfterLoadRef.current) return;
@@ -444,6 +472,7 @@ function MediaTracker() {
         // Only set default if no cached data and fetch failed
         setData(defaultDashboardData());
       }
+      window.perfLog?.('dashboard data ready', { dashboardId: currentDashboard.id, usedCachedData: Boolean(cachedDashboardData) });
       setLoading(false);
     };
     loadData();
@@ -468,6 +497,7 @@ function MediaTracker() {
   }, [data, currentDashboard?.id]);
 
   const handleLogin = async (user) => {
+    window.perfLog?.('login accepted');
     setCurrentUser(user);
     const params = new URLSearchParams(window.location.search);
     const inviteDashboard = params.get('inviteDashboard');
@@ -480,20 +510,27 @@ function MediaTracker() {
       return;
     }
 
-    setRouteLoading(true);
-    try {
-      const dashboards = await getUserDashboards();
-      if (dashboards.length > 0) {
-        const firstDashboard = dashboards[0];
-        // Prefetch dashboard data in the background while navigating
-        getDashboardData(firstDashboard.id).catch(() => {});
-        navigateTo(`/dashboard/${encodeURIComponent(firstDashboard.id)}/`, { replace: true, skipPrompt: true });
-      } else {
-        navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
-      }
-    } finally {
-      setRouteLoading(false);
+    const cachedDashboards = window.getCachedUserDashboards?.(user.id) || [];
+    if (cachedDashboards.length > 0) {
+      const firstDashboard = cachedDashboards[0];
+      window.perfLog?.('login navigating from dashboard cache', { dashboardId: firstDashboard.id });
+      getUserDashboards().catch(() => {});
+      getDashboardData(firstDashboard.id).catch(() => {});
+      navigateTo(`/dashboard/${encodeURIComponent(firstDashboard.id)}/`, { replace: true, skipPrompt: true });
+      return;
     }
+
+    window.perfLog?.('login has no dashboard cache');
+    navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
+    getUserDashboards()
+      .then((dashboards) => {
+        if (dashboards.length > 0) {
+          const firstDashboard = dashboards[0];
+          getDashboardData(firstDashboard.id).catch(() => {});
+          navigateTo(`/dashboard/${encodeURIComponent(firstDashboard.id)}/`, { replace: true, skipPrompt: true });
+        }
+      })
+      .catch(() => {});
   };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
@@ -913,7 +950,7 @@ function MediaTracker() {
       />
     );
   }
-  if (loading || !data) return <LoadingScreen />;
+  const visibleData = data || defaultDashboardData();
 
   // Determine what to render based on category + subTab
   const renderContent = () => {
@@ -921,7 +958,7 @@ function MediaTracker() {
       if (activeSubTab === 'tasks') {
         return (
           <TasksView
-            tasks={data.tasks || []}
+            tasks={visibleData.tasks || []}
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
             onUpdateTask={handleUpdateTask}
@@ -934,7 +971,7 @@ function MediaTracker() {
       if (activeSubTab === 'calendar') {
         return (
           <CalendarView
-            events={data.calendarEvents || []}
+            events={visibleData.calendarEvents || []}
             onDeleteEvent={handleDeleteEvent}
             onEditEvent={handleEditEvent}
             onAddClick={() => { setAddCategory('calendar'); setAddModalOpen(true); }}
@@ -946,7 +983,7 @@ function MediaTracker() {
       if (activeSubTab === 'locations') {
         return (
           <DatesView
-            places={data.locations || []}
+            places={visibleData.locations || []}
             onDeletePlace={handleDeleteDate}
             onToggleFavourite={handleToggleFavouriteDate}
             onUpdateDate={handleUpdateDate}
@@ -957,7 +994,7 @@ function MediaTracker() {
       if (activeSubTab === 'trips') {
         return (
           <TripsView
-            trips={data.trips || []}
+            trips={visibleData.trips || []}
             onDeleteTrip={handleDeleteTrip}
             onEditTrip={handleEditTrip}
             onAddClick={() => { setAddCategory('trips'); setAddModalOpen(true); }}
@@ -967,7 +1004,7 @@ function MediaTracker() {
       if (activeSubTab === 'recipes') {
         return (
           <RecipesView
-            recipes={data.recipes || []}
+            recipes={visibleData.recipes || []}
             onDeleteRecipe={handleDeleteRecipe}
             onEditRecipe={handleEditRecipe}
             onAddClick={() => { setAddCategory('recipes'); setAddModalOpen(true); }}
@@ -1007,7 +1044,7 @@ function MediaTracker() {
         onLeaveDashboard={handleLeaveDashboard}
         onSaveDashboard={handleSaveDashboardSettings}
         enabledSections={getEnabledSections(currentDashboard)}
-        profile={data?.profile}
+        profile={visibleData?.profile}
       />
 
       <main
@@ -1031,7 +1068,7 @@ function MediaTracker() {
         onAddRecipe={handleAddRecipe}
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
-        profile={data?.profile}
+        profile={visibleData?.profile}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
