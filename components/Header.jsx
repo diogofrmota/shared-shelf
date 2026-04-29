@@ -384,18 +384,13 @@ const Header = ({
     <header className="sticky top-0 z-40 border-b border-[#E1D8D4] bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand + space name */}
-        <button
-          type="button"
-          onClick={onBackToSpaces}
-          className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:opacity-90 sm:max-w-xs"
-          title="Back to your spaces"
-        >
+        <div className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1">
           <BrandLogo
             subtitle={spaceName || 'Your space'}
             markClassName="h-9 w-9 sm:h-10 sm:w-10"
             textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
           />
-        </button>
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
