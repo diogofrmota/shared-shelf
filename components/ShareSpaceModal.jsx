@@ -44,6 +44,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
   }, []);
 
   if (!isOpen || !space) return null;
+  const canGenerateInvite = shareInfo?.canGenerateInvite ?? space?.role === 'owner';
 
   const copyValue = async (label, value) => {
     try {
@@ -57,6 +58,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
   };
 
   const handleRegenerate = async () => {
+    if (!canGenerateInvite) return;
     setRegenerating(true);
     setError('');
 
@@ -85,7 +87,9 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
           <div>
             <h2 className="text-xl font-extrabold text-[#410001]">Share space</h2>
             <p className="mt-1 text-sm text-[#534340]">
-              Share this space ID and one-time code so someone else can join.
+              {canGenerateInvite
+                ? 'Share this space ID and one-time code so someone else can join.'
+                : 'Only the space owner can create or refresh join codes.'}
             </p>
           </div>
           <button
@@ -125,13 +129,15 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
                   <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
                   <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
                 </div>
-                <button
-                  onClick={() => setConfirmRegenerate(true)}
-                  disabled={regenerating}
-                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-50"
-                >
-                  {regenerating ? 'Generating...' : 'New code'}
-                </button>
+                {canGenerateInvite && (
+                  <button
+                    onClick={() => setConfirmRegenerate(true)}
+                    disabled={regenerating}
+                    className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-50"
+                  >
+                    {regenerating ? 'Generating...' : 'New code'}
+                  </button>
+                )}
               </div>
 
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">

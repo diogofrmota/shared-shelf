@@ -355,14 +355,12 @@ const Header = ({
   };
 
   const handleGenerateShare = async (type) => {
-    if (!space?.id) return;
+    if (!space?.id || !canGenerateInvite) return;
     setShareGenerating(true);
     setShareGeneratingType(type);
     setShareError('');
     try {
-      const nextShareInfo = type === 'code'
-        ? await window.regenerateSpaceJoinCode?.(space.id)
-        : await window.getSpaceShareInfo?.(space.id);
+      const nextShareInfo = await window.regenerateSpaceJoinCode?.(space.id);
       setShareInfo(nextShareInfo);
       setShareGeneratedType(type);
     } catch (err) {
@@ -402,7 +400,7 @@ const Header = ({
                 key={tab.id}
                 aria-current={isActive ? 'page' : undefined}
                 onClick={() => {
-                  if (tab.id === 'media') handleTabClick('media', null);
+                  if (tab.id === 'media') handleTabClick('media', 'tvshows');
                   else handleTabClick(tab.category, tab.id);
                 }}
                 className={`relative inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${
@@ -441,20 +439,22 @@ const Header = ({
                 className="absolute right-0 top-12 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
               >
                 <div className="p-2">
-                  <button
-                    role="menuitem"
-                    type="button"
-                    onClick={toggleSpaceSettingsPanel}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    aria-expanded={spaceSettingsExpanded}
-                  >
-                    <PencilIcon size={18} />
-                    <span className="flex-1">Customize Space</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${spaceSettingsExpanded ? 'rotate-180' : ''}`}>
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </button>
-                  {spaceSettingsExpanded && (
+                  {canEditSpaceSettings && (
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={toggleSpaceSettingsPanel}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      aria-expanded={spaceSettingsExpanded}
+                    >
+                      <PencilIcon size={18} />
+                      <span className="flex-1">Customize Space</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${spaceSettingsExpanded ? 'rotate-180' : ''}`}>
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                  )}
+                  {canEditSpaceSettings && spaceSettingsExpanded && (
                     <div className="mx-1 mb-2 space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
                       <div className="rounded-lg border border-[#E1D8D4] bg-white p-3">
                         <div className="flex items-start justify-between gap-3">
@@ -529,7 +529,7 @@ const Header = ({
                       </button>
                     </div>
                   )}
-                  {onShareClick && (
+                  {onShareClick && canGenerateInvite && (
                     <div>
                       <button
                         role="menuitem"
@@ -969,7 +969,7 @@ const Header = ({
                         key={tab.id}
                         role="menuitem"
                         onClick={() => {
-                          if (tab.id === 'media') handleTabClick('media', null);
+                          if (tab.id === 'media') handleTabClick('media', 'tvshows');
                           else handleTabClick(tab.category, tab.id);
                         }}
                         className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
@@ -993,6 +993,16 @@ const Header = ({
                     <SettingsIcon size={18} />
                     Settings
                   </button>
+                  {onShareClick && canGenerateInvite && (
+                    <button
+                      role="menuitem"
+                      onClick={() => { onShareClick?.(); setMenuOpen(false); }}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    >
+                      <ShareIcon size={18} />
+                      Share
+                    </button>
+                  )}
                   <button
                     role="menuitem"
                     onClick={() => { onAccountClick?.(); setMenuOpen(false); }}

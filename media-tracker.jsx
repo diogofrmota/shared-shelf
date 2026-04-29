@@ -30,11 +30,8 @@ function MediaTracker() {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addCategory, setAddCategory] = useState(null);
-  const [globalAddOpen, setGlobalAddOpen] = useState(false);
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -71,11 +68,8 @@ function MediaTracker() {
   };
 
   const closeSpaceOverlays = () => {
-    setGlobalSearchOpen(false);
     setAddModalOpen(false);
     setAddCategory(null);
-    setGlobalAddOpen(false);
-    setProfileModalOpen(false);
     setSettingsModalOpen(false);
     setAccountModalOpen(false);
     setShareModalOpen(false);
@@ -180,10 +174,7 @@ function MediaTracker() {
         || editTripModalOpen
         || editEventModalOpen
         || settingsModalOpen
-        || profileModalOpen
         || accountModalOpen
-        || globalAddOpen
-        || globalSearchOpen
         || confirmation
       )
     );
@@ -194,10 +185,7 @@ function MediaTracker() {
     editTripModalOpen,
     editEventModalOpen,
     settingsModalOpen,
-    profileModalOpen,
     accountModalOpen,
-    globalAddOpen,
-    globalSearchOpen,
     confirmation
   ]);
 
@@ -261,6 +249,28 @@ function MediaTracker() {
       const inviteQuery = inviteSpace && inviteCode
         ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
         : '';
+      if (!inviteQuery) {
+        let cancelled = false;
+        setRouteLoading(true);
+        getUserSpaces()
+          .then((spaces) => {
+            if (cancelled) return;
+            if (spaces.length > 0) {
+              navigateTo(`/space/${encodeURIComponent(spaces[0].id)}/`, { replace: true, skipPrompt: true });
+            } else {
+              navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+            }
+          })
+          .catch(() => {
+            if (!cancelled) navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+          })
+          .finally(() => {
+            if (!cancelled) setRouteLoading(false);
+          });
+        return () => {
+          cancelled = true;
+        };
+      }
       navigateTo(`/space-selection/${inviteQuery}`, { replace: true });
       return;
     }
@@ -461,7 +471,7 @@ function MediaTracker() {
     });
   }, [data, currentSpace?.id]);
 
-  const handleLogin = (user) => {
+  const handleLogin = async (user) => {
     setCurrentUser(user);
     const params = new URLSearchParams(window.location.search);
     const inviteSpace = params.get('inviteSpace');
@@ -469,7 +479,22 @@ function MediaTracker() {
     const inviteQuery = inviteSpace && inviteCode
       ? `?inviteSpace=${encodeURIComponent(inviteSpace)}&inviteCode=${encodeURIComponent(inviteCode)}`
       : '';
-    navigateTo(`/space-selection/${inviteQuery}`);
+    if (inviteQuery) {
+      navigateTo(`/space-selection/${inviteQuery}`);
+      return;
+    }
+
+    setRouteLoading(true);
+    try {
+      const spaces = await getUserSpaces();
+      if (spaces.length > 0) {
+        navigateTo(`/space/${encodeURIComponent(spaces[0].id)}/`, { replace: true, skipPrompt: true });
+      } else {
+        navigateTo('/space-selection/', { replace: true, skipPrompt: true });
+      }
+    } finally {
+      setRouteLoading(false);
+    }
   };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
@@ -511,7 +536,7 @@ function MediaTracker() {
 
   const handleCategoryChange = (category, subTab) => {
     setActiveCategory(category);
-    setActiveSubTab(subTab);
+    setActiveSubTab(category === 'media' && !subTab ? 'tvshows' : subTab);
   };
 
   // Data mutation handlers (unchanged)
@@ -711,13 +736,6 @@ function MediaTracker() {
     }));
   };
   const handleReorderTasks = (reorderedTasks) => setData(prev => ({ ...prev, tasks: reorderedTasks }));
-  const handleSaveProfile = (profileData) => setData(prev => ({ ...prev, profile: profileData }));
-
-  const handleGlobalAddSelect = (category) => {
-    setAddCategory(category);
-    setGlobalAddOpen(false);
-    setAddModalOpen(true);
-  };
 
   const addActionByTab = {
     calendar: { label: 'Activity', icon: 'CalendarIcon' },
@@ -802,10 +820,8 @@ function MediaTracker() {
   const RecipesView = window.getWindowComponent?.('RecipesView', window.MissingComponent) || window.MissingComponent;
   const MediaSectionsView = window.getWindowComponent?.('MediaSectionsView', window.MissingComponent) || window.MissingComponent;
   const Header = window.getWindowComponent?.('Header', window.MissingComponent) || window.MissingComponent;
-  const GlobalSearchModal = window.getWindowComponent?.('GlobalSearchModal', window.MissingComponent) || window.MissingComponent;
   const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
   const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
-  const GlobalAddModal = window.getWindowComponent?.('GlobalAddModal', window.MissingComponent) || window.MissingComponent;
   const ProfileModal = window.getWindowComponent?.('ProfileModal', window.MissingComponent) || window.MissingComponent;
   const ShareSpaceModal = window.getWindowComponent?.('ShareSpaceModal', window.MissingComponent) || window.MissingComponent;
   const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
@@ -988,7 +1004,6 @@ function MediaTracker() {
         activeCategory={activeCategory}
         activeSubTab={activeSubTab}
         onCategoryChange={handleCategoryChange}
-        onSubTabChange={(sub) => setActiveSubTab(sub)}
         onSettingsClick={() => setSettingsModalOpen(true)}
         onAccountClick={() => setAccountModalOpen(true)}
         onShareClick={() => setShareModalOpen(true)}
@@ -1013,7 +1028,6 @@ function MediaTracker() {
       {SiteFooter ? <SiteFooter onNavigate={navigateTo} /> : null}
 
       {/* Modals */}
-      <GlobalSearchModal isOpen={globalSearchOpen} onClose={() => setGlobalSearchOpen(false)} data={data} setActiveTab={(tab) => { /* map old tab to new category/sub */ }} />
       <AddModal
         isOpen={addModalOpen}
         onClose={() => { setAddModalOpen(false); setAddCategory(null); }}
@@ -1027,15 +1041,6 @@ function MediaTracker() {
         profile={data?.profile}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
-      <GlobalAddModal isOpen={globalAddOpen} onClose={() => setGlobalAddOpen(false)} onSelect={handleGlobalAddSelect} enabledSections={getEnabledSections(currentSpace)} />
-      {/* Use ProfileModal for different modes */}
-      <ProfileModal
-        mode="profiles"
-        isOpen={profileModalOpen}
-        onClose={() => setProfileModalOpen(false)}
-        profile={data?.profile}
-        onSave={handleSaveProfile}
-      />
       <ProfileModal
         mode="settings"
         isOpen={settingsModalOpen}

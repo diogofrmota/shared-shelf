@@ -279,7 +279,10 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
   // ---------- SETTINGS MODE (space name & share) ----------
   if (mode === 'settings') {
+    const canEditSpaceSettings = space?.role === 'owner';
+    const canGenerateInvite = shareInfo?.canGenerateInvite ?? space?.role === 'owner';
     const handleSave = () => {
+      if (!canEditSpaceSettings) return;
       onSaveSpace({ name: name.trim() || space?.name || 'Our Space', enabledSections: selectedSections });
       onClose();
     };
@@ -306,7 +309,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     };
 
     const handleRegenerate = async () => {
-      if (!space?.id) return;
+      if (!space?.id || !canGenerateInvite) return;
       setRegeneratingShare(true);
       setShareError('');
       try {
@@ -349,6 +352,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Our space name"
                 className={inputCls}
+                disabled={!canEditSpaceSettings}
               />
             </div>
 
@@ -361,6 +365,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
                       onChange={() => toggleSection(section.id)}
+                      disabled={!canEditSpaceSettings}
                       className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
                     />
                     <span>{section.label}</span>
@@ -374,17 +379,21 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                 <div>
                   <h3 className="text-base font-extrabold text-[#410001]">Share space</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Share this space ID and one-time code so someone else can join.
+                    {canGenerateInvite
+                      ? 'Share this space ID and one-time code so someone else can join.'
+                      : 'Only the space owner can create or refresh join codes.'}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setConfirmRegenerateShare(true)}
-                  disabled={regeneratingShare || shareLoading}
-                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
-                >
-                  {regeneratingShare ? 'Generating...' : 'New code'}
-                </button>
+                {canGenerateInvite && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRegenerateShare(true)}
+                    disabled={regeneratingShare || shareLoading}
+                    className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
+                  >
+                    {regeneratingShare ? 'Generating...' : 'New code'}
+                  </button>
+                )}
               </div>
 
               {shareLoading ? (
@@ -483,7 +492,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
+            <button onClick={handleSave} disabled={!canEditSpaceSettings} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60">
               Save changes
             </button>
           </div>

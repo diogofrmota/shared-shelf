@@ -377,7 +377,7 @@ function LoginScreen({ onLogin, onNavigate }) {
       if (mode === 'signin') {
         const user = await loginUser(email, password, rememberMe);
         if (user) {
-          onLogin(user);
+          await Promise.resolve(onLogin(user));
         } else {
           setServerError('Authentication failed. Please try again.');
         }

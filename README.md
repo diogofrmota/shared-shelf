@@ -22,6 +22,8 @@ All paths rewrite to `index.html`; routing is handled in `media-tracker.jsx`.
 | `/space-selection/` | Space list, create/join, profile, logout | Signed-in |
 | `/space/<space-id>/` | Main workspace with header, sections, settings, sharing | Signed-in |
 
+Route workflow note: after login, users who already belong to a space are sent directly to `/space/<space-id>/`. `/space-selection/` is for signed-in users who do not yet have a private space, or for invite links before joining.
+
 ## Key API Routes (Vercel Hobby plan: max 12 function files)
 
 Vercel Hobby deployments allow no more than 12 Serverless Function files. This repo intentionally keeps the API surface consolidated into 7 function files:
@@ -61,6 +63,10 @@ When adding API behavior, route it through an existing catch-all unless a new fu
 | `GET /api/health` | DB health check |
 
 Auth routes are dispatched by `api/auth/[...path].js`; individual auth handlers live in `lib/auth-routes/`. Space routes are consolidated into `api/space/[...path].js` via `vercel.json` rewrites.
+
+Share route note: `GET /api/space/:id/share` returns the current read-only share state and never creates a join code. Owners use `POST /api/space/:id/share` to create or refresh the one-use code and invite link. Members receive a read-only response with `canGenerateInvite: false`.
+
+Browser configuration is intentionally kept in loaded global scripts (`components/Config.jsx` and `utils/api.js`). Do not add root ES module config/helper files unless the app gains a bundler or explicit module loading.
 
 ## Data Model (tables created by `lib/db.js`)
 

@@ -4,7 +4,8 @@ const React = window.React;
 // API HELPER FUNCTIONS (global scope, no ES modules)
 // ============================================================================
 
-// Config constants (inline since we can't import from config.js in browser)
+// Browser-used API helpers live in this global script because the app runs
+// without a bundler or ES module imports.
 // Empty string = same-origin, so preview + production deployments each hit
 // their own /api routes instead of falling back to a hardcoded URL.
 const API_BASE = window.API_BASE_URL ?? '';

@@ -361,17 +361,17 @@ export default async function handler(req, res) {
 
         await createJoinCode(spaceId);
         activeCode = await getLatestActiveJoinCode(spaceId);
-      } else if (!activeCode) {
-        await createJoinCode(spaceId);
-        activeCode = await getLatestActiveJoinCode(spaceId);
       }
 
+      const canGenerateInvite = membership.role === 'owner';
       return res.json({
         spaceId: space.id,
         spaceName: space.name,
+        role: membership.role,
+        canGenerateInvite,
         joinCode: activeCode?.code || null,
         expiresAt: activeCode?.expires_at || null,
-        inviteLink: buildInviteLink(space.id, activeCode?.code)
+        inviteLink: activeCode?.code ? buildInviteLink(space.id, activeCode.code) : null
       });
     }
 

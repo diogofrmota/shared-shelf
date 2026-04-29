@@ -5,73 +5,6 @@ const getComponent = (name) => window.getWindowComponent?.(name, window.MissingI
 const getModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 // ============================================================================
-// GLOBAL ADD MODAL COMPONENT
-// ============================================================================
-
-const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
-  if (!isOpen) return null;
-  const ModalShell = getModalShell();
-  const CloseIcon = getComponent('Close');
-  const dateCategories = window.DATE_CATEGORIES || [];
-
-  const categories = [
-    { id: 'tasks',    label: 'Task',      icon: 'CheckSquare' },
-    { id: 'calendar', label: 'Activity',  icon: 'CalendarIcon' },
-    { id: 'locations', label: 'Location', icon: 'Utensils' },
-    { id: 'trips',    label: 'Trip',      icon: 'MapPin' },
-    { id: 'recipes',  label: 'Recipe',    icon: 'ChefHat' },
-    { id: 'tvshows',  label: 'TV Show',   icon: 'Tv' },
-    { id: 'movies',   label: 'Movie',     icon: 'Film' },
-    { id: 'books',    label: 'Book',      icon: 'Book' },
-  ];
-  const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
-    ? enabledSections
-    : ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist']);
-  const visibleCategories = categories.filter(category => {
-    if (['movies', 'tvshows', 'books'].includes(category.id)) return enabledSet.has('watchlist');
-    return enabledSet.has(category.id);
-  });
-
-  return (
-    <ModalShell
-      isOpen={isOpen}
-      onClose={onClose}
-      zClass="z-[150]"
-      ariaLabel="Add item menu"
-      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
-    >
-        <div className="flex items-center justify-between border-b border-[#E1D8D4] p-5">
-          <h2 className="text-lg font-extrabold text-[#410001]">What are you adding?</h2>
-          <button
-            onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-            aria-label="Close add menu"
-          >
-            <CloseIcon size={20} />
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5 p-4">
-          {visibleCategories.map(({ id, label, icon }) => {
-            const Icon = getComponent(icon);
-            return (
-            <button
-              key={id}
-              onClick={() => onSelect(id)}
-              className="group flex min-h-[96px] flex-col items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:bg-[#FFF8F5] hover:shadow-md"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
-                <Icon size={20} />
-              </span>
-              <span className="text-sm font-bold text-[#410001]">{label}</span>
-            </button>
-            );
-          })}
-        </div>
-    </ModalShell>
-  );
-};
-
-// ============================================================================
 // ADD MODAL COMPONENT
 // ============================================================================
 
@@ -913,4 +846,4 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
   );
 };
 
-Object.assign(window, { GlobalAddModal, AddModal, EditEventModal, EditRecipeModal, EditTripModal });
+Object.assign(window, { AddModal, EditEventModal, EditRecipeModal, EditTripModal });
