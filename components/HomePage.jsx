@@ -9,7 +9,8 @@ const FEATURES = [
     description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.',
     bg: '#FFE4E0',
     border: '#F5ADA5',
-    accent: '#D8271C'
+    accent: '#D8271C',
+    fade: '#F76B5F'
   },
   {
     icon: 'CheckSquare',
@@ -17,7 +18,8 @@ const FEATURES = [
     description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.',
     bg: '#E1F5EE',
     border: '#91D7BF',
-    accent: '#00845F'
+    accent: '#00845F',
+    fade: '#3AB68E'
   },
   {
     icon: 'MapPin',
@@ -25,7 +27,8 @@ const FEATURES = [
     description: 'Save restaurants, bars, and date ideas on a shared map with categories, ratings, and notes.',
     bg: '#FFE8D7',
     border: '#F2B27A',
-    accent: '#D65A00'
+    accent: '#D65A00',
+    fade: '#F39A3D'
   },
   {
     icon: 'Film',
@@ -33,6 +36,7 @@ const FEATURES = [
     bg: '#E4EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
+    fade: '#6EA5F2',
     description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together.'
   },
   {
@@ -41,7 +45,8 @@ const FEATURES = [
     description: 'Build a shared recipe book with ingredients, instructions, prep time, and source links for the meals you cook together.',
     bg: '#FFE4F6',
     border: '#EAA3D6',
-    accent: '#B8329B'
+    accent: '#B8329B',
+    fade: '#E36AC5'
   },
   {
     icon: 'Tv',
@@ -49,7 +54,8 @@ const FEATURES = [
     description: 'Track the movies, TV shows and books you want to watch and read together, with statuses, ratings, and season progress.',
     bg: '#ECE8FF',
     border: '#B9ADF2',
-    accent: '#6B52D9'
+    accent: '#6B52D9',
+    fade: '#9B86F2'
   }
 ];
 
@@ -623,16 +629,11 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                   <div
                     key={scenario.title}
                     className="ss-card p-6"
-                    style={{
-                      backgroundImage: `linear-gradient(to right, ${scenario.bg} 0%, ${scenario.bg}d9 100%)`,
-                      borderColor: scenario.border,
-                      borderWidth: '3px'
-                    }}
+                    style={{ borderWidth: '3px' }}
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
-                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/70"
-                        style={{ color: scenario.accent }}
+                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#410001]"
                       >
                         <Icon size={19} />
                       </span>
@@ -662,21 +663,21 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                     key={feature.title}
                     className="ss-card p-6 transition ss-card-hover"
                     style={{
-                      backgroundImage: `linear-gradient(to right, ${feature.bg} 0%, ${feature.bg}d9 100%)`,
-                      borderColor: feature.border,
+                      backgroundColor: feature.accent,
+                      backgroundImage: `linear-gradient(135deg, ${feature.accent} 0%, ${feature.accent} 42%, ${feature.fade} 100%)`,
+                      borderColor: feature.accent,
                       borderWidth: '3px'
                     }}
                   >
                     <div className="mb-4 flex items-center gap-3">
                       <span
-                        className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/70"
-                        style={{ color: feature.accent }}
+                        className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm"
                       >
                         <Icon size={20} />
                       </span>
-                      <h3 className="text-lg font-extrabold text-[#410001]">{feature.title}</h3>
+                      <h3 className="text-lg font-extrabold text-white">{feature.title}</h3>
                     </div>
-                    <p className="mt-2 text-sm text-[#534340]">{feature.description}</p>
+                    <p className="mt-2 text-sm font-medium text-white/90">{feature.description}</p>
                   </div>
                 );
               })}
