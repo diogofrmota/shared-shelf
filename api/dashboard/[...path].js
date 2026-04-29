@@ -166,29 +166,20 @@ export default async function handler(req, res) {
             sm.role,
             s.created_at,
             s.updated_at,
-            COALESCE(
-              (
-                SELECT json_agg(
-                  json_build_object(
-                    'id', member_rows.id,
-                    'name', member_rows.name,
-                    'username', member_rows.username,
-                    'role', member_rows.role
-                  )
-                  ORDER BY CASE WHEN member_rows.role = 'owner' THEN 0 ELSE 1 END, member_rows.joined_at
-                )
-                FROM (
-                  SELECT u.id, u.display_name AS name, u.username, member_sm.role, member_sm.joined_at
-                  FROM dashboard_members member_sm
-                  JOIN users u ON u.id = member_sm.user_id
-                  WHERE member_sm.dashboard_id = s.id
-                ) member_rows
-              ),
-              '[]'::json
-            ) AS members
+            json_agg(
+              json_build_object(
+                'id', u.id,
+                'name', u.display_name,
+                'username', u.username,
+                'role', member_sm.role
+              )
+              ORDER BY CASE WHEN member_sm.role = 'owner' THEN 0 ELSE 1 END, member_sm.joined_at
+            ) FILTER (WHERE u.id IS NOT NULL) AS members
           FROM dashboards s
-          JOIN dashboard_members sm ON s.id = sm.dashboard_id
-          WHERE sm.user_id = ${userId}
+          JOIN dashboard_members sm ON s.id = sm.dashboard_id AND sm.user_id = ${userId}
+          LEFT JOIN dashboard_members member_sm ON s.id = member_sm.dashboard_id
+          LEFT JOIN users u ON u.id = member_sm.user_id
+          GROUP BY s.id, s.name, s.created_by, s.logo_url, s.enabled_sections, s.created_at, s.updated_at, sm.role
           ORDER BY s.updated_at DESC NULLS LAST, s.created_at DESC
         `;
 
