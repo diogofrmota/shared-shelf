@@ -4,7 +4,7 @@ Guidance for AI coding agents working on **Couple Planner**.
 
 ## Project Overview
 
-Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, locations, trips, recipes, and a media watchlist. The frontend uses CDN-loaded React, Tailwind, Leaflet, and Lucide; the backend is a set of Vercel Serverless Functions with a Neon Postgres database. See `README.md` for full tech stack, routes, APIs, and data model.
+Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, locations, trips, recipes, and entertainment. The frontend uses CDN-loaded React, Tailwind, Leaflet, and Lucide; the backend is a set of Vercel Serverless Functions with a Neon Postgres database. See `README.md` for full tech stack, routes, APIs, and data model.
 
 ## Critical Constraints
 
@@ -42,7 +42,7 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 - Recurring calendar events/tasks: render occurrences at render time; editing/deleting affects the whole series.
 - Task recurrence status stored in `lastCompletedAt`/`completionCount`; recurring tasks remain active.
 - Trips: normalize missing `startDate`, `endDate`, `itinerary`, etc. on load.
-- Watchlist items are objects with `mediaType`, `title`, `status`, etc. Use the statuses listed in README.
+- Entertainment items are stored in `watchlist` as objects with `mediaType`, `title`, `status`, etc. Use the statuses listed in README.
 
 ## Verification
 
@@ -60,7 +60,7 @@ Checklist:
 - `/login?mode=signup` opens on register tab.
 - Login, registration, password reset, and confirmation screens render.
 - dashboard list/create/join/share/settings/profile flows still work.
-- Add/edit/delete flows for calendar, tasks, locations, trips, recipes, watchlist still work.
+- Add/edit/delete flows for calendar, tasks, locations, trips, recipes, entertainment still work.
 - Media search still works.
 - Offline/localStorage fallback still shows cached data.
 

@@ -9,7 +9,7 @@ const HEADER_NAV_TABS = [
   { id: 'locations', label: 'Locations', category: 'go', icon: 'MapPin' },
   { id: 'trips', label: 'Trips', category: 'go', icon: 'Film' },
   { id: 'recipes', label: 'Recipes', category: 'go', icon: 'ChefHat' },
-  { id: 'media', label: 'Watchlist', category: 'media', icon: 'Tv' }
+  { id: 'media', label: 'Entertainment', category: 'media', icon: 'Tv' }
 ];
 
 const Header = ({
@@ -617,7 +617,7 @@ const Header = ({
                       <div className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
                         <p className="text-sm font-bold text-[#410001]">Exit dashboard?</p>
                         <p className="mt-1 text-xs leading-5 text-[#534340]">
-                          You will be removed and sent back to dashboard selection.
+                          You will exit this dashboard and lose all data.
                         </p>
                         <div className="mt-3 grid grid-cols-2 gap-2">
                           <button

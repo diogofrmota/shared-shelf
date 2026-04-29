@@ -66,12 +66,12 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
     return (
       <div className="space-y-5 animate-fade-in">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Media tracker</h2>
+          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Entertainment</h2>
           <p className="mt-1 text-sm text-[#534340]">Keep track of what you're watching and reading.</p>
         </div>
         {items.length === 0 && (
           <EmptyState
-            title="No watchlist items yet"
+            title="No entertainment items yet"
             message="Choose a category to add the first movie, show, or book."
             icon={Film}
             compact
@@ -104,7 +104,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
 
   const sections = MEDIA_SECTIONS[activeTab] || [];
   const addLabel = MEDIA_TYPE_LABELS[activeTab] || 'Item';
-  const tileLabel = MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Watchlist';
+  const tileLabel = MEDIA_TYPE_TILES.find(tile => tile.id === activeTab)?.label || 'Entertainment';
   const emptyCopy = MEDIA_TYPE_EMPTY_COPY[activeTab] || {
     title: `No ${tileLabel.toLowerCase()} yet`,
     message: 'Add the first shared pick.',

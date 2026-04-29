@@ -45,7 +45,7 @@ const FEATURES = [
   },
   {
     icon: 'Tv',
-    title: 'Watchlist & Reading',
+    title: 'Entertainment',
     description: 'Track the movies, TV shows and books you want to watch and read together, with statuses, ratings, and season progress.',
     bg: '#ECE8FF',
     border: '#B9ADF2',
@@ -123,7 +123,7 @@ const HERO_SHARED_ITEMS = [
   { icon: 'MapPin', label: 'Places', color: '#D65A00' },
   { icon: 'Film', label: 'Trips', color: '#1D6BDA', strokeWidth: 2.8 },
   { icon: 'ChefHat', label: 'Recipes', color: '#B8329B' },
-  { icon: 'Tv', label: 'Watchlist', color: '#6B52D9', strokeWidth: 2.8 }
+  { icon: 'Tv', label: 'Entertainment', color: '#6B52D9', strokeWidth: 2.8 }
 ];
 
 function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
@@ -705,7 +705,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <div>
                   <h3 className="text-lg font-extrabold text-[#410001]">Choose what your dashboard includes</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Turn calendar, tasks, locations, trips, recipes, and watchlist on or off per dashboard, you decide. Hide what you
+                    Turn calendar, tasks, locations, trips, recipes, and entertainment on or off per dashboard, you decide. Hide what you
                     don't use so your shared home screen stays focused on what actually matters to you both.
                   </p>
                 </div>

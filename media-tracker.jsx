@@ -587,7 +587,7 @@ function MediaTracker() {
       const labelByType = { tvshows: 'TV show', movies: 'movie', books: 'book' };
       requestConfirmation({
         title: `Remove ${labelByType[mediaType] || 'item'}?`,
-        message: `${getItemLabel(item, `this ${labelByType[mediaType] || 'item'}`)} will be removed from the shared watchlist.`,
+        message: `${getItemLabel(item, `this ${labelByType[mediaType] || 'item'}`)} will be removed from shared entertainment.`,
         confirmLabel: 'Remove'
       }, () => {
         setData(prev => ({ ...prev, watchlist: (prev.watchlist || []).filter(i => !(i.category === mediaType && i.id === id)) }));
@@ -887,7 +887,7 @@ function MediaTracker() {
     return <TermsOfServicePage onNavigate={navigateTo} currentUser={currentUser} onUpdateUser={handleAccountUpdate} onLogout={handleLogout} />;
   }
   if (appRoute.type === 'bug-report') {
-    return <BugReportPage onNavigate={navigateTo} currentUser={currentUser} />;
+    return <BugReportPage onNavigate={navigateTo} currentUser={currentUser} onUpdateUser={handleAccountUpdate} onLogout={handleLogout} />;
   }
 
   if (!currentUser) {

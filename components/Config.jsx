@@ -120,7 +120,7 @@ const SECTION_OPTIONS = [
   { id: 'locations', label: 'Locations' },
   { id: 'trips', label: 'Trips' },
   { id: 'recipes', label: 'Recipes' },
-  { id: 'watchlist', label: 'Watchlist' }
+  { id: 'watchlist', label: 'Entertainment' }
 ];
 
 const MEDIA_TABS = ['movies', 'tvshows', 'books'];

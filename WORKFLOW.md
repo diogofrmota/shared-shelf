@@ -17,7 +17,7 @@
 17. Dashboard access check - A signed-in user opens `/dashboard/<id>/`; the app checks membership, opens the dashboard if allowed, or shows access denied if not.
 18. Dashboard data loading - A dashboard member opens a dashboard, sees cached local data quickly if available, then receives normalized cloud data when the API returns.
 19. Dashboard autosave and offline fallback - A member changes dashboard data; the app caches locally immediately, debounces cloud saves, flushes pending saves before unload/logout, and falls back to cache on read failures.
-20. Navigate dashboard sections - A member uses desktop tabs or the mobile menu to switch between Calendar, Tasks, Locations, Trips, Recipes, and Watchlist, limited by enabled dashboard sections.
+20. Navigate dashboard sections - A member uses desktop tabs or the mobile menu to switch between Calendar, Tasks, Locations, Trips, Recipes, and Entertainment, limited by enabled dashboard sections.
 21. Customize dashboard sections - An owner opens settings, edits the dashboard name and enabled shared sections, saves, and navigation updates to match the selected sections.
 22. Share dashboard - An owner opens share/settings, generates a one-time join code or invite link, copies the dashboard ID, join code, or invite link, and can regenerate a new code.
 23. Read share state as member - A non-owner opens share/settings surfaces and can see read-only share information, while invite generation is blocked.
@@ -49,11 +49,11 @@
 49. View recipe details - A member opens a recipe card, views photo, prep time, source link, ingredients, and instructions.
 50. Edit recipe - A member edits recipe name, photo URL, prep time, source link, ingredients, and instructions, then saves.
 51. Delete recipe - A member deletes a recipe, confirms, and the recipe is removed.
-52. Choose watchlist media type - A member opens Watchlist, switches between TV Shows, Movies, and Books, and returns to the media type tiles.
-53. Search and add watchlist item - A member searches TMDB/Jikan/Open Library for a TV show, movie, anime, or book, selects a result, and adds it with the default status.
-54. Browse watchlist by status - A member sees media cards grouped by Watching/Planned/Completed or Reading/To be read/Read, with empty states per section.
-55. Change watchlist status - A member opens a media card options menu and moves the item to another status.
-56. Remove watchlist item - A member chooses Remove from the media card menu, confirms, and the item is removed.
+52. Choose entertainment media type - A member opens Entertainment, switches between TV Shows, Movies, and Books, and returns to the media type tiles.
+53. Search and add entertainment item - A member searches TMDB/Jikan/Open Library for a TV show, movie, anime, or book, selects a result, and adds it with the default status.
+54. Browse entertainment by status - A member sees media cards grouped by Watching/Planned/Completed or Reading/To be read/Read, with empty states per section.
+55. Change entertainment status - A member opens a media card options menu and moves the item to another status.
+56. Remove entertainment item - A member chooses Remove from the media card menu, confirms, and the item is removed.
 57. Track TV/anime progress - A member opens progress on a watching TV show, selects season/episode or episode number, and saves progress.
 58. Track book progress - A member opens progress on a book, enters current page and total pages, and sees a progress bar.
 59. Dashboard settings modal fallback - A member can open full-screen modal versions of dashboard settings/share/account flows from mobile or callback controls.

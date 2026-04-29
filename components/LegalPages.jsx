@@ -417,7 +417,7 @@ function PrivacyPolicyPage({ onNavigate, currentUser, onUpdateUser, onLogout }) 
       <h2 className={sectionHeadingClass}>What we collect</h2>
       <ul className={listClass}>
         <li>Account information you provide: name, username, email, and a hashed password.</li>
-        <li>dashboard content you create: calendar activities, tasks, locations, trips, recipes, and watchlist items.</li>
+        <li>dashboard content you create: calendar activities, tasks, locations, trips, recipes, and entertainment items.</li>
         <li>
           Technical data needed to run the app: session tokens stored in your browser, basic request logs from the
           hosting platform, and database records for your dashboards and memberships.
@@ -529,3 +529,4 @@ function TermsOfServicePage({ onNavigate, currentUser, onUpdateUser, onLogout })
 
 window.PrivacyPolicyPage = PrivacyPolicyPage;
 window.TermsOfServicePage = TermsOfServicePage;
+window.LegalPageShell = LegalPageShell;
