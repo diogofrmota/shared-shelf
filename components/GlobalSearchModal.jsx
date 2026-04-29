@@ -6,7 +6,8 @@ const { useState, useEffect } = React;
 // ============================================================================
 
 const LibraryResultCard = ({ item, onSelect }) => {
-  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, PLACEHOLDER_IMAGE) || PLACEHOLDER_IMAGE;
+  const placeholder = window.PLACEHOLDER_IMAGE || '';
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
   return (
   <div
     className="group relative cursor-pointer overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
@@ -54,7 +55,7 @@ const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
     }
 
     const allItems = data.watchlist || [];
-    setResults(filterByQuery(allItems, query));
+    setResults(window.filterByQuery?.(allItems, query) || []);
   }, [query, data]);
 
   const handleResultClick = (item) => {
@@ -63,10 +64,17 @@ const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
   };
 
   if (!isOpen) return null;
+  const ModalShell = window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
+  const CloseIcon = window.getWindowComponent?.('Close', window.MissingIcon) || window.MissingIcon;
+  const SearchIcon = window.getWindowComponent?.('Search', window.MissingIcon) || window.MissingIcon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel="Search your library"
+      dialogClassName="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="border-b border-[#E1D8D4] p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">Search your library</h2>
@@ -75,13 +83,13 @@ const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
               className="rounded-lg p-2 text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
               aria-label="Close"
             >
-              <Close size={22} />
+              <CloseIcon size={22} />
             </button>
           </div>
 
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#857370]">
-              <Search size={18} />
+              <SearchIcon size={18} />
             </span>
             <input
               type="text"
@@ -111,8 +119,7 @@ const GlobalSearchModal = ({ isOpen, onClose, data, setActiveTab }) => {
             ))}
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 

@@ -1,13 +1,5 @@
 const React = window.React;
-const { useState, useEffect, useRef } = React;
-
-function debounce(func, wait) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
+const { useState, useEffect, useMemo, useRef } = React;
 
 const DATE_CATEGORIES = window.DATE_CATEGORIES || [
   { value: 'restaurant', label: 'Restaurant' },
@@ -25,10 +17,7 @@ const DATE_CATEGORY_STYLES = window.DATE_CATEGORY_STYLES || {
   other: 'bg-[#FFDAD4] text-[#410001] border-[#FFB4A9]',
 };
 
-const { Star, Trash, MapPin, LinkIcon } = window;
-
-const FilterBar = window.FilterBar;
-const FilterButton = window.FilterButton;
+const getDateComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 // ============================================================================
 // DATES VIEW COMPONENT
@@ -39,6 +28,12 @@ const getDateCategoryLabel = (value) => {
   return found ? found.label : 'Other';
 };
 
+const hasLocationCoordinates = (place) => {
+  const lat = Number(place?.lat);
+  const lng = Number(place?.lng);
+  return Number.isFinite(lat) && Number.isFinite(lng);
+};
+
 const DatesLeafletMap = ({ places, focusedId }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -47,6 +42,8 @@ const DatesLeafletMap = ({ places, focusedId }) => {
   const [mapReady, setMapReady] = useState(false);
   const [leafletReady, setLeafletReady] = useState(typeof window.L !== 'undefined');
   const [mapError, setMapError] = useState('');
+  const unresolvedCount = places.filter(place => place.address && !hasLocationCoordinates(place)).length;
+  const markerCount = places.filter(hasLocationCoordinates).length;
 
   useEffect(() => {
     if (leafletReady) return;
@@ -118,9 +115,9 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     let hasMarkers = false;
 
     places.forEach(place => {
-      const lat = Number(place.lat);
-      const lng = Number(place.lng);
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      if (hasLocationCoordinates(place)) {
+        const lat = Number(place.lat);
+        const lng = Number(place.lng);
         const latLng = L.latLng(lat, lng);
         bounds.extend(latLng);
         hasMarkers = true;
@@ -165,19 +162,50 @@ const DatesLeafletMap = ({ places, focusedId }) => {
           </div>
         )}
       </div>
+      {unresolvedCount > 0 && (
+        <div className="border-t border-[#E1D8D4] bg-[#FFF8F5] px-4 py-2 text-xs font-semibold text-[#A9372C]">
+          {markerCount > 0
+            ? `${unresolvedCount} saved address${unresolvedCount === 1 ? '' : 'es'} could not be placed on the map.`
+            : 'No saved addresses could be placed on the map yet.'}
+        </div>
+      )}
       <div className="border-t border-[#E1D8D4] px-4 py-2 text-xs text-[#857370]">© OpenStreetMap contributors</div>
+    </div>
+  );
+};
+
+const StableStarRating = ({ rating = 0, onRate }) => {
+  const [hover, setHover] = useState(0);
+
+  return (
+    <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
+      {[1,2,3,4,5].map(n => (
+        <button
+          key={n}
+          onMouseEnter={() => setHover(n)}
+          onMouseLeave={() => setHover(0)}
+          onClick={() => onRate(rating === n ? 0 : n)}
+          className={`flex h-11 w-11 items-center justify-center text-base transition ${n <= (hover || rating) ? 'text-[#FFB300]' : 'text-[#D8C2BE] hover:text-[#FBD08A]'}`}
+          aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
+        >{'\u2605'}</button>
+      ))}
     </div>
   );
 };
 
 const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUpdateDate }) => {
   const photoInputRef = useRef(null);
+  const Star = getDateComponent('Star');
+  const Trash = getDateComponent('Trash');
+  const MapPin = getDateComponent('MapPin');
+  const LinkIcon = getDateComponent('LinkIcon');
   const categoryStyle = DATE_CATEGORY_STYLES[place.category] || DATE_CATEGORY_STYLES.other;
   const safeLink = window.safeExternalUrl?.(place.link) || '';
   const safePhoto = window.safeImageUrl?.(place.photo) || '';
   const lat = Number(place.lat);
   const lng = Number(place.lng);
-  const hasCoordinates = Number.isFinite(lat) && Number.isFinite(lng);
+  const hasCoordinates = hasLocationCoordinates(place);
+  const hasUnresolvedAddress = Boolean(place.address && !hasCoordinates);
   const mapsLink = hasCoordinates
     ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`
     : place.address
@@ -203,25 +231,6 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
     };
     reader.readAsDataURL(file);
     e.target.value = '';
-  };
-
-  const StarRating = () => {
-    const [hover, setHover] = useState(0);
-    const rating = place.starRating || 0;
-    return (
-      <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
-        {[1,2,3,4,5].map(n => (
-          <button
-            key={n}
-            onMouseEnter={() => setHover(n)}
-            onMouseLeave={() => setHover(0)}
-            onClick={() => onUpdateDate?.(place.id, { starRating: rating === n ? 0 : n })}
-            className={`flex h-11 w-11 items-center justify-center text-base transition ${n <= (hover || rating) ? 'text-[#FFB300]' : 'text-[#D8C2BE] hover:text-[#FBD08A]'}`}
-            aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
-          >★</button>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -281,7 +290,12 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
               </span>
             </div>
 
-            <div className="mt-2"><StarRating /></div>
+            <div className="mt-2">
+              <StableStarRating
+                rating={place.starRating || 0}
+                onRate={(starRating) => onUpdateDate?.(place.id, { starRating })}
+              />
+            </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
@@ -296,6 +310,13 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
         </div>
 
         {place.address && <p className="mt-2 line-clamp-2 break-words text-sm text-[#534340]" title={place.address}>{place.address}</p>}
+        {hasUnresolvedAddress && (
+          <p className="mt-2 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-3 py-2 text-xs font-semibold text-[#A9372C]">
+            {place.geocodingStatus === 'failed'
+              ? 'Address lookup failed. The map link opens a search instead.'
+              : 'Address not found on the map. The map link opens a search instead.'}
+          </p>
+        )}
         {place.notes && <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words text-sm text-[#534340]" title={place.notes}>{place.notes}</p>}
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -327,17 +348,21 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
   const [onlyVisited, setOnlyVisited] = useState(false);
   const [focusedId, setFocusedId] = useState(null);
 
-  const filtered = places.filter(p => {
+  const filtered = useMemo(() => places.filter(p => {
     if (onlyFavourites && !p.isFavourite) return false;
     if (onlyVisited && !p.beenThere) return false;
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
     return true;
-  });
+  }), [places, onlyFavourites, onlyVisited, categoryFilter]);
 
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if ((b.isFavourite ? 1 : 0) !== (a.isFavourite ? 1 : 0)) return (b.isFavourite ? 1 : 0) - (a.isFavourite ? 1 : 0);
     return (b.createdAt || '').localeCompare(a.createdAt || '');
-  });
+  }), [filtered]);
+  const FilterBar = window.getWindowComponent?.('FilterBar', window.MissingComponent) || window.MissingComponent;
+  const FilterButton = window.getWindowComponent?.('FilterButton', window.MissingComponent) || window.MissingComponent;
+  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
+  const MapPin = getDateComponent('MapPin');
 
   return (
     <div className="space-y-5 animate-fade-in">

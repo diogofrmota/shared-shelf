@@ -180,6 +180,48 @@ const getAuthorizedHeaders = (includeJson = false) => {
   return headers;
 };
 
+const geocodeAddress = async (address) => {
+  const query = String(address || '').trim();
+  if (query.length < 2) {
+    return { lat: null, lng: null, status: 'empty', error: '' };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/nominatim?q=${encodeURIComponent(query)}`, {
+      headers: getAuthorizedHeaders()
+    });
+    const payload = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      return {
+        lat: null,
+        lng: null,
+        status: 'failed',
+        error: payload?.error || 'Address lookup failed'
+      };
+    }
+
+    const result = Array.isArray(payload) ? payload[0] : null;
+    const lat = Number(result?.lat);
+    const lng = Number(result?.lon);
+
+    if (!result || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return { lat: null, lng: null, status: 'unresolved', error: 'Address not found' };
+    }
+
+    return {
+      lat,
+      lng,
+      status: 'resolved',
+      error: '',
+      displayName: result.display_name || query
+    };
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return { lat: null, lng: null, status: 'failed', error: 'Address lookup failed' };
+  }
+};
+
 const clearAuthToken = () => {
   localStorage.removeItem('couple-planner-auth-token');
   localStorage.removeItem('couple-planner-user');
@@ -630,6 +672,7 @@ Object.assign(window, {
   checkUsernameAvailable,
   forgotPassword,
   resetPassword,
+  geocodeAddress,
   getCachedSpaceData,
   getSpaceData,
   saveSpaceData,

@@ -3,6 +3,23 @@
 // ============================================================================
 
 const API_BASE = window.API_BASE_URL ?? '';
+const LEGACY_STORAGE_KEY = 'media-tracker-data';
+const LEGACY_CACHE_KEY = 'media-tracker-data-cache';
+
+const createDefaultStoredData = () => ({
+  calendarEvents: [],
+  tasks: [],
+  locations: [],
+  trips: [],
+  recipes: [],
+  watchlist: [],
+  profile: {
+    users: [
+      { id: 'user-1', name: 'Diogo', avatar: '', color: '#c1121f' },
+      { id: 'user-2', name: 'Mónica', avatar: '', color: '#669bbc' }
+    ]
+  }
+});
 
 /**
  * Check if user is authenticated
@@ -54,36 +71,21 @@ const logout = () => {
 const getStoredData = async () => {
   // Legacy storage is local-only. Current cloud persistence is space-scoped
   // through /api/space/:id/data and requires an authenticated space member.
-  const cached = localStorage.getItem('media-tracker-data-cache');
+  try {
+    const stored = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch (error) {
+    console.error('Error retrieving stored data:', error);
+  }
+
+  const cached = localStorage.getItem(LEGACY_CACHE_KEY);
   if (cached) {
     try { return JSON.parse(cached); } catch (e) {
       console.error('Failed to parse cached data:', e);
     }
   }
   
-  // Final fallback to original localStorage key
-  try {
-    const stored = localStorage.getItem('media-tracker-data');
-    if (stored) return JSON.parse(stored);
-  } catch (error) {
-    console.error('Error retrieving stored data:', error);
-  }
-  
-  // Return default schema
-  return {
-    calendarEvents: [],
-    tasks: [],
-    locations: [],
-    trips: [],
-    recipes: [],
-    watchlist: [],
-    profile: {
-      users: [
-        { id: 'user-1', name: 'Diogo', avatar: '', color: '#c1121f' },
-        { id: 'user-2', name: 'Mónica', avatar: '', color: '#669bbc' }
-      ]
-    }
-  };
+  return createDefaultStoredData();
 };
 
 /**
@@ -92,8 +94,8 @@ const getStoredData = async () => {
 const saveData = async (data) => {
   // Always save to localStorage as backup
   try {
-    localStorage.setItem('media-tracker-data', JSON.stringify(data));
-    localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
+    localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(LEGACY_CACHE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }

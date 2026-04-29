@@ -1,6 +1,6 @@
 const React = window.React;
 const { useState, useEffect, useMemo, useRef } = React;
-const { Plus, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, Book } = window;
+const getTrackerComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 // API base is set globally in index.html
 const API_BASE = window.API_BASE_URL ?? '';
@@ -586,7 +586,31 @@ function MediaTracker() {
   const handleSaveRecipe = (updatedRecipe) => {
     setData(prev => ({ ...prev, recipes: prev.recipes.map(r => r.id === updatedRecipe.id ? updatedRecipe : r) }));
   };
-  const handleAddDate = (place) => setData(prev => ({ ...prev, locations: [...(prev.locations || []), place] }));
+  const withGeocodedAddress = async (place) => {
+    const address = String(place?.address || '').trim();
+    const hasCoordinates = Number.isFinite(Number(place?.lat)) && Number.isFinite(Number(place?.lng));
+    if (!address || hasCoordinates || ['resolved', 'unresolved', 'failed', 'empty'].includes(place?.geocodingStatus)) return place;
+
+    const geocoded = window.geocodeAddress
+      ? await window.geocodeAddress(address)
+      : { lat: null, lng: null, status: 'failed', error: 'Address lookup unavailable' };
+
+    return {
+      ...place,
+      address,
+      lat: geocoded.lat,
+      lng: geocoded.lng,
+      geocodingStatus: geocoded.status,
+      geocodingError: geocoded.error || '',
+      geocodedAddress: geocoded.displayName || '',
+      geocodedAt: geocoded.status === 'resolved' ? new Date().toISOString() : null
+    };
+  };
+
+  const handleAddDate = async (place) => {
+    const nextPlace = await withGeocodedAddress(place);
+    setData(prev => ({ ...prev, locations: [...(prev.locations || []), nextPlace] }));
+  };
   const handleDeleteDate = (id) => {
     const place = (data?.locations || []).find(p => p.id === id);
     requestConfirmation({
@@ -598,7 +622,29 @@ function MediaTracker() {
   const handleToggleFavouriteDate = (id) => {
     setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, isFavourite: !p.isFavourite } : p) }));
   };
-  const handleUpdateDate = (id, updates) => {
+  const handleUpdateDate = async (id, updates) => {
+    if (Object.prototype.hasOwnProperty.call(updates || {}, 'address')) {
+      const current = (data?.locations || []).find(p => p.id === id);
+      const nextAddress = String(updates?.address || '').trim();
+      const currentAddress = String(current?.address || '').trim();
+      if (nextAddress === currentAddress) {
+        setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...updates, address: nextAddress } : p) }));
+        return;
+      }
+      const nextPlace = await withGeocodedAddress({
+        ...current,
+        ...updates,
+        address: nextAddress,
+        lat: null,
+        lng: null,
+        geocodingStatus: '',
+        geocodingError: '',
+        geocodedAddress: '',
+        geocodedAt: null
+      });
+      setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...nextPlace } : p) }));
+      return;
+    }
     setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...updates } : p) }));
   };
   const handleAddTask = (task) => setData(prev => ({ ...prev, tasks: [...(prev.tasks || []), normalizeTask(task)] }));
@@ -662,14 +708,14 @@ function MediaTracker() {
   };
 
   const addActionByTab = {
-    calendar: { label: 'Activity', icon: CalendarIcon },
-    tasks: { label: 'Task', icon: CheckSquare },
-    locations: { label: 'Location', icon: MapPin },
-    trips: { label: 'Trip', icon: Film },
-    recipes: { label: 'Recipe', icon: ChefHat },
-    tvshows: { label: 'TV Show', icon: Tv },
-    movies: { label: 'Movie', icon: Film },
-    books: { label: 'Book', icon: Book }
+    calendar: { label: 'Activity', icon: 'CalendarIcon' },
+    tasks: { label: 'Task', icon: 'CheckSquare' },
+    locations: { label: 'Location', icon: 'MapPin' },
+    trips: { label: 'Trip', icon: 'Film' },
+    recipes: { label: 'Recipe', icon: 'ChefHat' },
+    tvshows: { label: 'TV Show', icon: 'Tv' },
+    movies: { label: 'Movie', icon: 'Film' },
+    books: { label: 'Book', icon: 'Book' }
   };
 
   const renderPageAddButton = () => {
@@ -678,7 +724,8 @@ function MediaTracker() {
     const action = addActionByTab[activeSubTab];
     if (!action) return null;
 
-    const Icon = action.icon;
+    const Icon = getTrackerComponent(action.icon);
+    const Plus = getTrackerComponent('Plus');
 
     return (
       <div className="mb-4 flex justify-end">
@@ -706,7 +753,12 @@ function MediaTracker() {
     return updateSpace(currentSpace.id, newSettings)
       .then((updatedSpace) => {
         if (updatedSpace) {
-          setCurrentSpace(updatedSpace);
+          setCurrentSpace(prev => ({
+            ...prev,
+            ...updatedSpace,
+            role: updatedSpace.role || prev?.role,
+            members: Array.isArray(updatedSpace.members) ? updatedSpace.members : prev?.members
+          }));
         }
         return updatedSpace;
       })
@@ -723,6 +775,31 @@ function MediaTracker() {
       : (data?.watchlist || []),
     [data?.watchlist, activeSubTab]
   );
+  const LoadingScreen = window.getWindowComponent?.('LoadingScreen', window.MissingComponent) || window.MissingComponent;
+  const FailureScreen = window.getWindowComponent?.('FailureScreen', window.MissingComponent) || window.MissingComponent;
+  const PrivacyPolicyPage = window.getWindowComponent?.('PrivacyPolicyPage', window.MissingComponent) || window.MissingComponent;
+  const TermsOfServicePage = window.getWindowComponent?.('TermsOfServicePage', window.MissingComponent) || window.MissingComponent;
+  const BugReportPage = window.getWindowComponent?.('BugReportPage', window.MissingComponent) || window.MissingComponent;
+  const LoginScreen = window.getWindowComponent?.('LoginScreen', window.MissingComponent) || window.MissingComponent;
+  const HomePage = window.getWindowComponent?.('HomePage', window.MissingComponent) || window.MissingComponent;
+  const SpaceSelector = window.getWindowComponent?.('SpaceSelector', window.MissingComponent) || window.MissingComponent;
+  const TasksView = window.getWindowComponent?.('TasksView', window.MissingComponent) || window.MissingComponent;
+  const CalendarView = window.getWindowComponent?.('CalendarView', window.MissingComponent) || window.MissingComponent;
+  const DatesView = window.getWindowComponent?.('DatesView', window.MissingComponent) || window.MissingComponent;
+  const TripsView = window.getWindowComponent?.('TripsView', window.MissingComponent) || window.MissingComponent;
+  const RecipesView = window.getWindowComponent?.('RecipesView', window.MissingComponent) || window.MissingComponent;
+  const MediaSectionsView = window.getWindowComponent?.('MediaSectionsView', window.MissingComponent) || window.MissingComponent;
+  const Header = window.getWindowComponent?.('Header', window.MissingComponent) || window.MissingComponent;
+  const GlobalSearchModal = window.getWindowComponent?.('GlobalSearchModal', window.MissingComponent) || window.MissingComponent;
+  const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
+  const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
+  const GlobalAddModal = window.getWindowComponent?.('GlobalAddModal', window.MissingComponent) || window.MissingComponent;
+  const ProfileModal = window.getWindowComponent?.('ProfileModal', window.MissingComponent) || window.MissingComponent;
+  const ShareSpaceModal = window.getWindowComponent?.('ShareSpaceModal', window.MissingComponent) || window.MissingComponent;
+  const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
+  const EditTripModal = window.getWindowComponent?.('EditTripModal', window.MissingComponent) || window.MissingComponent;
+  const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
+  const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
 
   if (authLoading) return <LoadingScreen label="Loading..." />;
 
@@ -800,7 +877,6 @@ function MediaTracker() {
       <SpaceSelector
         userId={currentUser.id}
         currentUser={currentUser}
-        token={getAuthToken()}
         onSelectSpace={handleSpaceSelect}
         onUpdateUser={handleAccountUpdate}
         onNavigate={navigateTo}
@@ -885,8 +961,6 @@ function MediaTracker() {
     }
     return null;
   };
-  const SiteFooter = window.SiteFooter;
-
   return (
     <div className="flex min-h-screen flex-col bg-[#FBF2ED]">
       <a href="#main-content" className="skip-link">Skip to content</a>

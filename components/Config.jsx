@@ -1,5 +1,3 @@
-const React = window.React;
-
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -22,6 +20,7 @@ const API_CONFIG = {
 
 const STORAGE_CONFIG = {
   KEY: 'media-tracker-data',
+  CACHE_KEY: 'media-tracker-data-cache',
   SCHEMA: {
     calendarEvents: [],
     tasks: [],
@@ -32,6 +31,8 @@ const STORAGE_CONFIG = {
     profile: { users: [] }
   }
 };
+
+const createDefaultStoredData = () => JSON.parse(JSON.stringify(STORAGE_CONFIG.SCHEMA));
 
 const API_BASE_URL = '';
 
@@ -100,6 +101,7 @@ const DATE_CATEGORIES = [
   { value: 'bar', label: 'Bar' },
   { value: 'coffee', label: 'Coffee' },
   { value: 'brunch', label: 'Brunch' },
+  { value: 'viewpoint', label: 'Viewpoint' },
   { value: 'other', label: 'Other' }
 ];
 
@@ -108,12 +110,29 @@ const DATE_CATEGORY_STYLES = {
   bar: 'bg-white text-slate-950 border-white/10',
   coffee: 'bg-white text-slate-950 border-white/10',
   brunch: 'bg-white text-slate-950 border-white/10',
+  viewpoint: 'bg-white text-slate-950 border-white/10',
   other: 'bg-white text-slate-950 border-white/10'
 };
 
+const SECTION_OPTIONS = [
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'locations', label: 'Locations' },
+  { id: 'trips', label: 'Trips' },
+  { id: 'recipes', label: 'Recipes' },
+  { id: 'watchlist', label: 'Watchlist' }
+];
+
 const MEDIA_TABS = ['movies', 'tvshows', 'books'];
 
-const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/500x750/131834/dedede?text=No+Image';
+const createSvgPlaceholder = (label, width = 800, height = 500, background = '#FFDAD4', foreground = '#E63B2E') => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="${background}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${foreground}" font-family="Arial, sans-serif" font-size="${Math.max(24, Math.round(width / 14))}" font-weight="700">${label}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+};
+
+const PLACEHOLDER_IMAGE = createSvgPlaceholder('No Image', 500, 750, '#131834', '#dedede');
+const TRIP_PHOTO_PLACEHOLDER = createSvgPlaceholder('Trip');
+const RECIPE_PHOTO_PLACEHOLDER = createSvgPlaceholder('Recipe');
 
 const API_REQUEST_CONFIG = {
   DEBOUNCE_DELAY: 300,
@@ -302,24 +321,25 @@ const searchBooks = async (query) => {
 };
 
 const getStoredData = async () => {
-  const cached = localStorage.getItem('media-tracker-data-cache');
+  try {
+    const stored = localStorage.getItem(STORAGE_CONFIG.KEY);
+    if (stored) return JSON.parse(stored);
+  } catch (error) {
+    console.error('Error retrieving stored data:', error);
+  }
+
+  const cached = localStorage.getItem(STORAGE_CONFIG.CACHE_KEY);
   if (cached) {
     try { return JSON.parse(cached); } catch (e) { console.error('Failed to parse cached data:', e); }
   }
 
-  try {
-    const stored = localStorage.getItem(STORAGE_CONFIG.KEY);
-    return stored ? JSON.parse(stored) : { ...STORAGE_CONFIG.SCHEMA };
-  } catch (error) {
-    console.error('Error retrieving stored data:', error);
-    return { ...STORAGE_CONFIG.SCHEMA };
-  }
+  return createDefaultStoredData();
 };
 
 const saveData = async (data) => {
   try {
     localStorage.setItem(STORAGE_CONFIG.KEY, JSON.stringify(data));
-    localStorage.setItem('media-tracker-data-cache', JSON.stringify(data));
+    localStorage.setItem(STORAGE_CONFIG.CACHE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
@@ -344,14 +364,6 @@ const getDefaultStatus = (category) => {
     : STATUS_CONFIG.MOVIES_TV.PLAN_TO_WATCH;
 };
 
-const debounce = (func, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-};
-
 const filterByQuery = (items, query) => {
   const searchQuery = query.toLowerCase();
   return items.filter(item =>
@@ -368,17 +380,35 @@ const getCategoryName = (category) => ({
   locations: 'Locations'
 }[category] || category.charAt(0).toUpperCase() + category.slice(1));
 
+const MissingComponent = ({ children = null }) => children;
+const MissingIcon = ({ size = 20, className = '' }) => window.React.createElement('span', {
+  className,
+  'aria-hidden': 'true',
+  style: { display: 'inline-block', width: size, height: size }
+});
+
+const getWindowValue = (name, fallback = undefined) => {
+  const value = window[name];
+  return value == null ? fallback : value;
+};
+
+const getWindowComponent = (name, fallback = MissingComponent) => {
+  const value = window[name];
+  return typeof value === 'function' ? value : fallback;
+};
+
 Object.assign(window, {
   API_CONFIG, STORAGE_CONFIG, API_BASE_URL, FEATURES,
   STATUS_CONFIG, STATUS_STYLES, STATUS_LABELS, FILTER_CONFIG,
   TAB_CONFIG, DATE_CATEGORIES, DATE_CATEGORY_STYLES,
-  MEDIA_TABS, PLACEHOLDER_IMAGE, API_REQUEST_CONFIG,
+  SECTION_OPTIONS, MEDIA_TABS, PLACEHOLDER_IMAGE, TRIP_PHOTO_PLACEHOLDER, RECIPE_PHOTO_PLACEHOLDER, API_REQUEST_CONFIG,
   AUTH_STORAGE_KEY,
   isAuthenticated, authenticate, logout,
   transformMovieData, transformAnimeData, transformBookData,
   searchMovies, searchTvShows, searchAnime, searchBooks,
   getStoredData, saveData,
   formatStatusLabel, getStatusOptions, getFilterOptions, getDefaultStatus,
-  debounce, filterByQuery, getCategoryName,
-  fetchTvDetails, fetchAnimeDetails
+  filterByQuery, getCategoryName,
+  fetchTvDetails, fetchAnimeDetails,
+  MissingComponent, MissingIcon, getWindowValue, getWindowComponent
 });

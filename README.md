@@ -83,6 +83,7 @@ Typical `space_data.data` JSONB shape:
 ```
 
 Recurrence fields: `recurrence: { frequency: "daily"|"weekly"|"monthly"|"yearly", until? }`.  
+Locations may contain `lat`, `lng`, `geocodingStatus`, `geocodingError`, `geocodedAddress`, and `geocodedAt`; missing coordinates are normalized to `null` and shown with an address-search fallback.  
 Trips may contain `startDate`, `endDate`, `itinerary`, `bookings`, `notes`, `packingList`.  
 Watchlist statuses: Movies/TV: `plan-to-watch`, `watching`, `completed`; Books: `plan-to-read`, `reading`, `read`.
 

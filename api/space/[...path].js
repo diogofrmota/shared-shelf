@@ -225,7 +225,7 @@ export default async function handler(req, res) {
 
         const joinCode = await createJoinCode(space.id);
 
-        const createdSpace = await getSpaceSummary(space.id);
+        const createdSpace = { ...(await getSpaceSummary(space.id)), role: 'owner' };
         return res.status(201).json({ space: createdSpace, shelf: createdSpace, joinCode });
       }
     }
@@ -293,7 +293,7 @@ export default async function handler(req, res) {
         WHERE id = ${codeMatch.rows[0].id}
       `;
 
-      const space = await getSpaceSummary(spaceId);
+      const space = { ...(await getSpaceSummary(spaceId)), role: 'member' };
 
       return res.json({ success: true, space, shelf: space });
     }
@@ -318,7 +318,7 @@ export default async function handler(req, res) {
       const existingSpace = await getSpaceSummary(spaceId);
       if (!existingSpace) return res.status(404).json({ error: 'Space not found' });
 
-      const updated = await sql`
+      await sql`
         UPDATE spaces
         SET
           name = ${nextName || existingSpace.name},
@@ -326,10 +326,13 @@ export default async function handler(req, res) {
           enabled_sections = ${JSON.stringify(nextEnabledSections || existingSpace.enabledSections || normalizeSpaceSections())}::jsonb,
           updated_at = NOW()
         WHERE id = ${spaceId}
-        RETURNING id, name, created_by, logo_url AS logo, enabled_sections AS "enabledSections", created_at, updated_at
       `;
 
-      return res.json({ space: updated.rows[0], shelf: updated.rows[0] });
+      const updatedSpace = await getSpaceSummary(spaceId);
+      return res.json({
+        space: { ...updatedSpace, role: membership.role },
+        shelf: { ...updatedSpace, role: membership.role }
+      });
     }
 
     if (segments.length === 2 && segments[1] === 'share' && ['GET', 'POST'].includes(req.method)) {

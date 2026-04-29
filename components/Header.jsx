@@ -1,25 +1,15 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
-const { BrandLogo } = window;
 
-const { SettingsIcon, UserIcon, CheckSquare, CalendarIcon, MapPin, ChefHat, Tv, Film, LogoutIcon, ShareIcon, PencilIcon, Trash } = window;
+const getHeaderComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 const HEADER_NAV_TABS = [
-  { id: 'calendar', label: 'Calendar', category: 'plan', icon: CalendarIcon },
-  { id: 'tasks', label: 'Tasks', category: 'plan', icon: CheckSquare },
-  { id: 'locations', label: 'Locations', category: 'go', icon: MapPin },
-  { id: 'trips', label: 'Trips', category: 'go', icon: Film },
-  { id: 'recipes', label: 'Recipes', category: 'go', icon: ChefHat },
-  { id: 'media', label: 'Watchlist', category: 'media', icon: Tv }
-];
-
-const HEADER_SECTION_OPTIONS = [
-  { id: 'calendar', label: 'Calendar' },
-  { id: 'tasks', label: 'Tasks' },
-  { id: 'locations', label: 'Locations' },
-  { id: 'trips', label: 'Trips' },
-  { id: 'recipes', label: 'Recipes' },
-  { id: 'watchlist', label: 'Watchlist' }
+  { id: 'calendar', label: 'Calendar', category: 'plan', icon: 'CalendarIcon' },
+  { id: 'tasks', label: 'Tasks', category: 'plan', icon: 'CheckSquare' },
+  { id: 'locations', label: 'Locations', category: 'go', icon: 'MapPin' },
+  { id: 'trips', label: 'Trips', category: 'go', icon: 'Film' },
+  { id: 'recipes', label: 'Recipes', category: 'go', icon: 'ChefHat' },
+  { id: 'media', label: 'Watchlist', category: 'media', icon: 'Tv' }
 ];
 
 const Header = ({
@@ -73,6 +63,7 @@ const Header = ({
   const settingsRef = useRef(null);
   const profileRef = useRef(null);
   const usernameCheckRef = useRef(null);
+  const usernameCheckSeqRef = useRef(0);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -129,7 +120,14 @@ const Header = ({
   };
 
   const navTabs = HEADER_NAV_TABS;
-  const sectionOptions = HEADER_SECTION_OPTIONS;
+  const sectionOptions = window.SECTION_OPTIONS || [];
+  const BrandLogo = window.getWindowComponent?.('BrandLogo', window.MissingComponent) || window.MissingComponent;
+  const SettingsIcon = getHeaderComponent('SettingsIcon');
+  const UserIcon = getHeaderComponent('UserIcon');
+  const LogoutIcon = getHeaderComponent('LogoutIcon');
+  const ShareIcon = getHeaderComponent('ShareIcon');
+  const PencilIcon = getHeaderComponent('PencilIcon');
+  const Trash = getHeaderComponent('Trash');
   const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
     ? enabledSections
     : ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist']);
@@ -166,6 +164,7 @@ const Header = ({
   useEffect(() => {
     return () => {
       if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+      usernameCheckSeqRef.current += 1;
     };
   }, []);
 
@@ -257,6 +256,7 @@ const Header = ({
     const trimmed = value.trim();
 
     if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+    usernameCheckSeqRef.current += 1;
     if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
       setProfileUsernameStatus(null);
       return;
@@ -267,15 +267,18 @@ const Header = ({
     }
 
     setProfileUsernameStatus('checking');
+    const requestId = usernameCheckSeqRef.current;
     usernameCheckRef.current = setTimeout(async () => {
       try {
-        const result = await checkUsernameAvailable(trimmed, currentUser?.id);
+        const result = await window.checkUsernameAvailable?.(trimmed, currentUser?.id);
+        if (requestId !== usernameCheckSeqRef.current) return;
         if (!result || result.available == null) {
           setProfileUsernameStatus(null);
           return;
         }
         setProfileUsernameStatus(result.available ? 'available' : 'taken');
       } catch {
+        if (requestId !== usernameCheckSeqRef.current) return;
         setProfileUsernameStatus(null);
       }
     }, 450);
@@ -303,7 +306,7 @@ const Header = ({
     setProfileError('');
 
     try {
-      const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
+      const updatedUser = await window.updateAccount?.({ name: nextName, username: nextUsername });
       onUpdateUser?.(updatedUser);
       setProfileName(updatedUser?.name || nextName);
       setProfileUsername(updatedUser?.username || nextUsername);
@@ -329,7 +332,7 @@ const Header = ({
 
     setProfileEmailSaving(true);
     try {
-      const result = await changeEmail(trimmedEmail);
+      const result = await window.changeEmail?.(trimmedEmail);
       setProfileEmailSuccess(result.message || `A confirmation link has been sent to ${trimmedEmail}.`);
       setProfileNewEmail('');
       setEditingProfileField(null);
@@ -357,7 +360,9 @@ const Header = ({
     setShareGeneratingType(type);
     setShareError('');
     try {
-      const nextShareInfo = await regenerateSpaceJoinCode(space.id);
+      const nextShareInfo = type === 'code'
+        ? await window.regenerateSpaceJoinCode?.(space.id)
+        : await window.getSpaceShareInfo?.(space.id);
       setShareInfo(nextShareInfo);
       setShareGeneratedType(type);
     } catch (err) {
@@ -395,7 +400,7 @@ const Header = ({
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
           {visibleNavTabs.map(tab => {
-            const Icon = tab.icon;
+            const Icon = getHeaderComponent(tab.icon);
             const isActive = isTabActive(tab);
             return (
               <button

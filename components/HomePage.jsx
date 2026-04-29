@@ -1,17 +1,9 @@
 const React = window.React;
-const { BrandLogo } = window;
-const {
-  CalendarIcon,
-  CheckSquare,
-  MapPin,
-  Film,
-  ChefHat,
-  Tv
-} = window;
+const getHomeComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 const FEATURES = [
   {
-    icon: CalendarIcon,
+    icon: 'CalendarIcon',
     title: 'Shared Calendar',
     description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.',
     bg: '#FFE4E0',
@@ -19,7 +11,7 @@ const FEATURES = [
     accent: '#D8271C'
   },
   {
-    icon: CheckSquare,
+    icon: 'CheckSquare',
     title: 'Tasks List',
     description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.',
     bg: '#E1F5EE',
@@ -27,7 +19,7 @@ const FEATURES = [
     accent: '#00845F'
   },
   {
-    icon: MapPin,
+    icon: 'MapPin',
     title: 'Favourite Locations',
     description: 'Save restaurants, bars, and date ideas on a shared map with categories, ratings, and notes.',
     bg: '#FFE8D7',
@@ -35,7 +27,7 @@ const FEATURES = [
     accent: '#D65A00'
   },
   {
-    icon: Film,
+    icon: 'Film',
     title: 'Plan Your Next Trip',
     bg: '#E4EEFF',
     border: '#9CBFF4',
@@ -43,7 +35,7 @@ const FEATURES = [
     description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together.'
   },
   {
-    icon: ChefHat,
+    icon: 'ChefHat',
     title: 'Recipe Collection',
     description: 'Build a shared recipe book with ingredients, instructions, prep time, and source links for the meals you cook together.',
     bg: '#FFE4F6',
@@ -51,7 +43,7 @@ const FEATURES = [
     accent: '#B8329B'
   },
   {
-    icon: Tv,
+    icon: 'Tv',
     title: 'Watchlist & Reading',
     description: 'Track the movies, TV shows and books you want to watch and read together, with statuses, ratings, and season progress.',
     bg: '#ECE8FF',
@@ -125,12 +117,12 @@ const AUDIENCES = [
 ];
 
 const HERO_SHARED_ITEMS = [
-  { icon: CalendarIcon, label: 'Calendar', color: '#D8271C' },
-  { icon: CheckSquare, label: 'Tasks', color: '#00845F' },
-  { icon: MapPin, label: 'Places', color: '#D65A00' },
-  { icon: Film, label: 'Trips', color: '#1D6BDA', strokeWidth: 2.8 },
-  { icon: ChefHat, label: 'Recipes', color: '#B8329B' },
-  { icon: Tv, label: 'Watchlist', color: '#6B52D9', strokeWidth: 2.8 }
+  { icon: 'CalendarIcon', label: 'Calendar', color: '#D8271C' },
+  { icon: 'CheckSquare', label: 'Tasks', color: '#00845F' },
+  { icon: 'MapPin', label: 'Places', color: '#D65A00' },
+  { icon: 'Film', label: 'Trips', color: '#1D6BDA', strokeWidth: 2.8 },
+  { icon: 'ChefHat', label: 'Recipes', color: '#B8329B' },
+  { icon: 'Tv', label: 'Watchlist', color: '#6B52D9', strokeWidth: 2.8 }
 ];
 
 function HomePage({ onNavigate }) {
@@ -151,7 +143,8 @@ function HomePage({ onNavigate }) {
     }
   };
 
-  const SiteFooter = window.SiteFooter;
+  const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
+  const BrandLogo = window.getWindowComponent?.('BrandLogo', window.MissingComponent) || window.MissingComponent;
 
   const navLinks = [
     { id: 'what-it-is', label: 'What it is' },
@@ -242,7 +235,7 @@ function HomePage({ onNavigate }) {
                 <p className="mt-1 text-sm text-[#534340]">Couple Planner lets you manage your relashionship in one app.</p>
                 <ul className="mt-4 grid grid-cols-2 gap-2">
                   {HERO_SHARED_ITEMS.map((item) => {
-                    const Icon = item.icon;
+                    const Icon = getHomeComponent(item.icon);
                     return (
                       <li
                         key={item.label}
@@ -323,7 +316,7 @@ function HomePage({ onNavigate }) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
               {FEATURES.map((feature) => {
-                const Icon = feature.icon;
+                const Icon = getHomeComponent(feature.icon);
                 return (
                   <div
                     key={feature.title}

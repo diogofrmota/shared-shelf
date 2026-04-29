@@ -1,5 +1,5 @@
 const React = window.React;
-const { useEffect, useState } = React;
+const { useEffect, useRef, useState } = React;
 
 function ShareSpaceModal({ isOpen, onClose, space }) {
   const [shareInfo, setShareInfo] = useState(null);
@@ -8,6 +8,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
   const [error, setError] = useState('');
   const [copiedField, setCopiedField] = useState('');
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
+  const copiedTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen || !space?.id) {
@@ -25,7 +26,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
       setError('');
 
       try {
-        const nextShareInfo = await getSpaceShareInfo(space.id);
+        const nextShareInfo = await window.getSpaceShareInfo?.(space.id);
         if (active) setShareInfo(nextShareInfo);
       } catch (err) {
         if (active) setError(err?.message || 'Failed to load share details');
@@ -38,13 +39,18 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
     return () => { active = false; };
   }, [isOpen, space?.id]);
 
+  useEffect(() => () => {
+    if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current);
+  }, []);
+
   if (!isOpen || !space) return null;
 
   const copyValue = async (label, value) => {
     try {
       await navigator.clipboard.writeText(value);
       setCopiedField(label);
-      window.setTimeout(() => setCopiedField(''), 1500);
+      if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current);
+      copiedTimeoutRef.current = window.setTimeout(() => setCopiedField(''), 1500);
     } catch {
       setCopiedField('');
     }
@@ -55,7 +61,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
     setError('');
 
     try {
-      const nextShareInfo = await regenerateSpaceJoinCode(space.id);
+      const nextShareInfo = await window.regenerateSpaceJoinCode?.(space.id);
       setShareInfo(nextShareInfo);
     } catch (err) {
       setError(err?.message || 'Failed to generate a new code');
@@ -63,10 +69,18 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
       setRegenerating(false);
     }
   };
+  const ModalShell = window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
+  const CloseIcon = window.getWindowComponent?.('Close', window.MissingIcon) || window.MissingIcon;
+  const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
 
   return (
-    <div className="fixed inset-0 z-[180] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30" onClick={(event) => event.stopPropagation()}>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[180]"
+      ariaLabel="Share space"
+      dialogClassName="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30"
+    >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-extrabold text-[#410001]">Share space</h2>
@@ -79,7 +93,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
             className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Close share modal"
           >
-            <Close size={18} />
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -148,8 +162,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
           }}
           onCancel={() => setConfirmRegenerate(false)}
         />
-      </div>
-    </div>
+    </ModalShell>
   );
 }
 

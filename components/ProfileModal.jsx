@@ -1,29 +1,13 @@
 const React = window.React;
 const { useState, useEffect } = React;
-const {
-  UserIcon,
-  Close,
-  LogoutIcon,
-  updateAccount,
-  changePassword,
-  changeEmail,
-  checkUsernameAvailable
-} = window;
+const getProfileComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
+const getProfileModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 // ============================================================================
 // PROFILE / SETTINGS / ACCOUNT MODAL
 // ============================================================================
 
 const AVATAR_COLORS = ['#E63B2E', '#A9372C', '#8C4F45', '#FFB4A9', '#FBD08A', '#A7C957'];
-
-const PROFILE_SECTION_OPTIONS = [
-  { id: 'calendar', label: 'Calendar' },
-  { id: 'tasks', label: 'Tasks' },
-  { id: 'locations', label: 'Locations' },
-  { id: 'trips', label: 'Trips' },
-  { id: 'recipes', label: 'Recipes' },
-  { id: 'watchlist', label: 'Watchlist' }
-];
 
 const getAvatarTextColor = (backgroundColor) => {
   if (!backgroundColor || !/^#([0-9a-f]{6})$/i.test(backgroundColor)) {
@@ -84,7 +68,16 @@ const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-whit
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
 const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, space, onSaveSpace, currentUser, onSaveAccount, onLogout, onLeaveSpace }) => {
-  const sectionOptions = PROFILE_SECTION_OPTIONS;
+  const sectionOptions = window.SECTION_OPTIONS || [];
+  const ModalShell = getProfileModalShell();
+  const UserIcon = getProfileComponent('UserIcon');
+  const Close = getProfileComponent('Close');
+  const LogoutIcon = getProfileComponent('LogoutIcon');
+  const SettingsIcon = getProfileComponent('SettingsIcon');
+  const Trash = getProfileComponent('Trash');
+  const Camera = getProfileComponent('Camera');
+  const Plus = getProfileComponent('Plus');
+  const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
   const [users, setUsers] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [name, setName] = useState(space?.name || '');
@@ -121,6 +114,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
   // Username availability in edit mode
   const [usernameStatus, setUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
   const usernameCheckRef = React.useRef(null);
+  const usernameCheckSeqRef = React.useRef(0);
 
   useEffect(() => {
     if (mode === 'profiles' && isOpen) {
@@ -167,6 +161,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
   useEffect(() => () => {
     if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+    usernameCheckSeqRef.current += 1;
   }, []);
 
   useEffect(() => {
@@ -179,7 +174,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setShareError('');
 
       try {
-        const nextShareInfo = await getSpaceShareInfo(space.id);
+        const nextShareInfo = await window.getSpaceShareInfo?.(space.id);
         if (active) setShareInfo(nextShareInfo);
       } catch (err) {
         if (active) setShareError(err?.message || 'Failed to load share details');
@@ -219,8 +214,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     };
 
     return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+      <ModalShell
+        isOpen={isOpen}
+        onClose={onClose}
+        zClass="z-[200]"
+        ariaLabel="Profiles"
+        dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+      >
           <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -247,7 +247,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                       className="absolute -bottom-3 -right-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#A9372C]"
                       title="Customize"
                     >
-                      <Camera size={10} />
+                    <Camera size={10} />
                     </button>
                   </div>
 
@@ -321,8 +321,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               Save profiles
             </button>
           </div>
-        </div>
-      </div>
+      </ModalShell>
     );
   }
 
@@ -359,7 +358,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setRegeneratingShare(true);
       setShareError('');
       try {
-        const nextShareInfo = await regenerateSpaceJoinCode(space.id);
+        const nextShareInfo = await window.regenerateSpaceJoinCode?.(space.id);
         setShareInfo(nextShareInfo);
       } catch (err) {
         setShareError(err?.message || 'Failed to generate a new code');
@@ -372,8 +371,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     const joinCode = shareInfo?.joinCode || '';
 
     return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+      <ModalShell
+        isOpen={isOpen}
+        onClose={onClose}
+        zClass="z-[200]"
+        ariaLabel="Space settings"
+        dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+      >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
             <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
               <SettingsIcon size={20} className="text-[#E63B2E]" />
@@ -544,8 +548,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             }}
             onCancel={() => setConfirmRegenerateShare(false)}
           />
-        </div>
-      </div>
+      </ModalShell>
     );
   }
 
@@ -582,6 +585,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setAccountUsername(value);
       const trimmed = value.trim();
       if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+      usernameCheckSeqRef.current += 1;
       if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
         setUsernameStatus(null);
         return;
@@ -591,12 +595,15 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
         return;
       }
       setUsernameStatus('checking');
+      const requestId = usernameCheckSeqRef.current;
       usernameCheckRef.current = setTimeout(async () => {
         try {
-          const result = await checkUsernameAvailable(trimmed, currentUser?.id);
+          const result = await window.checkUsernameAvailable?.(trimmed, currentUser?.id);
+          if (requestId !== usernameCheckSeqRef.current) return;
           if (!result || result.available == null) { setUsernameStatus(null); return; }
           setUsernameStatus(result.available ? 'available' : 'taken');
         } catch {
+          if (requestId !== usernameCheckSeqRef.current) return;
           setUsernameStatus(null);
         }
       }, 450);
@@ -617,7 +624,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setAccountError('');
 
       try {
-        const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
+        const updatedUser = await window.updateAccount?.({ name: nextName, username: nextUsername });
         onSaveAccount?.(updatedUser);
         setAccountEditing(false);
         setPwSection(false);
@@ -642,7 +649,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
       setPwSaving(true);
       try {
-        const result = await changePassword(pwCurrent, pwNew);
+        const result = await window.changePassword?.(pwCurrent, pwNew);
         setPwSuccess(result.message || 'Password updated successfully');
         setPwCurrent('');
         setPwNew('');
@@ -664,7 +671,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
 
       setEmailSaving(true);
       try {
-        const result = await changeEmail(trimmedEmail);
+        const result = await window.changeEmail?.(trimmedEmail);
         setEmailSuccess(result.message || `Confirmation sent to ${trimmedEmail}`);
         setNewEmail('');
       } catch (err) {
@@ -693,8 +700,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
     };
 
     const accountShell = (content) => (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+      <ModalShell
+        isOpen={isOpen}
+        onClose={onClose}
+        zClass="z-[200]"
+        ariaLabel="Profile"
+        dialogClassName="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+      >
           <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
@@ -707,8 +719,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             </div>
           </div>
           {content}
-        </div>
-      </div>
+      </ModalShell>
     );
 
     if (accountEditing) {

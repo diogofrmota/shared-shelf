@@ -1,16 +1,8 @@
 const React = window.React;
 const { useState, useEffect, useRef } = React;
-const { BrandLogo } = window;
 
 function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate, currentUser }) {
-  const sectionOptions = [
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'tasks', label: 'Tasks' },
-    { id: 'locations', label: 'Locations' },
-    { id: 'trips', label: 'Trips' },
-    { id: 'recipes', label: 'Recipes' },
-    { id: 'watchlist', label: 'Watchlist' }
-  ];
+  const sectionOptions = window.SECTION_OPTIONS || [];
 
   const [mode, setMode] = useState('create'); // 'create' | 'join'
   const [name, setName] = useState('');
@@ -34,6 +26,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   const [profileSaving, setProfileSaving] = useState(false);
   const profileRef = useRef(null);
   const usernameCheckRef = useRef(null);
+  const usernameCheckSeqRef = useRef(0);
 
   useEffect(() => {
     document.title = 'Couple Planner - Select a Space';
@@ -85,6 +78,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   useEffect(() => {
     return () => {
       if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+      usernameCheckSeqRef.current += 1;
     };
   }, []);
 
@@ -110,7 +104,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     setSubmitting(true);
 
     try {
-      const created = await createSpace(name.trim(), selectedSections);
+      const created = await window.createSpace?.(name.trim(), selectedSections);
       if (created?.space) {
         onSelectSpace(created.space);
       } else {
@@ -129,7 +123,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     setSubmitting(true);
 
     try {
-      const joined = await joinSpace(spaceId.trim(), code.trim());
+      const joined = await window.joinSpace?.(spaceId.trim(), code.trim());
       if (joined?.space) {
         onSelectSpace(joined.space);
       } else {
@@ -147,6 +141,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     const trimmed = value.trim();
 
     if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+    usernameCheckSeqRef.current += 1;
     if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
       setProfileUsernameStatus(null);
       return;
@@ -157,15 +152,18 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     }
 
     setProfileUsernameStatus('checking');
+    const requestId = usernameCheckSeqRef.current;
     usernameCheckRef.current = setTimeout(async () => {
       try {
-        const result = await checkUsernameAvailable(trimmed, currentUser?.id);
+        const result = await window.checkUsernameAvailable?.(trimmed, currentUser?.id);
+        if (requestId !== usernameCheckSeqRef.current) return;
         if (!result || result.available == null) {
           setProfileUsernameStatus(null);
           return;
         }
         setProfileUsernameStatus(result.available ? 'available' : 'taken');
       } catch {
+        if (requestId !== usernameCheckSeqRef.current) return;
         setProfileUsernameStatus(null);
       }
     }, 450);
@@ -193,7 +191,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
     setProfileError('');
 
     try {
-      const updatedUser = await updateAccount({ name: nextName, username: nextUsername });
+      const updatedUser = await window.updateAccount?.({ name: nextName, username: nextUsername });
       onUpdateUser?.(updatedUser);
       setProfileName(updatedUser?.name || nextName);
       setProfileUsername(updatedUser?.username || nextUsername);
@@ -219,7 +217,7 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
 
     setProfileEmailSaving(true);
     try {
-      const result = await changeEmail(trimmedEmail);
+      const result = await window.changeEmail?.(trimmedEmail);
       setProfileEmailSuccess(result.message || `A confirmation link has been sent to ${trimmedEmail}.`);
       setProfileNewEmail('');
       setEditingProfileField(null);
@@ -231,8 +229,11 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
   };
 
   const userInitial = (displayName || '?').trim().charAt(0).toUpperCase();
-  const SiteFooter = window.SiteFooter;
-  const PencilIcon = window.PencilIcon;
+  const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
+  const PencilIcon = window.getWindowComponent?.('PencilIcon', window.MissingIcon) || window.MissingIcon;
+  const UserIcon = window.getWindowComponent?.('UserIcon', window.MissingIcon) || window.MissingIcon;
+  const LogoutIcon = window.getWindowComponent?.('LogoutIcon', window.MissingIcon) || window.MissingIcon;
+  const BrandLogo = window.getWindowComponent?.('BrandLogo', window.MissingComponent) || window.MissingComponent;
 
   const inputCls = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
   const labelCls = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]";

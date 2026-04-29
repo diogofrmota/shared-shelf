@@ -1,3 +1,23 @@
-## Changes
+List of bugs that need to be fixed:
 
-1. tbd 2
+I have found the following:
+
+5. Mid - media-tracker.jsx, components\SpaceSelector.jsx - Users with an existing space cannot stay on the space-selection page - Visiting `/space-selection/` automatically redirects to the first space whenever `getUserSpaces()` returns at least one result. This prevents users from using the space-selection account/profile/logout/join UI described in the README. Stop auto-opening the first space, or only auto-open after explicit create/join/select actions.
+
+6. Mid - components\Header.jsx - Mobile navigation icons are not rendered correctly - In the mobile menu, `const Icon = tab.icon` uses the icon name string directly instead of resolving it with `getHeaderComponent(tab.icon)`. The desktop nav does this correctly. Resolve the icon component before rendering so mobile users see the same icons.
+
+7. Mid - media-tracker.jsx, components\MediaSectionsView.jsx - Watchlist opens to category selection with no direct add action - Clicking the Watchlist nav sets `activeSubTab` to `null`, and the global page Add button is hidden for media. On an empty watchlist, users must understand that they need to pick TV, Movies, or Books first before adding anything. Consider defaulting to the first media type, adding an "Add" action to the media landing state, or making the category choice more action-oriented.
+
+8. Mid - api\space\[...path].js, components\ShareSpaceModal.jsx, components\ProfileModal.jsx, components\Header.jsx - Share/settings permissions are inconsistent in UI and API - The API blocks non-owners from regenerating a code with `POST /share`, but `GET /share` can create a fresh code when none exists, and the UI exposes share/settings controls before ownership is known in every path. Restrict code creation to owners, return a read-only share state for members, and hide/disable owner-only controls for members.
+
+9. Mid - utils\api.js, media-tracker.jsx - Debounced saves can be lost before syncing remotely - `saveSpaceData` caches locally immediately but delays the API write by 700ms. If the user closes the tab, changes devices, or navigates quickly, the other partner may not see the latest change even though the local cache appears updated. Flush pending saves on important navigation/unload paths or use immediate saves for destructive/important actions.
+
+10. Low - media-tracker.jsx, components\GlobalSearchModal.jsx, components\AddModal.jsx, components\JoinSpaceModal.jsx, components\ProfileModal.jsx - Several modal states/components are unused or unreachable - `globalSearchOpen`, `globalAddOpen`, and `profileModalOpen` are never set to true; `JoinSpaceModal.jsx` is loaded but not referenced; `GlobalSearchModal` has a placeholder tab mapper. Remove the dead paths or wire them back into the UI so the codebase is easier to maintain.
+
+11. Low - config.js, utils\helpers.js, components\Config.jsx, utils\api.js - Duplicate/unused configuration code reduces readability - The repo has root `config.js` and `utils\helpers.js` written as ES modules, but the app is CDN/no-bundler and does not load them. Similar constants and helpers are duplicated in `components\Config.jsx` and `utils\api.js`. Consolidate the browser-used globals and either remove or document the unused module files.
+
+12. Low - components\AddModal.jsx, components\RecipesView.jsx, components\ProfileModal.jsx, components\UI.jsx - Duplicate component/helper names make ownership confusing - `EditRecipeModal`, `UserAvatar`, and `getAvatarTextColor` are defined in more than one file, and the later script load wins for globals. This makes it hard to know which implementation is actually active. Keep one implementation per global component/helper or rename truly local versions.
+
+13. Low - components\HomePage.jsx - Homepage copy has user-facing typos/readability issues - The hero card says "relashionship" and some text has inconsistent capitalization like "tv shows". Clean up spelling and copy so the landing page feels polished.
+
+14. Low - lib\db.js, api\space\[...path].js - Space member/data columns still use legacy `shelf_id` naming - The project guidance says new queries should use `spaces`, `space_members`, `space_join_codes`, and `space_data`, but the table columns and many queries still use `shelf_id`. This is probably legacy-compatible, but it increases confusion and risk when adding new space behavior. Plan a careful migration or document that `shelf_id` remains the canonical column name for now.

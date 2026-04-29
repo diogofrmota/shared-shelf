@@ -1,13 +1,16 @@
 const React = window.React;
 const { useState, useEffect } = React;
+const getMediaComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
+const getMediaModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 // ============================================================================
 // TV SHOW PROGRESS MODAL
 // ============================================================================
 
 const TvProgressModal = ({ item, onClose, onSave }) => {
-  const isTmdb = item.id.startsWith('tmdb-');
-  const isAnime = item.id.startsWith('mal-');
+  const itemId = String(item?.id ?? '');
+  const isTmdb = itemId.startsWith('tmdb-');
+  const isAnime = itemId.startsWith('mal-');
 
   const [loading, setLoading] = useState(true);
   const [seasons, setSeasons] = useState(null);
@@ -16,26 +19,30 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
   const [currentEpisode, setCurrentEpisode] = useState(item.progress?.currentEpisode || 1);
 
   useEffect(() => {
+    let active = true;
     const load = async () => {
       setLoading(true);
       if (isTmdb) {
-        const tmdbId = item.id.replace('tmdb-', '');
-        const details = await fetchTvDetails(tmdbId);
+        const tmdbId = itemId.replace('tmdb-', '');
+        const details = await window.fetchTvDetails?.(tmdbId);
+        if (!active) return;
         if (details?.seasons?.length) {
           setSeasons(details.seasons);
           setCurrentSeason(item.progress?.currentSeason || 1);
           setCurrentEpisode(item.progress?.currentEpisode || 1);
         }
       } else if (isAnime) {
-        const malId = item.id.replace('mal-', '');
-        const details = await fetchAnimeDetails(malId);
+        const malId = itemId.replace('mal-', '');
+        const details = await window.fetchAnimeDetails?.(malId);
+        if (!active) return;
         setTotalEpisodes(details?.episodes || null);
         setCurrentEpisode(item.progress?.currentEpisode || 1);
       }
       setLoading(false);
     };
     load();
-  }, [item.id]);
+    return () => { active = false; };
+  }, [itemId]);
 
   const episodeCount = isTmdb && seasons
     ? (seasons.find(s => s.season_number === currentSeason)?.episode_count || null)
@@ -50,13 +57,16 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
   };
 
   const selectCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
+  const ModalShell = getMediaModalShell();
+  const CloseIcon = getMediaComponent('Close');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
-        onClick={e => e.stopPropagation()}
-      >
+    <ModalShell
+      isOpen={true}
+      onClose={onClose}
+      ariaLabel={`Progress for ${item.title}`}
+      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="mr-3 min-w-0 flex-1">
@@ -64,7 +74,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
               <h3 className="line-clamp-2 text-sm font-bold text-[#410001]" title={item.title}>{item.title}</h3>
             </div>
             <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
-              <Close size={20} />
+              <CloseIcon size={20} />
             </button>
           </div>
 
@@ -126,8 +136,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -169,13 +178,16 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
     });
     onClose();
   };
+  const ModalShell = getMediaModalShell();
+  const CloseIcon = getMediaComponent('Close');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
-        onClick={e => e.stopPropagation()}
-      >
+    <ModalShell
+      isOpen={true}
+      onClose={onClose}
+      ariaLabel={`Progress for ${item.title}`}
+      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="mr-3 min-w-0 flex-1">
@@ -183,7 +195,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
               <h3 className="line-clamp-2 text-sm font-bold text-[#410001]" title={item.title}>{item.title}</h3>
             </div>
             <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
-              <Close size={20} />
+              <CloseIcon size={20} />
             </button>
           </div>
 
@@ -234,8 +246,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -246,8 +257,10 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
-  const statusOptions = getStatusOptions(item.category);
-  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, PLACEHOLDER_IMAGE) || PLACEHOLDER_IMAGE;
+  const statusOptions = window.getStatusOptions?.(item.category) || [];
+  const placeholder = window.PLACEHOLDER_IMAGE || '';
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
+  const ThreeDotsIcon = getMediaComponent('ThreeDots');
 
   const isWatchingTvShow = item.category === 'tvshows' && item.status === 'watching';
   const isBook = item.category === 'books';
@@ -312,7 +325,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
                 className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
                 aria-label="Options"
               >
-                <ThreeDots size={14} />
+                <ThreeDotsIcon size={14} />
               </button>
 
               {showMenu && (
@@ -328,7 +341,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
                         }}
                         className="block min-h-[44px] w-full px-3 py-2 text-left text-sm text-[#410001] transition hover:bg-[#FFF8F5]"
                       >
-                        {formatStatusLabel(status)}
+                        {window.formatStatusLabel?.(status) || status}
                       </button>
                     ))}
                     <button
@@ -394,7 +407,8 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
 
 const ResultCard = ({ item, category, onAdd }) => {
   const pageLabel = category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
-  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, PLACEHOLDER_IMAGE) || PLACEHOLDER_IMAGE;
+  const placeholder = window.PLACEHOLDER_IMAGE || '';
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
 
   return (
   <div

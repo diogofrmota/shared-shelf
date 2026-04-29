@@ -1,8 +1,8 @@
 const React = window.React;
-const { BrandLogo } = window;
 
 function LegalPageShell({ title, lastUpdated, onNavigate, children }) {
-  const SiteFooter = window.SiteFooter;
+  const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
+  const BrandLogo = window.getWindowComponent?.('BrandLogo', window.MissingComponent) || window.MissingComponent;
 
   const goTo = (path) => (event) => {
     if (event) event.preventDefault();

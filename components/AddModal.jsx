@@ -1,7 +1,8 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-const { CheckSquare, CalendarIcon, Utensils, MapPin, ChefHat, Tv, Film, Book, Close } = window;
+const getComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
+const getModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 // ============================================================================
 // GLOBAL ADD MODAL COMPONENT
@@ -9,16 +10,19 @@ const { CheckSquare, CalendarIcon, Utensils, MapPin, ChefHat, Tv, Film, Book, Cl
 
 const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
   if (!isOpen) return null;
+  const ModalShell = getModalShell();
+  const CloseIcon = getComponent('Close');
+  const dateCategories = window.DATE_CATEGORIES || [];
 
   const categories = [
-    { id: 'tasks',    label: 'Task',      icon: CheckSquare },
-    { id: 'calendar', label: 'Activity',  icon: CalendarIcon },
-    { id: 'locations', label: 'Location', icon: Utensils },
-    { id: 'trips',    label: 'Trip',      icon: MapPin },
-    { id: 'recipes',  label: 'Recipe',    icon: ChefHat },
-    { id: 'tvshows',  label: 'TV Show',   icon: Tv },
-    { id: 'movies',   label: 'Movie',     icon: Film },
-    { id: 'books',    label: 'Book',      icon: Book },
+    { id: 'tasks',    label: 'Task',      icon: 'CheckSquare' },
+    { id: 'calendar', label: 'Activity',  icon: 'CalendarIcon' },
+    { id: 'locations', label: 'Location', icon: 'Utensils' },
+    { id: 'trips',    label: 'Trip',      icon: 'MapPin' },
+    { id: 'recipes',  label: 'Recipe',    icon: 'ChefHat' },
+    { id: 'tvshows',  label: 'TV Show',   icon: 'Tv' },
+    { id: 'movies',   label: 'Movie',     icon: 'Film' },
+    { id: 'books',    label: 'Book',      icon: 'Book' },
   ];
   const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
     ? enabledSections
@@ -29,14 +33,13 @@ const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
   });
 
   return (
-    <div
-      className="fixed inset-0 z-[150] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm"
-      onClick={onClose}
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[150]"
+      ariaLabel="Add item menu"
+      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
     >
-      <div
-        className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
-        onClick={e => e.stopPropagation()}
-      >
         <div className="flex items-center justify-between border-b border-[#E1D8D4] p-5">
           <h2 className="text-lg font-extrabold text-[#410001]">What are you adding?</h2>
           <button
@@ -44,11 +47,13 @@ const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
             className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Close add menu"
           >
-            <Close size={20} />
+            <CloseIcon size={20} />
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2.5 p-4">
-          {visibleCategories.map(({ id, label, icon: Icon }) => (
+          {visibleCategories.map(({ id, label, icon }) => {
+            const Icon = getComponent(icon);
+            return (
             <button
               key={id}
               onClick={() => onSelect(id)}
@@ -59,10 +64,10 @@ const GlobalAddModal = ({ isOpen, onClose, onSelect, enabledSections }) => {
               </span>
               <span className="text-sm font-bold text-[#410001]">{label}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -388,10 +393,12 @@ const TripPlanningFields = ({ formData, setFormData }) => (
 
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile }) => {
   const [formData, setFormData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) setFormData({});
-  }, [isOpen]);
+    setFormData({});
+    setIsSaving(false);
+  }, [isOpen, activeTab]);
 
   const getModalTitle = () => {
     const titles = {
@@ -404,8 +411,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
   const isMediaType = ['movies', 'tvshows', 'books'].includes(activeTab);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSaving) return;
     const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     switch (activeTab) {
@@ -446,8 +454,29 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         break;
       case 'locations':
         if (formData.name) {
-          onAddDate({ id: `location-${uid()}`, name: formData.name, category: formData.category || 'restaurant', address: formData.address || '', lat: null, lng: null, notes: formData.notes || '', link: formData.link || '', isFavourite: formData.isFavourite || false, createdAt: new Date().toISOString() });
+          setIsSaving(true);
+          const address = String(formData.address || '').trim();
+          const geocoded = window.geocodeAddress
+            ? await window.geocodeAddress(address)
+            : { lat: null, lng: null, status: address ? 'failed' : 'empty', error: address ? 'Address lookup unavailable' : '' };
+          onAddDate({
+            id: `location-${uid()}`,
+            name: formData.name,
+            category: formData.category || 'restaurant',
+            address,
+            lat: geocoded.lat,
+            lng: geocoded.lng,
+            geocodingStatus: geocoded.status,
+            geocodingError: geocoded.error || '',
+            geocodedAddress: geocoded.displayName || '',
+            geocodedAt: geocoded.status === 'resolved' ? new Date().toISOString() : null,
+            notes: formData.notes || '',
+            link: formData.link || '',
+            isFavourite: formData.isFavourite || false,
+            createdAt: new Date().toISOString()
+          });
           onClose();
+          setIsSaving(false);
         }
         break;
     }
@@ -456,8 +485,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
   if (!isOpen) return null;
 
   if (isMediaType) {
+    const SearchModalComponent = window.getWindowComponent?.('SearchModal', window.MissingComponent) || window.MissingComponent;
     return (
-      <SearchModal
+      <SearchModalComponent
         isOpen={isOpen}
         onClose={onClose}
         category={activeTab}
@@ -466,13 +496,22 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     );
   }
 
+  const ModalShell = getModalShell();
+  const CloseIcon = getComponent('Close');
+  const dateCategories = window.DATE_CATEGORIES || [];
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className={`max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30 ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'}`}>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[100]"
+      ariaLabel={getModalTitle()}
+      dialogClassName={`max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30 ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'}`}
+    >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">{getModalTitle()}</h2>
           <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close add modal">
-            <Close size={22} />
+            <CloseIcon size={22} />
           </button>
         </div>
 
@@ -487,24 +526,27 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               </FormField>
               <FormField label="Assign to">
                 <div className="flex flex-wrap gap-2">
-                  {(profile?.users || [{ id: 'user-1', name: 'User 1', color: '#E63B2E' }, { id: 'user-2', name: 'User 2', color: '#8C4F45' }]).map(u => (
-                    <button
-                      key={u.id}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, assignedTo: formData.assignedTo === u.id ? null : u.id })}
-                      className={`flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition ${
-                        formData.assignedTo === u.id
-                          ? 'border-transparent text-white'
-                          : 'border-[#E1D8D4] bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
-                      }`}
-                      style={formData.assignedTo === u.id ? { backgroundColor: u.color, borderColor: u.color } : {}}
-                    >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: u.color }}>
-                        {u.name.charAt(0)}
-                      </span>
-                      <span className="truncate" title={u.name}>{u.name}</span>
-                    </button>
-                  ))}
+                  {(profile?.users || [{ id: 'user-1', name: 'User 1', color: '#E63B2E' }, { id: 'user-2', name: 'User 2', color: '#8C4F45' }]).map(u => {
+                    const userName = u.name || u.username || 'User';
+                    return (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, assignedTo: formData.assignedTo === u.id ? null : u.id })}
+                        className={`flex min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition ${
+                          formData.assignedTo === u.id
+                            ? 'border-transparent text-white'
+                            : 'border-[#E1D8D4] bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
+                        }`}
+                        style={formData.assignedTo === u.id ? { backgroundColor: u.color, borderColor: u.color } : {}}
+                      >
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: u.color }}>
+                          {userName.charAt(0)}
+                        </span>
+                        <span className="truncate" title={userName}>{userName}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </FormField>
               <FormField label="Due date">
@@ -600,11 +642,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               </FormField>
               <FormField label="Category">
                 <select className={selectCls} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                  <option value="restaurant">Restaurant</option>
-                  <option value="bar">Bar</option>
-                  <option value="coffee">Coffee</option>
-                  <option value="brunch">Brunch</option>
-                  <option value="other">Other</option>
+                  {dateCategories.map(category => (
+                    <option key={category.value} value={category.value}>{category.label}</option>
+                  ))}
                 </select>
               </FormField>
               <FormField label="Address">
@@ -625,12 +665,11 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             </>
           )}
 
-          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
-            {getModalTitle()}
+          <button type="submit" disabled={isSaving} className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:cursor-not-allowed disabled:bg-[#D8C2BE] disabled:shadow-none">
+            {isSaving && activeTab === 'locations' ? 'Locating address...' : getModalTitle()}
           </button>
         </form>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -656,6 +695,8 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   }, [isOpen, event]);
 
   if (!isOpen || !event) return null;
+  const ModalShell = getModalShell();
+  const CloseIcon = getComponent('Close');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -669,42 +710,46 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[110]"
+      ariaLabel="Edit activity"
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit activity</h2>
           <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit activity">
-            <Close size={22} />
+            <CloseIcon size={22} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <FormField label="Title" required>
-            <input type="text" className={inputCls} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
+            <input type="text" className={inputCls} value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
           </FormField>
           <FormField label="Date" required>
-            <input type="date" className={inputCls} value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+            <input type="date" className={inputCls} value={formData.date || ''} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
           </FormField>
           <FormField label="End date">
-            <input type="date" className={inputCls} value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
+            <input type="date" className={inputCls} value={formData.endDate || ''} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
           </FormField>
           <FormField label="Time">
-            <select className={selectCls} value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
+            <select className={selectCls} value={formData.time || ''} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
               <option value="">— none —</option>
               {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </FormField>
           <CalendarRecurrenceFields formData={formData} setFormData={setFormData} editing />
           <FormField label="Description">
-            <textarea rows="3" className={inputCls} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+            <textarea rows="3" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
           </FormField>
 
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             Save changes
           </button>
         </form>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -729,6 +774,8 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   }, [isOpen, recipe]);
 
   if (!isOpen || !recipe) return null;
+  const ModalShell = getModalShell();
+  const CloseIcon = getComponent('Close');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -739,39 +786,43 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[120]"
+      ariaLabel="Edit recipe"
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit recipe</h2>
           <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit recipe">
-            <Close size={22} />
+            <CloseIcon size={22} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <FormField label="Name" required>
-            <input type="text" className={inputCls} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
+            <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
           </FormField>
           <FormField label="Photo URL">
-            <input type="text" className={inputCls} value={formData.photo} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
+            <input type="text" className={inputCls} value={formData.photo || ''} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
           </FormField>
           <FormField label="Prep time">
-            <input type="text" className={inputCls} value={formData.prepTime} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
+            <input type="text" className={inputCls} value={formData.prepTime || ''} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
           </FormField>
           <FormField label="Recipe link">
-            <input type="url" className={inputCls} value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+            <input type="url" className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
           </FormField>
           <FormField label="Ingredients">
-            <textarea rows="4" className={inputCls} value={formData.ingredients} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
+            <textarea rows="4" className={inputCls} value={formData.ingredients || ''} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
           </FormField>
           <FormField label="Instructions">
-            <textarea rows="5" className={inputCls} value={formData.instructions} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
+            <textarea rows="5" className={inputCls} value={formData.instructions || ''} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
           </FormField>
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             Save changes
           </button>
         </form>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -801,6 +852,8 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
   }, [isOpen, trip]);
 
   if (!isOpen || !trip) return null;
+  const ModalShell = getModalShell();
+  const CloseIcon = getComponent('Close');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -811,20 +864,25 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[130]"
+      ariaLabel="Edit trip"
+      dialogClassName="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit trip</h2>
           <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit trip">
-            <Close size={22} />
+            <CloseIcon size={22} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <FormField label="Destination" required>
-            <input type="text" className={inputCls} value={formData.destination} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
+            <input type="text" className={inputCls} value={formData.destination || ''} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
           </FormField>
           <FormField label="Year">
-            <input type="number" className={inputCls} value={formData.year} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
+            <input type="number" className={inputCls} value={formData.year || ''} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
           </FormField>
           <TripPlanningFields formData={formData} setFormData={setFormData} />
           <FormField label="Trip type">
@@ -842,17 +900,16 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
             </div>
           </FormField>
           <FormField label="Photo URL">
-            <input type="text" className={inputCls} value={formData.photo} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
+            <input type="text" className={inputCls} value={formData.photo || ''} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
           </FormField>
           <FormField label="Accommodation URL">
-            <input type="url" className={inputCls} value={formData.accommodation} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
+            <input type="url" className={inputCls} value={formData.accommodation || ''} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
           </FormField>
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
             Save changes
           </button>
         </form>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 

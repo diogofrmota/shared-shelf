@@ -1,5 +1,5 @@
 const React = window.React;
-const { Plus, Tv, Film, Book } = window;
+const getMediaSectionsComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 // ============================================================================
 // MEDIA SECTIONS VIEW COMPONENT
@@ -24,9 +24,9 @@ const MEDIA_SECTIONS = {
 };
 
 const MEDIA_TYPE_TILES = [
-  { id: 'tvshows', label: 'TV Shows', icon: Tv, description: 'Series, miniseries, and shows you follow.' },
-  { id: 'movies', label: 'Movies', icon: Film, description: 'Films you have watched, planned, or want to revisit.' },
-  { id: 'books', label: 'Books', icon: Book, description: 'Reading lists and books in progress.' }
+  { id: 'tvshows', label: 'TV Shows', icon: 'Tv', description: 'Series, miniseries, and shows you follow.' },
+  { id: 'movies', label: 'Movies', icon: 'Film', description: 'Films you have watched, planned, or want to revisit.' },
+  { id: 'books', label: 'Books', icon: 'Book', description: 'Reading lists and books in progress.' }
 ];
 
 const MEDIA_TYPE_LABELS = {
@@ -40,23 +40,28 @@ const MEDIA_TYPE_EMPTY_COPY = {
     title: 'No TV shows yet',
     message: 'Add a series to track what you are watching.',
     actionLabel: 'Add TV show',
-    icon: Tv
+    icon: 'Tv'
   },
   movies: {
     title: 'No movies yet',
     message: 'Save films to watch, finish, or remember.',
     actionLabel: 'Add movie',
-    icon: Film
+    icon: 'Film'
   },
   books: {
     title: 'No books yet',
     message: 'Build a shared reading list.',
     actionLabel: 'Add book',
-    icon: Book
+    icon: 'Book'
   }
 };
 
 const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect }) => {
+  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
+  const MediaCard = window.getWindowComponent?.('MediaCard', window.MissingComponent) || window.MissingComponent;
+  const Plus = getMediaSectionsComponent('Plus');
+  const Film = getMediaSectionsComponent('Film');
+  const ChevronLeft = getMediaSectionsComponent('ChevronLeft');
   if (!activeTab) {
     return (
       <div className="space-y-5 animate-fade-in">
@@ -73,7 +78,9 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           />
         )}
         <div className="grid gap-4 sm:grid-cols-3">
-          {MEDIA_TYPE_TILES.map(({ id, label, icon: Icon, description }) => (
+          {MEDIA_TYPE_TILES.map(({ id, label, icon, description }) => {
+            const Icon = getMediaSectionsComponent(icon);
+            return (
             <button
               key={id}
               type="button"
@@ -88,7 +95,8 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
                 <p className="mt-1 text-sm font-medium text-[#534340]">{description}</p>
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -101,8 +109,9 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
     title: `No ${tileLabel.toLowerCase()} yet`,
     message: 'Add the first shared pick.',
     actionLabel: `Add ${addLabel.toLowerCase()}`,
-    icon: Film
+    icon: 'Film'
   };
+  const EmptyIcon = typeof emptyCopy.icon === 'string' ? getMediaSectionsComponent(emptyCopy.icon) : emptyCopy.icon;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -133,7 +142,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           title={emptyCopy.title}
           message={emptyCopy.message}
           actionLabel={emptyCopy.actionLabel}
-          icon={emptyCopy.icon}
+          icon={EmptyIcon}
           onAddClick={onAddClick}
         />
       ) : sections.map(section => {
@@ -150,7 +159,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
               <EmptyState
                 title={`No ${section.title.toLowerCase()} items`}
                 message={`Move items here when they are ${section.title.toLowerCase()}.`}
-                icon={emptyCopy.icon}
+                icon={EmptyIcon}
                 compact
               />
             ) : (

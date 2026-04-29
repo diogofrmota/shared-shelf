@@ -1,5 +1,6 @@
 const React = window.React;
 const { useState, useMemo } = React;
+const getTaskComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 const todayLocalIso = () => {
   const d = new Date();
@@ -73,6 +74,10 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const completedTasks = useMemo(() => sortedTasks.filter(t => t.completed), [sortedTasks]);
   const activeCnt = activeTasks.length;
   const todayIso = todayLocalIso();
+  const FilterButton = window.getWindowComponent?.('FilterButton', window.MissingComponent) || window.MissingComponent;
+  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
+  const CheckSquare = getTaskComponent('CheckSquare');
+  const Trash = getTaskComponent('Trash');
 
   const handleEditTask = (task) => {
     setEditingTask(task.id);
@@ -161,6 +166,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
 
   const renderTaskItem = (task, indexInSorted) => {
     const assignedUser = getUserById(task.assignedTo);
+    const assignedUserName = assignedUser?.name || assignedUser?.username || 'User';
     const isOverdue = task.dueDate && !task.completed && task.dueDate < todayIso;
     const taskIsRecurring = isRecurringTask(task);
     const completedThisOccurrence = taskIsRecurring ? isSameLocalDay(task.lastCompletedAt) : Boolean(task.completed);
@@ -264,11 +270,11 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 {(assignedUser || task.dueDate) && (
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     {assignedUser && (
-                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-xs font-bold" style={{ color: assignedUser.color }} title={assignedUser.name}>
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-xs font-bold" style={{ color: assignedUser.color }} title={assignedUserName}>
                         <span className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: assignedUser.color }}>
-                          {assignedUser.name.charAt(0)}
+                          {assignedUserName.charAt(0)}
                         </span>
-                        <span className="truncate">{assignedUser.name}</span>
+                        <span className="truncate">{assignedUserName}</span>
                       </span>
                     )}
                     {task.dueDate && (

@@ -1,5 +1,6 @@
 const React = window.React;
 const { useState } = React;
+const getCalendarComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 // ============================================================================
 // CALENDAR VIEW COMPONENT
@@ -194,8 +195,11 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
   const eventsByDate = visibleOccurrences.reduce((acc, ev) => {
     const start = ev.startDate || ev.date;
     const end = ev.endDate || start;
-    const cur = new Date(start + 'T00:00:00');
-    const endD = new Date(end + 'T00:00:00');
+    const startDate = parseIsoDate(start);
+    if (!startDate) return acc;
+    const parsedEndDate = parseIsoDate(end);
+    const cur = new Date(startDate);
+    const endD = parsedEndDate && parsedEndDate >= startDate ? parsedEndDate : startDate;
     while (cur <= endD) {
       const iso = formatIsoDate(cur);
       if (!acc[iso]) acc[iso] = [];
@@ -239,6 +243,11 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
   const agendaTitle = selectedDate
     ? formatDateLong(selectedDate)
     : `Agenda - ${MONTH_NAMES[viewMonth]} ${viewYear}`;
+  const ChevronLeft = getCalendarComponent('ChevronLeft');
+  const ChevronRight = getCalendarComponent('ChevronRight');
+  const CalendarIcon = getCalendarComponent('CalendarIcon');
+  const Trash = getCalendarComponent('Trash');
+  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
 
   return (
     <div className="grid w-full gap-6 lg:grid-cols-12">

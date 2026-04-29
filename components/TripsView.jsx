@@ -1,11 +1,13 @@
 const React = window.React;
-const { useState } = React;
+const { useMemo, useState } = React;
 
 // ============================================================================
 // TRIPS VIEW COMPONENT
 // ============================================================================
 
-const TRIP_PHOTO_PLACEHOLDER = 'https://via.placeholder.com/800x500/FFDAD4/E63B2E?text=Trip';
+const TRIP_PHOTO_PLACEHOLDER = window.TRIP_PHOTO_PLACEHOLDER || window.PLACEHOLDER_IMAGE || '';
+const getTripComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
+const getTripModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 const formatTripDate = (date) => {
   if (!date) return '';
@@ -60,6 +62,9 @@ const TripCard = ({ trip, onDelete, onEdit, onOpen }) => {
   const dateRange = getTripDateRange(trip);
   const safePhoto = window.safeImageUrl?.(trip.photo, TRIP_PHOTO_PLACEHOLDER) || TRIP_PHOTO_PLACEHOLDER;
   const safeAccommodation = window.safeExternalUrl?.(trip.accommodation) || '';
+  const MapPin = getTripComponent('MapPin');
+  const LinkIcon = getTripComponent('LinkIcon');
+  const Trash = getTripComponent('Trash');
 
   return (
     <div
@@ -156,10 +161,18 @@ const TripDetailModal = ({ trip, onClose, onEdit }) => {
   const dateRange = getTripDateRange(trip);
   const safePhoto = window.safeImageUrl?.(trip.photo, TRIP_PHOTO_PLACEHOLDER) || TRIP_PHOTO_PLACEHOLDER;
   const safeAccommodation = window.safeExternalUrl?.(trip.accommodation) || '';
+  const ModalShell = getTripModalShell();
+  const Close = getTripComponent('Close');
+  const LinkIcon = getTripComponent('LinkIcon');
 
   return (
-    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={Boolean(trip)}
+      onClose={onClose}
+      zClass="z-[140]"
+      ariaLabel={`Trip details for ${trip.destination}`}
+      dialogClassName="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] shadow-2xl shadow-[#410001]/30"
+    >
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#E1D8D4] bg-white p-5">
           <div className="min-w-0">
             <h2 className="truncate text-xl font-extrabold text-[#410001]">{trip.destination}</h2>
@@ -257,17 +270,22 @@ const TripDetailModal = ({ trip, onClose, onEdit }) => {
             </TripDetailSection>
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
 const TripsView = ({ trips, onDeleteTrip, onEditTrip, onAddClick }) => {
   const [selectedTrip, setSelectedTrip] = useState(null);
-  const today = new Date();
-  const sorted = [...trips].sort((a, b) => getTripSortValue(a) - getTripSortValue(b));
-  const upcoming = sorted.filter(t => !isPastTrip(t, today));
-  const past = sorted.filter(t => isPastTrip(t, today)).reverse();
+  const { upcoming, past } = useMemo(() => {
+    const today = new Date();
+    const sorted = [...trips].sort((a, b) => getTripSortValue(a) - getTripSortValue(b));
+    return {
+      upcoming: sorted.filter(t => !isPastTrip(t, today)),
+      past: sorted.filter(t => isPastTrip(t, today)).reverse()
+    };
+  }, [trips]);
+  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
+  const MapPin = getTripComponent('MapPin');
 
   return (
     <div className="space-y-10 animate-fade-in">

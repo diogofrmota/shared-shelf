@@ -37,13 +37,13 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
         let searchResults = [];
         switch (category) {
           case 'movies':
-            searchResults = await searchMovies(trimmed);
+            searchResults = await window.searchMovies?.(trimmed) || [];
             break;
           case 'tvshows':
-            searchResults = await searchTvShows(trimmed);
+            searchResults = await window.searchTvShows?.(trimmed) || [];
             break;
           case 'books':
-            searchResults = await searchBooks(trimmed);
+            searchResults = await window.searchBooks?.(trimmed) || [];
             break;
           default:
             break;
@@ -58,7 +58,7 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
           setHasSearched(true);
         }
       }
-    }, API_REQUEST_CONFIG.DEBOUNCE_DELAY);
+    }, window.API_REQUEST_CONFIG?.DEBOUNCE_DELAY || 300);
 
     return () => {
       active = false;
@@ -66,39 +66,35 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
     };
   }, [query, category]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e) => { if (e.key === 'Escape') onClose?.(); };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
+  const ModalShell = window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
+  const CloseIcon = window.getWindowComponent?.('Close', window.MissingIcon) || window.MissingIcon;
+  const SearchIcon = window.getWindowComponent?.('Search', window.MissingIcon) || window.MissingIcon;
+  const ResultCardComponent = window.getWindowComponent?.('ResultCard', window.MissingComponent) || window.MissingComponent;
+  const categoryName = window.getCategoryName?.(category) || category;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Search ${getCategoryName(category)}`}
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel={`Search ${categoryName}`}
+      dialogClassName="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
     >
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="border-b border-[#E1D8D4] p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">Search {getCategoryName(category)}</h2>
+            <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">Search {categoryName}</h2>
             <button
               onClick={onClose}
               className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
               aria-label="Close"
             >
-              <Close size={22} />
+              <CloseIcon size={22} />
             </button>
           </div>
 
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#857370]">
-              <Search size={18} />
+              <SearchIcon size={18} />
             </span>
             <input
               type="text"
@@ -132,12 +128,11 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
             {results.map(item => (
-              <ResultCard key={item.id} item={item} category={category} onAdd={onAdd} />
+              <ResultCardComponent key={item.id} item={item} category={category} onAdd={onAdd} />
             ))}
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 

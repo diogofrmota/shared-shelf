@@ -1,29 +1,39 @@
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo } = React;
 
 // ============================================================================
 // RECIPES VIEW COMPONENT
 // ============================================================================
 
-const RECIPE_PHOTO_PLACEHOLDER = 'https://via.placeholder.com/800x500/FFDAD4/E63B2E?text=Recipe';
+const RECIPE_PHOTO_PLACEHOLDER = window.RECIPE_PHOTO_PLACEHOLDER || window.PLACEHOLDER_IMAGE || '';
+const getRecipeComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
+const getRecipeModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
   if (!recipe) return null;
   const safePhoto = window.safeImageUrl?.(recipe.photo, RECIPE_PHOTO_PLACEHOLDER) || RECIPE_PHOTO_PLACEHOLDER;
   const safeLink = window.safeExternalUrl?.(recipe.link) || '';
+  const ModalShell = getRecipeModalShell();
+  const Close = getRecipeComponent('Close');
+  const ChefHat = getRecipeComponent('ChefHat');
+  const LinkIcon = getRecipeComponent('LinkIcon');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
-        onClick={e => e.stopPropagation()}
-      >
+    <ModalShell
+      isOpen={Boolean(recipe)}
+      onClose={onClose}
+      ariaLabel={`Recipe details for ${recipe.name}`}
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         {/* Hero image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-[#FFDAD4]">
           <img
             src={safePhoto}
             alt={recipe.name}
-            onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER;
+            }}
             decoding="async"
             className="h-full w-full object-cover"
           />
@@ -91,14 +101,16 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
             <p className="text-sm italic text-[#857370]">No details saved.</p>
           )}
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
 const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
   const safePhoto = window.safeImageUrl?.(recipe.photo, RECIPE_PHOTO_PLACEHOLDER) || RECIPE_PHOTO_PLACEHOLDER;
   const safeLink = window.safeExternalUrl?.(recipe.link) || '';
+  const ChefHat = getRecipeComponent('ChefHat');
+  const LinkIcon = getRecipeComponent('LinkIcon');
+  const Trash = getRecipeComponent('Trash');
   return (
   <div
     className="group cursor-pointer overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
@@ -108,7 +120,10 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
       <img
         src={safePhoto}
         alt={recipe.name}
-        onError={(e) => { e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER; }}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER;
+        }}
         loading="lazy"
         decoding="async"
         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -176,10 +191,16 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   if (!isOpen) return null;
 
   const fieldCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
+  const ModalShell = getRecipeModalShell();
+  const Close = getRecipeComponent('Close');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel="Edit recipe"
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+    >
         <div className="flex items-center justify-between border-b border-[#E1D8D4] p-5">
           <h2 className="text-xl font-extrabold text-[#410001]">Edit recipe</h2>
           <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit recipe">
@@ -217,8 +238,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
             <button type="submit" className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save changes</button>
           </div>
         </form>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -226,13 +246,19 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
   const [query, setQuery] = useState('');
   const [detailRecipe, setDetailRecipe] = useState(null);
 
-  const filtered = query.trim()
-    ? recipes.filter(r =>
-        (r.name || '').toLowerCase().includes(query.toLowerCase()) ||
-        (r.ingredients || '').toLowerCase().includes(query.toLowerCase())
+  const sorted = useMemo(() => {
+    const trimmedQuery = query.trim().toLowerCase();
+    const filtered = trimmedQuery
+      ? recipes.filter(r =>
+        (r.name || '').toLowerCase().includes(trimmedQuery) ||
+        (r.ingredients || '').toLowerCase().includes(trimmedQuery)
       )
-    : recipes;
-  const sorted = [...filtered].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      : recipes;
+    return [...filtered].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  }, [recipes, query]);
+  const Search = getRecipeComponent('Search');
+  const ChefHat = getRecipeComponent('ChefHat');
+  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
 
   return (
     <div className="space-y-5 animate-fade-in">

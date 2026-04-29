@@ -1,15 +1,8 @@
 const React = window.React;
 const { useState, useEffect } = React;
 
-function JoinSpaceModal({ isOpen, onClose, onJoin, token }) {
-  const sectionOptions = [
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'tasks', label: 'Tasks' },
-    { id: 'locations', label: 'Locations' },
-    { id: 'trips', label: 'Trips' },
-    { id: 'recipes', label: 'Recipes' },
-    { id: 'watchlist', label: 'Watchlist' }
-  ];
+function JoinSpaceModal({ isOpen, onClose, onJoin }) {
+  const sectionOptions = window.SECTION_OPTIONS || [];
   const [mode, setMode] = useState('create');
   const [name, setName] = useState('');
   const [spaceId, setSpaceId] = useState('');
@@ -46,7 +39,7 @@ function JoinSpaceModal({ isOpen, onClose, onJoin, token }) {
     setLoading(true);
 
     try {
-      const created = await createSpace(name.trim(), selectedSections);
+      const created = await window.createSpace?.(name.trim(), selectedSections);
       if (created?.space) {
         onJoin(created.space);
         onClose();
@@ -66,7 +59,7 @@ function JoinSpaceModal({ isOpen, onClose, onJoin, token }) {
     setLoading(true);
 
     try {
-      const joined = await joinSpace(spaceId.trim(), code.trim());
+      const joined = await window.joinSpace?.(spaceId.trim(), code.trim());
       if (joined?.space) {
         onJoin(joined.space);
         onClose();
@@ -84,10 +77,15 @@ function JoinSpaceModal({ isOpen, onClose, onJoin, token }) {
 
   const inputCls = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
   const labelCls = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]";
+  const ModalShell = window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel={mode === 'create' ? 'Create a space' : 'Join a space'}
+      dialogClassName="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30"
+    >
         <div className="mb-5">
           <h2 className="text-xl font-extrabold text-[#410001]">
             {mode === 'create' ? 'Create a space' : 'Join a space'}
@@ -217,8 +215,7 @@ function JoinSpaceModal({ isOpen, onClose, onJoin, token }) {
             </div>
           </form>
         )}
-      </div>
-    </div>
+    </ModalShell>
   );
 }
 

@@ -1,6 +1,5 @@
 const React = window.React;
 const { useState, useEffect } = React;
-const { BrandMark } = window;
 
 function LoginScreen({ onLogin, onNavigate }) {
   const initialMode = (() => {
@@ -26,9 +25,12 @@ function LoginScreen({ onLogin, onNavigate }) {
   const [loading, setLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
   const usernameCheckRef = React.useRef(null);
+  const usernameCheckSeqRef = React.useRef(0);
 
   const resetLinkIssue = linkIssue?.type === 'reset';
   const confirmationLinkIssue = linkIssue?.type === 'confirm';
+  const BrandMark = window.getWindowComponent?.('BrandMark', window.MissingComponent) || window.MissingComponent;
+  const ModalShell = window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
   const handleHomeNavigation = (event) => {
     if (event) event.preventDefault();
@@ -134,6 +136,11 @@ function LoginScreen({ onLogin, onNavigate }) {
     }
   }, []);
 
+  useEffect(() => () => {
+    if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+    usernameCheckSeqRef.current += 1;
+  }, []);
+
   const validateNameValue = (value) => {
     const trimmed = value.trim();
     if (!trimmed) return 'Name is required';
@@ -231,15 +238,23 @@ function LoginScreen({ onLogin, onNavigate }) {
     if (field === 'username' && mode === 'signup') {
       const trimmed = value.trim();
       if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+      usernameCheckSeqRef.current += 1;
       if (!trimmed || !/^[A-Za-z0-9]+$/.test(trimmed) || trimmed.length > 20) {
         setUsernameStatus(null);
         return;
       }
       setUsernameStatus('checking');
+      const requestId = usernameCheckSeqRef.current;
       usernameCheckRef.current = setTimeout(async () => {
-        const result = await checkUsernameAvailable(trimmed);
-        if (result.available === null) { setUsernameStatus(null); return; }
-        setUsernameStatus(result.available ? 'available' : 'taken');
+        try {
+          const result = await window.checkUsernameAvailable?.(trimmed);
+          if (requestId !== usernameCheckSeqRef.current) return;
+          if (!result || result.available === null) { setUsernameStatus(null); return; }
+          setUsernameStatus(result.available ? 'available' : 'taken');
+        } catch {
+          if (requestId !== usernameCheckSeqRef.current) return;
+          setUsernameStatus(null);
+        }
       }, 450);
     }
   };
@@ -637,8 +652,14 @@ function LoginScreen({ onLogin, onNavigate }) {
             </p>
 
             {forgotOpen && (
-              <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-                <form onSubmit={handleForgotPassword} className="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl" noValidate>
+              <ModalShell
+                isOpen={forgotOpen}
+                onClose={() => { setForgotOpen(false); setErrors({}); }}
+                zClass="z-[300]"
+                ariaLabel="Reset password"
+                dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl"
+              >
+                <form onSubmit={handleForgotPassword} noValidate>
                   <h2 className="mb-3 text-center text-lg font-bold text-[#410001]">Reset password</h2>
                   <p className="mb-4 text-center text-sm text-[#534340]">We'll send a reset link to your email.</p>
                   <label className={labelClass} htmlFor="forgot-email">Email</label>
@@ -671,7 +692,7 @@ function LoginScreen({ onLogin, onNavigate }) {
                     </button>
                   </div>
                 </form>
-              </div>
+              </ModalShell>
             )}
           </>
         )}

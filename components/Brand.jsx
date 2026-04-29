@@ -4,7 +4,7 @@ const BRAND_NAME = 'Couple Planner';
 const BRAND_DESCRIPTION = 'Shared calendar, tasks, places, trips, recipes, and watchlist for couples.';
 const BRAND_MARK_SRC = '/assets/brand-mark.svg';
 
-function BrandMark({ className = 'h-9 w-9', rounded = 'rounded-xl', title = BRAND_NAME }) {
+function BrandMark({ className = 'h-9 w-9', rounded = 'rounded-xl' }) {
   return (
     <img
       src={BRAND_MARK_SRC}

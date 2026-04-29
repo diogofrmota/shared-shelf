@@ -1,11 +1,11 @@
 const React = window.React;
 const { useState, useMemo } = React;
-const { BrandLogo } = window;
 
 const SUPPORT_EMAIL = 'couple-planner-support@proton.me';
 
 function BugReportPage({ onNavigate, currentUser }) {
-  const SiteFooter = window.SiteFooter;
+  const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
+  const BrandLogo = window.getWindowComponent?.('BrandLogo', window.MissingComponent) || window.MissingComponent;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [steps, setSteps] = useState('');

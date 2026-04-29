@@ -1,6 +1,3 @@
-const React = window.React;
-const { useState, useEffect, useRef } = React;
-
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -71,6 +68,7 @@ const DATE_CATEGORIES = [
   { value: 'bar', label: 'Bar' },
   { value: 'coffee', label: 'Coffee' },
   { value: 'brunch', label: 'Brunch' },
+  { value: 'viewpoint', label: 'Viewpoint' },
   { value: 'other', label: 'Other' }
 ];
 
@@ -79,12 +77,18 @@ const DATE_CATEGORY_STYLES = {
   bar: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
   coffee: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
   brunch: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+  viewpoint: 'bg-red-500/20 text-red-300 border-red-500/30',
   other: 'bg-slate-500/20 text-slate-300 border-slate-500/30'
 };
 
 const MEDIA_TABS = ['movies', 'tvshows', 'books'];
 
-const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/500x750/FFFFFF/031A6B?text=No+Image';
+const createSvgPlaceholder = (label, width = 800, height = 500, background = '#FFDAD4', foreground = '#E63B2E') => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="${background}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="${foreground}" font-family="Arial, sans-serif" font-size="${Math.max(24, Math.round(width / 14))}" font-weight="700">${label}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+};
+
+const PLACEHOLDER_IMAGE = createSvgPlaceholder('No Image', 500, 750, '#FFFFFF', '#031A6B');
 
 const API_REQUEST_CONFIG = { DEBOUNCE_DELAY: 300, TIMEOUT: 10000 };
 
@@ -359,7 +363,6 @@ const getStatusOptions = (category) => {
 };
 const getFilterOptions = (category) => category === 'books' ? FILTER_CONFIG.BOOKS : FILTER_CONFIG.MOVIES_TV;
 const getDefaultStatus = (category) => category === 'books' ? STATUS_CONFIG.BOOKS.PLAN_TO_READ : STATUS_CONFIG.MOVIES_TV.PLAN_TO_WATCH;
-const debounce = (func, delay) => { let timeoutId; return (...args) => { clearTimeout(timeoutId); timeoutId = setTimeout(() => func(...args), delay); }; };
 const filterByQuery = (items, query) => {
   const searchQuery = query.toLowerCase();
   return items.filter(item =>
@@ -388,6 +391,6 @@ Object.assign(window, {
   transformMovieData, transformAnimeData, transformBookData,
   searchMovies, searchTvShows, searchAnime, searchBooks,
   formatStatusLabel, getStatusOptions, getFilterOptions, getDefaultStatus,
-  debounce, filterByQuery, getCategoryName,
+  filterByQuery, getCategoryName,
   fetchTvDetails, fetchAnimeDetails
 });

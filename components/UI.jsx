@@ -43,36 +43,138 @@ const FilterBar = ({ label, children }) => (
   </div>
 );
 
+const getFocusableElements = (container) => {
+  if (!container) return [];
+  const isVisible = (el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return false;
+    const style = window.getComputedStyle(el);
+    return style.visibility !== 'hidden' && style.display !== 'none';
+  };
+  return Array.from(container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    .filter(element => !element.disabled && isVisible(element));
+};
+
+const useModalA11y = ({ isOpen, onClose, dialogRef, initialFocusRef }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousActiveElement = document.activeElement;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose?.();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = getFocusableElements(dialogRef.current);
+      if (!focusable.length) {
+        event.preventDefault();
+        dialogRef.current?.focus?.();
+        return;
+      }
+
+      const firstElement = focusable[0];
+      const lastElement = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    const focusTimer = window.setTimeout(() => {
+      const focusable = getFocusableElements(dialogRef.current);
+      const target = initialFocusRef?.current || focusable[0] || dialogRef.current;
+      target?.focus?.();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousActiveElement && document.contains(previousActiveElement)) {
+        previousActiveElement.focus?.();
+      }
+    };
+  }, [isOpen]);
+};
+
+const ModalShell = ({
+  isOpen,
+  onClose,
+  children,
+  zClass = 'z-50',
+  overlayClassName = '',
+  dialogClassName = '',
+  ariaLabel = 'Dialog',
+  role = 'dialog',
+  initialFocusRef
+}) => {
+  const dialogRef = useRef(null);
+  useModalA11y({ isOpen, onClose, dialogRef, initialFocusRef });
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className={`fixed inset-0 ${zClass} flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm ${overlayClassName}`}
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose?.();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        role={role}
+        aria-modal="true"
+        aria-label={ariaLabel}
+        tabIndex="-1"
+        className={dialogClassName}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const EmptyState = ({
   title = 'Nothing here yet',
   message = 'Add your first item to get started.',
   actionLabel = 'Add your first item',
   onAddClick,
-  icon: Icon = Search,
+  icon: Icon = window.MissingIcon,
   compact = false
-}) => (
-  <div className={`rounded-2xl border border-dashed border-[#E1D8D4] bg-white px-5 text-center shadow-sm ${compact ? 'py-8' : 'py-12 sm:py-16'}`}>
-    <div className={`mx-auto mb-4 flex items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] ${compact ? 'h-12 w-12' : 'h-16 w-16 sm:mb-6 sm:h-20 sm:w-20'}`}>
-      <Icon size={compact ? 22 : 26} />
+}) => {
+  const PlusIcon = window.getWindowComponent?.('Plus', window.MissingIcon) || window.MissingIcon;
+  const EmptyIcon = typeof Icon === 'function' ? Icon : window.MissingIcon;
+  return (
+    <div className={`rounded-2xl border border-dashed border-[#E1D8D4] bg-white px-5 text-center shadow-sm ${compact ? 'py-8' : 'py-12 sm:py-16'}`}>
+      <div className={`mx-auto mb-4 flex items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] ${compact ? 'h-12 w-12' : 'h-16 w-16 sm:mb-6 sm:h-20 sm:w-20'}`}>
+        <EmptyIcon size={compact ? 22 : 26} />
+      </div>
+      <h3 className={`mb-2 font-bold text-[#410001] ${compact ? 'text-base' : 'text-lg sm:text-xl'}`}>{title}</h3>
+      {message && (
+        <p className={`mx-auto text-[#534340] ${compact ? 'max-w-sm text-sm' : 'max-w-md text-sm sm:text-base'} ${onAddClick ? 'mb-5' : ''}`}>
+          {message}
+        </p>
+      )}
+      {onAddClick && (
+        <button
+          type="button"
+          onClick={onAddClick}
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] sm:text-base"
+        >
+          <PlusIcon size={18} />
+          {actionLabel}
+        </button>
+      )}
     </div>
-    <h3 className={`mb-2 font-bold text-[#410001] ${compact ? 'text-base' : 'text-lg sm:text-xl'}`}>{title}</h3>
-    {message && (
-      <p className={`mx-auto text-[#534340] ${compact ? 'max-w-sm text-sm' : 'max-w-md text-sm sm:text-base'} ${onAddClick ? 'mb-5' : ''}`}>
-        {message}
-      </p>
-    )}
-    {onAddClick && (
-      <button
-        type="button"
-        onClick={onAddClick}
-        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] sm:text-base"
-      >
-        <Plus size={18} />
-        {actionLabel}
-      </button>
-    )}
-  </div>
-);
+  );
+};
 
 const MediaGrid = ({ items, renderItem, emptyComponent }) => (
   <>
@@ -104,8 +206,9 @@ const FailureScreen = ({
   secondaryLabel = 'Report a bug',
   secondaryPath = '/report-a-bug',
   onNavigate,
-  icon: Icon = Search
+  icon: Icon = window.MissingIcon
 }) => {
+  const FailureIcon = typeof Icon === 'function' ? Icon : window.MissingIcon;
   const handleNavigate = (path) => (event) => {
     event.preventDefault();
     if (typeof onNavigate === 'function') {
@@ -120,7 +223,7 @@ const FailureScreen = ({
       <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
         <section className="w-full max-w-2xl rounded-2xl border border-[#E1D8D4] bg-white p-6 text-center shadow-lg shadow-[#410001]/10 sm:p-10">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E]">
-            <Icon size={28} />
+            <FailureIcon size={28} />
           </div>
           <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">{eyebrow}</p>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">{title}</h1>
@@ -195,52 +298,12 @@ const ConfirmationDialog = ({
 }) => {
   const confirmButtonRef = useRef(null);
   const dialogRef = useRef(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const previousActiveElement = document.activeElement;
-    const isVisible = (el) => {
-      if (!el) return false;
-      const rect = el.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) return false;
-      const style = window.getComputedStyle(el);
-      return style.visibility !== 'hidden' && style.display !== 'none';
-    };
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') { onCancel?.(); return; }
-      if (event.key !== 'Tab') return;
-
-      const focusable = dialogRef.current
-        ? Array.from(dialogRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
-          .filter(element => !element.disabled && isVisible(element))
-        : [];
-      if (!focusable.length) return;
-
-      const firstElement = focusable[0];
-      const lastElement = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault();
-        lastElement.focus();
-      } else if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    const focusTimer = window.setTimeout(() => confirmButtonRef.current?.focus(), 0);
-
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.removeEventListener('keydown', handleKeyDown);
-      previousActiveElement?.focus?.();
-    };
-    // Only re-run when the dialog opens/closes, so changes in onCancel identity
-    // don't tear down the focus trap and re-focus the previous element mid-dialog.
-  }, [isOpen]);
+  useModalA11y({ isOpen, onClose: onCancel, dialogRef, initialFocusRef: confirmButtonRef });
 
   if (!isOpen) return null;
 
+  const TrashIcon = window.getWindowComponent?.('Trash', window.MissingIcon) || window.MissingIcon;
+  const SettingsIconComponent = window.getWindowComponent?.('SettingsIcon', window.MissingIcon) || window.MissingIcon;
   const confirmClass = tone === 'danger'
     ? 'bg-[#C1121F] text-white shadow-md shadow-[#C1121F]/20 hover:bg-[#A80F1A]'
     : 'bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/20 hover:bg-[#A9372C]';
@@ -259,11 +322,12 @@ const ConfirmationDialog = ({
         aria-modal="true"
         aria-labelledby="confirmation-dialog-title"
         aria-describedby="confirmation-dialog-message"
+        tabIndex="-1"
         className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-5 shadow-2xl shadow-[#410001]/30 animate-scale-in"
       >
         <div className="flex items-start gap-3">
           <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${tone === 'danger' ? 'bg-[#FFDAD4] text-[#C1121F]' : 'bg-[#FFDAD4] text-[#E63B2E]'}`}>
-            {tone === 'danger' ? <Trash size={18} /> : <SettingsIcon size={18} />}
+            {tone === 'danger' ? <TrashIcon size={18} /> : <SettingsIconComponent size={18} />}
           </div>
           <div className="min-w-0 flex-1">
             <h2 id="confirmation-dialog-title" className="text-lg font-extrabold text-[#410001]">
@@ -330,5 +394,5 @@ const UserAvatar = ({ user, size = 32 }) => {
 };
 
 Object.assign(window, {
-  FilterButton, FilterBar, EmptyState, MediaGrid, LoadingScreen, FailureScreen, AppErrorBoundary, UserAvatar, getAvatarTextColor, ConfirmationDialog
+  FilterButton, FilterBar, EmptyState, MediaGrid, LoadingScreen, FailureScreen, AppErrorBoundary, UserAvatar, getAvatarTextColor, ConfirmationDialog, ModalShell, useModalA11y
 });
