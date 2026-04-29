@@ -527,14 +527,14 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
         <section className="app-auth-bg">
           <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-10 text-white sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-14">
             <div className="flex-1">
-              <h1 className="flex items-center gap-3 text-4xl font-extrabold tracking-tight text-white sm:gap-4 sm:text-5xl lg:text-6xl">
+              <h1 className="flex flex-nowrap items-center gap-2 text-[2rem] font-extrabold leading-none tracking-tight text-white min-[380px]:gap-3 min-[380px]:text-4xl sm:gap-4 sm:text-5xl lg:text-6xl">
                 <img
                   src="/assets/brand-mark.svg"
                   alt=""
                   aria-hidden="true"
-                  className="brand-logo-hero block h-12 w-12 flex-shrink-0 self-center sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+                  className="brand-logo-hero block h-10 w-10 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
                 />
-                <span className="leading-none">Couple Planner</span>
+                <span className="whitespace-nowrap leading-none">Couple Planner</span>
               </h1>
               <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
                 Plan your life together.
