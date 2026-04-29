@@ -1,5 +1,13 @@
 const React = window.React;
-const { useState } = React;
+const { useState, useMemo } = React;
+
+const todayLocalIso = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const TASK_RECURRENCE_OPTIONS = [
   { value: 'daily', label: 'Daily' },
@@ -50,14 +58,21 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const users = profile?.users || [];
   const getUserById = (id) => users.find(u => u.id === id);
 
-  const sortedTasks = [...tasks].sort((a, b) => {
+  const sortedTasks = useMemo(() => [...tasks].sort((a, b) => {
     if (a.completed === b.completed) return 0;
     return a.completed ? 1 : -1;
-  });
+  }), [tasks]);
 
-  const activeTasks = sortedTasks.filter(t => !t.completed);
-  const completedTasks = sortedTasks.filter(t => t.completed);
+  const sortedIndexById = useMemo(() => {
+    const map = new Map();
+    sortedTasks.forEach((task, idx) => map.set(task.id, idx));
+    return map;
+  }, [sortedTasks]);
+
+  const activeTasks = useMemo(() => sortedTasks.filter(t => !t.completed), [sortedTasks]);
+  const completedTasks = useMemo(() => sortedTasks.filter(t => t.completed), [sortedTasks]);
   const activeCnt = activeTasks.length;
+  const todayIso = todayLocalIso();
 
   const handleEditTask = (task) => {
     setEditingTask(task.id);
@@ -86,21 +101,41 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
   };
 
+  // Reorders operate on the original `tasks` array (source order),
+  // not the display-sorted copy, so completed tasks aren't pushed to the bottom of source state.
+  const swapById = (idA, idB) => {
+    const next = [...tasks];
+    const a = next.findIndex(t => t.id === idA);
+    const b = next.findIndex(t => t.id === idB);
+    if (a < 0 || b < 0) return;
+    [next[a], next[b]] = [next[b], next[a]];
+    onReorderTasks?.(next);
+  };
+
+  const moveBeforeById = (sourceId, targetId) => {
+    const next = [...tasks];
+    const from = next.findIndex(t => t.id === sourceId);
+    if (from < 0) return;
+    const [moved] = next.splice(from, 1);
+    const to = next.findIndex(t => t.id === targetId);
+    if (to < 0) { next.splice(from, 0, moved); return; }
+    next.splice(to, 0, moved);
+    onReorderTasks?.(next);
+  };
+
   const handleMoveTask = (indexInSorted, direction) => {
-    const currentTasks = [...sortedTasks];
     const newIndex = direction === 'up' ? indexInSorted - 1 : indexInSorted + 1;
-    if (newIndex < 0 || newIndex >= currentTasks.length) return;
-    const task = currentTasks[indexInSorted];
-    const targetTask = currentTasks[newIndex];
+    if (newIndex < 0 || newIndex >= sortedTasks.length) return;
+    const task = sortedTasks[indexInSorted];
+    const targetTask = sortedTasks[newIndex];
     if (task.completed !== targetTask.completed) return;
-    [currentTasks[indexInSorted], currentTasks[newIndex]] = [currentTasks[newIndex], currentTasks[indexInSorted]];
-    onReorderTasks?.(currentTasks);
+    swapById(task.id, targetTask.id);
   };
 
   const handleDragStart = (e, indexInSorted) => {
     setDraggedIndex(indexInSorted);
     e.dataTransfer.effectAllowed = 'move';
-    e.target.style.opacity = '0.5';
+    e.currentTarget.style.opacity = '0.5';
   };
 
   const handleDragOver = (e) => {
@@ -111,24 +146,22 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const handleDrop = (e, dropIndexInSorted) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === dropIndexInSorted) return;
-    const currentTasks = [...sortedTasks];
-    const draggedTask = currentTasks[draggedIndex];
-    const targetTask = currentTasks[dropIndexInSorted];
-    if (draggedTask.completed !== targetTask.completed) return;
-    currentTasks.splice(draggedIndex, 1);
-    currentTasks.splice(dropIndexInSorted, 0, draggedTask);
-    onReorderTasks?.(currentTasks);
+    const draggedTask = sortedTasks[draggedIndex];
+    const targetTask = sortedTasks[dropIndexInSorted];
+    if (!draggedTask || !targetTask) { setDraggedIndex(null); return; }
+    if (draggedTask.completed !== targetTask.completed) { setDraggedIndex(null); return; }
+    moveBeforeById(draggedTask.id, targetTask.id);
     setDraggedIndex(null);
   };
 
   const handleDragEnd = (e) => {
-    e.target.style.opacity = '';
+    if (e.currentTarget && e.currentTarget.style) e.currentTarget.style.opacity = '';
     setDraggedIndex(null);
   };
 
   const renderTaskItem = (task, indexInSorted) => {
     const assignedUser = getUserById(task.assignedTo);
-    const isOverdue = task.dueDate && !task.completed && task.dueDate < new Date().toISOString().split('T')[0];
+    const isOverdue = task.dueDate && !task.completed && task.dueDate < todayIso;
     const taskIsRecurring = isRecurringTask(task);
     const completedThisOccurrence = taskIsRecurring ? isSameLocalDay(task.lastCompletedAt) : Boolean(task.completed);
     const recurrenceLabel = taskIsRecurring ? `Repeats ${TASK_RECURRENCE_LABELS[getTaskRecurrenceFrequency(task)].toLowerCase()}` : '';
@@ -334,7 +367,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
           {filter !== 'completed' && activeTasks.length > 0 && (
             <div className="space-y-2">
               {activeTasks.map(task => {
-                const idx = sortedTasks.indexOf(task);
+                const idx = sortedIndexById.get(task.id);
                 return renderTaskItem(task, idx);
               })}
             </div>
@@ -359,7 +392,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                   {showCompleted && (
                     <div className="space-y-2">
                       {completedTasks.map(task => {
-                        const idx = sortedTasks.indexOf(task);
+                        const idx = sortedIndexById.get(task.id);
                         return renderTaskItem(task, idx);
                       })}
                     </div>
@@ -367,7 +400,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 </>
               ) : (
                 completedTasks.map(task => {
-                  const idx = sortedTasks.indexOf(task);
+                  const idx = sortedIndexById.get(task.id);
                   return renderTaskItem(task, idx);
                 })
               )}

@@ -16,6 +16,15 @@ const {
 
 const AVATAR_COLORS = ['#E63B2E', '#A9372C', '#8C4F45', '#FFB4A9', '#FBD08A', '#A7C957'];
 
+const PROFILE_SECTION_OPTIONS = [
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'locations', label: 'Locations' },
+  { id: 'trips', label: 'Trips' },
+  { id: 'recipes', label: 'Recipes' },
+  { id: 'watchlist', label: 'Watchlist' }
+];
+
 const getAvatarTextColor = (backgroundColor) => {
   if (!backgroundColor || !/^#([0-9a-f]{6})$/i.test(backgroundColor)) {
     return '#ffffff';
@@ -75,14 +84,7 @@ const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-whit
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
 
 const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, space, onSaveSpace, currentUser, onSaveAccount, onLogout, onLeaveSpace }) => {
-  const sectionOptions = [
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'tasks', label: 'Tasks' },
-    { id: 'locations', label: 'Locations' },
-    { id: 'trips', label: 'Trips' },
-    { id: 'recipes', label: 'Recipes' },
-    { id: 'watchlist', label: 'Watchlist' }
-  ];
+  const sectionOptions = PROFILE_SECTION_OPTIONS;
   const [users, setUsers] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [name, setName] = useState(space?.name || '');
@@ -159,7 +161,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       setConfirmLeaveSpace(false);
       setLeavingSpace(false);
     }
-  }, [mode, isOpen, currentUser?.id, currentUser?.name, currentUser?.username, currentUser?.email]);
+    // Intentionally only re-runs when modal opens or user identity changes,
+    // so that in-progress edits to name/username are not clobbered by parent re-renders.
+  }, [mode, isOpen, currentUser?.id]);
+
+  useEffect(() => () => {
+    if (usernameCheckRef.current) clearTimeout(usernameCheckRef.current);
+  }, []);
 
   useEffect(() => {
     if (mode !== 'settings' || !isOpen || !space?.id) return;
@@ -584,9 +592,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
       }
       setUsernameStatus('checking');
       usernameCheckRef.current = setTimeout(async () => {
-        const result = await checkUsernameAvailable(trimmed, currentUser?.id || '');
-        if (result.available === null) { setUsernameStatus(null); return; }
-        setUsernameStatus(result.available ? 'available' : 'taken');
+        try {
+          const result = await checkUsernameAvailable(trimmed, currentUser?.id);
+          if (!result || result.available == null) { setUsernameStatus(null); return; }
+          setUsernameStatus(result.available ? 'available' : 'taken');
+        } catch {
+          setUsernameStatus(null);
+        }
       }, 450);
     };
 
@@ -751,7 +763,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
               className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
             >
               <span>Change password</span>
-              <span className="text-[#857370]" aria-hidden="true">{pwSection ? '^' : 'v'}</span>
+              <span className="text-[#857370]" aria-hidden="true">{pwSection ? '▲' : '▼'}</span>
             </button>
             {pwSection && (
               <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangePassword}>
@@ -896,211 +908,6 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <LogoutIcon size={16} />
             Log out
           </button>
-        </div>
-      </div>
-    );
-
-    return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
-          <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
-                <UserIcon size={20} className="text-[#E63B2E]" />
-                Profile
-              </h2>
-              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profile">
-                <Close size={20} />
-              </button>
-            </div>
-          </div>
-          <div className="p-5">
-            {accountEditing ? (
-              <form className="space-y-4" onSubmit={handleAccountSave}>
-                <div>
-                  <label className={labelCls} htmlFor="account-name">Name</label>
-                  <input
-                    id="account-name"
-                    type="text"
-                    value={accountName}
-                    onChange={(event) => setAccountName(event.target.value)}
-                    className={inputCls}
-                    autoComplete="name"
-                  />
-                </div>
-                <div>
-                  <label className={labelCls} htmlFor="account-username">Username</label>
-                  <input
-                    id="account-username"
-                    type="text"
-                    value={accountUsername}
-                    onChange={(event) => handleUsernameChange(event.target.value)}
-                    className={inputCls}
-                    autoComplete="username"
-                    spellCheck={false}
-                  />
-                  {usernameStatus === 'checking'
-                    ? <p className="mt-1 text-xs text-[#857370]">Checking availability…</p>
-                    : usernameStatus === 'available'
-                      ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
-                      : usernameStatus === 'taken'
-                        ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
-                        : null}
-                </div>
-                <div>
-                  <p className={labelCls}>Email</p>
-                  <p className="break-words text-sm font-semibold text-[#241A18]">{currentUser?.email || 'No email available'}</p>
-                </div>
-                {accountError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{accountError}</p>}
-                <div className="flex gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAccountEditing(false);
-                      setAccountName(displayName);
-                      setAccountUsername(username);
-                      setAccountError('');
-                      setUsernameStatus(null);
-                    }}
-                    className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    disabled={accountSaving}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
-                    disabled={accountSaving || usernameStatus === 'taken' || usernameStatus === 'checking'}
-                  >
-                    {accountSaving ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 rounded-2xl bg-[#FFF8F5] p-4">
-                  <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-xl font-extrabold text-white shadow-md">
-                    {initials}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-base font-extrabold text-[#410001]" title={displayName}>{displayName}</p>
-                    <p className="truncate text-xs font-medium text-[#534340]" title={username}>{username}</p>
-                    {currentUser?.email && <p className="truncate text-xs text-[#857370]" title={currentUser.email}>{currentUser.email}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => { setAccountEditing(true); setPwSection(false); setEmailSection(false); }}
-                    className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
-                  >
-                    Edit profile
-                  </button>
-
-                  {/* Change password section */}
-                  <div className="rounded-xl border border-[#E1D8D4]">
-                    <button
-                      type="button"
-                      onClick={() => { setPwSection(prev => !prev); setPwError(''); setPwSuccess(''); setPwCurrent(''); setPwNew(''); setEmailSection(false); }}
-                      className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    >
-                      <span>Change password</span>
-                      <span className="text-[#857370]" aria-hidden="true">{pwSection ? '▲' : '▼'}</span>
-                    </button>
-                    {pwSection && (
-                      <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangePassword}>
-                        <div>
-                          <label className={labelCls} htmlFor="pw-current">Current password</label>
-                          <input
-                            id="pw-current"
-                            type="password"
-                            value={pwCurrent}
-                            onChange={(e) => setPwCurrent(e.target.value)}
-                            className={inputCls}
-                            autoComplete="current-password"
-                            placeholder="••••••••"
-                          />
-                        </div>
-                        <div>
-                          <label className={labelCls} htmlFor="pw-new">New password</label>
-                          <input
-                            id="pw-new"
-                            type="password"
-                            value={pwNew}
-                            onChange={(e) => setPwNew(e.target.value)}
-                            className={inputCls}
-                            autoComplete="new-password"
-                            placeholder="••••••••"
-                          />
-                          <p className="mt-1 text-xs text-[#857370]">At least 5 letters and 1 number</p>
-                        </div>
-                        {pwError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{pwError}</p>}
-                        {pwSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{pwSuccess}</p>}
-                        <button
-                          type="submit"
-                          disabled={pwSaving}
-                          className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
-                        >
-                          {pwSaving ? 'Updating...' : 'Update password'}
-                        </button>
-                      </form>
-                    )}
-                  </div>
-
-                  {/* Change email section */}
-                  <div className="rounded-xl border border-[#E1D8D4]">
-                    <button
-                      type="button"
-                      onClick={() => { setEmailSection(prev => !prev); setEmailError(''); setEmailSuccess(''); setNewEmail(''); setPwSection(false); }}
-                      className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
-                    >
-                      <span>Change email</span>
-                      <span className="text-[#857370]" aria-hidden="true">{emailSection ? '▲' : '▼'}</span>
-                    </button>
-                    {emailSection && (
-                      <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangeEmail}>
-                        <div>
-                          <label className={labelCls} htmlFor="new-email">New email address</label>
-                          <input
-                            id="new-email"
-                            type="email"
-                            value={newEmail}
-                            onChange={(e) => setNewEmail(e.target.value)}
-                            className={inputCls}
-                            autoComplete="email"
-                            placeholder="you@example.com"
-                            spellCheck={false}
-                          />
-                          <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
-                        </div>
-                        {emailError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{emailError}</p>}
-                        {emailSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{emailSuccess}</p>}
-                        {!emailSuccess && (
-                          <button
-                            type="submit"
-                            disabled={emailSaving}
-                            className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
-                          >
-                            {emailSaving ? 'Sending...' : 'Send confirmation'}
-                          </button>
-                        )}
-                      </form>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => { onLogout(); onClose(); }}
-                    className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-                  >
-                    <LogoutIcon size={16} />
-                    Log out
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     );

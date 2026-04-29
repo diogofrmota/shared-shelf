@@ -10,56 +10,79 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
       setResults([]);
       setError('');
+      setHasSearched(false);
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (!query.trim()) {
+    const trimmed = query.trim();
+    if (!trimmed) {
       setResults([]);
+      setHasSearched(false);
       return;
     }
 
-    const performSearch = async () => {
+    let active = true;
+    const timer = setTimeout(async () => {
       setLoading(true);
       setError('');
       try {
         let searchResults = [];
         switch (category) {
           case 'movies':
-            searchResults = await searchMovies(query);
+            searchResults = await searchMovies(trimmed);
             break;
           case 'tvshows':
-            searchResults = await searchTvShows(query);
+            searchResults = await searchTvShows(trimmed);
             break;
           case 'books':
-            searchResults = await searchBooks(query);
+            searchResults = await searchBooks(trimmed);
             break;
           default:
             break;
         }
-        setResults(searchResults);
+        if (active) setResults(searchResults);
       } catch (err) {
-        setError('Failed to search. Please try again.');
+        if (active) setError('Failed to search. Please try again.');
         console.error('Search error:', err);
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+          setHasSearched(true);
+        }
       }
-    };
+    }, API_REQUEST_CONFIG.DEBOUNCE_DELAY);
 
-    const debouncedSearch = debounce(performSearch, API_REQUEST_CONFIG.DEBOUNCE_DELAY);
-    debouncedSearch();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [query, category]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(36,26,24,0.55)] p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Search ${getCategoryName(category)}`}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
+    >
       <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30">
         <div className="border-b border-[#E1D8D4] p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
@@ -97,7 +120,7 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {results.length === 0 && !loading && (
             <div className="py-10 text-center text-sm text-[#534340] sm:py-14">
-              {query ? 'No results found. Try a different search.' : 'Enter a search term to get started.'}
+              {!query ? 'Enter a search term to get started.' : hasSearched ? 'No results found. Try a different search.' : ''}
             </div>
           )}
 

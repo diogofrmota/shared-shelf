@@ -78,7 +78,9 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
       setProfileEmailSuccess('');
       setProfileError('');
     }
-  }, [profileOpen, currentUser?.id, displayName, username, currentUser?.email]);
+    // Only re-run when the dropdown opens/closes or the user identity changes,
+    // so currentUser updates from save don't clobber in-progress edits.
+  }, [profileOpen, currentUser?.id]);
 
   useEffect(() => {
     return () => {
@@ -156,12 +158,16 @@ function SpaceSelector({ onSelectSpace, onBackToLogin, onUpdateUser, onNavigate,
 
     setProfileUsernameStatus('checking');
     usernameCheckRef.current = setTimeout(async () => {
-      const result = await checkUsernameAvailable(trimmed, currentUser?.id || '');
-      if (result.available === null) {
+      try {
+        const result = await checkUsernameAvailable(trimmed, currentUser?.id);
+        if (!result || result.available == null) {
+          setProfileUsernameStatus(null);
+          return;
+        }
+        setProfileUsernameStatus(result.available ? 'available' : 'taken');
+      } catch {
         setProfileUsernameStatus(null);
-        return;
       }
-      setProfileUsernameStatus(result.available ? 'available' : 'taken');
     }, 450);
   };
 
