@@ -18,9 +18,6 @@ const Header = ({
   activeCategory,
   activeSubTab,
   onCategoryChange,
-  onSettingsClick,
-  onAccountClick,
-  onShareClick,
   onBackToDashboards,
   currentUser,
   onUpdateUser,
@@ -987,16 +984,16 @@ const Header = ({
                 <div className="border-t border-[#E1D8D4] p-1">
                   <button
                     role="menuitem"
-                    onClick={() => { onSettingsClick?.(); setMenuOpen(false); }}
+                    onClick={() => setMenuOpen(false)}
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
                     Settings
                   </button>
-                  {onShareClick && canGenerateInvite && (
+                  {canGenerateInvite && (
                     <button
                       role="menuitem"
-                      onClick={() => { onShareClick?.(); setMenuOpen(false); }}
+                      onClick={() => setMenuOpen(false)}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <ShareIcon size={18} />
@@ -1005,7 +1002,7 @@ const Header = ({
                   )}
                   <button
                     role="menuitem"
-                    onClick={() => { onAccountClick?.(); setMenuOpen(false); }}
+                    onClick={() => setMenuOpen(false)}
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                   >
                     <UserIcon size={18} />
@@ -1014,7 +1011,7 @@ const Header = ({
                   {onBackToDashboards && (
                     <button
                       role="menuitem"
-                      onClick={() => { onBackToDashboards?.(); setMenuOpen(false); }}
+                      onClick={() => { onBackToDashboards(); setMenuOpen(false); }}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
