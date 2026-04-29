@@ -203,6 +203,7 @@ function MediaTracker() {
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
+      flushPendingSpaceSavesViaBeacon();
       if (!hasOpenSpaceDraftRef.current) return;
       event.preventDefault();
       event.returnValue = '';
@@ -472,6 +473,7 @@ function MediaTracker() {
   };
   const handleAccountUpdate = (user) => setCurrentUser(user);
   const handleLogout = () => {
+    flushPendingSpaceSavesViaBeacon();
     clearAuthToken();
     setCurrentUser(null);
     setCurrentSpace(null);
@@ -484,8 +486,9 @@ function MediaTracker() {
     setData(null);
     navigateTo(`/space/${encodeURIComponent(space.id)}/`);
   };
-  const handleBackToSpaces = () => {
+  const handleBackToSpaces = async () => {
     if (!confirmRouteChange(readAppRoute('/space-selection/'))) return;
+    await flushPendingSpaceSaves();
     setCurrentSpace(null);
     setData(null);
     closeSpaceOverlays();
