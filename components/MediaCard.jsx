@@ -129,7 +129,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
 
               <button
                 onClick={handleSave}
-                className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
+                className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]"
               >
                 Save progress
               </button>
@@ -240,7 +240,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 
             <button
               onClick={handleSave}
-              className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]"
+              className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]"
             >
               Save progress
             </button>

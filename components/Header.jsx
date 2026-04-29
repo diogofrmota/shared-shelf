@@ -528,7 +528,7 @@ const Header = ({
                         type="button"
                         onClick={handleSaveSettings}
                         disabled={settingsSaving || !canEditSpaceSettings}
-                        className="min-h-[40px] w-full rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                        className="min-h-[40px] w-full rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                       >
                         {settingsSaving ? 'Saving...' : 'Save changes'}
                       </button>
@@ -556,7 +556,7 @@ const Header = ({
                               type="button"
                               onClick={() => handleGenerateShare('code')}
                               disabled={shareGenerating || !canGenerateInvite}
-                              className="min-h-[40px] rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              className="min-h-[40px] rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                             >
                               {shareGenerating && shareGeneratingType === 'code' ? 'Generating...' : 'Generate code to join'}
                             </button>
@@ -740,7 +740,7 @@ const Header = ({
                             </button>
                             <button
                               type="submit"
-                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                               disabled={profileSaving}
                             >
                               {profileSaving ? 'Saving...' : 'Save'}
@@ -810,7 +810,7 @@ const Header = ({
                             </button>
                             <button
                               type="submit"
-                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                               disabled={profileSaving || profileUsernameStatus === 'taken' || profileUsernameStatus === 'checking'}
                             >
                               {profileSaving ? 'Saving...' : 'Save'}
@@ -876,7 +876,7 @@ const Header = ({
                             </button>
                             <button
                               type="submit"
-                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                              className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                               disabled={profileEmailSaving}
                             >
                               {profileEmailSaving ? 'Sending...' : 'Send'}

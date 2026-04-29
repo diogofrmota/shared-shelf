@@ -92,7 +92,7 @@ function BugReportPage({ onNavigate, currentUser }) {
             <a
               href={currentUser ? '/space-selection/' : '/login'}
               onClick={goTo(currentUser ? '/space-selection/' : '/login')}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
             >
               {currentUser ? 'Open Couple Planner' : 'Sign in'}
             </a>
@@ -182,7 +182,7 @@ function BugReportPage({ onNavigate, currentUser }) {
                 <button
                   type="submit"
                   disabled={!isSubmittable}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Send bug report
                 </button>

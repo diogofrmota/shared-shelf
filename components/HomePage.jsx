@@ -177,7 +177,7 @@ function HomePage({ onNavigate }) {
             <a
               href="/login?mode=signup"
               onClick={goTo('/login?mode=signup')}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] sm:px-4"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] sm:px-4"
             >
               Register
             </a>
@@ -407,7 +407,7 @@ function HomePage({ onNavigate }) {
               <a
                 href="/login?mode=signup"
                 onClick={goTo('/login?mode=signup')}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-6 py-3 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] hover:text-white"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-6 py-3 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] hover:text-white"
               >
                 Create Account
               </a>

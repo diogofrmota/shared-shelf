@@ -128,7 +128,7 @@ function ShareSpaceModal({ isOpen, onClose, space }) {
                 <button
                   onClick={() => setConfirmRegenerate(true)}
                   disabled={regenerating}
-                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-50"
+                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-50"
                 >
                   {regenerating ? 'Generating...' : 'New code'}
                 </button>

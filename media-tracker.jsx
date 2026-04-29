@@ -735,7 +735,7 @@ function MediaTracker() {
             setAddCategory(activeSubTab);
             setAddModalOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
         >
           <Plus size={16} />
           <Icon size={16} />

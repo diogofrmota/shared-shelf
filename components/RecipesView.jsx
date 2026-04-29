@@ -235,7 +235,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           </div>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
-            <button type="submit" className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save changes</button>
+            <button type="submit" className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]">Save changes</button>
           </div>
         </form>
     </ModalShell>
