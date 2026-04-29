@@ -32,9 +32,6 @@ function MediaTracker() {
   const [loading, setLoading] = useState(true);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addCategory, setAddCategory] = useState(null);
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
@@ -70,9 +67,6 @@ function MediaTracker() {
   const closeDashboardOverlays = () => {
     setAddModalOpen(false);
     setAddCategory(null);
-    setSettingsModalOpen(false);
-    setAccountModalOpen(false);
-    setShareModalOpen(false);
     setEditRecipeModalOpen(false);
     setEditingRecipe(null);
     setEditTripModalOpen(false);
@@ -173,8 +167,6 @@ function MediaTracker() {
         || editRecipeModalOpen
         || editTripModalOpen
         || editEventModalOpen
-        || settingsModalOpen
-        || accountModalOpen
         || confirmation
       )
     );
@@ -184,8 +176,6 @@ function MediaTracker() {
     editRecipeModalOpen,
     editTripModalOpen,
     editEventModalOpen,
-    settingsModalOpen,
-    accountModalOpen,
     confirmation
   ]);
 
@@ -822,8 +812,6 @@ function MediaTracker() {
   const Header = window.getWindowComponent?.('Header', window.MissingComponent) || window.MissingComponent;
   const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
   const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
-  const ProfileModal = window.getWindowComponent?.('ProfileModal', window.MissingComponent) || window.MissingComponent;
-  const ShareDashboardModal = window.getWindowComponent?.('ShareDashboardModal', window.MissingComponent) || window.MissingComponent;
   const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
   const EditTripModal = window.getWindowComponent?.('EditTripModal', window.MissingComponent) || window.MissingComponent;
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
@@ -1000,13 +988,9 @@ function MediaTracker() {
       <Header
         dashboardName={currentDashboard.name}
         dashboard={currentDashboard}
-        onEditDashboard={() => setSettingsModalOpen(true)}
         activeCategory={activeCategory}
         activeSubTab={activeSubTab}
         onCategoryChange={handleCategoryChange}
-        onSettingsClick={() => setSettingsModalOpen(true)}
-        onAccountClick={() => setAccountModalOpen(true)}
-        onShareClick={() => setShareModalOpen(true)}
         onBackToDashboards={handleBackToDashboards}
         currentUser={currentUser}
         onUpdateUser={handleAccountUpdate}
@@ -1041,23 +1025,6 @@ function MediaTracker() {
         profile={data?.profile}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
-      <ProfileModal
-        mode="settings"
-        isOpen={settingsModalOpen}
-        onClose={() => setSettingsModalOpen(false)}
-        dashboard={currentDashboard}
-        onSaveDashboard={handleSaveDashboardSettings}
-      />
-      <ProfileModal
-        mode="account"
-        isOpen={accountModalOpen}
-        onClose={() => setAccountModalOpen(false)}
-        currentUser={currentUser}
-        onSaveAccount={handleAccountUpdate}
-        onLogout={handleLogout}
-        onLeaveDashboard={handleLeaveDashboard}
-      />
-      <ShareDashboardModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} dashboard={currentDashboard} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
       <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />
       <ConfirmationDialog
