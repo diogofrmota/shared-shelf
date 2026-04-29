@@ -82,48 +82,48 @@ const AudienceUsersIcon = ({ size = 20, className = '' }) => (
   </svg>
 );
 
-const AUDIENCES = [
+const COUPLE_SCENARIOS = [
   {
-    icon: AudienceHomeIcon,
-    title: 'Living Together',
-    description: 'Coordinate the calendar, split chores, save the recipes you cook on weeknights, and keep date plans in one place.',
+    icon: AudiencePlaneIcon,
+    title: 'Planning a weekend away',
+    description: 'Keep trip dates, bookings, packing notes, and the places you want to visit together in one shared plan.',
     bg: '#FFE3DD',
     border: '#F2A69B',
     accent: '#D8271C'
   },
   {
-    icon: AudiencePlaneIcon,
-    title: 'Long-distance',
-    description: 'Stay in sync across the world. Plan visits, save the trips you want to take, and queue what to watch on the next call.',
-    bg: '#E3EEFF',
-    border: '#9CBFF4',
-    accent: '#1D6BDA'
+    icon: AudienceHomeIcon,
+    title: 'Splitting weekly chores',
+    description: 'Assign errands, repeat household tasks, and see what is due without digging through old messages.',
+    bg: '#E3F5EA',
+    border: '#95D3AC',
+    accent: '#00845F'
   },
   {
     icon: AudienceHeartIcon,
-    title: 'Newly Dating',
+    title: 'Saving date night ideas',
     bg: '#FFE2F3',
     border: '#E89BC7',
     accent: '#B8329B',
-    description: 'Keep a running list of restaurants to try, films to watch, and weekend ideas.'
+    description: 'Collect restaurants, bars, activities, and little ideas for the next time you ask what you should do.'
   },
   {
     icon: AudienceUsersIcon,
-    title: 'Married',
-    bg: '#E3F5EA',
-    border: '#95D3AC',
-    accent: '#00845F',
-    description: 'Anniversaries, recurring errands, family trips, and the watchlist of movies you want to watch.'
+    title: 'Tracking shows you watch together',
+    bg: '#E3EEFF',
+    border: '#9CBFF4',
+    accent: '#1D6BDA',
+    description: 'Queue movies and TV shows, track progress, and remember what you both wanted to watch next.'
   }
 ];
 
 const HERO_SHARED_ITEMS = [
-  { icon: 'CalendarIcon', label: 'Calendar', color: '#D8271C' },
-  { icon: 'CheckSquare', label: 'Tasks', color: '#00845F' },
-  { icon: 'MapPin', label: 'Places', color: '#D65A00' },
-  { icon: 'Film', label: 'Trips', color: '#1D6BDA', strokeWidth: 2.8 },
-  { icon: 'ChefHat', label: 'Recipes', color: '#B8329B' },
-  { icon: 'Tv', label: 'Entertainment', color: '#6B52D9', strokeWidth: 2.8 }
+  { icon: 'CalendarIcon', label: 'Calendar', color: '#D8271C', fade: '#F76B5F' },
+  { icon: 'CheckSquare', label: 'Tasks', color: '#00845F', fade: '#3AB68E' },
+  { icon: 'MapPin', label: 'Places', color: '#D65A00', fade: '#F39A3D' },
+  { icon: 'Film', label: 'Trips', color: '#1D6BDA', fade: '#6EA5F2', strokeWidth: 2.8 },
+  { icon: 'ChefHat', label: 'Recipes', color: '#B8329B', fade: '#E36AC5' },
+  { icon: 'Tv', label: 'Entertainment', color: '#6B52D9', fade: '#9B86F2', strokeWidth: 2.8 }
 ];
 
 function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
@@ -527,23 +527,22 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
         <section className="app-auth-bg">
           <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-10 text-white sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-14">
             <div className="flex-1">
-              <h1 className="flex items-center gap-3 text-4xl font-extrabold leading-tight tracking-tight text-white sm:gap-4 sm:text-5xl lg:text-6xl">
+              <h1 className="flex items-center gap-3 text-4xl font-extrabold tracking-tight text-white sm:gap-4 sm:text-5xl lg:text-6xl">
                 <img
                   src="/assets/brand-mark.svg"
                   alt=""
                   aria-hidden="true"
-                  className="brand-logo-hero h-12 w-12 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+                  className="brand-logo-hero block h-12 w-12 flex-shrink-0 self-center sm:h-14 sm:w-14 lg:h-16 lg:w-16"
                 />
-                <span>Couple Planner</span>
+                <span className="leading-none">Couple Planner</span>
               </h1>
               <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
                 Plan your life together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is an app that lets you and your partner create a shared 
-                dashboard. In this private space, you can create a shared calendar, task 
-                list, date locations, trip plans, and a movies and TV shows tracker, all 
-                synced in one place.
+                dashboard. One private place to share your calendar, tasks, date ideas, trips, recipes,
+                and watchlists.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
@@ -573,7 +572,10 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                       <li
                         key={item.label}
                         className="flex min-h-[50px] items-center gap-2 rounded-xl px-2 py-2 text-white shadow-md shadow-black/10 sm:min-h-[58px] sm:gap-2.5 sm:px-3"
-                        style={{ backgroundColor: item.color }}
+                        style={{
+                          backgroundColor: item.color,
+                          backgroundImage: `linear-gradient(135deg, ${item.color} 0%, ${item.color} 42%, ${item.fade} 100%)`
+                        }}
                       >
                         <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
                           <Icon size={20} strokeWidth={item.strokeWidth || 2} />
@@ -592,7 +594,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-              A shared dashboard, to sync your life with your partner.
+              A private dashboard you can share with your partner.
             </h2>
             <p className="mt-5 text-base text-[#534340] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
@@ -608,30 +610,35 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Who it is for</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Built for couples, at every stage.
+                Built for the plans couples actually make.
               </h2>
               <p className="mt-3 text-base text-[#534340] sm:text-lg">
-                However the two of you are doing life right now, Couple Planner adapts to it.
+                Recognize the everyday moments you already coordinate, then keep them together in one shared place.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-              {AUDIENCES.map((audience) => {
-                const Icon = audience.icon;
+              {COUPLE_SCENARIOS.map((scenario) => {
+                const Icon = scenario.icon;
                 return (
                   <div
-                    key={audience.title}
+                    key={scenario.title}
                     className="ss-card p-6"
-                    style={{ borderWidth: '3px' }}
+                    style={{
+                      backgroundImage: `linear-gradient(to right, ${scenario.bg} 0%, ${scenario.bg}d9 100%)`,
+                      borderColor: scenario.border,
+                      borderWidth: '3px'
+                    }}
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
-                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#410001]"
+                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/70"
+                        style={{ color: scenario.accent }}
                       >
                         <Icon size={19} />
                       </span>
-                      <h3 className="text-lg font-extrabold text-[#410001]">{audience.title}</h3>
+                      <h3 className="text-lg font-extrabold text-[#410001]">{scenario.title}</h3>
                     </div>
-                    <p className="text-sm text-[#534340]">{audience.description}</p>
+                    <p className="text-sm text-[#534340]">{scenario.description}</p>
                   </div>
                 );
               })}
@@ -682,8 +689,11 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Private by design</span>
               <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
-                Share your data privately with your partner.
+                Start planning together in three simple steps.
               </h2>
+              <p className="mt-3 text-base text-[#534340] sm:text-lg">
+                Create a shared space, invite your partner, and keep your plans moving.
+              </p>
             </div>
             <ol className="space-y-4">
               <li
@@ -692,10 +702,9 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Create your dashboard and invite your partner</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Create a private dashboard</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Each dashboard has a unique ID and a one-time join code. Send both to
-                    your partner and you are connected. The owner can regenerate the code at any time.
+                    Set up one shared place for your calendar, tasks, trips, recipes, places, and watchlist.
                   </p>
                 </div>
               </li>
@@ -705,10 +714,9 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Choose what your dashboard includes</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Invite your partner</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Turn calendar, tasks, locations, trips, recipes, and entertainment on or off per dashboard, you decide. Hide what you
-                    don't use so your shared home screen stays focused on what actually matters to you both.
+                    Send them the dashboard details so only the two of you can access and update it.
                   </p>
                 </div>
               </li>
@@ -718,9 +726,9 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Both of you see and edit the same information</h3>
+                  <h3 className="text-lg font-extrabold text-[#410001]">Start planning together</h3>
                   <p className="mt-1 text-sm text-[#534340]">
-                    Only the two of you can see what's inside. Every change is shared instantly.
+                    Add plans, split chores, save date ideas, and keep everything synced in one private dashboard.
                   </p>
                 </div>
               </li>

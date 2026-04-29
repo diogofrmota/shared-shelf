@@ -1,21 +1,6 @@
-In add activity
+1 -------------
+This part in the footer for mobile should be centered "© 2026 Couple Planner". Dont change for other devices
+On mobile it should be "© 2026 Couple Planner" on centered and below "Privacy Policy" "Terms of Service" "Report a Bug"
 
-change date format from mm/dd/yyyy to dd/mm/yyyy
-
-I want you to adapt the add activity to just be Title, date and Time
-then bellow you will havea expand button that says "More options"
-
-and it will expand the box to have also end date, does it repeat? and description
-
-Also when a user sets up multiple days it removes the option to setup time
-
-----------------------
-
-For add task
-
-change date format from mm/dd/yyyy to dd/mm/yyyy
-
-I want you to adapt the add task to just be Title and description
-then bellow you will havea expand button that says "More options"
-
-and it will expand the box to have also due date and recurring task
+2 -------------
+On the first section of the homepage you have the logo and "Couple Planner", those two are aligned to the top, they should be aligned horizontly. Do you understand? if you dont understand you can ask me a follow up question
