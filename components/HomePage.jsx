@@ -541,7 +541,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is a private, shared space for you and your partner. Have a shared calendar, task list,
-                saved locations, trips planner, recipes book, and track movies, tv shows and books. Everything synced in one place.
+                saved locations, trip planning, a recipe book, and a shared list for movies, TV shows, and books. Everything synced in one place.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
@@ -563,7 +563,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             <div className="w-full max-w-md flex-1 lg:max-w-lg">
               <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
                 <h2 className="text-2xl font-extrabold text-[#410001]">Main Features</h2>
-                <p className="mt-1 text-sm text-[#534340]">Couple Planner lets you manage your relashionship in one app.</p>
+                <p className="mt-1 text-sm text-[#534340]">Couple Planner lets you manage your relationship in one app.</p>
                 <ul className="mt-4 grid grid-cols-2 gap-2">
                   {HERO_SHARED_ITEMS.map((item) => {
                     const Icon = getHomeComponent(item.icon);
