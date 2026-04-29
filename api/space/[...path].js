@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 import {
   APP_URL,
   consumeRateLimit,
@@ -201,7 +201,8 @@ export default async function handler(req, res) {
         }
         const name = normalizeSpaceName(req.body?.name);
         if (!name) return res.status(400).json({ error: 'Name required' });
-        const spaceId = randomUUID();
+        const rand4 = () => String(Math.floor(1000 + Math.random() * 9000));
+        const spaceId = `${rand4()}-${rand4()}`;
         const enabledSections = normalizeSpaceSections(req.body?.enabledSections);
 
         const created = await sql`
