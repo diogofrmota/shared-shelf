@@ -419,15 +419,20 @@ function MediaTracker() {
     let cancelled = false;
 
     const loadData = async () => {
-      setLoading(true);
       dataEditedAfterLoadRef.current = false;
       const cachedDashboardData = window.getCachedDashboardData?.(currentDashboard.id);
+
+      // Show cached data immediately if available
       if (cachedDashboardData && !cancelled) {
         skipNextSaveRef.current = true;
         setData(normalizeDashboardDataForClient(cachedDashboardData));
         setLoading(false);
+      } else {
+        // Only show loading if no cached data
+        setLoading(true);
       }
 
+      // Fetch fresh data in background
       const DashboardData = await getDashboardData(currentDashboard.id);
       if (cancelled) return;
       if (dataEditedAfterLoadRef.current) return;
@@ -435,7 +440,8 @@ function MediaTracker() {
       skipNextSaveRef.current = true;
       if (DashboardData) {
         setData(normalizeDashboardDataForClient(DashboardData));
-      } else {
+      } else if (!cachedDashboardData) {
+        // Only set default if no cached data and fetch failed
         setData(defaultDashboardData());
       }
       setLoading(false);
@@ -478,7 +484,10 @@ function MediaTracker() {
     try {
       const dashboards = await getUserDashboards();
       if (dashboards.length > 0) {
-        navigateTo(`/dashboard/${encodeURIComponent(dashboards[0].id)}/`, { replace: true, skipPrompt: true });
+        const firstDashboard = dashboards[0];
+        // Prefetch dashboard data in the background while navigating
+        getDashboardData(firstDashboard.id).catch(() => {});
+        navigateTo(`/dashboard/${encodeURIComponent(firstDashboard.id)}/`, { replace: true, skipPrompt: true });
       } else {
         navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
       }

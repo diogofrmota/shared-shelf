@@ -405,17 +405,44 @@ const cacheDashboardData = (dashboardId, data) => {
   }
 };
 
+const dashboardDataCache = new Map();
+const dashboardDataFetches = new Map();
+
 const getDashboardData = async (dashboardId) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
     if (!token) return getCachedDashboardData(dashboardId);
 
-    const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    // Return cached data if available
+    if (dashboardDataCache.has(dashboardId)) {
+      return dashboardDataCache.get(dashboardId);
+    }
 
-    if (!res.ok) return getCachedDashboardData(dashboardId);
-    return await res.json();
+    // Return existing fetch promise if one is in progress (deduplication)
+    if (dashboardDataFetches.has(dashboardId)) {
+      return dashboardDataFetches.get(dashboardId);
+    }
+
+    // Start new fetch and store promise for deduplication
+    const fetchPromise = fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(async (res) => {
+        if (!res.ok) return getCachedDashboardData(dashboardId);
+        const data = await res.json();
+        dashboardDataCache.set(dashboardId, data);
+        return data;
+      })
+      .catch((error) => {
+        console.error('Error fetching dashboard data:', error);
+        return getCachedDashboardData(dashboardId);
+      })
+      .finally(() => {
+        dashboardDataFetches.delete(dashboardId);
+      });
+
+    dashboardDataFetches.set(dashboardId, fetchPromise);
+    return fetchPromise;
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
     return getCachedDashboardData(dashboardId);
