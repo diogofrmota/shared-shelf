@@ -526,7 +526,7 @@ const Header = ({
                       </button>
                     </div>
                   )}
-                  {onShareClick && canGenerateInvite && (
+                  {canGenerateInvite && (
                     <div>
                       <button
                         role="menuitem"
