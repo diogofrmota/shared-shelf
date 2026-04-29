@@ -668,13 +668,13 @@ const Header = ({
             <button
               type="button"
               onClick={openProfileDropdown}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FFDAD4] text-sm font-bold text-[#410001] shadow-sm transition hover:bg-[#FFB4A9] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Account"
               aria-label="Account"
               aria-haspopup="menu"
               aria-expanded={profileOpen}
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E63B2E] text-xs font-bold text-white">{userInitial}</span>
+              <UserIcon size={22} />
               <span className="hidden truncate text-[#410001] sm:inline" title="Account">Account</span>
             </button>
 
