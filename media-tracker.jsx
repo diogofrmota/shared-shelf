@@ -819,10 +819,10 @@ function MediaTracker() {
   }
 
   if (appRoute.type === 'privacy') {
-    return <PrivacyPolicyPage onNavigate={navigateTo} currentUser={currentUser} />;
+    return <PrivacyPolicyPage onNavigate={navigateTo} currentUser={currentUser} onUpdateUser={handleAccountUpdate} onLogout={handleLogout} />;
   }
   if (appRoute.type === 'terms') {
-    return <TermsOfServicePage onNavigate={navigateTo} currentUser={currentUser} />;
+    return <TermsOfServicePage onNavigate={navigateTo} currentUser={currentUser} onUpdateUser={handleAccountUpdate} onLogout={handleLogout} />;
   }
   if (appRoute.type === 'bug-report') {
     return <BugReportPage onNavigate={navigateTo} currentUser={currentUser} />;
