@@ -457,8 +457,36 @@ const saveSpaceData = async (spaceId, data, { debounceMs = 700 } = {}) => {
       resolve(await persistSpaceData(spaceId, data));
     }, debounceMs);
 
-    pendingSpaceSaves.set(spaceId, { timeoutId, resolve });
+    pendingSpaceSaves.set(spaceId, { timeoutId, resolve, data });
   });
+};
+
+const flushPendingSpaceSaves = async () => {
+  const entries = [...pendingSpaceSaves.entries()];
+  pendingSpaceSaves.clear();
+  return Promise.all(entries.map(([spaceId, { timeoutId, resolve, data: pendingData }]) => {
+    clearTimeout(timeoutId);
+    return persistSpaceData(spaceId, pendingData).then(result => {
+      resolve(result);
+      return result;
+    });
+  }));
+};
+
+const flushPendingSpaceSavesViaBeacon = () => {
+  const token = getAuthToken();
+  if (!token) return;
+  for (const [spaceId, { timeoutId, resolve, data: pendingData }] of pendingSpaceSaves.entries()) {
+    clearTimeout(timeoutId);
+    resolve(false);
+    fetch(`${API_BASE}/api/space/${spaceId}/data`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: pendingData }),
+      keepalive: true
+    }).catch(() => {});
+  }
+  pendingSpaceSaves.clear();
 };
 
 const changePassword = async (currentPassword, newPassword) => {
@@ -676,6 +704,8 @@ Object.assign(window, {
   getCachedSpaceData,
   getSpaceData,
   saveSpaceData,
+  flushPendingSpaceSaves,
+  flushPendingSpaceSavesViaBeacon,
   getUserSpaces,
   createSpace,
   joinSpace,

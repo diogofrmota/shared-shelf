@@ -962,7 +962,7 @@ const Header = ({
               >
                 <div className="p-1">
                   {visibleNavTabs.map(tab => {
-                    const Icon = tab.icon;
+                    const Icon = getHeaderComponent(tab.icon);
                     const isActive = isTabActive(tab);
                     return (
                       <button
