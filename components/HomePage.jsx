@@ -547,7 +547,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <a
                   href="/login?mode=signup"
                   onClick={goTo('/login?mode=signup')}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFF8F5]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFDAD4] hover:text-[#410001]"
                 >
                   Create Account
                 </a>

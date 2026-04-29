@@ -423,14 +423,14 @@ const Header = ({
             <button
               type="button"
               onClick={openSettingsDropdown}
-              className="flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Settings"
               aria-label="Settings"
               aria-haspopup="menu"
               aria-expanded={settingsOpen}
             >
-              <SettingsIcon size={18} />
-              <span>Settings</span>
+              <SettingsIcon size={22} />
+              <span className="hidden truncate text-[#410001] sm:inline" title="Settings">Settings</span>
             </button>
 
             {settingsOpen && (
