@@ -130,7 +130,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         <button
           type="button"
           onClick={onAddClick}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
         >
           <Plus size={18} />
           Add {addLabel}

@@ -665,7 +665,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             </>
           )}
 
-          <button type="submit" disabled={isSaving} className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:cursor-not-allowed disabled:bg-[#D8C2BE] disabled:shadow-none">
+          <button type="submit" disabled={isSaving} className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:cursor-not-allowed disabled:bg-[#D8C2BE] disabled:shadow-none">
             {isSaving && activeTab === 'locations' ? 'Locating address...' : getModalTitle()}
           </button>
         </form>
@@ -745,7 +745,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
             <textarea rows="3" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
           </FormField>
 
-          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
             Save changes
           </button>
         </form>
@@ -818,7 +818,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           <FormField label="Instructions">
             <textarea rows="5" className={inputCls} value={formData.instructions || ''} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
           </FormField>
-          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
             Save changes
           </button>
         </form>
@@ -905,7 +905,7 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
           <FormField label="Accommodation URL">
             <input type="url" className={inputCls} value={formData.accommodation || ''} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
           </FormField>
-          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
             Save changes
           </button>
         </form>

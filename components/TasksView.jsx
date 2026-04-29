@@ -242,7 +242,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 )}
               </div>
               <div className="flex gap-2">
-                <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="min-h-[44px] rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#A9372C]">Save</button>
+                <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="min-h-[44px] rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F]">Save</button>
                 <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-4 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
               </div>
             </div>

@@ -166,7 +166,7 @@ const EmptyState = ({
         <button
           type="button"
           onClick={onAddClick}
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] sm:text-base"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] sm:text-base"
         >
           <PlusIcon size={18} />
           {actionLabel}
@@ -232,7 +232,7 @@ const FailureScreen = ({
             <a
               href={primaryPath}
               onClick={handleNavigate(primaryPath)}
-              className="inline-flex items-center justify-center rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] hover:text-white"
+              className="inline-flex items-center justify-center rounded-xl bg-[#E63B2E] px-5 py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] hover:text-white"
             >
               {primaryLabel}
             </a>
@@ -306,7 +306,7 @@ const ConfirmationDialog = ({
   const SettingsIconComponent = window.getWindowComponent?.('SettingsIcon', window.MissingIcon) || window.MissingIcon;
   const confirmClass = tone === 'danger'
     ? 'bg-[#C1121F] text-white shadow-md shadow-[#C1121F]/20 hover:bg-[#A80F1A]'
-    : 'bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/20 hover:bg-[#A9372C]';
+    : 'bg-[#E63B2E] text-white shadow-md shadow-[#E63B2E]/20 hover:bg-[#CC302F]';
 
   return (
     <div

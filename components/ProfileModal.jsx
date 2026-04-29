@@ -244,7 +244,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                     <UserAvatar user={user} size={48} />
                     <button
                       onClick={() => setExpandedId(expandedId === user.id ? null : user.id)}
-                      className="absolute -bottom-3 -right-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#A9372C]"
+                      className="absolute -bottom-3 -right-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#E63B2E] text-white shadow transition hover:bg-[#CC302F]"
                       title="Customize"
                     >
                     <Camera size={10} />
@@ -317,7 +317,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+            <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
               Save profiles
             </button>
           </div>
@@ -429,7 +429,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                   type="button"
                   onClick={() => setConfirmRegenerateShare(true)}
                   disabled={regeneratingShare || shareLoading}
-                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-60"
+                  className="min-h-[44px] rounded-lg bg-[#E63B2E] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60"
                 >
                   {regeneratingShare ? 'Generating...' : 'New code'}
                 </button>
@@ -531,7 +531,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
-            <button onClick={handleSave} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C]">
+            <button onClick={handleSave} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
               Save changes
             </button>
           </div>
@@ -808,7 +808,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                 <button
                   type="submit"
                   disabled={pwSaving}
-                  className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                  className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60"
                 >
                   {pwSaving ? 'Updating...' : 'Update password'}
                 </button>
@@ -847,7 +847,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
                   <button
                     type="submit"
                     disabled={emailSaving}
-                    className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+                    className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60"
                   >
                     {emailSaving ? 'Sending...' : 'Send confirmation'}
                   </button>
@@ -869,7 +869,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, spa
             <button
               type="button"
               onClick={handleAccountSave}
-              className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-60"
+              className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60"
               disabled={accountSaving || usernameStatus === 'taken' || usernameStatus === 'checking'}
             >
               {accountSaving ? 'Saving...' : 'Save'}

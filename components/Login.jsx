@@ -464,7 +464,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3 font-semibold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3 font-semibold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-50"
               >
                 {loading ? 'Checking...' : 'Update Password'}
               </button>
@@ -628,7 +628,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3.5 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#A9372C] disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E63B2E] py-3.5 text-base font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-50"
               >
                 {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create account'}
                 {!loading && (
@@ -686,7 +686,7 @@ function LoginScreen({ onLogin, onNavigate }) {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#A9372C] disabled:opacity-50"
+                      className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-50"
                     >
                       {loading ? 'Sending...' : 'Send link'}
                     </button>
