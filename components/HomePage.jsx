@@ -533,17 +533,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 />
                 <span className="whitespace-nowrap leading-none">Couple Planner</span>
               </h1>
-              <figure className="mt-6 flex justify-center">
-                <img
-                  src="/assets/ui-showcase-no-background.png"
-                  alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
-                  className="block w-full max-w-[136rem] object-contain drop-shadow-2xl lg:max-w-[168rem]"
-                  loading="eager"
-                />
-              </figure>
-            </div>
-            <div className="flex-1">
-              <p className="text-2xl font-extrabold leading-tight text-white sm:text-3xl">
+              <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
                 Plan your life together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
@@ -567,6 +557,16 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                   Sign In
                 </a>
               </div>
+            </div>
+            <div className="w-full max-w-2xl lg:flex-1 lg:max-w-4xl">
+              <figure className="flex justify-center">
+                <img
+                  src="/assets/ui-showcase-no-background.png"
+                  alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
+                  className="block w-full max-w-[136rem] object-contain drop-shadow-2xl lg:max-w-[168rem]"
+                  loading="eager"
+                />
+              </figure>
             </div>
           </div>
         </section>
