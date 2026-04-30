@@ -522,7 +522,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
 
       <main id="main-content" tabIndex="-1" className="flex-1">
         <section className="app-auth-bg">
-          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-8 py-10 text-white sm:px-12 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-16 lg:py-14">
+          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-4 px-8 py-6 text-white sm:px-12 sm:py-10 lg:flex-row lg:items-center lg:gap-12 lg:px-16 lg:py-14">
 
             {/* Col 1: branding + copy + CTA */}
             <div className="flex-1">
@@ -571,26 +571,6 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                   loading="eager"
                 />
               </figure>
-            </div>
-
-            {/* Col 3: feature icon squares — desktop only */}
-            <div className="hidden lg:flex lg:flex-col lg:gap-2.5">
-              {FEATURES.map((feature) => {
-                const Icon = getHomeComponent(feature.icon);
-                return (
-                  <div
-                    key={feature.title}
-                    className="flex h-14 w-14 items-center justify-center rounded-xl"
-                    style={{
-                      backgroundImage: `linear-gradient(135deg, ${feature.accent} 0%, ${feature.accent} 68%, ${feature.fade} 100%)`,
-                    }}
-                  >
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm">
-                      <Icon size={20} />
-                    </span>
-                  </div>
-                );
-              })}
             </div>
 
           </div>
