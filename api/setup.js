@@ -32,7 +32,6 @@ async function resetDatabase() {
     'dashboard_join_codes',
     'dashboard_members',
     'dashboards',
-    'user_data',
     'users',
   ];
 
