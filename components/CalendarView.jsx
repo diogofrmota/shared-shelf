@@ -255,21 +255,21 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
       <section className="rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm sm:p-6 lg:col-span-8">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">
+            <h2 className="text-xl font-extrabold text-[#000000] sm:text-2xl">
               {MONTH_NAMES[viewMonth]} {viewYear}
             </h2>
             <div className="flex items-center rounded-lg bg-[#FBF2ED] p-1">
-              <button onClick={goPrev} className="rounded p-1.5 text-[#534340] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Previous month">
+              <button onClick={goPrev} className="rounded p-1.5 text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Previous month">
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={goNext} className="rounded p-1.5 text-[#534340] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Next month">
+              <button onClick={goNext} className="rounded p-1.5 text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Next month">
                 <ChevronRight size={18} />
               </button>
             </div>
           </div>
           <button
             onClick={goToday}
-            className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
           >
             Today
           </button>
@@ -278,7 +278,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
         {/* Weekday labels */}
         <div className="mb-2 grid grid-cols-7 gap-1 sm:gap-2">
           {WEEKDAY_LABELS.map(day => (
-            <div key={day} className="py-1 text-center text-xs font-bold uppercase tracking-wider text-[#857370] sm:text-sm">{day}</div>
+            <div key={day} className="py-1 text-center text-xs font-bold uppercase tracking-wider text-[#000000] sm:text-sm">{day}</div>
           ))}
         </div>
 
@@ -314,8 +314,8 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                   isToday
                     ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#E63B2E] text-white'
                     : isSelected
-                      ? 'text-[#410001]'
-                      : 'text-[#241A18]'
+                      ? 'text-[#000000]'
+                      : 'text-[#000000]'
                 }`}>
                   {day}
                 </span>
@@ -323,7 +323,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                   {dayEvents.slice(0, 2).map(ev => (
                     <div
                       key={ev.occurrenceKey || ev.id}
-                      className="truncate rounded bg-[#FFDAD4] px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#410001]"
+                      className="truncate rounded bg-[#FFDAD4] px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#000000]"
                       title={[ev.title, formatRecurrence(ev)].filter(Boolean).join(' - ')}
                     >
                       {(ev.startHour || ev.time) && <span className="mr-1 font-bold">{ev.startHour || ev.time}</span>}
@@ -332,7 +332,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                     </div>
                   ))}
                   {dayEvents.length > 2 && (
-                    <div className="text-[10px] font-semibold text-[#857370]">+{dayEvents.length - 2} more</div>
+                    <div className="text-[10px] font-semibold text-[#000000]">+{dayEvents.length - 2} more</div>
                   )}
                 </div>
                 {dayEvents.length > 0 && (
@@ -349,7 +349,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
       {/* Agenda */}
       <section className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4 shadow-sm sm:p-6 lg:col-span-4">
         <div className="mb-5 flex items-center justify-between gap-2">
-          <h3 className="text-lg font-extrabold text-[#410001] sm:text-xl">{agendaTitle}</h3>
+          <h3 className="text-lg font-extrabold text-[#000000] sm:text-xl">{agendaTitle}</h3>
           {selectedDate && (
             <button
               onClick={() => setSelectedDate(null)}
@@ -388,7 +388,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                 onClick={() => onEditEvent(ev.sourceEvent || ev)}
                 className="group flex cursor-pointer gap-3 rounded-xl border border-[#E1D8D4] bg-white p-3 shadow-sm transition hover:border-[#E63B2E]/40 hover:shadow-md sm:p-4"
               >
-                <div className="flex min-w-[64px] flex-col items-center justify-center rounded-lg bg-[#FFDAD4] px-2 py-1.5 text-[#410001]">
+                <div className="flex min-w-[64px] flex-col items-center justify-center rounded-lg bg-[#FFDAD4] px-2 py-1.5 text-[#000000]">
                   <span className="text-xs font-bold tabular-nums">{formatDateDisplay(ev.startDate || ev.date)}</span>
                   {ev.endDate && ev.endDate !== (ev.startDate || ev.date) && (
                     <span className="text-[10px] tabular-nums opacity-80">→ {formatDateDisplay(ev.endDate)}</span>
@@ -396,28 +396,28 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="truncate font-bold text-[#410001]">{ev.title}</h4>
+                    <h4 className="truncate font-bold text-[#000000]">{ev.title}</h4>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         const sourceEvent = ev.sourceEvent || ev;
                         onDeleteEvent(sourceEvent.id, sourceEvent);
                       }}
-                      className="rounded-lg p-1.5 text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                      className="rounded-lg p-1.5 text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       aria-label="Delete event"
                     >
                       <Trash size={14} />
                     </button>
                   </div>
                   {(ev.time || ev.startHour || ev.endHour) && (
-                    <p className="mt-0.5 text-sm font-medium text-[#534340]">
+                    <p className="mt-0.5 text-sm font-medium text-[#000000]">
                       {ev.time ? ev.time : `${formatTime(ev.startHour)}${ev.startHour && ev.endHour ? ' – ' : ''}${formatTime(ev.endHour)}`}
                     </p>
                   )}
                   {formatRecurrence(ev) && (
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#857370]">{formatRecurrence(ev)}</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#000000]">{formatRecurrence(ev)}</p>
                   )}
-                  {ev.description && <p className="mt-2 whiteDashboard-pre-wrap text-sm text-[#534340]">{ev.description}</p>}
+                  {ev.description && <p className="mt-2 whiteDashboard-pre-wrap text-sm text-[#000000]">{ev.description}</p>}
                 </div>
               </li>
             ))}

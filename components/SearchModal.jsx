@@ -78,14 +78,14 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
       isOpen={isOpen}
       onClose={onClose}
       ariaLabel={`Search ${categoryName}`}
-      dialogClassName="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+      dialogClassName="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
         <div className="border-b border-[#E1D8D4] p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold text-[#410001] sm:text-2xl">Search {categoryName}</h2>
+            <h2 className="text-xl font-extrabold text-[#000000] sm:text-2xl">Search {categoryName}</h2>
             <button
               onClick={onClose}
-              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
               aria-label="Close"
             >
               <CloseIcon size={22} />
@@ -93,7 +93,7 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
           </div>
 
           <div className="relative">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#857370]">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#000000]">
               <SearchIcon size={18} />
             </span>
             <input
@@ -101,7 +101,7 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search for ${category}...`}
-              className="w-full rounded-xl border border-[#E1D8D4] bg-white py-3 pl-10 pr-4 text-sm text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]"
+              className="w-full rounded-xl border border-[#E1D8D4] bg-white py-3 pl-10 pr-4 text-sm text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
               autoFocus
             />
           </div>
@@ -115,13 +115,13 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {results.length === 0 && !loading && (
-            <div className="py-10 text-center text-sm text-[#534340] sm:py-14">
+            <div className="py-10 text-center text-sm text-[#000000] sm:py-14">
               {!query ? 'Enter a search term to get started.' : hasSearched ? 'No results found. Try a different search.' : ''}
             </div>
           )}
 
           {loading && (
-            <div className="py-10 text-center text-sm text-[#534340] sm:py-14">
+            <div className="py-10 text-center text-sm text-[#000000] sm:py-14">
               Searching...
             </div>
           )}

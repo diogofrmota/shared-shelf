@@ -56,7 +56,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
     onClose();
   };
 
-  const selectCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
+  const selectCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#000000] outline-none transition focus:border-[#E63B2E]";
   const ModalShell = getMediaModalShell();
   const CloseIcon = getMediaComponent('Close');
 
@@ -65,26 +65,26 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
       isOpen={true}
       onClose={onClose}
       ariaLabel={`Progress for ${item.title}`}
-      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
         <div className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="mr-3 min-w-0 flex-1">
               <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
-              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]" title={item.title}>{item.title}</h3>
+              <h3 className="line-clamp-2 text-sm font-bold text-[#000000]" title={item.title}>{item.title}</h3>
             </div>
-            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
+            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
               <CloseIcon size={20} />
             </button>
           </div>
 
           {loading ? (
-            <div className="py-6 text-center text-sm text-[#534340]">Loading show info…</div>
+            <div className="py-6 text-center text-sm text-[#000000]">Loading show info…</div>
           ) : (
             <div className="space-y-4">
               {isTmdb && seasons && seasons.length > 0 && (
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Season</label>
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Season</label>
                   <select
                     value={currentSeason}
                     onChange={e => {
@@ -104,7 +104,7 @@ const TvProgressModal = ({ item, onClose, onSave }) => {
               )}
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Episode</label>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Episode</label>
                 {episodeCount ? (
                   <select
                     value={currentEpisode}
@@ -156,7 +156,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 
   const clampedCurrentPage = totalPages ? Math.min(currentPage, totalPages) : currentPage;
   const progressPercent = totalPages ? Math.round((clampedCurrentPage / totalPages) * 100) : null;
-  const numberInputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#241A18] outline-none transition focus:border-[#E63B2E]";
+  const numberInputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#000000] outline-none transition focus:border-[#E63B2E]";
 
   const handleCurrentPageChange = (value) => {
     const nextPage = Math.max(0, Math.floor(Number(value) || 0));
@@ -186,22 +186,22 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
       isOpen={true}
       onClose={onClose}
       ariaLabel={`Progress for ${item.title}`}
-      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
         <div className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="mr-3 min-w-0 flex-1">
               <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
-              <h3 className="line-clamp-2 text-sm font-bold text-[#410001]" title={item.title}>{item.title}</h3>
+              <h3 className="line-clamp-2 text-sm font-bold text-[#000000]" title={item.title}>{item.title}</h3>
             </div>
-            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
+            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
               <CloseIcon size={20} />
             </button>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Current page</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Current page</label>
               <input
                 type="number"
                 min="0"
@@ -213,7 +213,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]">Total pages</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Total pages</label>
               <input
                 type="number"
                 min="0"
@@ -225,7 +225,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 
             {totalPages > 0 && (
               <div>
-                <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#534340]">
+                <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#000000]">
                   <span>{clampedCurrentPage} / {totalPages} pages</span>
                   <span>{progressPercent}%</span>
                 </div>
@@ -290,7 +290,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
 
   return (
     <>
-      <div className="group relative overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10">
+      <div className="group relative overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10">
         <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
           <img
             src={safeThumbnail}
@@ -302,18 +302,18 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
         </div>
 
         <div className="space-y-1.5 p-2 sm:p-3">
-          <h3 className="line-clamp-2 text-xs font-bold leading-tight text-[#410001] sm:text-sm" title={item.title}>
+          <h3 className="line-clamp-2 text-xs font-bold leading-tight text-[#000000] sm:text-sm" title={item.title}>
             {item.title}
           </h3>
           {item.author && (
-            <p className="truncate text-[11px] font-medium text-[#534340]" title={item.author}>{item.author}</p>
+            <p className="truncate text-[11px] font-medium text-[#000000]" title={item.author}>{item.author}</p>
           )}
           {pageLabel && (
             <p className="text-[11px] font-semibold text-[#8C4F45]">{pageLabel}</p>
           )}
 
           <div className="flex items-start justify-between">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-medium text-[#534340]">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-medium text-[#000000]">
               <span className="flex items-center gap-0.5">⭐ {item.rating}</span>
               <span>·</span>
               <span>{item.year}</span>
@@ -322,7 +322,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
                 aria-label="Options"
               >
                 <ThreeDotsIcon size={14} />
@@ -331,7 +331,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute bottom-full right-0 z-20 mb-2 w-44 overflow-hidden rounded-lg border border-[#E1D8D4] bg-white py-1 shadow-xl shadow-[#410001]/15">
+                  <div className="absolute bottom-full right-0 z-20 mb-2 w-44 overflow-hidden rounded-lg border border-[#E1D8D4] bg-white py-1 shadow-xl shadow-[#000000]/15">
                     {statusOptions.map(status => (
                       <button
                         key={status}
@@ -339,7 +339,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
                           onStatusChange(item.id, status);
                           setShowMenu(false);
                         }}
-                        className="block min-h-[44px] w-full px-3 py-2 text-left text-sm text-[#410001] transition hover:bg-[#FFF8F5]"
+                        className="block min-h-[44px] w-full px-3 py-2 text-left text-sm text-[#000000] transition hover:bg-[#FFF8F5]"
                       >
                         {window.formatStatusLabel?.(status) || status}
                       </button>
@@ -412,7 +412,7 @@ const ResultCard = ({ item, category, onAdd }) => {
 
   return (
   <div
-    className="group relative cursor-pointer overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10"
+    className="group relative cursor-pointer overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10"
     onClick={() => onAdd({ ...item, category })}
   >
     <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">

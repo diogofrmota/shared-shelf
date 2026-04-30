@@ -66,8 +66,8 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
     return (
       <div className="space-y-5 animate-fade-in">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Entertainment</h2>
-          <p className="mt-1 text-sm text-[#534340]">Keep track of what you're watching and reading.</p>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Entertainment</h2>
+          <p className="mt-1 text-sm text-[#000000]">Keep track of what you're watching and reading.</p>
         </div>
         {items.length === 0 && (
           <EmptyState
@@ -85,14 +85,14 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
               key={id}
               type="button"
               onClick={() => onMediaTypeSelect?.(id)}
-              className="group flex min-h-[44px] flex-col items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#410001] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#410001]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
+              className="group flex min-h-[44px] flex-col items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#000000] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
             >
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
                 <Icon size={26} />
               </span>
               <div>
                 <p className="text-lg font-extrabold">{label}</p>
-                <p className="mt-1 text-sm font-medium text-[#534340]">{description}</p>
+                <p className="mt-1 text-sm font-medium text-[#000000]">{description}</p>
               </div>
             </button>
             );
@@ -120,12 +120,12 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           <button
             type="button"
             onClick={() => onMediaTypeSelect?.(null)}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1D8D4] bg-white text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1D8D4] bg-white text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Back to media types"
           >
             <ChevronLeft size={18} />
           </button>
-          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">{tileLabel}</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">{tileLabel}</h2>
         </div>
         <button
           type="button"
@@ -150,8 +150,8 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         return (
           <section key={section.status}>
             <div className="mb-3 flex items-baseline justify-between border-b border-[#E1D8D4] pb-2">
-              <h3 className="text-lg font-extrabold text-[#410001] sm:text-xl">{section.title}</h3>
-              <span className="text-xs font-semibold text-[#534340]">
+              <h3 className="text-lg font-extrabold text-[#000000] sm:text-xl">{section.title}</h3>
+              <span className="text-xs font-semibold text-[#000000]">
                 {sectionItems.length} {sectionItems.length === 1 ? 'item' : 'items'}
               </span>
             </div>

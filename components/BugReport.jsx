@@ -42,8 +42,8 @@ function BugReportPage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
     window.location.href = mailto;
   };
 
-  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
-  const labelClass = "mb-1.5 block text-sm font-bold text-[#241A18]";
+  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
+  const labelClass = "mb-1.5 block text-sm font-bold text-[#000000]";
 
   return (
     <LegalPageShell
@@ -53,7 +53,7 @@ function BugReportPage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
       onUpdateUser={onUpdateUser}
       onLogout={onLogout}
     >
-      <p className="text-sm text-[#534340] sm:text-base">
+      <p className="text-sm text-[#000000] sm:text-base">
         Found something broken or confusing? Tell us what happened and we will take a look. Submitting opens
         your email client with a pre-filled message.
       </p>
@@ -115,7 +115,7 @@ function BugReportPage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
         </div>
 
         {submitted && (
-          <p className="rounded-xl bg-[#FFDAD4] px-4 py-3 text-sm font-semibold text-[#410001]">
+          <p className="rounded-xl bg-[#FFDAD4] px-4 py-3 text-sm font-semibold text-[#000000]">
             Your email client should have opened with the report.
           </p>
         )}

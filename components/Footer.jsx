@@ -10,12 +10,12 @@ function SiteFooter({ onNavigate }) {
     }
   };
 
-  const linkClass = "text-[#534340] transition hover:text-[#E63B2E]";
+  const linkClass = "text-[#000000] transition hover:text-[#E63B2E]";
 
   return (
     <footer className="border-t border-[#E1D8D4] bg-[#FFF8F5]">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-3 px-4 py-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
-        <p className="text-sm font-semibold text-[#534340]">
+        <p className="text-sm font-semibold text-[#000000]">
           © {year} Couple Planner
         </p>
         <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold">

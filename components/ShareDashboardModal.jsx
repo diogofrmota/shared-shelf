@@ -81,12 +81,12 @@ function ShareDashboardModal({ isOpen, onClose, dashboard }) {
       onClose={onClose}
       zClass="z-[180]"
       ariaLabel="Share dashboard"
-      dialogClassName="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#410001]/30"
+      dialogClassName="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl shadow-[#000000]/30"
     >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-[#410001]">Share dashboard</h2>
-            <p className="mt-1 text-sm text-[#534340]">
+            <h2 className="text-xl font-extrabold text-[#000000]">Share dashboard</h2>
+            <p className="mt-1 text-sm text-[#000000]">
               {canGenerateInvite
                 ? 'Share this dashboard ID and one-time code so someone else can join.'
                 : 'Only the dashboard owner can create or refresh join codes.'}
@@ -94,7 +94,7 @@ function ShareDashboardModal({ isOpen, onClose, dashboard }) {
           </div>
           <button
             onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
             aria-label="Close share modal"
           >
             <CloseIcon size={18} />
@@ -103,17 +103,17 @@ function ShareDashboardModal({ isOpen, onClose, dashboard }) {
 
         <div className="mb-4 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard</p>
-          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#410001]" title={dashboard.name}>{dashboard.name}</p>
+          <p className="mt-1 line-clamp-2 text-lg font-extrabold leading-tight text-[#000000]" title={dashboard.name}>{dashboard.name}</p>
         </div>
 
         {loading ? (
-          <p className="py-10 text-center text-sm font-medium text-[#534340]">Loading share details...</p>
+          <p className="py-10 text-center text-sm font-medium text-[#000000]">Loading share details...</p>
         ) : (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
               <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard ID</p>
               <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{shareInfo?.dashboardId || dashboard.id}</code>
+                <code className="flex-1 break-all text-sm font-bold text-[#000000]">{shareInfo?.dashboardId || dashboard.id}</code>
                 <button
                   onClick={() => copyValue('dashboardId', shareInfo?.dashboardId || dashboard.id)}
                   className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#E63B2E] transition hover:bg-[#FFF8F5]"
@@ -127,7 +127,7 @@ function ShareDashboardModal({ isOpen, onClose, dashboard }) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
-                  <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
+                  <p className="mt-1 text-xs text-[#000000]">This code works once, then expires.</p>
                 </div>
                 {canGenerateInvite && (
                   <button
@@ -141,7 +141,7 @@ function ShareDashboardModal({ isOpen, onClose, dashboard }) {
               </div>
 
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#241A18]">{shareInfo?.joinCode || '--------'}</code>
+                <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#000000]">{shareInfo?.joinCode || '--------'}</code>
                 <button
                   onClick={() => shareInfo?.joinCode && copyValue('joinCode', shareInfo.joinCode)}
                   disabled={!shareInfo?.joinCode}

@@ -28,8 +28,8 @@ const ProfileColorDot = ({ user, size = 40 }) => {
   );
 };
 
-const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
-const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#534340]";
+const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]";
+const labelCls = "mb-1 block text-xs font-bold uppercase tracking-wide text-[#000000]";
 
 const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, dashboard, onSaveDashboard, currentUser, onSaveAccount, onLogout, onLeaveDashboard }) => {
   const sectionOptions = window.SECTION_OPTIONS || [];
@@ -183,18 +183,18 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
         onClose={onClose}
         zClass="z-[200]"
         ariaLabel="Profiles"
-        dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+        dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
       >
           <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+                <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#000000]">
                   <UserIcon size={20} className="text-[#E63B2E]" />
                   Profiles
                 </h2>
-                <p className="mt-0.5 text-xs text-[#534340]">Manage who uses this shared dashboard.</p>
+                <p className="mt-0.5 text-xs text-[#000000]">Manage who uses this shared dashboard.</p>
               </div>
-              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profiles">
+              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profiles">
                 <Close size={20} />
               </button>
             </div>
@@ -229,7 +229,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
                   {users.length > 1 && (
                     <button
                       onClick={() => removeUser(user.id)}
-                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       title="Remove"
                     >
                       <Trash size={15} />
@@ -258,7 +258,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
 
             <button
               onClick={addUser}
-              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#E1D8D4] py-3 text-sm font-bold text-[#534340] transition hover:border-[#E63B2E] hover:text-[#E63B2E]"
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#E1D8D4] py-3 text-sm font-bold text-[#000000] transition hover:border-[#E63B2E] hover:text-[#E63B2E]"
             >
               <Plus size={16} />
               Add another person
@@ -266,7 +266,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
           </div>
 
           <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
-            <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
+            <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
             <button onClick={handleSave} className="flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
@@ -331,14 +331,14 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
         onClose={onClose}
         zClass="z-[200]"
         ariaLabel="dashboard settings"
-        dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+        dialogClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
       >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
-            <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+            <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#000000]">
               <SettingsIcon size={20} className="text-[#E63B2E]" />
               dashboard settings
             </h2>
-            <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close settings">
+            <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close settings">
               <Close size={20} />
             </button>
           </div>
@@ -360,7 +360,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
               <p className={labelCls}>Shared items</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {sectionOptions.map(section => (
-                  <label key={section.id} className="flex min-h-[44px] items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
+                  <label key={section.id} className="flex min-h-[44px] items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]">
                     <input
                       type="checkbox"
                       checked={selectedSections.includes(section.id)}
@@ -377,8 +377,8 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
             <div className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4">
               <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="text-base font-extrabold text-[#410001]">Share dashboard</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
+                  <h3 className="text-base font-extrabold text-[#000000]">Share dashboard</h3>
+                  <p className="mt-1 text-sm text-[#000000]">
                     {canGenerateInvite
                       ? 'Share this dashboard ID and one-time code so someone else can join.'
                       : 'Only the dashboard owner can create or refresh join codes.'}
@@ -397,13 +397,13 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
               </div>
 
               {shareLoading ? (
-                <p className="py-6 text-center text-sm font-medium text-[#534340]">Loading share details...</p>
+                <p className="py-6 text-center text-sm font-medium text-[#000000]">Loading share details...</p>
               ) : (
                 <div className="space-y-3">
                   <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">dashboard ID</p>
                     <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <code className="flex-1 break-all text-sm font-bold text-[#241A18]">{dashboardId}</code>
+                      <code className="flex-1 break-all text-sm font-bold text-[#000000]">{dashboardId}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('dashboardId', dashboardId)}
@@ -416,9 +416,9 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
 
                   <div className="rounded-xl border border-[#E1D8D4] bg-white p-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
-                    <p className="mt-1 text-xs text-[#534340]">This code works once, then expires.</p>
+                    <p className="mt-1 text-xs text-[#000000]">This code works once, then expires.</p>
                     <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#241A18]">{joinCode || '--------'}</code>
+                      <code className="flex-1 break-all text-lg font-extrabold tracking-[0.25em] text-[#000000]">{joinCode || '--------'}</code>
                       <button
                         type="button"
                         onClick={() => copyValue('joinCode', joinCode)}
@@ -437,14 +437,14 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
 
             {onLeaveDashboard && (
               <div className="rounded-2xl border border-[#E1D8D4] bg-white p-4">
-                <h3 className="text-base font-extrabold text-[#410001]">Shared dashboard access</h3>
-                <p className="mt-1 text-sm text-[#534340]">
+                <h3 className="text-base font-extrabold text-[#000000]">Shared dashboard access</h3>
+                <p className="mt-1 text-sm text-[#000000]">
                   Leave this shared dashboard and return to your dashboard selection.
                 </p>
                 {confirmLeaveDashboard ? (
                   <div className="mt-4 rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
-                    <p className="text-sm font-bold text-[#410001]">Leave shared dashboard?</p>
-                    <p className="mt-1 text-xs leading-5 text-[#534340]">
+                    <p className="text-sm font-bold text-[#000000]">Leave shared dashboard?</p>
+                    <p className="mt-1 text-xs leading-5 text-[#000000]">
                       You will be removed from this dashboard. If no other members remain, the dashboard and its data are deleted.
                     </p>
                     <div className="mt-3 grid grid-cols-2 gap-2">
@@ -452,7 +452,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
                         type="button"
                         onClick={() => setConfirmLeaveDashboard(false)}
                         disabled={leavingDashboard}
-                        className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                        className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                       >
                         Stay
                       </button>
@@ -480,7 +480,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
                     type="button"
                     onClick={() => setConfirmLeaveDashboard(true)}
                     disabled={leavingDashboard}
-                    className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
+                    className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F] disabled:opacity-60"
                   >
                     {leavingDashboard ? 'Leaving...' : 'Leave shared dashboard'}
                   </button>
@@ -489,7 +489,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
             )}
           </div>
           <div className="flex gap-3 border-t border-[#E1D8D4] bg-white p-5">
-            <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
+            <button onClick={onClose} className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]">
               Cancel
             </button>
             <button onClick={handleSave} disabled={!canEditDashboardSettings} className="min-h-[44px] flex-1 rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:opacity-60">
@@ -666,15 +666,15 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
         onClose={onClose}
         zClass="z-[200]"
         ariaLabel="Profile"
-        dialogClassName="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#410001]/30"
+        dialogClassName="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
       >
           <div className="sticky top-0 z-10 border-b border-[#E1D8D4] bg-white p-5">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#410001]">
+              <h2 className="flex items-center gap-2 text-xl font-extrabold text-[#000000]">
                 <UserIcon size={20} className="text-[#E63B2E]" />
                 Profile
               </h2>
-              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profile">
+              <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close profile">
                 <Close size={20} />
               </button>
             </div>
@@ -709,7 +709,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
               spellCheck={false}
             />
             {usernameStatus === 'checking'
-              ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+              ? <p className="mt-1 text-xs text-[#000000]">Checking availability...</p>
               : usernameStatus === 'available'
                 ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
                 : usernameStatus === 'taken'
@@ -722,7 +722,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
               id="account-email"
               type="email"
               value={currentUser?.email || ''}
-              className={`${inputCls} text-[#534340]`}
+              className={`${inputCls} text-[#000000]`}
               autoComplete="email"
               readOnly
             />
@@ -732,10 +732,10 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
             <button
               type="button"
               onClick={() => { setPwSection(prev => !prev); setPwError(''); setPwSuccess(''); setPwCurrent(''); setPwNew(''); setEmailSection(false); }}
-              className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+              className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
             >
               <span>Change password</span>
-              <span className="text-[#857370]" aria-hidden="true">{pwSection ? '▲' : '▼'}</span>
+              <span className="text-[#000000]" aria-hidden="true">{pwSection ? '▲' : '▼'}</span>
             </button>
             {pwSection && (
               <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangePassword}>
@@ -762,7 +762,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
                     autoComplete="new-password"
                     placeholder="New password"
                   />
-                  <p className="mt-1 text-xs text-[#857370]">At least 5 letters and 1 number</p>
+                  <p className="mt-1 text-xs text-[#000000]">At least 5 letters and 1 number</p>
                 </div>
                 {pwError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{pwError}</p>}
                 {pwSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{pwSuccess}</p>}
@@ -781,10 +781,10 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
             <button
               type="button"
               onClick={() => { setEmailSection(prev => !prev); setEmailError(''); setEmailSuccess(''); setNewEmail(''); setPwSection(false); }}
-              className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+              className="flex min-h-[44px] w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
             >
               <span>Change email</span>
-              <span className="text-[#857370]" aria-hidden="true">{emailSection ? '^' : 'v'}</span>
+              <span className="text-[#000000]" aria-hidden="true">{emailSection ? '^' : 'v'}</span>
             </button>
             {emailSection && (
               <form className="space-y-3 border-t border-[#E1D8D4] px-3 pb-3 pt-3" onSubmit={handleChangeEmail}>
@@ -800,7 +800,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
                     placeholder="you@example.com"
                     spellCheck={false}
                   />
-                  <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                  <p className="mt-1 text-xs text-[#000000]">A confirmation link will be sent to the new address.</p>
                 </div>
                 {emailError && <p className="text-sm font-semibold text-[#C1121F]" role="alert">{emailError}</p>}
                 {emailSuccess && <p className="text-sm font-semibold text-[#2F855A]" role="status">{emailSuccess}</p>}
@@ -822,7 +822,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
             <button
               type="button"
               onClick={resetAccountEdit}
-              className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+              className="min-h-[44px] flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
               disabled={accountSaving}
             >
               Cancel
@@ -849,9 +849,9 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
               {initials}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
-              <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
-              {currentUser?.email && <p className="truncate text-xs text-[#534340]" title={currentUser.email}>{currentUser.email}</p>}
+              <p className="truncate text-base font-bold text-[#000000]" title={displayName}>{displayName}</p>
+              <p className="truncate text-xs font-semibold text-[#000000]" title={username}>{username}</p>
+              {currentUser?.email && <p className="truncate text-xs text-[#000000]" title={currentUser.email}>{currentUser.email}</p>}
             </div>
           </div>
         </div>
@@ -867,7 +867,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
               setPwSection(false);
               setEmailSection(false);
             }}
-            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
           >
             <UserIcon size={18} />
             Edit profile
@@ -875,7 +875,7 @@ const ProfileModal = ({ mode = 'profiles', isOpen, onClose, profile, onSave, das
           <button
             type="button"
             onClick={() => { onLogout?.(); onClose?.(); }}
-            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
           >
             <LogoutIcon size={16} />
             Log out
