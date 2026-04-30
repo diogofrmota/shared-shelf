@@ -1,4 +1,4 @@
-import { initializeDatabase } from '../lib/db.js';
+import { initializeDatabase, sql } from '../lib/db.js';
 import { assertSafeProductionJwtSecret, cors, IS_PRODUCTION, errResponse } from '../lib/auth-shared.js';
 import { timingSafeEqual } from 'crypto';
 
@@ -22,15 +22,40 @@ function isSetupAuthorized(req) {
   return timingSafeEqual(providedBuffer, expectedBuffer);
 }
 
+async function resetDatabase() {
+  await sql`TRUNCATE TABLE
+    auth_rate_limits,
+    email_change_tokens,
+    email_verification_tokens,
+    password_reset_tokens,
+    dashboard_data,
+    dashboard_join_codes,
+    dashboard_members,
+    dashboards,
+    user_data,
+    users
+  CASCADE`;
+}
+
 export default async function handler(req, res) {
   cors(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET' && req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
 
   if (!isSetupAuthorized(req)) {
     return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  if (req.method === 'DELETE') {
+    try {
+      await resetDatabase();
+      return res.status(200).json({ message: 'Database cleared successfully.' });
+    } catch (error) {
+      return errResponse(res, error);
+    }
+  }
+
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
