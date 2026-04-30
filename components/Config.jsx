@@ -25,7 +25,7 @@ const STORAGE_CONFIG = {
     calendarEvents: [],
     tasks: [],
     locations: [],
-    trips: [],
+    expenses: [],
     recipes: [],
     watchlist: [],
     profile: { users: [] }
@@ -89,7 +89,7 @@ const TAB_CONFIG = {
   TASKS: { id: 'tasks', label: 'Tasks' },
   CALENDAR: { id: 'calendar', label: 'Calendar' },
   LOCATIONS: { id: 'locations', label: 'Locations' },
-  TRIPS: { id: 'trips', label: 'Trips' },
+  EXPENSES: { id: 'expenses', label: 'Expenses' },
   RECIPES: { id: 'recipes', label: 'Recipes' },
   TV_SHOWS: { id: 'tvshows', label: 'TV Shows' },
   MOVIES: { id: 'movies', label: 'Movies' },
@@ -118,7 +118,7 @@ const SECTION_OPTIONS = [
   { id: 'calendar', label: 'Calendar' },
   { id: 'tasks', label: 'Tasks' },
   { id: 'locations', label: 'Locations' },
-  { id: 'trips', label: 'Trips' },
+  { id: 'expenses', label: 'Expenses' },
   { id: 'recipes', label: 'Recipes' },
   { id: 'watchlist', label: 'Entertainment' }
 ];
@@ -131,7 +131,6 @@ const createSvgPlaceholder = (label, width = 800, height = 500, background = '#F
 };
 
 const PLACEHOLDER_IMAGE = createSvgPlaceholder('No Image', 500, 750, '#131834', '#dedede');
-const TRIP_PHOTO_PLACEHOLDER = createSvgPlaceholder('Trip');
 const RECIPE_PHOTO_PLACEHOLDER = createSvgPlaceholder('Recipe');
 
 const API_REQUEST_CONFIG = {
@@ -401,7 +400,7 @@ Object.assign(window, {
   API_CONFIG, STORAGE_CONFIG, API_BASE_URL, FEATURES,
   STATUS_CONFIG, STATUS_STYLES, STATUS_LABELS, FILTER_CONFIG,
   TAB_CONFIG, DATE_CATEGORIES, DATE_CATEGORY_STYLES,
-  SECTION_OPTIONS, MEDIA_TABS, PLACEHOLDER_IMAGE, TRIP_PHOTO_PLACEHOLDER, RECIPE_PHOTO_PLACEHOLDER, API_REQUEST_CONFIG,
+  SECTION_OPTIONS, MEDIA_TABS, PLACEHOLDER_IMAGE, RECIPE_PHOTO_PLACEHOLDER, API_REQUEST_CONFIG,
   AUTH_STORAGE_KEY,
   isAuthenticated, authenticate, logout,
   transformMovieData, transformAnimeData, transformBookData,

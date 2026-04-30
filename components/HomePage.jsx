@@ -6,7 +6,7 @@ const FEATURES = [
   {
     icon: 'CalendarIcon',
     title: 'Calendar',
-    description: 'Sync your agenda with your partner, add dates, trips and reminders.',
+    description: 'Sync your agenda with your partner, add dates and reminders together.',
     bg: '#FFE4E0',
     border: '#F5ADA5',
     accent: '#D8271C',
@@ -31,13 +31,13 @@ const FEATURES = [
     fade: '#F39A3D'
   },
   {
-    icon: 'Film',
-    title: 'Trips',
+    icon: 'DollarSign',
+    title: 'Expenses',
     bg: '#E4EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
     fade: '#6EA5F2',
-    description: 'Keep itineraries, bookings, packing lists, and notes for trips.'
+    description: 'Track shared spending, split costs, and see where your money goes.'
   },
   {
     icon: 'ChefHat',
@@ -540,7 +540,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is an app that lets you and your partner create a shared
-                dashboard. One private place to share your calendar, tasks, date ideas, trips, recipes,
+                dashboard. One private place to share your calendar, tasks, date ideas, expenses, recipes,
                 and watchlists.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -593,7 +593,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             </figure>
             <p className="mt-2.5 text-base text-[#000000] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
-              your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
+              your calendar, tasks, date ideas, expenses, recipes, and shared entertainment, into
               one private dashboard. Both partners can read and update the same content, so nothing
               gets lost across multiple apps.
             </p>

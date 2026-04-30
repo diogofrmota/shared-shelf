@@ -1,4 +1,4 @@
-const DEFAULT_DASHBOARD_SECTIONS = ['calendar', 'tasks', 'locations', 'trips', 'recipes', 'watchlist'];
+const DEFAULT_DASHBOARD_SECTIONS = ['calendar', 'tasks', 'locations', 'expenses', 'recipes', 'watchlist'];
 const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report', 'not-found']);
 const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report', 'not-found']);
 const LEGACY_PROFILE_COLOR_MAP = {
@@ -20,7 +20,7 @@ function defaultDashboardData() {
     calendarEvents: [],
     tasks: [],
     locations: [],
-    trips: [],
+    expenses: [],
     recipes: [],
     watchlist: [],
     profile: {
@@ -104,43 +104,21 @@ const normalizeTask = (task = {}) => {
   };
 };
 
-const normalizeTripListItems = (items, mapItem) => asArray(items)
-  .filter(item => item !== null && item !== undefined && item !== '')
-  .map((item, index) => mapItem(item, index));
+const VALID_EXPENSE_CATEGORIES = new Set(['food', 'transport', 'accommodation', 'entertainment', 'shopping', 'health', 'other']);
 
-const normalizeTrip = (trip = {}) => {
-  const startDate = trip.startDate || trip.date || '';
-  const endDate = trip.endDate || startDate || '';
+const normalizeExpense = (expense = {}) => {
+  const rawAmount = expense.amount;
+  const amount = (rawAmount === null || rawAmount === undefined || rawAmount === '') ? null : (Number.isFinite(Number(rawAmount)) ? Number(rawAmount) : null);
+  const category = VALID_EXPENSE_CATEGORIES.has(String(expense.category || '')) ? String(expense.category) : 'other';
 
   return {
-    ...trip,
-    startDate,
-    endDate,
-    itinerary: normalizeTripListItems(trip.itinerary, (item, index) => ({
-      id: item.id || `itinerary-${index}`,
-      date: item.date || '',
-      time: item.time || '',
-      title: item.title || item.name || '',
-      notes: item.notes || item.description || ''
-    })),
-    bookings: normalizeTripListItems(trip.bookings, (item, index) => ({
-      id: item.id || `booking-${index}`,
-      type: item.type || 'reservation',
-      title: item.title || item.name || '',
-      link: window.safeExternalUrl?.(item.link || item.url) || '',
-      notes: item.notes || item.description || ''
-    })),
-    notes: trip.notes || '',
-    photo: window.safeImageUrl?.(trip.photo) || '',
-    accommodation: window.safeExternalUrl?.(trip.accommodation) || '',
-    packingList: normalizeTripListItems(trip.packingList || trip.packing, (item, index) => {
-      if (typeof item === 'string') return { id: `packing-${index}`, text: item, packed: false };
-      return {
-        id: item.id || `packing-${index}`,
-        text: item.text || item.name || '',
-        packed: Boolean(item.packed)
-      };
-    }).filter(item => item.text)
+    ...expense,
+    description: expense.description || '',
+    amount,
+    category,
+    date: expense.date || '',
+    paidBy: expense.paidBy || '',
+    notes: expense.notes || ''
   };
 };
 
@@ -231,7 +209,7 @@ const normalizeDashboardDataForClient = (DashboardData = {}) => {
       lat: Number.isFinite(Number(location?.lat)) ? Number(location.lat) : null,
       lng: Number.isFinite(Number(location?.lng)) ? Number(location.lng) : null
     })),
-    trips: asArray(raw.trips).map(normalizeTrip),
+    expenses: asArray(raw.expenses).map(normalizeExpense),
     recipes: asArray(raw.recipes).map(recipe => ({
       ...recipe,
       name: recipe?.name || '',
