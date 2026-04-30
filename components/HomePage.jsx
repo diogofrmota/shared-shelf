@@ -5,8 +5,8 @@ const getHomeComponent = (name) => window.getWindowComponent?.(name, window.Miss
 const FEATURES = [
   {
     icon: 'CalendarIcon',
-    title: 'Shared Calendar',
-    description: 'Plan dates, anniversaries, and recurring routines on one calendar that both of you see.',
+    title: 'Calendar',
+    description: 'Sync your agenda with your partner, add dates, trips and reminders.',
     bg: '#FFE4E0',
     border: '#F5ADA5',
     accent: '#D8271C',
@@ -15,7 +15,7 @@ const FEATURES = [
   {
     icon: 'CheckSquare',
     title: 'Tasks List',
-    description: 'Split chores and errands, assign tasks to either of you, set due dates, and repeat the ones that come back every week.',
+    description: 'Split chores, setup reminders and assign tasks to either of you.',
     bg: '#E1F5EE',
     border: '#91D7BF',
     accent: '#00845F',
@@ -23,8 +23,8 @@ const FEATURES = [
   },
   {
     icon: 'MapPin',
-    title: 'Favourite Locations',
-    description: 'Save restaurants, bars, and date ideas on a shared map with categories, ratings, and notes.',
+    title: 'Locations',
+    description: 'Save restaurants, bars, and date ideas on a shared map with categories and ratings.',
     bg: '#FFE8D7',
     border: '#F2B27A',
     accent: '#D65A00',
@@ -32,17 +32,17 @@ const FEATURES = [
   },
   {
     icon: 'Film',
-    title: 'Plan Your Next Trip',
+    title: 'Trips',
     bg: '#E4EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
     fade: '#6EA5F2',
-    description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming and past trips together.'
+    description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming trips.'
   },
   {
     icon: 'ChefHat',
-    title: 'Recipe Collection',
-    description: 'Build a shared recipe book with ingredients, instructions, prep time, and source links for the meals you cook together.',
+    title: 'Recipes',
+    description: 'Build a shared recipe book with ingredients, instructions, prep time and source links.',
     bg: '#FFE4F6',
     border: '#EAA3D6',
     accent: '#B8329B',
@@ -51,7 +51,7 @@ const FEATURES = [
   {
     icon: 'Tv',
     title: 'Entertainment',
-    description: 'Track the movies, TV shows and books you want to watch and read together, with statuses, ratings, and season progress.',
+    description: 'Track the movies, TV shows and books you want to watch and read together.',
     bg: '#ECE8FF',
     border: '#B9ADF2',
     accent: '#6B52D9',
@@ -91,15 +91,15 @@ const AudienceUsersIcon = ({ size = 20, className = '' }) => (
 const COUPLE_SCENARIOS = [
   {
     icon: AudiencePlaneIcon,
-    title: 'Planning a weekend away',
-    description: 'Keep trip dates, bookings, packing notes, and the places you want to visit together in one shared plan.',
+    title: 'Planning a weekend',
+    description: 'Keep trip dates, bookings, packing notes, and the places you want to visit together.',
     bg: '#FFE3DD',
     border: '#F2A69B',
     accent: '#D8271C'
   },
   {
     icon: AudienceHomeIcon,
-    title: 'Splitting weekly chores',
+    title: 'Splitting chores',
     description: 'Assign errands, repeat household tasks, and see what is due without digging through old messages.',
     bg: '#E3F5EA',
     border: '#95D3AC',
@@ -115,7 +115,7 @@ const COUPLE_SCENARIOS = [
   },
   {
     icon: AudienceUsersIcon,
-    title: 'Tracking shows you watch together',
+    title: 'Tracking shows',
     bg: '#E3EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
