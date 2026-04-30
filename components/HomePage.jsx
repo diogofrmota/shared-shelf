@@ -558,12 +558,12 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 </a>
               </div>
             </div>
-            <div className="w-full max-w-lg flex-1 lg:max-w-2xl">
+            <div className="w-full max-w-2xl flex-1 lg:max-w-4xl">
               <figure className="flex justify-center">
                 <img
                   src="/assets/ui-showcase-no-background.png"
                   alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
-                  className="block w-full max-w-[34rem] object-contain drop-shadow-2xl lg:max-w-[42rem]"
+                  className="block w-full max-w-[68rem] object-contain drop-shadow-2xl lg:max-w-[84rem]"
                   loading="eager"
                 />
               </figure>
