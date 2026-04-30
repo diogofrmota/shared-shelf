@@ -561,9 +561,9 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             <div className="w-full max-w-md flex-1 lg:max-w-xl">
               <figure className="overflow-hidden rounded-3xl border border-white/30 bg-white/95 shadow-2xl shadow-black/30">
                 <img
-                  src="/assets/app-showcase.jpg"
-                  alt="Angled screenshots of Couple Planner calendar, locations, tasks, recipes, and TV show tracker screens."
-                  className="block aspect-[4/3] w-full object-cover"
+                  src="/assets/ui-showcase-no-background.png"
+                  alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
+                  className="block aspect-[4/3] w-full object-contain"
                   loading="eager"
                 />
               </figure>
