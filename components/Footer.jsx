@@ -14,7 +14,7 @@ function SiteFooter({ onNavigate }) {
 
   return (
     <footer className="border-t border-[#E1D8D4] bg-[#FFF8F5]">
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-3 px-4 py-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
         <p className="text-sm font-semibold text-[#000000]">
           © {year} Couple Planner
         </p>
