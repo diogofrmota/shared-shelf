@@ -581,7 +581,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               Couple Planner brings together everything you coordinate as a couple, including
               your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
               one private dashboard. Both partners can read and update the same content, so nothing
-              gets lost across multiple apps or messages.
+              gets lost across multiple apps.
             </p>
           </div>
         </section>
@@ -632,7 +632,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 Built for the plans couples actually make.
               </h2>
               <p className="mt-3 text-base text-[#000000] sm:text-lg">
-                Recognize the everyday moments you already coordinate, then keep them together in one shared place.
+                Coordinate all your everyday moments in one shared dashboard.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
@@ -680,7 +680,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <div>
                   <h3 className="text-lg font-extrabold text-[#000000]">Create a private dashboard</h3>
                   <p className="mt-1 text-sm text-[#000000]">
-                    Set up one shared place for your calendar, tasks, trips, recipes, places, and watchlist.
+                    Set up the dashboard that you will share with your partner.
                   </p>
                 </div>
               </li>
@@ -692,7 +692,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <div>
                   <h3 className="text-lg font-extrabold text-[#000000]">Invite your partner</h3>
                   <p className="mt-1 text-sm text-[#000000]">
-                    Send them the dashboard details so only the two of you can access and update it.
+                    Keep everything private, only invited people can see the information.
                   </p>
                 </div>
               </li>
@@ -704,7 +704,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <div>
                   <h3 className="text-lg font-extrabold text-[#000000]">Start planning together</h3>
                   <p className="mt-1 text-sm text-[#000000]">
-                    Add plans, split chores, save date ideas, and keep everything synced in one private dashboard.
+                    Add plans, tasks, date ideas, and keep everything synced in one dashboard.
                   </p>
                 </div>
               </li>
@@ -715,7 +715,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
         <section className="bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
             <h2 className="text-2xl font-extrabold tracking-tight text-[#000000] sm:text-3xl">
-              Ready to manage your relationship, together?
+              Ready to manage your relationship together?
             </h2>
             <p className="mt-3 text-base text-[#000000]">
               Sign in if you already have an account, or create one to start planning with your partner.
