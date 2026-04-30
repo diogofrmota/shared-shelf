@@ -24,7 +24,7 @@ const FEATURES = [
   {
     icon: 'MapPin',
     title: 'Locations',
-    description: 'Save restaurants, bars, and date ideas on a shared map with categories and ratings.',
+    description: 'Save restaurants, bars, and date ideas on a shared map.',
     bg: '#FFE8D7',
     border: '#F2B27A',
     accent: '#D65A00',
@@ -37,12 +37,12 @@ const FEATURES = [
     border: '#9CBFF4',
     accent: '#1D6BDA',
     fade: '#6EA5F2',
-    description: 'Keep itineraries, bookings, packing lists, and notes for your upcoming trips.'
+    description: 'Keep itineraries, bookings, packing lists, and notes for trips.'
   },
   {
     icon: 'ChefHat',
     title: 'Recipes',
-    description: 'Build a shared recipe book with ingredients, instructions, prep time and source links.',
+    description: 'Build a shared recipe book with all ingredients and instructions.',
     bg: '#FFE4F6',
     border: '#EAA3D6',
     accent: '#B8329B',
@@ -51,7 +51,7 @@ const FEATURES = [
   {
     icon: 'Tv',
     title: 'Entertainment',
-    description: 'Track the movies, TV shows and books you want to watch and read together.',
+    description: 'Track the movies, TV shows and books you want to watch and read.',
     bg: '#ECE8FF',
     border: '#B9ADF2',
     accent: '#6B52D9',
@@ -92,7 +92,7 @@ const COUPLE_SCENARIOS = [
   {
     icon: AudiencePlaneIcon,
     title: 'Planning a weekend',
-    description: 'Keep trip dates, bookings, packing notes, and the places you want to visit together.',
+    description: 'Track trip dates, bookings, packing notes and prices.',
     bg: '#FFE3DD',
     border: '#F2A69B',
     accent: '#D8271C'
@@ -100,7 +100,7 @@ const COUPLE_SCENARIOS = [
   {
     icon: AudienceHomeIcon,
     title: 'Splitting chores',
-    description: 'Assign errands, repeat household tasks, and see what is due without digging through old messages.',
+    description: 'Assign errands, repeat household tasks, and see what is due.',
     bg: '#E3F5EA',
     border: '#95D3AC',
     accent: '#00845F'
@@ -111,7 +111,7 @@ const COUPLE_SCENARIOS = [
     bg: '#FFE2F3',
     border: '#E89BC7',
     accent: '#B8329B',
-    description: 'Collect restaurants, bars, activities, and little ideas for the next time you ask what you should do.'
+    description: 'Collect restaurants, bars, activities, and little ideas for dates.'
   },
   {
     icon: AudienceUsersIcon,
@@ -119,7 +119,7 @@ const COUPLE_SCENARIOS = [
     bg: '#E3EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
-    description: 'Queue movies and TV shows, track progress, and remember what you both wanted to watch next.'
+    description: 'Queue movies and TV shows, track progress and make suggestions.'
   }
 ];
 
