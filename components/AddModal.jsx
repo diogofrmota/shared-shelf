@@ -93,61 +93,23 @@ const isMultiDayCalendarEvent = (formData = {}) => (
   Boolean(formData.date && formData.endDate && formData.endDate > formData.date)
 );
 
-const createTripItemId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-const emptyItineraryItem = () => ({ id: createTripItemId('itinerary'), date: '', time: '', title: '', notes: '' });
-const emptyBookingItem = () => ({ id: createTripItemId('booking'), type: 'accommodation', title: '', link: '', notes: '' });
-const emptyPackingItem = () => ({ id: createTripItemId('packing'), text: '', packed: false });
+const EXPENSE_CATEGORIES = window.EXPENSE_CATEGORIES || [
+  { value: 'food', label: 'Food & Drink' },
+  { value: 'transport', label: 'Transport' },
+  { value: 'accommodation', label: 'Accommodation' },
+  { value: 'entertainment', label: 'Entertainment' },
+  { value: 'shopping', label: 'Shopping' },
+  { value: 'health', label: 'Health' },
+  { value: 'other', label: 'Other' }
+];
 
-const deriveTripYear = (formData = {}) => {
-  const parsedYear = parseInt(formData.year, 10);
-  if (parsedYear) return parsedYear;
-  if (formData.startDate) {
-    const parsedDate = new Date(formData.startDate);
-    if (!Number.isNaN(parsedDate.getTime())) return parsedDate.getFullYear();
-  }
-  return new Date().getFullYear();
-};
-
-const cleanTripItinerary = (items) => (Array.isArray(items) ? items : [])
-  .map(item => ({
-    id: item.id || createTripItemId('itinerary'),
-    date: item.date || '',
-    time: item.time || '',
-    title: item.title || '',
-    notes: item.notes || ''
-  }))
-  .filter(item => item.date || item.time || item.title || item.notes);
-
-const cleanTripBookings = (items) => (Array.isArray(items) ? items : [])
-  .filter(item => item?.title || item?.link || item?.notes)
-  .map(item => ({
-    id: item.id || createTripItemId('booking'),
-    type: item.type || 'reservation',
-    title: item.title || '',
-    link: item.link || '',
-    notes: item.notes || ''
-  }));
-
-const cleanPackingList = (items) => (Array.isArray(items) ? items : [])
-  .map(item => ({
-    id: item.id || createTripItemId('packing'),
-    text: item.text || '',
-    packed: Boolean(item.packed)
-  }))
-  .filter(item => item.text);
-
-const buildTripPayload = (formData = {}) => ({
-  destination: formData.destination || '',
-  year: deriveTripYear(formData),
-  tripType: formData.tripType || 'next',
-  startDate: formData.startDate || '',
-  endDate: formData.endDate || formData.startDate || '',
-  photo: formData.photo || '',
-  accommodation: formData.accommodation || '',
-  itinerary: cleanTripItinerary(formData.itinerary),
-  bookings: cleanTripBookings(formData.bookings),
-  notes: formData.notes || '',
-  packingList: cleanPackingList(formData.packingList)
+const buildExpensePayload = (formData = {}) => ({
+  description: formData.description || '',
+  amount: formData.amount != null && formData.amount !== '' ? Number(formData.amount) : null,
+  category: formData.category || 'other',
+  date: formData.date || '',
+  paidBy: formData.paidBy || '',
+  notes: formData.notes || ''
 });
 
 const RECURRENCE_OPTIONS = [
@@ -277,118 +239,8 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
   );
 };
 
-const TripListSection = ({ title, actionLabel, rows, emptyRow, children, onChange }) => {
-  const visibleRows = Array.isArray(rows) && rows.length ? rows : [emptyRow()];
-  const updateRow = (id, patch) => onChange(visibleRows.map(row => row.id === id ? { ...row, ...patch } : row));
-  const removeRow = (id) => onChange(visibleRows.length === 1 ? [] : visibleRows.filter(row => row.id !== id));
 
-  return (
-    <div className="space-y-2 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-[#000000]">{title}</h3>
-        <button
-          type="button"
-          onClick={() => onChange([...visibleRows, emptyRow()])}
-          className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-xs font-bold text-[#000000] transition hover:border-[#FFB4A9] hover:text-[#E63B2E]"
-        >
-          {actionLabel}
-        </button>
-      </div>
-      <div className="space-y-2">
-        {visibleRows.map((row, index) => (
-          <div key={row.id} className="rounded-lg border border-[#E1D8D4] bg-white p-3">
-            {children(row, updateRow)}
-            <button
-              type="button"
-              onClick={() => removeRow(row.id)}
-              className="mt-2 min-h-[44px] rounded-lg px-2 text-xs font-bold text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-            >
-              Remove {index + 1}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const TripPlanningFields = ({ formData, setFormData }) => (
-  <>
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <FormField label="Start date">
-        <input type="date" className={inputCls} value={formData.startDate || ''} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
-      </FormField>
-      <FormField label="End date">
-        <input type="date" className={inputCls} value={formData.endDate || ''} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
-      </FormField>
-    </div>
-
-    <TripListSection
-      title="Itinerary"
-      actionLabel="Add item"
-      rows={formData.itinerary}
-      emptyRow={emptyItineraryItem}
-      onChange={(itinerary) => setFormData({ ...formData, itinerary })}
-    >
-      {(row, updateRow) => (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_110px]">
-          <input type="date" className={inputCls} value={row.date || ''} onChange={(e) => updateRow(row.id, { date: e.target.value })} />
-          <input type="time" className={inputCls} value={row.time || ''} onChange={(e) => updateRow(row.id, { time: e.target.value })} />
-          <input type="text" className={`${inputCls} sm:col-span-2`} value={row.title || ''} placeholder="Plan" onChange={(e) => updateRow(row.id, { title: e.target.value })} />
-          <textarea rows="2" className={`${inputCls} sm:col-span-2`} value={row.notes || ''} placeholder="Notes" onChange={(e) => updateRow(row.id, { notes: e.target.value })} />
-        </div>
-      )}
-    </TripListSection>
-
-    <TripListSection
-      title="Bookings"
-      actionLabel="Add booking"
-      rows={formData.bookings}
-      emptyRow={emptyBookingItem}
-      onChange={(bookings) => setFormData({ ...formData, bookings })}
-    >
-      {(row, updateRow) => (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[150px_1fr]">
-          <select className={selectCls} value={row.type || 'reservation'} onChange={(e) => updateRow(row.id, { type: e.target.value })}>
-            <option value="accommodation">Accommodation</option>
-            <option value="transport">Transport</option>
-            <option value="reservation">Reservation</option>
-            <option value="other">Other</option>
-          </select>
-          <input type="text" className={inputCls} value={row.title || ''} placeholder="Name" onChange={(e) => updateRow(row.id, { title: e.target.value })} />
-          <input type="url" className={`${inputCls} sm:col-span-2`} value={row.link || ''} placeholder="Link" onChange={(e) => updateRow(row.id, { link: e.target.value })} />
-          <textarea rows="2" className={`${inputCls} sm:col-span-2`} value={row.notes || ''} placeholder="Details" onChange={(e) => updateRow(row.id, { notes: e.target.value })} />
-        </div>
-      )}
-    </TripListSection>
-
-    <FormField label="Trip notes">
-      <textarea rows="4" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-    </FormField>
-
-    <TripListSection
-      title="Packing list"
-      actionLabel="Add item"
-      rows={formData.packingList}
-      emptyRow={emptyPackingItem}
-      onChange={(packingList) => setFormData({ ...formData, packingList })}
-    >
-      {(row, updateRow) => (
-        <div className="flex min-h-[44px] items-center gap-2">
-          <input
-            type="checkbox"
-            checked={Boolean(row.packed)}
-            onChange={(e) => updateRow(row.id, { packed: e.target.checked })}
-            className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
-          />
-          <input type="text" className={inputCls} value={row.text || ''} placeholder="Packing item" onChange={(e) => updateRow(row.id, { text: e.target.value })} />
-        </div>
-      )}
-    </TripListSection>
-  </>
-);
-
-const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile }) => {
+const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExpense, onAddRecipe, onAddDate, onAddTask, profile }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [showTaskOptions, setShowTaskOptions] = useState(false);
@@ -404,7 +256,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
   const getModalTitle = () => {
     const titles = {
       tasks: 'Add task', movies: 'Add movie', tvshows: 'Add TV show',
-      books: 'Add book', calendar: 'Add activity', trips: 'Add trip',
+      books: 'Add book', calendar: 'Add activity', expenses: 'Add expense',
       locations: 'Add location', recipes: 'Add recipe'
     };
     return titles[activeTab] || 'Add item';
@@ -441,9 +293,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
           onClose();
         }
         break;
-      case 'trips':
-        if (formData.destination) {
-          onAddTrip({ id: `trip-${uid()}`, ...buildTripPayload(formData) });
+      case 'expenses':
+        if (formData.description) {
+          onAddExpense({ id: `expense-${uid()}`, ...buildExpensePayload(formData), createdAt: new Date().toISOString() });
           onClose();
         }
         break;
@@ -509,7 +361,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
       onClose={onClose}
       zClass="z-[100]"
       ariaLabel={getModalTitle()}
-      dialogClassName={`max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30 ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'}`}
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#000000]">{getModalTitle()}</h2>
@@ -593,34 +445,36 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             </>
           )}
 
-          {activeTab === 'trips' && (
+          {activeTab === 'expenses' && (
             <>
-              <FormField label="Trip type">
-                <div className="flex gap-2">
-                  {['past', 'next'].map(type => (
-                    <button key={type} type="button" onClick={() => setFormData({ ...formData, tripType: type })}
-                      className={`min-h-[44px] flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition ${
-                        (formData.tripType || 'next') === type
-                          ? 'border-[#E63B2E] bg-[#E63B2E] text-white'
-                          : 'border-[#E1D8D4] bg-white text-[#000000] hover:bg-[#FFF8F5] hover:text-[#000000]'
-                      }`}>
-                      {type === 'past' ? 'Past trip' : 'Next trip'}
-                    </button>
+              <FormField label="Description" required>
+                <input type="text" className={inputCls} placeholder="e.g. Dinner at restaurant" onChange={(e) => setFormData({ ...formData, description: e.target.value })} required autoFocus />
+              </FormField>
+              <FormField label="Amount" required>
+                <input type="number" min="0" step="0.01" placeholder="0.00" className={inputCls} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
+              </FormField>
+              <FormField label="Category">
+                <select className={selectCls} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+                  {EXPENSE_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
-                </div>
+                </select>
               </FormField>
-              <FormField label="Destination" required>
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required />
+              <FormField label="Date">
+                <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} />
               </FormField>
-              <FormField label="Year">
-                <input type="number" min="1900" max="2100" placeholder={new Date().getFullYear()} className={inputCls} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
-              </FormField>
-              <TripPlanningFields formData={formData} setFormData={setFormData} />
-              <FormField label="Photo URL">
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
-              </FormField>
-              <FormField label="Accommodation URL">
-                <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
+              {Array.isArray(profile?.users) && profile.users.length > 0 && (
+                <FormField label="Paid by">
+                  <select className={selectCls} onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })}>
+                    <option value="">— select —</option>
+                    {profile.users.map(u => (
+                      <option key={u.id} value={u.name}>{u.name}</option>
+                    ))}
+                  </select>
+                </FormField>
+              )}
+              <FormField label="Notes">
+                <textarea rows="3" placeholder="Optional details…" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
             </>
           )}
@@ -850,38 +704,33 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
 };
 
 // ============================================================================
-// EDIT TRIP MODAL (minimal)
+// EDIT EXPENSE MODAL
 // ============================================================================
 
-const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
+const EditExpenseModal = ({ isOpen, onClose, expense, onSave, profile }) => {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    if (isOpen && trip) {
+    if (isOpen && expense) {
       setFormData({
-        destination: trip.destination || '',
-        year: trip.year || new Date().getFullYear(),
-        tripType: trip.tripType || 'next',
-        startDate: trip.startDate || '',
-        endDate: trip.endDate || '',
-        photo: trip.photo || '',
-        accommodation: trip.accommodation || '',
-        itinerary: Array.isArray(trip.itinerary) ? trip.itinerary : [],
-        bookings: Array.isArray(trip.bookings) ? trip.bookings : [],
-        notes: trip.notes || '',
-        packingList: Array.isArray(trip.packingList) ? trip.packingList : [],
+        description: expense.description || '',
+        amount: expense.amount != null ? expense.amount : '',
+        category: expense.category || 'other',
+        date: expense.date || '',
+        paidBy: expense.paidBy || '',
+        notes: expense.notes || ''
       });
     }
-  }, [isOpen, trip]);
+  }, [isOpen, expense]);
 
-  if (!isOpen || !trip) return null;
+  if (!isOpen || !expense) return null;
   const ModalShell = getModalShell();
   const CloseIcon = getComponent('Close');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.destination) {
-      onSave({ ...trip, ...buildTripPayload(formData) });
+    if (formData.description) {
+      onSave({ ...expense, ...buildExpensePayload(formData) });
       onClose();
     }
   };
@@ -891,42 +740,44 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
       isOpen={isOpen}
       onClose={onClose}
       zClass="z-[130]"
-      ariaLabel="Edit trip"
-      dialogClassName="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
+      ariaLabel="Edit expense"
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
-          <h2 className="text-xl font-extrabold text-[#000000]">Edit trip</h2>
-          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit trip">
+          <h2 className="text-xl font-extrabold text-[#000000]">Edit expense</h2>
+          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit expense">
             <CloseIcon size={22} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <FormField label="Destination" required>
-            <input type="text" className={inputCls} value={formData.destination || ''} onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
+          <FormField label="Description" required>
+            <input type="text" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required autoFocus />
           </FormField>
-          <FormField label="Year">
-            <input type="number" className={inputCls} value={formData.year || ''} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} />
+          <FormField label="Amount" required>
+            <input type="number" min="0" step="0.01" className={inputCls} value={formData.amount ?? ''} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
           </FormField>
-          <TripPlanningFields formData={formData} setFormData={setFormData} />
-          <FormField label="Trip type">
-            <div className="flex gap-2">
-              {['past', 'next'].map(type => (
-                <button key={type} type="button" onClick={() => setFormData({ ...formData, tripType: type })}
-                  className={`min-h-[44px] flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition ${
-                    formData.tripType === type
-                      ? 'border-[#E63B2E] bg-[#E63B2E] text-white'
-                      : 'border-[#E1D8D4] bg-white text-[#000000] hover:bg-[#FFF8F5] hover:text-[#000000]'
-                  }`}>
-                  {type === 'past' ? 'Past trip' : 'Next trip'}
-                </button>
+          <FormField label="Category">
+            <select className={selectCls} value={formData.category || 'other'} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+              {EXPENSE_CATEGORIES.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
-            </div>
+            </select>
           </FormField>
-          <FormField label="Photo URL">
-            <input type="text" className={inputCls} value={formData.photo || ''} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
+          <FormField label="Date">
+            <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} />
           </FormField>
-          <FormField label="Accommodation URL">
-            <input type="url" className={inputCls} value={formData.accommodation || ''} onChange={(e) => setFormData({ ...formData, accommodation: e.target.value })} />
+          {Array.isArray(profile?.users) && profile.users.length > 0 && (
+            <FormField label="Paid by">
+              <select className={selectCls} value={formData.paidBy || ''} onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })}>
+                <option value="">— select —</option>
+                {profile.users.map(u => (
+                  <option key={u.id} value={u.name}>{u.name}</option>
+                ))}
+              </select>
+            </FormField>
+          )}
+          <FormField label="Notes">
+            <textarea rows="3" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
           </FormField>
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
             Save changes
@@ -936,4 +787,4 @@ const EditTripModal = ({ isOpen, onClose, trip, onSave }) => {
   );
 };
 
-Object.assign(window, { AddModal, EditEventModal, EditRecipeModal, EditTripModal });
+Object.assign(window, { AddModal, EditEventModal, EditRecipeModal, EditExpenseModal });

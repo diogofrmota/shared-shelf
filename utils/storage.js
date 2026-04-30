@@ -10,7 +10,7 @@ const createDefaultStoredData = () => ({
   calendarEvents: [],
   tasks: [],
   locations: [],
-  trips: [],
+  expenses: [],
   recipes: [],
   watchlist: [],
   profile: {

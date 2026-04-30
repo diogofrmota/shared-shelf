@@ -36,8 +36,8 @@ function MediaTracker() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
-  const [editTripModalOpen, setEditTripModalOpen] = useState(false);
-  const [editingTrip, setEditingTrip] = useState(null);
+  const [editExpenseModalOpen, setEditExpenseModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
@@ -60,7 +60,7 @@ function MediaTracker() {
   };
 
   const getItemLabel = (item, fallback) => {
-    const rawLabel = item?.title || item?.name || item?.destination || fallback;
+    const rawLabel = item?.title || item?.name || item?.description || fallback;
     return rawLabel ? `"${rawLabel}"` : fallback;
   };
 
@@ -69,8 +69,8 @@ function MediaTracker() {
     setAddCategory(null);
     setEditRecipeModalOpen(false);
     setEditingRecipe(null);
-    setEditTripModalOpen(false);
-    setEditingTrip(null);
+    setEditExpenseModalOpen(false);
+    setEditingExpense(null);
     setEditEventModalOpen(false);
     setEditingEvent(null);
     setConfirmation(null);
@@ -165,7 +165,7 @@ function MediaTracker() {
       currentDashboard && (
         addModalOpen
         || editRecipeModalOpen
-        || editTripModalOpen
+        || editExpenseModalOpen
         || editEventModalOpen
         || confirmation
       )
@@ -174,7 +174,7 @@ function MediaTracker() {
     currentDashboard,
     addModalOpen,
     editRecipeModalOpen,
-    editTripModalOpen,
+    editExpenseModalOpen,
     editEventModalOpen,
     confirmation
   ]);
@@ -633,18 +633,18 @@ function MediaTracker() {
   const handleSaveEvent = (updatedEvent) => {
     setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.map(e => e.id === updatedEvent.id ? updatedEvent : e) }));
   };
-  const handleAddTrip = (trip) => setData(prev => ({ ...prev, trips: [...(prev.trips || []), trip] }));
-  const handleDeleteTrip = (id) => {
-    const trip = (data?.trips || []).find(t => t.id === id);
+  const handleAddExpense = (expense) => setData(prev => ({ ...prev, expenses: [...(prev.expenses || []), expense] }));
+  const handleDeleteExpense = (id) => {
+    const expense = (data?.expenses || []).find(e => e.id === id);
     requestConfirmation({
-      title: 'Delete trip?',
-      message: `${getItemLabel(trip, 'This trip')} will be deleted from this dashboard.`,
+      title: 'Delete expense?',
+      message: `${getItemLabel(expense, 'This expense')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
-    }, () => setData(prev => ({ ...prev, trips: prev.trips.filter(t => t.id !== id) })));
+    }, () => setData(prev => ({ ...prev, expenses: prev.expenses.filter(e => e.id !== id) })));
   };
-  const handleEditTrip = (trip) => { setEditingTrip(trip); setEditTripModalOpen(true); };
-  const handleSaveTrip = (updatedTrip) => {
-    setData(prev => ({ ...prev, trips: prev.trips.map(t => t.id === updatedTrip.id ? updatedTrip : t) }));
+  const handleEditExpense = (expense) => { setEditingExpense(expense); setEditExpenseModalOpen(true); };
+  const handleSaveExpense = (updatedExpense) => {
+    setData(prev => ({ ...prev, expenses: prev.expenses.map(e => e.id === updatedExpense.id ? updatedExpense : e) }));
   };
   const handleAddRecipe = (recipe) => setData(prev => ({ ...prev, recipes: [...(prev.recipes || []), recipe] }));
   const handleDeleteRecipe = (id) => {
@@ -777,7 +777,7 @@ function MediaTracker() {
     calendar: { label: 'Activity', icon: 'CalendarIcon' },
     tasks: { label: 'Task', icon: 'CheckSquare' },
     locations: { label: 'Location', icon: 'MapPin' },
-    trips: { label: 'Trip', icon: 'Film' },
+    expenses: { label: 'Expense', icon: 'DollarSign' },
     recipes: { label: 'Recipe', icon: 'ChefHat' },
     tvshows: { label: 'TV Show', icon: 'Tv' },
     movies: { label: 'Movie', icon: 'Film' },
@@ -852,14 +852,14 @@ function MediaTracker() {
   const TasksView = window.getWindowComponent?.('TasksView', window.MissingComponent) || window.MissingComponent;
   const CalendarView = window.getWindowComponent?.('CalendarView', window.MissingComponent) || window.MissingComponent;
   const DatesView = window.getWindowComponent?.('DatesView', window.MissingComponent) || window.MissingComponent;
-  const TripsView = window.getWindowComponent?.('TripsView', window.MissingComponent) || window.MissingComponent;
+  const ExpensesView = window.getWindowComponent?.('ExpensesView', window.MissingComponent) || window.MissingComponent;
   const RecipesView = window.getWindowComponent?.('RecipesView', window.MissingComponent) || window.MissingComponent;
   const MediaSectionsView = window.getWindowComponent?.('MediaSectionsView', window.MissingComponent) || window.MissingComponent;
   const Header = window.getWindowComponent?.('Header', window.MissingComponent) || window.MissingComponent;
   const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
   const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
   const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
-  const EditTripModal = window.getWindowComponent?.('EditTripModal', window.MissingComponent) || window.MissingComponent;
+  const EditExpenseModal = window.getWindowComponent?.('EditExpenseModal', window.MissingComponent) || window.MissingComponent;
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
   const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
 
@@ -991,13 +991,13 @@ function MediaTracker() {
           />
         );
       }
-      if (activeSubTab === 'trips') {
+      if (activeSubTab === 'expenses') {
         return (
-          <TripsView
-            trips={visibleData.trips || []}
-            onDeleteTrip={handleDeleteTrip}
-            onEditTrip={handleEditTrip}
-            onAddClick={() => { setAddCategory('trips'); setAddModalOpen(true); }}
+          <ExpensesView
+            expenses={visibleData.expenses || []}
+            onDeleteExpense={handleDeleteExpense}
+            onEditExpense={handleEditExpense}
+            onAddClick={() => { setAddCategory('expenses'); setAddModalOpen(true); }}
           />
         );
       }
@@ -1064,7 +1064,7 @@ function MediaTracker() {
         activeTab={addCategory || activeSubTab}
         onAddMedia={handleAddMedia}
         onAddEvent={handleAddEvent}
-        onAddTrip={handleAddTrip}
+        onAddExpense={handleAddExpense}
         onAddRecipe={handleAddRecipe}
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
@@ -1072,7 +1072,7 @@ function MediaTracker() {
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
-      <EditTripModal isOpen={editTripModalOpen} onClose={() => setEditTripModalOpen(false)} trip={editingTrip} onSave={handleSaveTrip} />
+      <EditExpenseModal isOpen={editExpenseModalOpen} onClose={() => setEditExpenseModalOpen(false)} expense={editingExpense} onSave={handleSaveExpense} profile={visibleData?.profile} />
       <ConfirmationDialog
         isOpen={Boolean(confirmation)}
         title={confirmation?.title || 'Are you sure?'}
