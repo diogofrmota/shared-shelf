@@ -123,15 +123,6 @@ const COUPLE_SCENARIOS = [
   }
 ];
 
-const HERO_SHARED_ITEMS = [
-  { icon: 'CalendarIcon', label: 'Calendar', color: '#D8271C', fade: '#F76B5F' },
-  { icon: 'CheckSquare', label: 'Tasks', color: '#00845F', fade: '#3AB68E' },
-  { icon: 'MapPin', label: 'Places', color: '#D65A00', fade: '#F39A3D' },
-  { icon: 'Film', label: 'Trips', color: '#1D6BDA', fade: '#6EA5F2', strokeWidth: 2.8 },
-  { icon: 'ChefHat', label: 'Recipes', color: '#B8329B', fade: '#E36AC5' },
-  { icon: 'Tv', label: 'Entertainment', color: '#6B52D9', fade: '#9B86F2', strokeWidth: 2.8 }
-];
-
 function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -567,31 +558,15 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 </a>
               </div>
             </div>
-            <div className="w-full max-w-md flex-1 lg:max-w-lg">
-              <div className="rounded-3xl border border-white/30 bg-white/95 p-6 text-[#241A18] shadow-2xl shadow-black/30 sm:p-8">
-                <h2 className="text-2xl font-extrabold text-[#410001]">Main Features</h2>
-                <p className="mt-1 text-sm text-[#534340]">Couple Planner lets you manage your relationship in one app.</p>
-                <ul className="mt-4 grid grid-cols-2 gap-2">
-                  {HERO_SHARED_ITEMS.map((item) => {
-                    const Icon = getHomeComponent(item.icon);
-                    return (
-                      <li
-                        key={item.label}
-                        className="flex min-h-[50px] items-center gap-2 rounded-xl px-2 py-2 text-white shadow-md shadow-black/10 sm:min-h-[58px] sm:gap-2.5 sm:px-3"
-                        style={{
-                          backgroundColor: item.color,
-                          backgroundImage: `linear-gradient(135deg, ${item.color} 0%, ${item.color} 42%, ${item.fade} 100%)`
-                        }}
-                      >
-                        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
-                          <Icon size={20} strokeWidth={item.strokeWidth || 2} />
-                        </span>
-                        <p className="min-w-0 text-xs font-extrabold sm:text-sm">{item.label}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+            <div className="w-full max-w-md flex-1 lg:max-w-xl">
+              <figure className="overflow-hidden rounded-3xl border border-white/30 bg-white/95 shadow-2xl shadow-black/30">
+                <img
+                  src="/assets/app-showcase.jpg"
+                  alt="Angled screenshots of Couple Planner calendar, locations, tasks, recipes, and TV show tracker screens."
+                  className="block aspect-[4/3] w-full object-cover"
+                  loading="eager"
+                />
+              </figure>
             </div>
           </div>
         </section>
