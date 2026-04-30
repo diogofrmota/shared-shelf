@@ -522,7 +522,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
 
       <main id="main-content" tabIndex="-1" className="flex-1">
         <section className="app-auth-bg">
-          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-4 py-10 text-white sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:py-14">
+          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-8 py-10 text-white sm:px-12 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-16 lg:py-14">
             <div className="flex-1">
               <h1 className="flex flex-nowrap items-center gap-2 text-[2rem] font-extrabold leading-none tracking-tight text-white min-[380px]:gap-3 min-[380px]:text-4xl sm:gap-4 sm:text-5xl lg:text-6xl">
                 <img
