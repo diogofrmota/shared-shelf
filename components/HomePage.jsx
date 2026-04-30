@@ -561,8 +561,8 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               </div>
             </div>
 
-            {/* Col 2: app photo */}
-            <div className="w-full max-w-2xl lg:flex-1 lg:max-w-4xl">
+            {/* Col 2: app photo — desktop only */}
+            <div className="hidden w-full max-w-2xl lg:block lg:flex-1 lg:max-w-4xl">
               <figure className="flex justify-center">
                 <img
                   src="/assets/ui-showcase-no-background.png"
@@ -582,6 +582,15 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
               A private dashboard you can share with your partner.
             </h2>
+            {/* App photo — mobile only */}
+            <figure className="mt-6 flex justify-center lg:hidden">
+              <img
+                src="/assets/ui-showcase-no-background.png"
+                alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
+                className="w-full max-w-sm object-contain drop-shadow-2xl"
+                loading="eager"
+              />
+            </figure>
             <p className="mt-5 text-base text-[#000000] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
               your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
