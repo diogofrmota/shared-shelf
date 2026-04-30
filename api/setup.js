@@ -23,18 +23,28 @@ function isSetupAuthorized(req) {
 }
 
 async function resetDatabase() {
-  await sql`TRUNCATE TABLE
-    auth_rate_limits,
-    email_change_tokens,
-    email_verification_tokens,
-    password_reset_tokens,
-    dashboard_data,
-    dashboard_join_codes,
-    dashboard_members,
-    dashboards,
-    user_data,
-    users
-  CASCADE`;
+  const tables = [
+    'auth_rate_limits',
+    'email_change_tokens',
+    'email_verification_tokens',
+    'password_reset_tokens',
+    'dashboard_data',
+    'dashboard_join_codes',
+    'dashboard_members',
+    'dashboards',
+    'user_data',
+    'users',
+  ];
+
+  for (const table of tables) {
+    const { rows } = await sql`
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = ${table}
+    `;
+    if (rows.length > 0) {
+      await sql.query(`TRUNCATE TABLE "${table}" CASCADE`);
+    }
+  }
 }
 
 export default async function handler(req, res) {
