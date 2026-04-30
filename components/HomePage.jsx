@@ -583,7 +583,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               A private dashboard you can share with your partner.
             </h2>
             {/* App photo — mobile only */}
-            <figure className="mt-6 flex justify-center lg:hidden">
+            <figure className="mt-3 flex justify-center lg:hidden">
               <img
                 src="/assets/ui-showcase-no-background.png"
                 alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
@@ -591,7 +591,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 loading="eager"
               />
             </figure>
-            <p className="mt-5 text-base text-[#000000] sm:text-lg">
+            <p className="mt-2.5 text-base text-[#000000] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
               your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
               one private dashboard. Both partners can read and update the same content, so nothing
