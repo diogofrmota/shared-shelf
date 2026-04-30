@@ -522,73 +522,77 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
 
       <main id="main-content" tabIndex="-1" className="flex-1">
         <section className="app-auth-bg">
-          <div className="mx-auto w-full max-w-7xl px-8 py-10 text-white sm:px-12 sm:py-12 lg:px-16 lg:py-14">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-center lg:gap-10">
+          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-8 px-8 py-10 text-white sm:px-12 sm:py-12 lg:flex-row lg:items-center lg:gap-12 lg:px-16 lg:py-14">
 
-              {/* Col 1: branding, copy, CTA */}
-              <div>
-                <h1 className="flex flex-nowrap items-center gap-2 text-[2rem] font-extrabold leading-none tracking-tight text-white min-[380px]:gap-3 min-[380px]:text-4xl sm:gap-4 sm:text-5xl lg:text-6xl">
-                  <img
-                    src="/assets/brand-mark.svg"
-                    alt=""
-                    aria-hidden="true"
-                    className="brand-logo-hero block h-10 w-10 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
-                  />
-                  <span className="whitespace-nowrap leading-none">Couple Planner</span>
-                </h1>
-                <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-                  Plan your life together.
-                </p>
-                <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
-                  Couple Planner is an app that lets you and your partner create a shared
-                  dashboard. One private place to share your calendar, tasks, date ideas, trips, recipes,
-                  and watchlists.
-                </p>
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <a
-                    href="/login?mode=signup"
-                    onClick={goTo('/login?mode=signup')}
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFDAD4] hover:text-[#000000]"
-                  >
-                    Create Account
-                  </a>
-                  <a
-                    href="/login"
-                    onClick={goTo('/login')}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-white bg-transparent px-6 py-3 text-base font-bold text-white transition hover:bg-white hover:text-[#A9372C]"
-                  >
-                    Sign In
-                  </a>
-                </div>
-              </div>
-
-              {/* On mobile: 2-col grid. On desktop: dissolves into parent grid (cols 2 + 3) */}
-              <div className="grid grid-cols-2 items-center gap-4 lg:contents">
-
-                {/* Col 2: app photo */}
-                <figure className="flex justify-center">
-                  <img
-                    src="/assets/ui-showcase-no-background.png"
-                    alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
-                    className="block w-full object-contain drop-shadow-2xl"
-                    loading="eager"
-                  />
-                </figure>
-
-                {/* Col 3: feature list */}
-                <div className="flex flex-col gap-2">
-                  {['Calendar', 'Tasks', 'Locations', 'Trips', 'Recipes', 'Entertainment'].map((feature) => (
-                    <div
-                      key={feature}
-                      className="w-full rounded-xl bg-white px-4 py-2.5 text-center text-xs font-bold text-[#A9372C] shadow-lg shadow-black/20 sm:text-sm lg:py-3 lg:text-base"
-                    >
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-
+            {/* Col 1: branding + copy + CTA */}
+            <div className="flex-1">
+              <h1 className="flex flex-nowrap items-center gap-2 text-[2rem] font-extrabold leading-none tracking-tight text-white min-[380px]:gap-3 min-[380px]:text-4xl sm:gap-4 sm:text-5xl lg:text-6xl">
+                <img
+                  src="/assets/brand-mark.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="brand-logo-hero block h-10 w-10 flex-shrink-0 sm:h-14 sm:w-14 lg:h-16 lg:w-16"
+                />
+                <span className="whitespace-nowrap leading-none">Couple Planner</span>
+              </h1>
+              <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
+                Plan your life together.
+              </p>
+              <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
+                Couple Planner is an app that lets you and your partner create a shared
+                dashboard. One private place to share your calendar, tasks, date ideas, trips, recipes,
+                and watchlists.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <a
+                  href="/login?mode=signup"
+                  onClick={goTo('/login?mode=signup')}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFDAD4] hover:text-[#000000]"
+                >
+                  Create Account
+                </a>
+                <a
+                  href="/login"
+                  onClick={goTo('/login')}
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-white bg-transparent px-6 py-3 text-base font-bold text-white transition hover:bg-white hover:text-[#A9372C]"
+                >
+                  Sign In
+                </a>
               </div>
             </div>
+
+            {/* Col 2: app photo */}
+            <div className="w-full max-w-2xl lg:flex-1 lg:max-w-4xl">
+              <figure className="flex justify-center">
+                <img
+                  src="/assets/ui-showcase-no-background.png"
+                  alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
+                  className="block w-full max-w-[136rem] object-contain drop-shadow-2xl lg:max-w-[168rem]"
+                  loading="eager"
+                />
+              </figure>
+            </div>
+
+            {/* Col 3: feature icon squares — desktop only */}
+            <div className="hidden lg:flex lg:flex-col lg:gap-2.5">
+              {FEATURES.map((feature) => {
+                const Icon = getHomeComponent(feature.icon);
+                return (
+                  <div
+                    key={feature.title}
+                    className="flex h-14 w-14 items-center justify-center rounded-xl"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, ${feature.accent} 0%, ${feature.accent} 68%, ${feature.fade} 100%)`,
+                    }}
+                  >
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm">
+                      <Icon size={20} />
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
           </div>
         </section>
 
