@@ -301,7 +301,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 key={link.id}
                 href={`#${link.id}`}
                 onClick={scrollToId(link.id)}
-                className="rounded-xl px-3 py-2 text-sm font-bold text-[#534340] transition hover:bg-[#FFDAD4]/50 hover:text-[#A9372C]"
+                className="rounded-xl px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFDAD4]/50 hover:text-[#A9372C]"
               >
                 {link.label}
               </a>
@@ -320,26 +320,26 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <button
                   type="button"
                   onClick={() => setProfileOpen(prev => !prev)}
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
                   title="Account"
                   aria-label="Account"
                   aria-haspopup="menu"
                   aria-expanded={profileOpen}
                 >
                   <UserIcon size={22} />
-                  <span className="hidden truncate text-[#410001] sm:inline" title="Account">Account</span>
+                  <span className="hidden truncate text-[#000000] sm:inline" title="Account">Account</span>
                 </button>
 
                 {profileOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                    className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
                   >
                     <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
-                      <p className="mt-1 truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
-                      <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
-                      <p className="truncate text-xs text-[#534340]" title={accountEmail}>{accountEmail}</p>
+                      <p className="mt-1 truncate text-base font-bold text-[#000000]" title={displayName}>{displayName}</p>
+                      <p className="truncate text-xs font-semibold text-[#000000]" title={username}>{username}</p>
+                      <p className="truncate text-xs text-[#000000]" title={accountEmail}>{accountEmail}</p>
                     </div>
 
                     {isEditingProfile ? (
@@ -348,12 +348,12 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Name</p>
-                              <p className="mt-1 truncate font-semibold text-[#410001]" title={displayName}>{displayName}</p>
+                              <p className="mt-1 truncate font-semibold text-[#000000]" title={displayName}>{displayName}</p>
                             </div>
                             <button
                               type="button"
                               onClick={() => { setEditingProfileField('name'); setProfileName(displayName); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                               aria-label="Edit name"
                               title="Edit name"
                             >
@@ -367,12 +367,12 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                                 type="text"
                                 value={profileName}
                                 onChange={(event) => setProfileName(event.target.value)}
-                                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                 autoComplete="name"
                                 aria-label="Name"
                               />
                               <div className="flex gap-2">
-                                <button type="button" onClick={() => { setEditingProfileField(null); setProfileName(displayName); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
+                                <button type="button" onClick={() => { setEditingProfileField(null); setProfileName(displayName); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
                                 <button type="submit" className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60" disabled={profileSaving}>{profileSaving ? 'Saving...' : 'Save'}</button>
                               </div>
                             </form>
@@ -383,12 +383,12 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Username</p>
-                              <p className="mt-1 truncate font-semibold text-[#410001]" title={username}>{username}</p>
+                              <p className="mt-1 truncate font-semibold text-[#000000]" title={username}>{username}</p>
                             </div>
                             <button
                               type="button"
                               onClick={() => { setEditingProfileField('username'); setProfileUsername(username); setProfileUsernameStatus(null); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                               aria-label="Edit username"
                               title="Edit username"
                             >
@@ -403,18 +403,18 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                                   type="text"
                                   value={profileUsername}
                                   onChange={(event) => handleProfileUsernameChange(event.target.value)}
-                                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                   autoComplete="username"
                                   spellCheck={false}
                                   aria-label="Username"
                                 />
-                                {profileUsernameStatus === 'checking' ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+                                {profileUsernameStatus === 'checking' ? <p className="mt-1 text-xs text-[#000000]">Checking availability...</p>
                                   : profileUsernameStatus === 'available' ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
                                   : profileUsernameStatus === 'taken' ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
                                   : null}
                               </div>
                               <div className="flex gap-2">
-                                <button type="button" onClick={() => { setEditingProfileField(null); setProfileUsername(username); setProfileUsernameStatus(null); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
+                                <button type="button" onClick={() => { setEditingProfileField(null); setProfileUsername(username); setProfileUsernameStatus(null); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
                                 <button type="submit" className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60" disabled={profileSaving || profileUsernameStatus === 'taken' || profileUsernameStatus === 'checking'}>{profileSaving ? 'Saving...' : 'Save'}</button>
                               </div>
                             </form>
@@ -425,13 +425,13 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Email</p>
-                              <p className="mt-1 truncate font-semibold text-[#410001]" title={accountEmail}>{accountEmail}</p>
+                              <p className="mt-1 truncate font-semibold text-[#000000]" title={accountEmail}>{accountEmail}</p>
                               {profileEmailSuccess && <p className="mt-1 break-words text-xs font-semibold text-[#2F855A]" role="status">{profileEmailSuccess}</p>}
                             </div>
                             <button
                               type="button"
                               onClick={() => { setEditingProfileField('email'); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                               aria-label="Edit email"
                               title="Edit email"
                             >
@@ -446,17 +446,17 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                                   type="email"
                                   value={profileNewEmail}
                                   onChange={(event) => setProfileNewEmail(event.target.value)}
-                                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                   autoComplete="email"
                                   placeholder="you@example.com"
                                   spellCheck={false}
                                   aria-label="New email address"
                                 />
-                                <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                                <p className="mt-1 text-xs text-[#000000]">A confirmation link will be sent to the new address.</p>
                               </div>
                               {profileEmailError && <p className="text-xs font-semibold text-[#C1121F]" role="alert">{profileEmailError}</p>}
                               <div className="flex gap-2">
-                                <button type="button" onClick={() => { setEditingProfileField(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]" disabled={profileEmailSaving}>Cancel</button>
+                                <button type="button" onClick={() => { setEditingProfileField(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]" disabled={profileEmailSaving}>Cancel</button>
                                 <button type="submit" className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60" disabled={profileEmailSaving}>{profileEmailSaving ? 'Sending...' : 'Send'}</button>
                               </div>
                             </form>
@@ -468,7 +468,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                           <button
                             type="button"
                             onClick={() => { setIsEditingProfile(false); setEditingProfileField(null); setProfileName(displayName); setProfileUsername(username); setProfileUsernameStatus(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                            className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                            className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                             disabled={profileSaving || profileEmailSaving}
                           >
                             Cancel
@@ -480,7 +480,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                         <button
                           type="button"
                           onClick={() => { setIsEditingProfile(true); setEditingProfileField(null); setProfileName(displayName); setProfileUsername(username); setProfileUsernameStatus(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                          className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                          className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                         >
                           <UserIcon size={18} />
                           Edit profile
@@ -488,7 +488,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                         <button
                           type="button"
                           onClick={() => { setProfileOpen(false); onLogout?.(); }}
-                          className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                          className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                         >
                           <LogoutIcon size={18} />
                           Log out
@@ -545,7 +545,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <a
                   href="/login?mode=signup"
                   onClick={goTo('/login?mode=signup')}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFDAD4] hover:text-[#410001]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-bold text-[#A9372C] shadow-lg shadow-black/20 transition hover:bg-[#FFDAD4] hover:text-[#000000]"
                 >
                   Create Account
                 </a>
@@ -574,10 +574,10 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
         <section id="what-it-is" className="scroll-mt-24 bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
             <span className="ss-tag mb-4">What it is</span>
-            <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
               A private dashboard you can share with your partner.
             </h2>
-            <p className="mt-5 text-base text-[#534340] sm:text-lg">
+            <p className="mt-5 text-base text-[#000000] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
               your calendar, tasks, date ideas, trips, recipes, and shared entertainment, into
               one private dashboard. Both partners can read and update the same content, so nothing
@@ -590,7 +590,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Features</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+              <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
                 Plan your relationship, synced in one place.
               </h2>
             </div>
@@ -628,10 +628,10 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Who it is for</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+              <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
                 Built for the plans couples actually make.
               </h2>
-              <p className="mt-3 text-base text-[#534340] sm:text-lg">
+              <p className="mt-3 text-base text-[#000000] sm:text-lg">
                 Recognize the everyday moments you already coordinate, then keep them together in one shared place.
               </p>
             </div>
@@ -646,13 +646,13 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <span
-                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#410001]"
+                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#000000]"
                       >
                         <Icon size={19} />
                       </span>
-                      <h3 className="text-lg font-extrabold text-[#410001]">{scenario.title}</h3>
+                      <h3 className="text-lg font-extrabold text-[#000000]">{scenario.title}</h3>
                     </div>
-                    <p className="text-sm text-[#534340]">{scenario.description}</p>
+                    <p className="text-sm text-[#000000]">{scenario.description}</p>
                   </div>
                 );
               })}
@@ -664,10 +664,10 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 text-center sm:mb-10">
               <span className="ss-tag mb-4">Private by design</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+              <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
                 Start planning together in three simple steps.
               </h2>
-              <p className="mt-3 text-base text-[#534340] sm:text-lg">
+              <p className="mt-3 text-base text-[#000000] sm:text-lg">
                 Create a shared space, invite your partner, and keep your plans moving.
               </p>
             </div>
@@ -678,8 +678,8 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">1</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Create a private dashboard</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
+                  <h3 className="text-lg font-extrabold text-[#000000]">Create a private dashboard</h3>
+                  <p className="mt-1 text-sm text-[#000000]">
                     Set up one shared place for your calendar, tasks, trips, recipes, places, and watchlist.
                   </p>
                 </div>
@@ -690,8 +690,8 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">2</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Invite your partner</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
+                  <h3 className="text-lg font-extrabold text-[#000000]">Invite your partner</h3>
+                  <p className="mt-1 text-sm text-[#000000]">
                     Send them the dashboard details so only the two of you can access and update it.
                   </p>
                 </div>
@@ -702,8 +702,8 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               >
                 <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E63B2E] text-base font-extrabold text-white">3</span>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#410001]">Start planning together</h3>
-                  <p className="mt-1 text-sm text-[#534340]">
+                  <h3 className="text-lg font-extrabold text-[#000000]">Start planning together</h3>
+                  <p className="mt-1 text-sm text-[#000000]">
                     Add plans, split chores, save date ideas, and keep everything synced in one private dashboard.
                   </p>
                 </div>
@@ -714,10 +714,10 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
 
         <section className="bg-[#FFF8F5] py-10 sm:py-12">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-[#E1D8D4] bg-white px-6 py-10 text-center shadow-sm sm:px-10 sm:py-12">
-            <h2 className="text-2xl font-extrabold tracking-tight text-[#410001] sm:text-3xl">
+            <h2 className="text-2xl font-extrabold tracking-tight text-[#000000] sm:text-3xl">
               Ready to manage your relationship, together?
             </h2>
-            <p className="mt-3 text-base text-[#534340]">
+            <p className="mt-3 text-base text-[#000000]">
               Sign in if you already have an account, or create one to start planning with your partner.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -731,7 +731,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               <a
                 href="/login"
                 onClick={goTo('/login')}
-                className="inline-flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-6 py-3 text-base font-bold text-[#410001] transition hover:bg-[#FBF2ED]"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-6 py-3 text-base font-bold text-[#000000] transition hover:bg-[#FBF2ED]"
               >
                 Sign In
               </a>

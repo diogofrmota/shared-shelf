@@ -16,7 +16,7 @@ const getAvatarTextColor = (backgroundColor) => {
   const blue = parseInt(hex.slice(4, 6), 16);
   const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
 
-  return brightness > 150 ? '#241A18' : '#FFFFFF';
+  return brightness > 150 ? '#000000' : '#FFFFFF';
 };
 
 const FilterButton = ({ label, isActive, onClick }) => (
@@ -25,7 +25,7 @@ const FilterButton = ({ label, isActive, onClick }) => (
     className={`min-h-[44px] px-3 py-2 sm:px-4 rounded-full font-semibold text-sm transition ${
       isActive
         ? 'bg-[#E63B2E] text-white shadow-sm shadow-[#E63B2E]/30'
-        : 'bg-white text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001] border border-[#E1D8D4]'
+        : 'bg-white text-[#000000] hover:bg-[#FFF8F5] hover:text-[#000000] border border-[#E1D8D4]'
     }`}
   >
     {label}
@@ -35,7 +35,7 @@ const FilterButton = ({ label, isActive, onClick }) => (
 const FilterBar = ({ label, children }) => (
   <div className="mb-5 flex flex-wrap items-center gap-2 sm:gap-3">
     {label && (
-      <span className="self-center text-sm font-medium text-[#534340]">
+      <span className="self-center text-sm font-medium text-[#000000]">
         {label}
       </span>
     )}
@@ -156,9 +156,9 @@ const EmptyState = ({
       <div className={`mx-auto mb-4 flex items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] ${compact ? 'h-12 w-12' : 'h-16 w-16 sm:mb-6 sm:h-20 sm:w-20'}`}>
         <EmptyIcon size={compact ? 22 : 26} />
       </div>
-      <h3 className={`mb-2 font-bold text-[#410001] ${compact ? 'text-base' : 'text-lg sm:text-xl'}`}>{title}</h3>
+      <h3 className={`mb-2 font-bold text-[#000000] ${compact ? 'text-base' : 'text-lg sm:text-xl'}`}>{title}</h3>
       {message && (
-        <p className={`mx-auto text-[#534340] ${compact ? 'max-w-sm text-sm' : 'max-w-md text-sm sm:text-base'} ${onAddClick ? 'mb-5' : ''}`}>
+        <p className={`mx-auto text-[#000000] ${compact ? 'max-w-sm text-sm' : 'max-w-md text-sm sm:text-base'} ${onAddClick ? 'mb-5' : ''}`}>
           {message}
         </p>
       )}
@@ -221,13 +221,13 @@ const FailureScreen = ({
   return (
     <div className="flex min-h-screen flex-col bg-[#FBF2ED]">
       <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
-        <section className="w-full max-w-2xl rounded-2xl border border-[#E1D8D4] bg-white p-6 text-center shadow-lg shadow-[#410001]/10 sm:p-10">
+        <section className="w-full max-w-2xl rounded-2xl border border-[#E1D8D4] bg-white p-6 text-center shadow-lg shadow-[#000000]/10 sm:p-10">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E]">
             <FailureIcon size={28} />
           </div>
           <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#A9372C]">{eyebrow}</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">{title}</h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#534340] sm:text-base">{message}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">{title}</h1>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#000000] sm:text-base">{message}</p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <a
               href={primaryPath}
@@ -240,7 +240,7 @@ const FailureScreen = ({
               <a
                 href={secondaryPath}
                 onClick={handleNavigate(secondaryPath)}
-                className="inline-flex items-center justify-center rounded-xl border border-[#E1D8D4] bg-white px-5 py-3 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] hover:text-[#410001]"
+                className="inline-flex items-center justify-center rounded-xl border border-[#E1D8D4] bg-white px-5 py-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#000000]"
               >
                 {secondaryLabel}
               </a>
@@ -323,17 +323,17 @@ const ConfirmationDialog = ({
         aria-labelledby="confirmation-dialog-title"
         aria-describedby="confirmation-dialog-message"
         tabIndex="-1"
-        className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-5 shadow-2xl shadow-[#410001]/30 animate-scale-in"
+        className="w-full max-w-md rounded-2xl border border-[#E1D8D4] bg-white p-5 shadow-2xl shadow-[#000000]/30 animate-scale-in"
       >
         <div className="flex items-start gap-3">
           <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${tone === 'danger' ? 'bg-[#FFDAD4] text-[#C1121F]' : 'bg-[#FFDAD4] text-[#E63B2E]'}`}>
             {tone === 'danger' ? <TrashIcon size={18} /> : <SettingsIconComponent size={18} />}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 id="confirmation-dialog-title" className="text-lg font-extrabold text-[#410001]">
+            <h2 id="confirmation-dialog-title" className="text-lg font-extrabold text-[#000000]">
               {title}
             </h2>
-            <p id="confirmation-dialog-message" className="mt-1 text-sm leading-6 text-[#534340]">
+            <p id="confirmation-dialog-message" className="mt-1 text-sm leading-6 text-[#000000]">
               {message}
             </p>
           </div>
@@ -343,7 +343,7 @@ const ConfirmationDialog = ({
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-[44px] rounded-xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+            className="min-h-[44px] rounded-xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
           >
             {cancelLabel}
           </button>

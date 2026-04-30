@@ -188,26 +188,26 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                   <button
                     type="button"
                     onClick={() => setProfileOpen(prev => !prev)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
                     title="Account"
                     aria-label="Account"
                     aria-haspopup="menu"
                     aria-expanded={profileOpen}
                   >
                     <UserIcon size={22} />
-                    <span className="hidden truncate text-[#410001] sm:inline" title="Account">Account</span>
+                    <span className="hidden truncate text-[#000000] sm:inline" title="Account">Account</span>
                   </button>
 
                   {profileOpen && (
                     <div
                       role="menu"
-                      className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                      className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
                     >
                       <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
                         <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
-                        <p className="mt-1 truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
-                        <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
-                        <p className="truncate text-xs text-[#534340]" title={accountEmail}>{accountEmail}</p>
+                        <p className="mt-1 truncate text-base font-bold text-[#000000]" title={displayName}>{displayName}</p>
+                        <p className="truncate text-xs font-semibold text-[#000000]" title={username}>{username}</p>
+                        <p className="truncate text-xs text-[#000000]" title={accountEmail}>{accountEmail}</p>
                       </div>
 
                       {isEditingProfile ? (
@@ -216,12 +216,12 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Name</p>
-                                <p className="mt-1 truncate font-semibold text-[#410001]" title={displayName}>{displayName}</p>
+                                <p className="mt-1 truncate font-semibold text-[#000000]" title={displayName}>{displayName}</p>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => { setEditingProfileField('name'); setProfileName(displayName); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                                 aria-label="Edit name"
                               >
                                 {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
@@ -233,12 +233,12 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                                   type="text"
                                   value={profileName}
                                   onChange={(e) => setProfileName(e.target.value)}
-                                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                   autoComplete="name"
                                   aria-label="Name"
                                 />
                                 <div className="flex gap-2">
-                                  <button type="button" onClick={() => { setEditingProfileField(null); setProfileName(displayName); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
+                                  <button type="button" onClick={() => { setEditingProfileField(null); setProfileName(displayName); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
                                   <button type="submit" className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60" disabled={profileSaving}>{profileSaving ? 'Saving...' : 'Save'}</button>
                                 </div>
                               </form>
@@ -249,12 +249,12 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Username</p>
-                                <p className="mt-1 truncate font-semibold text-[#410001]" title={username}>{username}</p>
+                                <p className="mt-1 truncate font-semibold text-[#000000]" title={username}>{username}</p>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => { setEditingProfileField('username'); setProfileUsername(username); setProfileUsernameStatus(null); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                                 aria-label="Edit username"
                               >
                                 {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
@@ -267,18 +267,18 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                                     type="text"
                                     value={profileUsername}
                                     onChange={(e) => handleProfileUsernameChange(e.target.value)}
-                                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                     autoComplete="username"
                                     spellCheck={false}
                                     aria-label="Username"
                                   />
-                                  {profileUsernameStatus === 'checking' ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+                                  {profileUsernameStatus === 'checking' ? <p className="mt-1 text-xs text-[#000000]">Checking availability...</p>
                                     : profileUsernameStatus === 'available' ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
                                     : profileUsernameStatus === 'taken' ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">Username already taken</p>
                                     : null}
                                 </div>
                                 <div className="flex gap-2">
-                                  <button type="button" onClick={() => { setEditingProfileField(null); setProfileUsername(username); setProfileUsernameStatus(null); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
+                                  <button type="button" onClick={() => { setEditingProfileField(null); setProfileUsername(username); setProfileUsernameStatus(null); setProfileError(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]" disabled={profileSaving}>Cancel</button>
                                   <button type="submit" className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60" disabled={profileSaving || profileUsernameStatus === 'taken' || profileUsernameStatus === 'checking'}>{profileSaving ? 'Saving...' : 'Save'}</button>
                                 </div>
                               </form>
@@ -289,13 +289,13 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Email</p>
-                                <p className="mt-1 truncate font-semibold text-[#410001]" title={accountEmail}>{accountEmail}</p>
+                                <p className="mt-1 truncate font-semibold text-[#000000]" title={accountEmail}>{accountEmail}</p>
                                 {profileEmailSuccess && <p className="mt-1 break-words text-xs font-semibold text-[#2F855A]" role="status">{profileEmailSuccess}</p>}
                               </div>
                               <button
                                 type="button"
                                 onClick={() => { setEditingProfileField('email'); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                                 aria-label="Edit email"
                               >
                                 {PencilIcon ? <PencilIcon size={16} /> : 'Edit'}
@@ -308,17 +308,17 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                                     type="email"
                                     value={profileNewEmail}
                                     onChange={(e) => setProfileNewEmail(e.target.value)}
-                                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                     autoComplete="email"
                                     placeholder="you@example.com"
                                     spellCheck={false}
                                     aria-label="New email address"
                                   />
-                                  <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                                  <p className="mt-1 text-xs text-[#000000]">A confirmation link will be sent to the new address.</p>
                                 </div>
                                 {profileEmailError && <p className="text-xs font-semibold text-[#C1121F]" role="alert">{profileEmailError}</p>}
                                 <div className="flex gap-2">
-                                  <button type="button" onClick={() => { setEditingProfileField(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]" disabled={profileEmailSaving}>Cancel</button>
+                                  <button type="button" onClick={() => { setEditingProfileField(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); }} className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]" disabled={profileEmailSaving}>Cancel</button>
                                   <button type="submit" className="min-h-[40px] flex-1 rounded-lg bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F] disabled:opacity-60" disabled={profileEmailSaving}>{profileEmailSaving ? 'Sending...' : 'Send'}</button>
                                 </div>
                               </form>
@@ -330,7 +330,7 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                             <button
                               type="button"
                               onClick={() => { setIsEditingProfile(false); setEditingProfileField(null); setProfileName(displayName); setProfileUsername(username); setProfileUsernameStatus(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                              className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileSaving || profileEmailSaving}
                             >
                               Cancel
@@ -342,7 +342,7 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                           <button
                             type="button"
                             onClick={() => { setIsEditingProfile(true); setEditingProfileField(null); setProfileName(displayName); setProfileUsername(username); setProfileUsernameStatus(null); setProfileNewEmail(''); setProfileEmailError(''); setProfileEmailSuccess(''); setProfileError(''); }}
-                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                           >
                             <UserIcon size={18} />
                             Edit profile
@@ -350,7 +350,7 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                           <button
                             type="button"
                             onClick={handleLogout}
-                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                            className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                           >
                             <LogoutIcon size={18} />
                             Log out
@@ -366,7 +366,7 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
                 <a
                   href="/login"
                   onClick={goTo('/login')}
-                  className="rounded-xl px-3 py-2 text-sm font-bold text-[#534340] transition hover:text-[#E63B2E]"
+                  className="rounded-xl px-3 py-2 text-sm font-bold text-[#000000] transition hover:text-[#E63B2E]"
                 >
                   Log in
                 </a>
@@ -386,11 +386,11 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
       <main id="main-content" tabIndex="-1" className="flex-1">
         <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="rounded-3xl border border-[#E1D8D4] bg-white p-6 shadow-sm sm:p-10">
-            <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">{title}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">{title}</h1>
             {lastUpdated && (
-              <p className="mt-2 text-sm font-medium text-[#857370]">Last updated: {lastUpdated}</p>
+              <p className="mt-2 text-sm font-medium text-[#000000]">Last updated: {lastUpdated}</p>
             )}
-            <div className="mt-6 space-y-5 text-[#241A18]">
+            <div className="mt-6 space-y-5 text-[#000000]">
               {children}
             </div>
           </div>
@@ -402,9 +402,9 @@ function LegalPageShell({ title, lastUpdated, onNavigate, currentUser, onUpdateU
   );
 }
 
-const sectionHeadingClass = "mt-2 text-xl font-extrabold text-[#410001]";
-const paragraphClass = "text-sm leading-relaxed text-[#241A18] sm:text-base";
-const listClass = "ml-5 list-disc space-y-1.5 text-sm leading-relaxed text-[#241A18] sm:text-base";
+const sectionHeadingClass = "mt-2 text-xl font-extrabold text-[#000000]";
+const paragraphClass = "text-sm leading-relaxed text-[#000000] sm:text-base";
+const listClass = "ml-5 list-disc space-y-1.5 text-sm leading-relaxed text-[#000000] sm:text-base";
 
 function PrivacyPolicyPage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
   return (

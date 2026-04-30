@@ -383,7 +383,7 @@ const Header = ({
           <BrandLogo
             subtitle={dashboardName || 'Your dashboard'}
             markClassName="h-9 w-9 sm:h-10 sm:w-10"
-            textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
+            textClassName="text-base font-extrabold tracking-tight text-[#000000] sm:text-lg"
           />
         </div>
 
@@ -403,7 +403,7 @@ const Header = ({
                 className={`relative inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${
                   isActive
                     ? 'text-[#E63B2E]'
-                    : 'text-[#534340] hover:bg-[#FFF8F5] hover:text-[#410001]'
+                    : 'text-[#000000] hover:bg-[#FFF8F5] hover:text-[#000000]'
                 }`}
               >
                 <Icon size={16} />
@@ -420,20 +420,20 @@ const Header = ({
             <button
               type="button"
               onClick={openSettingsDropdown}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Settings"
               aria-label="Settings"
               aria-haspopup="menu"
               aria-expanded={settingsOpen}
             >
               <SettingsIcon size={22} />
-              <span className="hidden truncate text-[#410001] sm:inline" title="Settings">Settings</span>
+              <span className="hidden truncate text-[#000000] sm:inline" title="Settings">Settings</span>
             </button>
 
             {settingsOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                className="absolute right-0 top-12 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
               >
                 <div className="p-2">
                   {canEditDashboardSettings && (
@@ -441,7 +441,7 @@ const Header = ({
                       role="menuitem"
                       type="button"
                       onClick={toggleDashboardSettingsPanel}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                       aria-expanded={DashboardSettingsExpanded}
                     >
                       <PencilIcon size={18} />
@@ -465,13 +465,13 @@ const Header = ({
                                   setSettingsName(event.target.value);
                                   setSettingsSaved(false);
                                 }}
-                                className="mt-2 w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                                className="mt-2 w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#000000] outline-none transition focus:border-[#E63B2E]"
                                 placeholder="Our dashboard"
                                 maxLength={80}
                                 autoFocus
                               />
                             ) : (
-                              <p className="mt-1 truncate text-sm font-extrabold text-[#410001]" title={settingsName || dashboardName || 'Our dashboard'}>{settingsName || dashboardName || 'Our dashboard'}</p>
+                              <p className="mt-1 truncate text-sm font-extrabold text-[#000000]" title={settingsName || dashboardName || 'Our dashboard'}>{settingsName || dashboardName || 'Our dashboard'}</p>
                             )}
                           </div>
                           <button
@@ -482,7 +482,7 @@ const Header = ({
                               setSettingsSaved(false);
                             }}
                             disabled={!canEditDashboardSettings || settingsSaving}
-                            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:opacity-50"
+                            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:opacity-50"
                             aria-label={editingDashboardName ? 'Done editing dashboard name' : 'Edit dashboard name'}
                             title={editingDashboardName ? 'Done' : 'Edit dashboard name'}
                           >
@@ -495,7 +495,7 @@ const Header = ({
                         <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Shared items</p>
                         <div className="mt-3 grid grid-cols-2 gap-2">
                           {sectionOptions.map(section => (
-                            <label key={section.id} className="flex min-h-[40px] items-center gap-2 rounded-lg border border-[#E1D8D4] bg-white px-2.5 py-2 text-xs font-bold text-[#410001] transition hover:bg-[#FFF8F5]">
+                            <label key={section.id} className="flex min-h-[40px] items-center gap-2 rounded-lg border border-[#E1D8D4] bg-white px-2.5 py-2 text-xs font-bold text-[#000000] transition hover:bg-[#FFF8F5]">
                               <input
                                 type="checkbox"
                                 checked={settingsSections.includes(section.id)}
@@ -510,7 +510,7 @@ const Header = ({
                       </div>
 
                       {!canEditDashboardSettings && (
-                        <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#534340]">
+                        <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#000000]">
                           Only the dashboard owner can change these settings.
                         </p>
                       )}
@@ -532,7 +532,7 @@ const Header = ({
                         role="menuitem"
                         type="button"
                         onClick={toggleSharePanel}
-                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                         aria-expanded={shareExpanded}
                       >
                         <ShareIcon size={18} />
@@ -563,7 +563,7 @@ const Header = ({
                           </div>
 
                           {!canGenerateInvite && (
-                            <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#534340]">
+                            <p className="rounded-lg border border-[#FFDAD4] bg-white px-3 py-2 text-xs font-semibold text-[#000000]">
                               Only the dashboard owner can generate join invites.
                             </p>
                           )}
@@ -573,7 +573,7 @@ const Header = ({
                               <div className="flex items-start justify-between gap-2">
                                 <div>
                                   <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Join code</p>
-                                  <p className="mt-1 text-xs text-[#534340]">{formatExpiry(shareInfo?.expiresAt)}</p>
+                                  <p className="mt-1 text-xs text-[#000000]">{formatExpiry(shareInfo?.expiresAt)}</p>
                                 </div>
                                 <button
                                   type="button"
@@ -583,7 +583,7 @@ const Header = ({
                                   {copiedField === 'joinCode' ? 'Copied' : 'Copy'}
                                 </button>
                               </div>
-                              <code className="mt-2 block break-all text-lg font-extrabold tracking-[0.2em] text-[#241A18]">{shareInfo.joinCode}</code>
+                              <code className="mt-2 block break-all text-lg font-extrabold tracking-[0.2em] text-[#000000]">{shareInfo.joinCode}</code>
                             </div>
                           )}
 
@@ -592,7 +592,7 @@ const Header = ({
                               <div className="flex items-start justify-between gap-2">
                                 <div>
                                   <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Invite link</p>
-                                  <p className="mt-1 text-xs text-[#534340]">{formatExpiry(shareInfo?.expiresAt)}</p>
+                                  <p className="mt-1 text-xs text-[#000000]">{formatExpiry(shareInfo?.expiresAt)}</p>
                                 </div>
                                 <button
                                   type="button"
@@ -602,7 +602,7 @@ const Header = ({
                                   {copiedField === 'inviteLink' ? 'Copied' : 'Copy'}
                                 </button>
                               </div>
-                              <code className="mt-2 block max-h-20 overflow-auto break-all rounded-lg bg-[#FFF8F5] p-2 text-xs font-semibold text-[#241A18]">
+                              <code className="mt-2 block max-h-20 overflow-auto break-all rounded-lg bg-[#FFF8F5] p-2 text-xs font-semibold text-[#000000]">
                                 {shareInfo.inviteLink}
                               </code>
                             </div>
@@ -615,8 +615,8 @@ const Header = ({
                   {onLeaveDashboard && (
                     confirmLeaveDashboard ? (
                       <div className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] p-3">
-                        <p className="text-sm font-bold text-[#410001]">Exit dashboard?</p>
-                        <p className="mt-1 text-xs leading-5 text-[#534340]">
+                        <p className="text-sm font-bold text-[#000000]">Exit dashboard?</p>
+                        <p className="mt-1 text-xs leading-5 text-[#000000]">
                           You will exit this dashboard and lose all data.
                         </p>
                         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -624,7 +624,7 @@ const Header = ({
                             type="button"
                             onClick={() => setConfirmLeaveDashboard(false)}
                             disabled={leavingDashboard}
-                            className="min-h-[40px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                            className="min-h-[40px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                           >
                             Stay
                           </button>
@@ -644,7 +644,7 @@ const Header = ({
                         type="button"
                         onClick={() => { setDashboardSettingsExpanded(false); setShareExpanded(false); setConfirmLeaveDashboard(true); }}
                         disabled={leavingDashboard}
-                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5] disabled:opacity-60"
+                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5] disabled:opacity-60"
                       >
                         <Trash size={18} />
                         {leavingDashboard ? 'Exiting...' : 'Exit dashboard'}
@@ -660,26 +660,26 @@ const Header = ({
             <button
               type="button"
               onClick={openProfileDropdown}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Account"
               aria-label="Account"
               aria-haspopup="menu"
               aria-expanded={profileOpen}
             >
               <UserIcon size={22} />
-              <span className="hidden truncate text-[#410001] sm:inline" title="Account">Account</span>
+              <span className="hidden truncate text-[#000000] sm:inline" title="Account">Account</span>
             </button>
 
             {profileOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
               >
                 <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
-                  <p className="mt-1 truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
-                  <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
-                  <p className="truncate text-xs text-[#534340]" title={accountEmail}>{accountEmail}</p>
+                  <p className="mt-1 truncate text-base font-bold text-[#000000]" title={displayName}>{displayName}</p>
+                  <p className="truncate text-xs font-semibold text-[#000000]" title={username}>{username}</p>
+                  <p className="truncate text-xs text-[#000000]" title={accountEmail}>{accountEmail}</p>
                 </div>
 
                 {isEditingProfile ? (
@@ -688,7 +688,7 @@ const Header = ({
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Name</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={displayName}>{displayName}</p>
+                          <p className="mt-1 truncate font-semibold text-[#000000]" title={displayName}>{displayName}</p>
                         </div>
                         <button
                           type="button"
@@ -699,7 +699,7 @@ const Header = ({
                             setProfileEmailSuccess('');
                             setProfileError('');
                           }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                           aria-label="Edit name"
                           title="Edit name"
                         >
@@ -713,7 +713,7 @@ const Header = ({
                             type="text"
                             value={profileName}
                             onChange={(event) => setProfileName(event.target.value)}
-                            className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                            className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                             autoComplete="name"
                             aria-label="Name"
                           />
@@ -725,7 +725,7 @@ const Header = ({
                                 setProfileName(displayName);
                                 setProfileError('');
                               }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileSaving}
                             >
                               Cancel
@@ -746,7 +746,7 @@ const Header = ({
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Username</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={username}>{username}</p>
+                          <p className="mt-1 truncate font-semibold text-[#000000]" title={username}>{username}</p>
                         </div>
                         <button
                           type="button"
@@ -758,7 +758,7 @@ const Header = ({
                             setProfileEmailSuccess('');
                             setProfileError('');
                           }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                           aria-label="Edit username"
                           title="Edit username"
                         >
@@ -773,13 +773,13 @@ const Header = ({
                               type="text"
                               value={profileUsername}
                               onChange={(event) => handleProfileUsernameChange(event.target.value)}
-                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                               autoComplete="username"
                               spellCheck={false}
                               aria-label="Username"
                             />
                             {profileUsernameStatus === 'checking'
-                              ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+                              ? <p className="mt-1 text-xs text-[#000000]">Checking availability...</p>
                               : profileUsernameStatus === 'available'
                                 ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
                                 : profileUsernameStatus === 'taken'
@@ -795,7 +795,7 @@ const Header = ({
                                 setProfileUsernameStatus(null);
                                 setProfileError('');
                               }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileSaving}
                             >
                               Cancel
@@ -816,7 +816,7 @@ const Header = ({
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Email</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={accountEmail}>{accountEmail}</p>
+                          <p className="mt-1 truncate font-semibold text-[#000000]" title={accountEmail}>{accountEmail}</p>
                           {profileEmailSuccess && <p className="mt-1 break-words text-xs font-semibold text-[#2F855A]" role="status">{profileEmailSuccess}</p>}
                         </div>
                         <button
@@ -828,7 +828,7 @@ const Header = ({
                             setProfileEmailSuccess('');
                             setProfileError('');
                           }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                           aria-label="Edit email"
                           title="Edit email"
                         >
@@ -843,13 +843,13 @@ const Header = ({
                               type="email"
                               value={profileNewEmail}
                               onChange={(event) => setProfileNewEmail(event.target.value)}
-                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                               autoComplete="email"
                               placeholder="you@example.com"
                               spellCheck={false}
                               aria-label="New email address"
                             />
-                            <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                            <p className="mt-1 text-xs text-[#000000]">A confirmation link will be sent to the new address.</p>
                           </div>
                           {profileEmailError && <p className="text-xs font-semibold text-[#C1121F]" role="alert">{profileEmailError}</p>}
                           <div className="flex gap-2">
@@ -861,7 +861,7 @@ const Header = ({
                                 setProfileEmailError('');
                                 setProfileEmailSuccess('');
                               }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileEmailSaving}
                             >
                               Cancel
@@ -893,7 +893,7 @@ const Header = ({
                           setProfileEmailSuccess('');
                           setProfileError('');
                         }}
-                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                         disabled={profileSaving || profileEmailSaving}
                       >
                         Cancel
@@ -915,7 +915,7 @@ const Header = ({
                         setProfileEmailSuccess('');
                         setProfileError('');
                       }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <UserIcon size={18} />
                       Edit profile
@@ -926,7 +926,7 @@ const Header = ({
                         onLogout?.();
                         setProfileOpen(false);
                       }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
                       Log out
@@ -942,7 +942,7 @@ const Header = ({
             <button
               type="button"
               onClick={() => setMenuOpen(prev => !prev)}
-              className="flex h-11 items-center gap-1.5 rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+              className="flex h-11 items-center gap-1.5 rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
@@ -955,7 +955,7 @@ const Header = ({
             {menuOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-60 origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                className="absolute right-0 top-12 z-50 w-60 origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
               >
                 <div className="p-1">
                   {visibleNavTabs.map(tab => {
@@ -972,7 +972,7 @@ const Header = ({
                         className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                           isActive
                             ? 'bg-[#FFDAD4] text-[#E63B2E]'
-                            : 'text-[#410001] hover:bg-[#FFF8F5]'
+                            : 'text-[#000000] hover:bg-[#FFF8F5]'
                         }`}
                       >
                         <Icon size={18} />
@@ -985,7 +985,7 @@ const Header = ({
                   <button
                     role="menuitem"
                     onClick={() => setMenuOpen(false)}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
                     Settings
@@ -994,7 +994,7 @@ const Header = ({
                     <button
                       role="menuitem"
                       onClick={() => setMenuOpen(false)}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <ShareIcon size={18} />
                       Share
@@ -1003,7 +1003,7 @@ const Header = ({
                   <button
                     role="menuitem"
                     onClick={() => setMenuOpen(false)}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                   >
                     <UserIcon size={18} />
                     Account
@@ -1012,7 +1012,7 @@ const Header = ({
                     <button
                       role="menuitem"
                       onClick={() => { onBackToDashboards(); setMenuOpen(false); }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
                       Back to dashboards

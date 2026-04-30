@@ -18,7 +18,7 @@ function BrandMark({ className = 'h-9 w-9', rounded = 'rounded-xl' }) {
 
 function BrandLogo({
   subtitle,
-  textClassName = 'text-lg font-extrabold tracking-tight text-[#410001]',
+  textClassName = 'text-lg font-extrabold tracking-tight text-[#000000]',
   markClassName = 'h-9 w-9',
   className = 'flex items-center gap-2'
 }) {
@@ -28,7 +28,7 @@ function BrandLogo({
       <span className="min-w-0 leading-tight">
         <span className={`block truncate ${textClassName}`}>{BRAND_NAME}</span>
         {subtitle && (
-          <span className="block truncate text-xs font-medium text-[#534340]">{subtitle}</span>
+          <span className="block truncate text-xs font-medium text-[#000000]">{subtitle}</span>
         )}
       </span>
     </span>

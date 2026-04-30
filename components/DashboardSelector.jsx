@@ -235,11 +235,11 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
   const LogoutIcon = window.getWindowComponent?.('LogoutIcon', window.MissingIcon) || window.MissingIcon;
   const BrandLogo = window.getWindowComponent?.('BrandLogo', window.MissingComponent) || window.MissingComponent;
 
-  const inputCls = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
-  const labelCls = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#534340]";
+  const inputCls = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]";
+  const labelCls = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#FBF2ED] text-[#241A18]">
+    <div className="flex min-h-screen flex-col bg-[#FBF2ED] text-[#000000]">
       {/* Top header */}
       <header className="border-b border-[#E1D8D4] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -247,7 +247,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
             <BrandLogo
               subtitle="Plan your life together"
               markClassName="h-9 w-9 sm:h-10 sm:w-10"
-              textClassName="text-base font-extrabold tracking-tight text-[#410001] sm:text-lg"
+              textClassName="text-base font-extrabold tracking-tight text-[#000000] sm:text-lg"
             />
           </div>
 
@@ -255,26 +255,26 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
             <button
               type="button"
               onClick={() => setProfileOpen(prev => !prev)}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#410001] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:w-auto sm:max-w-[220px] sm:gap-2 sm:px-3"
               title="Account"
               aria-label="Account"
               aria-haspopup="menu"
               aria-expanded={profileOpen}
             >
               <UserIcon size={22} />
-              <span className="hidden truncate text-[#410001] sm:inline" title="Account">Account</span>
+              <span className="hidden truncate text-[#000000] sm:inline" title="Account">Account</span>
             </button>
 
             {profileOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#410001]/10 animate-scale-in"
+                className="absolute right-0 top-12 z-50 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
               >
                 <div className="border-b border-[#E1D8D4] bg-[#FFF8F5] p-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-[#E63B2E]">Signed in as</p>
-                  <p className="mt-1 truncate text-base font-bold text-[#410001]" title={displayName}>{displayName}</p>
-                  <p className="truncate text-xs font-semibold text-[#534340]" title={username}>{username}</p>
-                  <p className="truncate text-xs text-[#534340]" title={accountEmail}>{accountEmail}</p>
+                  <p className="mt-1 truncate text-base font-bold text-[#000000]" title={displayName}>{displayName}</p>
+                  <p className="truncate text-xs font-semibold text-[#000000]" title={username}>{username}</p>
+                  <p className="truncate text-xs text-[#000000]" title={accountEmail}>{accountEmail}</p>
                 </div>
 
                 {isEditingProfile ? (
@@ -283,7 +283,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Name</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={displayName}>{displayName}</p>
+                          <p className="mt-1 truncate font-semibold text-[#000000]" title={displayName}>{displayName}</p>
                         </div>
                         <button
                           type="button"
@@ -294,7 +294,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                             setProfileEmailSuccess('');
                             setProfileError('');
                           }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                           aria-label="Edit name"
                           title="Edit name"
                         >
@@ -308,7 +308,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                             type="text"
                             value={profileName}
                             onChange={(event) => setProfileName(event.target.value)}
-                            className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                            className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                             autoComplete="name"
                             aria-label="Name"
                           />
@@ -320,7 +320,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                                 setProfileName(displayName);
                                 setProfileError('');
                               }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileSaving}
                             >
                               Cancel
@@ -341,7 +341,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Username</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={username}>{username}</p>
+                          <p className="mt-1 truncate font-semibold text-[#000000]" title={username}>{username}</p>
                         </div>
                         <button
                           type="button"
@@ -353,7 +353,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                             setProfileEmailSuccess('');
                             setProfileError('');
                           }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                           aria-label="Edit username"
                           title="Edit username"
                         >
@@ -368,13 +368,13 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                               type="text"
                               value={profileUsername}
                               onChange={(event) => handleProfileUsernameChange(event.target.value)}
-                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                               autoComplete="username"
                               spellCheck={false}
                               aria-label="Username"
                             />
                             {profileUsernameStatus === 'checking'
-                              ? <p className="mt-1 text-xs text-[#857370]">Checking availability...</p>
+                              ? <p className="mt-1 text-xs text-[#000000]">Checking availability...</p>
                               : profileUsernameStatus === 'available'
                                 ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
                                 : profileUsernameStatus === 'taken'
@@ -390,7 +390,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                                 setProfileUsernameStatus(null);
                                 setProfileError('');
                               }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileSaving}
                             >
                               Cancel
@@ -411,7 +411,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Email</p>
-                          <p className="mt-1 truncate font-semibold text-[#410001]" title={accountEmail}>{accountEmail}</p>
+                          <p className="mt-1 truncate font-semibold text-[#000000]" title={accountEmail}>{accountEmail}</p>
                           {profileEmailSuccess && <p className="mt-1 break-words text-xs font-semibold text-[#2F855A]" role="status">{profileEmailSuccess}</p>}
                         </div>
                         <button
@@ -423,7 +423,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                             setProfileEmailSuccess('');
                             setProfileError('');
                           }}
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#857370] transition hover:bg-white hover:text-[#E63B2E]"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
                           aria-label="Edit email"
                           title="Edit email"
                         >
@@ -438,13 +438,13 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                               type="email"
                               value={profileNewEmail}
                               onChange={(event) => setProfileNewEmail(event.target.value)}
-                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                              className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                               autoComplete="email"
                               placeholder="you@example.com"
                               spellCheck={false}
                               aria-label="New email address"
                             />
-                            <p className="mt-1 text-xs text-[#857370]">A confirmation link will be sent to the new address.</p>
+                            <p className="mt-1 text-xs text-[#000000]">A confirmation link will be sent to the new address.</p>
                           </div>
                           {profileEmailError && <p className="text-xs font-semibold text-[#C1121F]" role="alert">{profileEmailError}</p>}
                           <div className="flex gap-2">
@@ -456,7 +456,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                                 setProfileEmailError('');
                                 setProfileEmailSuccess('');
                               }}
-                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                              className="min-h-[40px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                               disabled={profileEmailSaving}
                             >
                               Cancel
@@ -488,7 +488,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                           setProfileEmailSuccess('');
                           setProfileError('');
                         }}
-                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]"
+                        className="min-h-[44px] flex-1 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
                         disabled={profileSaving || profileEmailSaving}
                       >
                         Cancel
@@ -510,7 +510,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                         setProfileEmailSuccess('');
                         setProfileError('');
                       }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <UserIcon size={18} />
                       Edit profile
@@ -518,7 +518,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                     <button
                       type="button"
                       onClick={() => { setProfileOpen(false); onBackToLogin?.(); }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]"
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <LogoutIcon size={18} />
                       Log out
@@ -534,10 +534,10 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <section className="mb-8 sm:mb-10 text-center">
           <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#E63B2E]">Welcome</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
             Create your shared dashboard
           </h1>
-          <p className="mt-3 text-base font-medium text-[#534340]">
+          <p className="mt-3 text-base font-medium text-[#000000]">
             Start or join a private dashboard and pick what you want to plan together.
           </p>
         </section>
@@ -547,14 +547,14 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
             <button
               type="button"
               onClick={() => switchMode('create')}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'create' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'create' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#000000]'}`}
             >
               Create
             </button>
             <button
               type="button"
               onClick={() => switchMode('join')}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'join' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'join' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#000000]'}`}
             >
               Join
             </button>
@@ -581,7 +581,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                   <p className={labelCls}>Shared items</p>
                   <div className="grid grid-cols-2 gap-2">
                     {sectionOptions.map(section => (
-                      <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#410001] transition hover:bg-[#FFF8F5]">
+                      <label key={section.id} className="flex items-center gap-2 rounded-xl border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]">
                         <input
                           type="checkbox"
                           checked={selectedSections.includes(section.id)}
@@ -593,7 +593,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
                     ))}
                   </div>
                 </div>
-                {inviteNotice && <p className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] px-3 py-2 text-sm font-semibold text-[#534340]">{inviteNotice}</p>}
+                {inviteNotice && <p className="rounded-xl border border-[#FFDAD4] bg-[#FFF8F5] px-3 py-2 text-sm font-semibold text-[#000000]">{inviteNotice}</p>}
                 {error && <p className="text-sm font-semibold text-[#C1121F]">{error}</p>}
                 <button
                   type="submit"
@@ -647,7 +647,7 @@ function DashboardSelector({ onSelectDashboard, onBackToLogin, onUpdateUser, onN
             )}
           </div>
 
-          <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
+          <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#000000]">
             {mode === 'create' ? 'Have a join code from your partner?' : 'Want to start a new dashboard instead?'}
             <button
               type="button"

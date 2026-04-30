@@ -196,19 +196,19 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 type="text"
                 value={editForm.title}
                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]"
+                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
                 placeholder="Task title"
                 autoFocus
               />
               <textarea
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]"
+                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
                 placeholder="Description (optional)"
                 rows="2"
               />
               <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#410001]">
+                <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#000000]">
                   <input
                     type="checkbox"
                     checked={editForm.isRecurring}
@@ -224,18 +224,18 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 {editForm.isRecurring && (
                   <>
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-bold uppercase tracking-wide text-[#534340]">Repeat every</label>
+                      <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Repeat every</label>
                       <select
                         value={getTaskRecurrenceFrequency(editForm)}
                         onChange={(e) => setEditForm({ ...editForm, taskRecurrenceFrequency: e.target.value })}
-                        className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#241A18] outline-none transition focus:border-[#E63B2E]"
+                        className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                       >
                         {TASK_RECURRENCE_OPTIONS.map(option => (
                           <option key={option.value} value={option.value}>{option.label}</option>
                         ))}
                       </select>
                     </div>
-                    <p className="text-xs font-medium text-[#857370]">
+                    <p className="text-xs font-medium text-[#000000]">
                       Checking a recurring task records one completed occurrence and keeps it active.
                     </p>
                   </>
@@ -243,7 +243,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
               </div>
               <div className="flex gap-2">
                 <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="min-h-[44px] rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F]">Save</button>
-                <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-4 py-2 text-sm font-bold text-[#410001] transition hover:bg-[#FFF8F5]">Cancel</button>
+                <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-4 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]">Cancel</button>
               </div>
             </div>
           ) : (
@@ -259,11 +259,11 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 />
               </label>
               <div className="min-w-0 flex-1">
-                <p className={`line-clamp-2 font-bold leading-snug ${task.completed ? 'text-[#857370] line-through' : 'text-[#410001]'}`} title={task.title}>
+                <p className={`line-clamp-2 font-bold leading-snug ${task.completed ? 'text-[#000000] line-through' : 'text-[#000000]'}`} title={task.title}>
                   {task.title}
                 </p>
                 {task.description && (
-                  <p className={`mt-1 line-clamp-3 whiteDashboard-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#534340]'}`} title={task.description}>
+                  <p className={`mt-1 line-clamp-3 whiteDashboard-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#000000]'}`} title={task.description}>
                     {task.description}
                   </p>
                 )}
@@ -278,7 +278,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                       </span>
                     )}
                     {task.dueDate && (
-                      <span className={`flex items-center gap-1 text-xs font-medium ${isOverdue ? 'text-[#C1121F]' : 'text-[#534340]'}`}>
+                      <span className={`flex items-center gap-1 text-xs font-medium ${isOverdue ? 'text-[#C1121F]' : 'text-[#000000]'}`}>
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         {isOverdue ? 'Overdue · ' : ''}{task.dueDate.split('-').reverse().join('/')}
                       </span>
@@ -307,7 +307,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'up')}
                       disabled={indexInSorted === 0 || sortedTasks[indexInSorted - 1]?.completed}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                       aria-label="Move up"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
@@ -315,17 +315,17 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'down')}
                       disabled={indexInSorted === sortedTasks.length - 1 || sortedTasks[indexInSorted + 1]?.completed}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                       aria-label="Move down"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                   </>
                 )}
-                <button onClick={() => handleEditTask(task)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Edit task">
+                <button onClick={() => handleEditTask(task)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Edit task">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                 </button>
-                <button onClick={() => onDeleteTask(task.id)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#857370] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]" aria-label="Delete task">
+                <button onClick={() => onDeleteTask(task.id)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]" aria-label="Delete task">
                   <Trash size={16} />
                 </button>
               </div>
@@ -340,9 +340,9 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     <div className="space-y-5 animate-fade-in">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#410001] sm:text-3xl">Tasks</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Tasks</h2>
           {tasks.length > 0 && (
-            <p className="mt-1 text-sm font-medium text-[#534340]">
+            <p className="mt-1 text-sm font-medium text-[#000000]">
               {activeCnt} remaining · {tasks.length - activeCnt} done
             </p>
           )}
@@ -365,7 +365,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
       ) : (
         <>
           {filter !== 'completed' && activeTasks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#534340]">
+            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
               No active tasks.
             </div>
           )}
@@ -385,7 +385,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 <>
                   <button
                     onClick={() => setShowCompleted(!showCompleted)}
-                    className="flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#534340] transition hover:bg-[#FFF8F5] hover:text-[#410001]"
+                    className="flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#000000]"
                   >
                     <span>Completed ({completedTasks.length})</span>
                     <svg
@@ -414,7 +414,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
           )}
 
           {filter === 'completed' && completedTasks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#534340]">
+            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
               No completed tasks.
             </div>
           )}

@@ -394,8 +394,8 @@ function LoginScreen({ onLogin, onNavigate }) {
     }
   };
 
-  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#241A18] placeholder-[#857370] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
-  const labelClass = "mb-1.5 block text-sm font-bold text-[#241A18]";
+  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
+  const labelClass = "mb-1.5 block text-sm font-bold text-[#000000]";
 
   return (
     <div className="app-auth-bg flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
@@ -414,8 +414,8 @@ function LoginScreen({ onLogin, onNavigate }) {
           <a href="/" onClick={handleHomeNavigation} className="mb-4 inline-flex" aria-label="Couple Planner homepage">
             <BrandMark className="h-14 w-14" rounded="rounded-2xl" />
           </a>
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#410001] sm:text-4xl">Couple Planner</h1>
-          <p className="mt-2 text-sm font-medium text-[#534340]">
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">Couple Planner</h1>
+          <p className="mt-2 text-sm font-medium text-[#000000]">
             Organize your life, together.
           </p>
         </div>
@@ -423,7 +423,7 @@ function LoginScreen({ onLogin, onNavigate }) {
         {/* Reset password form */}
         {mode === 'reset' && (
           <form onSubmit={handleResetPassword} className="space-y-4" noValidate>
-            <h2 className="mb-2 text-center text-lg font-semibold text-[#410001]">Set a new password</h2>
+            <h2 className="mb-2 text-center text-lg font-semibold text-[#000000]">Set a new password</h2>
             {!resetLinkIssue && (
               <div>
                 <label className={labelClass} htmlFor="new-password">New Password</label>
@@ -443,7 +443,7 @@ function LoginScreen({ onLogin, onNavigate }) {
             {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
             {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
             {resetLinkIssue && (
-              <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#534340]">
+              <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#000000]">
                 <p>
                   {linkIssue.status === 'used'
                     ? 'This reset link has already been used.'
@@ -479,7 +479,7 @@ function LoginScreen({ onLogin, onNavigate }) {
                 setServerSuccess('');
                 setLinkIssue(null);
               }}
-              className="w-full text-sm font-medium text-[#534340] transition hover:text-[#E63B2E]"
+              className="w-full text-sm font-medium text-[#000000] transition hover:text-[#E63B2E]"
             >
               Back to sign in
             </button>
@@ -493,14 +493,14 @@ function LoginScreen({ onLogin, onNavigate }) {
               <button
                 type="button"
                 onClick={() => { setMode('signin'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); setUsernameStatus(null); }}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signin' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signin' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#000000]'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => { setMode('signup'); setErrors({}); setServerError(''); setServerSuccess(''); setLinkIssue(null); setUsernameStatus(null); }}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signup' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#534340] hover:text-[#410001]'}`}
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition ${mode === 'signup' ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#000000]'}`}
               >
                 Register
               </button>
@@ -539,7 +539,7 @@ function LoginScreen({ onLogin, onNavigate }) {
                     {errors.username
                       ? <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.username}</p>
                       : usernameStatus === 'checking'
-                        ? <p className="mt-1 text-xs text-[#857370]">Checking availability…</p>
+                        ? <p className="mt-1 text-xs text-[#000000]">Checking availability…</p>
                         : usernameStatus === 'available'
                           ? <p className="mt-1 text-xs font-semibold text-[#2F855A]">Username is available</p>
                           : usernameStatus === 'taken'
@@ -567,7 +567,7 @@ function LoginScreen({ onLogin, onNavigate }) {
 
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <label className="text-sm font-bold text-[#241A18]" htmlFor="login-password">Password</label>
+                  <label className="text-sm font-bold text-[#000000]" htmlFor="login-password">Password</label>
                   {mode === 'signin' && (
                     <button
                       type="button"
@@ -593,7 +593,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               </div>
 
               {mode === 'signin' && (
-                <label className="flex items-center gap-2 text-sm font-medium text-[#534340]">
+                <label className="flex items-center gap-2 text-sm font-medium text-[#000000]">
                   <input
                     type="checkbox"
                     checked={rememberMe}
@@ -607,7 +607,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               {serverError && <p className="text-center text-sm font-semibold text-[#C1121F]" aria-live="polite">{serverError}</p>}
               {serverSuccess && <p className="text-center text-sm font-semibold text-[#2F855A]" aria-live="polite">{serverSuccess}</p>}
               {confirmationLinkIssue && (
-                <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#534340]">
+                <div className="rounded-xl border border-[#FFDAD4] bg-white px-4 py-3 text-center text-sm text-[#000000]">
                   <p>
                     {linkIssue.status === 'used'
                       ? 'This confirmation link has already been used.'
@@ -640,7 +640,7 @@ function LoginScreen({ onLogin, onNavigate }) {
               </button>
             </form>
 
-            <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#534340]">
+            <p className="mt-6 border-t border-[#E1D8D4]/70 pt-5 text-center text-sm text-[#000000]">
               {mode === 'signin' ? 'New to Couple Planner?' : 'Already have an account?'}
               <button
                 type="button"
@@ -660,8 +660,8 @@ function LoginScreen({ onLogin, onNavigate }) {
                 dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white p-6 shadow-2xl"
               >
                 <form onSubmit={handleForgotPassword} noValidate>
-                  <h2 className="mb-3 text-center text-lg font-bold text-[#410001]">Reset password</h2>
-                  <p className="mb-4 text-center text-sm text-[#534340]">We'll send a reset link to your email.</p>
+                  <h2 className="mb-3 text-center text-lg font-bold text-[#000000]">Reset password</h2>
+                  <p className="mb-4 text-center text-sm text-[#000000]">We'll send a reset link to your email.</p>
                   <label className={labelClass} htmlFor="forgot-email">Email</label>
                   <input
                     id="forgot-email"
@@ -679,7 +679,7 @@ function LoginScreen({ onLogin, onNavigate }) {
                     <button
                       type="button"
                       onClick={() => { setForgotOpen(false); setErrors({}); }}
-                      className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#410001] transition hover:bg-[#FBF2ED]"
+                      className="flex-1 rounded-xl border border-[#E1D8D4] bg-white py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FBF2ED]"
                     >
                       Cancel
                     </button>
