@@ -563,7 +563,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 <img
                   src="/assets/ui-showcase-no-background.png"
                   alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
-                  className="block w-full max-w-[68rem] object-contain drop-shadow-2xl lg:max-w-[84rem]"
+                  className="block w-full max-w-[136rem] object-contain drop-shadow-2xl lg:max-w-[168rem]"
                   loading="eager"
                 />
               </figure>
