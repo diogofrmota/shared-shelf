@@ -533,17 +533,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 />
                 <span className="whitespace-nowrap leading-none">Couple Planner</span>
               </h1>
-              <figure className="mt-6 flex justify-center">
-                <img
-                  src="/assets/ui-showcase-no-background.png"
-                  alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
-                  className="block w-full max-w-[136rem] object-contain drop-shadow-2xl lg:max-w-[168rem]"
-                  loading="eager"
-                />
-              </figure>
-            </div>
-            <div className="flex-1">
-              <p className="text-2xl font-extrabold leading-tight text-white sm:text-3xl">
+              <p className="mt-4 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
                 Plan your life together.
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
@@ -568,6 +558,16 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 </a>
               </div>
             </div>
+            <div className="w-full max-w-2xl lg:flex-1 lg:max-w-4xl">
+              <figure className="flex justify-center">
+                <img
+                  src="/assets/ui-showcase-no-background.png"
+                  alt="Two phone mockups showing Couple Planner entertainment and calendar screens."
+                  className="block w-full max-w-[136rem] object-contain drop-shadow-2xl lg:max-w-[168rem]"
+                  loading="eager"
+                />
+              </figure>
+            </div>
           </div>
         </section>
 
@@ -586,21 +586,21 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           </div>
         </section>
 
-        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-10 sm:py-12">
+        <section id="features" className="scroll-mt-24 bg-[#FBF2ED] py-8 sm:py-12">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 text-center sm:mb-10">
+            <div className="mb-6 text-center sm:mb-10">
               <span className="ss-tag mb-4">Features</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
+              <h2 className="text-2xl font-extrabold tracking-tight text-[#000000] sm:text-3xl lg:text-4xl">
                 Plan your relationship, synced in one place.
               </h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
               {FEATURES.map((feature) => {
                 const Icon = getHomeComponent(feature.icon);
                 return (
                   <div
                     key={feature.title}
-                    className="ss-card p-6 transition ss-card-hover"
+                    className="ss-card p-4 transition ss-card-hover sm:p-6"
                     style={{
                       backgroundColor: feature.accent,
                       backgroundImage: `linear-gradient(135deg, ${feature.accent} 0%, ${feature.accent} 68%, ${feature.fade} 100%)`,
@@ -608,15 +608,15 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                       borderWidth: '3px'
                     }}
                   >
-                    <div className="mb-4 flex items-center gap-3">
+                    <div className="mb-3 flex items-center gap-2 sm:mb-4 sm:gap-3">
                       <span
-                        className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm"
+                        className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm sm:h-11 sm:w-11"
                       >
-                        <Icon size={20} />
+                        <Icon size={18} />
                       </span>
-                      <h3 className="text-lg font-extrabold text-white">{feature.title}</h3>
+                      <h3 className="text-sm font-extrabold text-white sm:text-lg">{feature.title}</h3>
                     </div>
-                    <p className="mt-2 text-sm font-medium text-white/90">{feature.description}</p>
+                    <p className="mt-1 text-xs font-medium text-white/90 sm:mt-2 sm:text-sm">{feature.description}</p>
                   </div>
                 );
               })}
@@ -624,35 +624,35 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
           </div>
         </section>
 
-        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FFF8F5] py-10 sm:py-12">
+        <section id="who-it-is-for" className="scroll-mt-24 bg-[#FFF8F5] py-8 sm:py-12">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 text-center sm:mb-10">
+            <div className="mb-6 text-center sm:mb-10">
               <span className="ss-tag mb-4">Who it is for</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#000000] sm:text-4xl">
+              <h2 className="text-2xl font-extrabold tracking-tight text-[#000000] sm:text-3xl lg:text-4xl">
                 Built for the plans couples actually make.
               </h2>
-              <p className="mt-3 text-base text-[#000000] sm:text-lg">
+              <p className="mt-3 text-sm text-[#000000] sm:text-lg">
                 Coordinate all your everyday moments in one shared dashboard.
               </p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
               {COUPLE_SCENARIOS.map((scenario) => {
                 const Icon = scenario.icon;
                 return (
                   <div
                     key={scenario.title}
-                    className="ss-card p-6"
+                    className="ss-card p-4 sm:p-6"
                     style={{ borderWidth: '3px' }}
                   >
-                    <div className="mb-3 flex items-center gap-3">
+                    <div className="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
                       <span
-                        className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[#000000]"
+                        className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-[#000000] sm:h-10 sm:w-10"
                       >
-                        <Icon size={19} />
+                        <Icon size={17} />
                       </span>
-                      <h3 className="text-lg font-extrabold text-[#000000]">{scenario.title}</h3>
+                      <h3 className="text-sm font-extrabold text-[#000000] sm:text-lg">{scenario.title}</h3>
                     </div>
-                    <p className="text-sm text-[#000000]">{scenario.description}</p>
+                    <p className="text-xs text-[#000000] sm:text-sm">{scenario.description}</p>
                   </div>
                 );
               })}
