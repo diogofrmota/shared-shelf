@@ -459,6 +459,35 @@ const cacheDashboardData = (dashboardId, data) => {
 
 const dashboardDataCache = new Map();
 const dashboardDataFetches = new Map();
+const dashboardVersions = new Map();
+const dashboardSyncListeners = new Set();
+
+const stripVersion = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  if (!('_version' in data)) return data;
+  const { _version, ...rest } = data;
+  return rest;
+};
+
+const setDashboardVersion = (dashboardId, version) => {
+  if (!dashboardId) return;
+  const next = Number(version) || 0;
+  if (next) dashboardVersions.set(dashboardId, next);
+};
+
+const getDashboardVersion = (dashboardId) => dashboardVersions.get(dashboardId) || 0;
+
+const onDashboardSync = (listener) => {
+  if (typeof listener !== 'function') return () => {};
+  dashboardSyncListeners.add(listener);
+  return () => dashboardSyncListeners.delete(listener);
+};
+
+const notifyDashboardSync = (event) => {
+  dashboardSyncListeners.forEach(listener => {
+    try { listener(event); } catch {}
+  });
+};
 
 const getDashboardData = async (dashboardId) => {
   try {
@@ -482,8 +511,10 @@ const getDashboardData = async (dashboardId) => {
       .then(async (res) => {
         if (!res.ok) return getCachedDashboardData(dashboardId);
         const data = await res.json();
-        dashboardDataCache.set(dashboardId, data);
-        return data;
+        if (data && data._version != null) setDashboardVersion(dashboardId, data._version);
+        const stored = stripVersion(data);
+        dashboardDataCache.set(dashboardId, stored);
+        return stored;
       })
       .catch((error) => {
         console.error('Error fetching dashboard data:', error);
@@ -501,10 +532,12 @@ const getDashboardData = async (dashboardId) => {
   }
 };
 
-const persistDashboardData = async (dashboardId, data) => {
+const persistDashboardData = async (dashboardId, data, { deletions = {}, baseVersion } = {}) => {
   try {
     const token = getAuthToken() || sessionStorage.getItem('couple-planner-auth-token');
     if (!token) return false;
+
+    const effectiveBase = Number.isFinite(baseVersion) ? baseVersion : getDashboardVersion(dashboardId);
 
     const res = await fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
       method: 'POST',
@@ -512,24 +545,53 @@ const persistDashboardData = async (dashboardId, data) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ data })
+      body: JSON.stringify({
+        data: stripVersion(data),
+        baseVersion: effectiveBase,
+        deletions
+      })
     });
 
-    return res.ok;
+    if (!res.ok) return false;
+    const payload = await res.json().catch(() => ({}));
+
+    if (payload?.version) setDashboardVersion(dashboardId, payload.version);
+
+    if (payload?.merged && payload?.data) {
+      // Server applied a 3-way merge — refresh local cache and notify the app.
+      cacheDashboardData(dashboardId, payload.data);
+      dashboardDataCache.set(dashboardId, payload.data);
+      notifyDashboardSync({
+        type: 'merged',
+        dashboardId,
+        data: payload.data,
+        version: payload.version
+      });
+    }
+
+    return true;
   } catch (error) {
     console.error('Error saving dashboard data to API:', error);
     return false;
   }
 };
 
-const saveDashboardData = async (dashboardId, data, { debounceMs = 700 } = {}) => {
+const saveDashboardData = async (dashboardId, data, { debounceMs = 700, deletions = {} } = {}) => {
   cacheDashboardData(dashboardId, data);
 
   if (debounceMs <= 0) {
-    return persistDashboardData(dashboardId, data);
+    return persistDashboardData(dashboardId, data, { deletions });
   }
 
   const previous = pendingDashboardSaves.get(dashboardId);
+  const mergedDeletions = { ...(previous?.deletions || {}) };
+  Object.entries(deletions || {}).forEach(([section, ids]) => {
+    if (!Array.isArray(ids) || !ids.length) return;
+    const existing = new Set(mergedDeletions[section] || []);
+    ids.forEach(id => existing.add(id));
+    mergedDeletions[section] = Array.from(existing);
+  });
+
   if (previous) {
     clearTimeout(previous.timeoutId);
     previous.resolve(false);
@@ -538,19 +600,19 @@ const saveDashboardData = async (dashboardId, data, { debounceMs = 700 } = {}) =
   return new Promise((resolve) => {
     const timeoutId = window.setTimeout(async () => {
       pendingDashboardSaves.delete(dashboardId);
-      resolve(await persistDashboardData(dashboardId, data));
+      resolve(await persistDashboardData(dashboardId, data, { deletions: mergedDeletions }));
     }, debounceMs);
 
-    pendingDashboardSaves.set(dashboardId, { timeoutId, resolve, data });
+    pendingDashboardSaves.set(dashboardId, { timeoutId, resolve, data, deletions: mergedDeletions });
   });
 };
 
 const flushPendingDashboardSaves = async () => {
   const entries = [...pendingDashboardSaves.entries()];
   pendingDashboardSaves.clear();
-  return Promise.all(entries.map(([dashboardId, { timeoutId, resolve, data: pendingData }]) => {
+  return Promise.all(entries.map(([dashboardId, { timeoutId, resolve, data: pendingData, deletions: pendingDeletions }]) => {
     clearTimeout(timeoutId);
-    return persistDashboardData(dashboardId, pendingData).then(result => {
+    return persistDashboardData(dashboardId, pendingData, { deletions: pendingDeletions || {} }).then(result => {
       resolve(result);
       return result;
     });
@@ -560,13 +622,17 @@ const flushPendingDashboardSaves = async () => {
 const flushPendingDashboardSavesViaBeacon = () => {
   const token = getAuthToken();
   if (!token) return;
-  for (const [dashboardId, { timeoutId, resolve, data: pendingData }] of pendingDashboardSaves.entries()) {
+  for (const [dashboardId, { timeoutId, resolve, data: pendingData, deletions: pendingDeletions }] of pendingDashboardSaves.entries()) {
     clearTimeout(timeoutId);
     resolve(false);
     fetch(`${API_BASE}/api/dashboard/${dashboardId}/data`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: pendingData }),
+      body: JSON.stringify({
+        data: stripVersion(pendingData),
+        baseVersion: getDashboardVersion(dashboardId),
+        deletions: pendingDeletions || {}
+      }),
       keepalive: true
     }).catch(() => {});
   }
@@ -812,9 +878,11 @@ Object.assign(window, {
   geocodeAddress,
   getCachedDashboardData,
   getDashboardData,
+  getDashboardVersion,
   saveDashboardData,
   flushPendingDashboardSaves,
   flushPendingDashboardSavesViaBeacon,
+  onDashboardSync,
   perfLog,
   getCachedUserDashboards,
   getUserDashboards,

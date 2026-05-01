@@ -263,7 +263,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                   {task.title}
                 </p>
                 {task.description && (
-                  <p className={`mt-1 line-clamp-3 whiteDashboard-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#000000]'}`} title={task.description}>
+                  <p className={`mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#000000]'}`} title={task.description}>
                     {task.description}
                   </p>
                 )}

@@ -432,6 +432,7 @@
   <script type="text/babel" src="/components/Brand.jsx"></script>
   <script type="text/babel" src="/components/Icons.jsx"></script>
   <script type="text/babel" src="/components/UI.jsx"></script>
+  <script type="text/babel" src="/components/Toast.jsx"></script>
   <script type="text/babel" src="/components/MediaCard.jsx"></script>
   <script type="text/babel" src="/components/ProfileModal.jsx"></script>
   <script type="text/babel" src="/components/SearchModal.jsx"></script>
@@ -463,9 +464,13 @@
       }
       const { createRoot } = ReactDOM;
       const root = createRoot(document.getElementById('root'));
-      const app = typeof AppErrorBoundary === 'function'
+      const inner = typeof AppErrorBoundary === 'function'
         ? React.createElement(AppErrorBoundary, null, React.createElement(MediaTracker))
         : React.createElement(MediaTracker);
+      const toasts = typeof ToastContainer === 'function'
+        ? React.createElement(ToastContainer, { key: 'toasts' })
+        : null;
+      const app = React.createElement(React.Fragment, null, inner, toasts);
       root.render(app);
       return true;
     };
