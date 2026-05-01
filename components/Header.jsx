@@ -69,8 +69,8 @@ const Header = ({
         setMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, [menuOpen]);
 
   useEffect(() => {
@@ -86,8 +86,8 @@ const Header = ({
         setProfileOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, [settingsOpen, profileOpen]);
 
   useEffect(() => {
@@ -416,7 +416,7 @@ const Header = ({
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="relative" ref={settingsRef}>
+          <div className="relative hidden sm:block" ref={settingsRef}>
             <button
               type="button"
               onClick={openSettingsDropdown}
@@ -656,7 +656,7 @@ const Header = ({
             )}
           </div>
 
-          <div className="relative" ref={profileRef}>
+          <div className="relative hidden sm:block" ref={profileRef}>
             <button
               type="button"
               onClick={openProfileDropdown}
