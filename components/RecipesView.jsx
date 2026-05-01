@@ -5,13 +5,11 @@ const { useState, useEffect, useMemo } = React;
 // RECIPES VIEW COMPONENT
 // ============================================================================
 
-const RECIPE_PHOTO_PLACEHOLDER = window.RECIPE_PHOTO_PLACEHOLDER || window.PLACEHOLDER_IMAGE || '';
 const getRecipeComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 const getRecipeModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
   if (!recipe) return null;
-  const safePhoto = window.safeImageUrl?.(recipe.photo, RECIPE_PHOTO_PLACEHOLDER) || RECIPE_PHOTO_PLACEHOLDER;
   const safeLink = window.safeExternalUrl?.(recipe.link) || '';
   const ModalShell = getRecipeModalShell();
   const Close = getRecipeComponent('Close');
@@ -25,36 +23,25 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
       ariaLabel={`Recipe details for ${recipe.name}`}
       dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
-        {/* Hero image */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-[#FFDAD4]">
-          <img
-            src={safePhoto}
-            alt={recipe.name}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER;
-            }}
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
+          <h2 className="flex min-w-0 items-center gap-2 break-words text-xl font-extrabold text-[#000000]">
+            <ChefHat size={20} className="shrink-0 text-[#E63B2E]" />
+            <span className="truncate">{recipe.name}</span>
+          </h2>
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-[#000000] shadow-md backdrop-blur transition hover:bg-white"
-            aria-label="Close"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            aria-label="Close recipe details"
           >
-            <Close size={18} />
+            <Close size={20} />
           </button>
         </div>
 
         <div className="space-y-5 p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h2 className="flex items-start gap-2 break-words text-2xl font-extrabold text-[#000000]">
-                <ChefHat size={22} className="shrink-0 text-[#E63B2E]" />
-                <span>{recipe.name}</span>
-              </h2>
               {recipe.prepTime && (
-                <p className="mt-1 text-sm font-medium text-[#000000]">⏱ {recipe.prepTime}</p>
+                <p className="text-sm font-medium text-[#000000]">⏱ {recipe.prepTime}</p>
               )}
             </div>
             {onEdit && (
@@ -82,7 +69,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
           {recipe.ingredients && (
             <div>
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Ingredients</h3>
-              <p className="whiteDashboard-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#000000]">
+              <p className="whitespace-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#000000]">
                 {recipe.ingredients}
               </p>
             </div>
@@ -91,7 +78,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
           {recipe.instructions && (
             <div>
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Instructions</h3>
-              <p className="whiteDashboard-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#000000]">
+              <p className="whitespace-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#000000]">
                 {recipe.instructions}
               </p>
             </div>
@@ -106,54 +93,54 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
 };
 
 const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
-  const safePhoto = window.safeImageUrl?.(recipe.photo, RECIPE_PHOTO_PLACEHOLDER) || RECIPE_PHOTO_PLACEHOLDER;
   const safeLink = window.safeExternalUrl?.(recipe.link) || '';
   const ChefHat = getRecipeComponent('ChefHat');
   const LinkIcon = getRecipeComponent('LinkIcon');
   const Trash = getRecipeComponent('Trash');
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onViewDetails(recipe);
+    }
+  };
+
   return (
   <div
-    className="group cursor-pointer overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10"
+    role="button"
+    tabIndex={0}
+    aria-label={`Open recipe ${recipe.name}`}
+    className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10"
     onClick={() => onViewDetails(recipe)}
+    onKeyDown={handleKeyDown}
   >
-    <div className="aspect-[4/3] overflow-hidden bg-[#FFDAD4]">
-      <img
-        src={safePhoto}
-        alt={recipe.name}
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = RECIPE_PHOTO_PLACEHOLDER;
-        }}
-        loading="lazy"
-        decoding="async"
-        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-      />
+    <div className="flex h-24 items-center justify-center bg-gradient-to-br from-[#FFDAD4] to-[#FFB4A9] text-[#A9372C]">
+      <ChefHat size={36} aria-hidden="true" />
     </div>
-    <div className="p-4">
+    <div className="flex flex-1 flex-col p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h4 className="flex items-center gap-2 text-base font-bold text-[#000000]">
-            <ChefHat size={16} className="shrink-0 text-[#E63B2E]" />
+          <h4 className="text-base font-bold text-[#000000]">
             <span className="line-clamp-2 min-w-0" title={recipe.name}>{recipe.name}</span>
           </h4>
           {recipe.prepTime && <p className="mt-1 text-sm font-medium text-[#000000]">⏱ {recipe.prepTime}</p>}
         </div>
-        <div className="flex items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+        <div className="flex items-center gap-1">
           {onEdit && (
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(recipe); }}
               className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-              aria-label="Edit recipe"
+              aria-label={`Edit recipe ${recipe.name}`}
             >
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
             </button>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(recipe.id); }}
             className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-            aria-label="Delete recipe"
+            aria-label={`Delete recipe ${recipe.name}`}
           >
-            <Trash size={14} />
+            <Trash size={16} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -166,7 +153,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
           onClick={e => e.stopPropagation()}
           className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]"
         >
-          <LinkIcon size={13} />
+          <LinkIcon size={14} aria-hidden="true" />
           Source
         </a>
       )}

@@ -48,6 +48,8 @@ function MediaTracker() {
   const currentUrlRef = useRef(`${window.location.pathname}${window.location.search}`);
   const appRouteRef = useRef(appRoute);
   const hasOpenDashboardDraftRef = useRef(false);
+  const pendingDeletionsRef = useRef({});
+  const lastSaveStatusRef = useRef('idle');
 
   const requestConfirmation = (options, onConfirm) => {
     setConfirmation({
@@ -57,6 +59,17 @@ function MediaTracker() {
         onConfirm();
       }
     });
+  };
+
+  const trackDeletion = (section, id) => {
+    if (!section || id == null) return;
+    const key = String(id);
+    const current = pendingDeletionsRef.current[section] || [];
+    if (current.includes(key)) return;
+    pendingDeletionsRef.current = {
+      ...pendingDeletionsRef.current,
+      [section]: [...current, key]
+    };
   };
 
   const getItemLabel = (item, fallback) => {
@@ -445,6 +458,7 @@ function MediaTracker() {
 
     const loadData = async () => {
       dataEditedAfterLoadRef.current = false;
+      pendingDeletionsRef.current = {};
       const cachedDashboardData = window.getCachedDashboardData?.(currentDashboard.id);
 
       // Show cached data immediately if available
@@ -491,10 +505,51 @@ function MediaTracker() {
     }
 
     dataEditedAfterLoadRef.current = true;
-    saveDashboardData(currentDashboard.id, data).then((saved) => {
-      if (saved) setLastSynced(Date.now());
+    const deletionsToSend = pendingDeletionsRef.current;
+    pendingDeletionsRef.current = {};
+
+    saveDashboardData(currentDashboard.id, data, { deletions: deletionsToSend }).then((saved) => {
+      if (saved) {
+        setLastSynced(Date.now());
+        if (lastSaveStatusRef.current === 'failed') {
+          window.showToast?.({ type: 'success', message: 'Back online — your changes are saved.' });
+        }
+        lastSaveStatusRef.current = 'ok';
+      } else if (lastSaveStatusRef.current !== 'failed') {
+        // Restore deletions so next save retry includes them
+        const restored = { ...pendingDeletionsRef.current };
+        Object.entries(deletionsToSend || {}).forEach(([section, ids]) => {
+          const set = new Set(restored[section] || []);
+          (ids || []).forEach(id => set.add(id));
+          restored[section] = Array.from(set);
+        });
+        pendingDeletionsRef.current = restored;
+        lastSaveStatusRef.current = 'failed';
+        window.showToast?.({
+          type: 'error',
+          message: 'Could not sync your latest changes. We will retry automatically.'
+        });
+      }
     });
   }, [data, currentDashboard?.id]);
+
+  // Listen for server-side merge results — adopt the merged state and notify the user.
+  useEffect(() => {
+    if (!currentDashboard || !window.onDashboardSync) return undefined;
+    const unsubscribe = window.onDashboardSync((event) => {
+      if (event?.type !== 'merged' || event.dashboardId !== currentDashboard.id) return;
+      skipNextSaveRef.current = true;
+      setData(normalizeDashboardDataForClient(event.data));
+      setLastSynced(Date.now());
+      window.showToast?.({
+        type: 'info',
+        title: 'Synced with your partner',
+        message: 'New changes from another device were merged into this dashboard.',
+        duration: 6000
+      });
+    });
+    return unsubscribe;
+  }, [currentDashboard?.id]);
 
   const handleLogin = async (user) => {
     window.perfLog?.('login accepted');
@@ -561,12 +616,13 @@ function MediaTracker() {
       await leaveDashboard(currentDashboard.id);
     } catch (error) {
       console.error('Failed to leave dashboard:', error);
-      window.alert(error?.message || 'Failed to leave dashboard. Please try again.');
+      window.showToast?.({ type: 'error', message: error?.message || 'Failed to leave dashboard. Please try again.' });
       return;
     }
     setCurrentDashboard(null);
     setData(null);
     closeDashboardOverlays();
+    window.showToast?.({ type: 'success', message: 'You exited the dashboard.' });
     navigateTo('/dashboard-selection/', { replace: true, skipPrompt: true });
   };
 
@@ -590,6 +646,7 @@ function MediaTracker() {
         message: `${getItemLabel(item, `this ${labelByType[mediaType] || 'item'}`)} will be removed from shared entertainment.`,
         confirmLabel: 'Remove'
       }, () => {
+        trackDeletion('watchlist', id);
         setData(prev => ({ ...prev, watchlist: (prev.watchlist || []).filter(i => !(i.category === mediaType && i.id === id)) }));
       });
     } else {
@@ -626,6 +683,7 @@ function MediaTracker() {
         : `${getItemLabel(sourceEvent, 'This activity')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => {
+      trackDeletion('calendarEvents', id);
       setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.filter(e => e.id !== id) }));
     });
   };
@@ -640,7 +698,10 @@ function MediaTracker() {
       title: 'Delete expense?',
       message: `${getItemLabel(expense, 'This expense')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
-    }, () => setData(prev => ({ ...prev, expenses: prev.expenses.filter(e => e.id !== id) })));
+    }, () => {
+      trackDeletion('expenses', id);
+      setData(prev => ({ ...prev, expenses: prev.expenses.filter(e => e.id !== id) }));
+    });
   };
   const handleEditExpense = (expense) => { setEditingExpense(expense); setEditExpenseModalOpen(true); };
   const handleSaveExpense = (updatedExpense) => {
@@ -653,7 +714,10 @@ function MediaTracker() {
       title: 'Delete recipe?',
       message: `${getItemLabel(recipe, 'This recipe')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
-    }, () => setData(prev => ({ ...prev, recipes: prev.recipes.filter(r => r.id !== id) })));
+    }, () => {
+      trackDeletion('recipes', id);
+      setData(prev => ({ ...prev, recipes: prev.recipes.filter(r => r.id !== id) }));
+    });
   };
   const handleEditRecipe = (recipe) => { setEditingRecipe(recipe); setEditRecipeModalOpen(true); };
   const handleSaveRecipe = (updatedRecipe) => {
@@ -690,7 +754,10 @@ function MediaTracker() {
       title: 'Delete location?',
       message: `${getItemLabel(place, 'This location')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
-    }, () => setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) })));
+    }, () => {
+      trackDeletion('locations', id);
+      setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) }));
+    });
   };
   const handleToggleFavouriteDate = (id) => {
     setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, isFavourite: !p.isFavourite } : p) }));
@@ -757,7 +824,10 @@ function MediaTracker() {
       title: 'Delete task?',
       message: `${getItemLabel(task, 'This task')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
-    }, () => setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) })));
+    }, () => {
+      trackDeletion('tasks', id);
+      setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) }));
+    });
   };
   const handleUpdateTask = (taskId, updatesOrTitle, newDescription) => {
     setData(prev => ({

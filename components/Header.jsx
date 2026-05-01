@@ -416,7 +416,7 @@ const Header = ({
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="relative hidden sm:block" ref={settingsRef}>
+          <div className="relative" ref={settingsRef}>
             <button
               type="button"
               onClick={openSettingsDropdown}
@@ -656,7 +656,7 @@ const Header = ({
             )}
           </div>
 
-          <div className="relative hidden sm:block" ref={profileRef}>
+          <div className="relative" ref={profileRef}>
             <button
               type="button"
               onClick={openProfileDropdown}
@@ -984,7 +984,7 @@ const Header = ({
                 <div className="border-t border-[#E1D8D4] p-1">
                   <button
                     role="menuitem"
-                    onClick={() => setMenuOpen(false)}
+                    onClick={() => openSettingsDropdown()}
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                   >
                     <SettingsIcon size={18} />
@@ -993,7 +993,14 @@ const Header = ({
                   {canGenerateInvite && (
                     <button
                       role="menuitem"
-                      onClick={() => setMenuOpen(false)}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setSettingsOpen(true);
+                        setProfileOpen(false);
+                        setShareExpanded(true);
+                        setDashboardSettingsExpanded(false);
+                        setConfirmLeaveDashboard(false);
+                      }}
                       className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                     >
                       <ShareIcon size={18} />
@@ -1002,7 +1009,7 @@ const Header = ({
                   )}
                   <button
                     role="menuitem"
-                    onClick={() => setMenuOpen(false)}
+                    onClick={() => openProfileDropdown()}
                     className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
                   >
                     <UserIcon size={18} />

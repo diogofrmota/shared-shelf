@@ -372,6 +372,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
             <button
               onClick={() => setShowProgressModal(true)}
               className="mt-1 flex min-h-[44px] w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
+              aria-label={progressLabel || 'Set progress'}
               title={progressLabel || 'Set progress'}
             >
               <span className="truncate text-[11px] font-bold text-[#E63B2E]">

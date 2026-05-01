@@ -16,6 +16,55 @@ const JOIN_CODE_RATE_LIMIT = { limit: 10, windowSeconds: 15 * 60 };
 const JOIN_CODE_IP_RATE_LIMIT = { limit: 60, windowSeconds: 15 * 60 };
 let schemaPromise = null;
 
+const MERGEABLE_ARRAY_SECTIONS = ['calendarEvents', 'tasks', 'locations', 'expenses', 'recipes', 'watchlist'];
+
+function mergeArraySection(serverItems = [], clientItems = [], deletedIds = []) {
+  const removed = new Set(deletedIds.filter(Boolean));
+  const merged = new Map();
+  const order = [];
+
+  const addItem = (item, source) => {
+    if (!item || typeof item !== 'object') return;
+    const id = item.id != null ? String(item.id) : '';
+    if (id && removed.has(id)) return;
+    const key = id || `${source}:${order.length}`;
+    if (!merged.has(key)) order.push(key);
+    if (id) {
+      // Client wins on shared IDs (last write per item)
+      const existing = merged.get(key);
+      if (source === 'client' || !existing) {
+        merged.set(key, item);
+      }
+    } else {
+      merged.set(key, item);
+    }
+  };
+
+  serverItems.forEach(item => addItem(item, 'server'));
+  clientItems.forEach(item => addItem(item, 'client'));
+
+  return order.map(key => merged.get(key)).filter(Boolean);
+}
+
+function mergeDashboardData(serverData = {}, clientData = {}, deletions = {}) {
+  const merged = { ...serverData };
+  MERGEABLE_ARRAY_SECTIONS.forEach(section => {
+    const removedIds = Array.isArray(deletions[section])
+      ? deletions[section].map(value => String(value)).filter(Boolean)
+      : [];
+    merged[section] = mergeArraySection(
+      Array.isArray(serverData[section]) ? serverData[section] : [],
+      Array.isArray(clientData[section]) ? clientData[section] : [],
+      removedIds
+    );
+  });
+  // Profile is last-write-wins (settings, not collaborative items)
+  if (clientData.profile && typeof clientData.profile === 'object') {
+    merged.profile = clientData.profile;
+  }
+  return merged;
+}
+
 async function ensureSchema() {
   if (!schemaPromise) {
     schemaPromise = initializeDatabase().catch((error) => {
@@ -380,26 +429,55 @@ export default async function handler(req, res) {
 
       if (req.method === 'GET') {
         const result = await sql`
-          SELECT data
+          SELECT data, updated_at
           FROM dashboard_data
           WHERE dashboard_id = ${dashboardId}
           LIMIT 1
         `;
 
-        return res.json(normalizeDashboardData(result.rows[0]?.data || DEFAULT_DASHBOARD_DATA));
+        const row = result.rows[0];
+        const normalized = normalizeDashboardData(row?.data || DEFAULT_DASHBOARD_DATA);
+        const version = row?.updated_at ? new Date(row.updated_at).getTime() : 0;
+        return res.json({ ...normalized, _version: version });
       }
 
       const payload = req.body?.data;
       if (!payload || typeof payload !== 'object') {
         return res.status(400).json({ error: 'Data payload is required' });
       }
-      const normalizedPayload = normalizeDashboardData(payload);
+      const baseVersion = Number(req.body?.baseVersion) || 0;
+      const deletions = (req.body?.deletions && typeof req.body.deletions === 'object') ? req.body.deletions : {};
 
-      await sql`
+      const existing = await sql`
+        SELECT data, updated_at
+        FROM dashboard_data
+        WHERE dashboard_id = ${dashboardId}
+        LIMIT 1
+      `;
+      const currentRow = existing.rows[0];
+      const currentVersion = currentRow?.updated_at ? new Date(currentRow.updated_at).getTime() : 0;
+      // Fast path only when there's no server data yet, or the client knows the
+      // current server version. If the client lacks a baseVersion but the server
+      // has data, we must merge to avoid overwriting the partner's edits.
+      const fastPath = !currentVersion || (baseVersion && baseVersion >= currentVersion);
+
+      let nextData;
+      let merged = false;
+      if (fastPath) {
+        nextData = normalizeDashboardData(payload);
+      } else {
+        const serverData = normalizeDashboardData(currentRow?.data || DEFAULT_DASHBOARD_DATA);
+        const clientData = normalizeDashboardData(payload);
+        nextData = mergeDashboardData(serverData, clientData, deletions);
+        merged = true;
+      }
+
+      const writeResult = await sql`
         INSERT INTO dashboard_data (dashboard_id, data, updated_at)
-        VALUES (${dashboardId}, ${JSON.stringify(normalizedPayload)}::jsonb, NOW())
+        VALUES (${dashboardId}, ${JSON.stringify(nextData)}::jsonb, NOW())
         ON CONFLICT (dashboard_id)
         DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
+        RETURNING updated_at
       `;
 
       await sql`
@@ -408,7 +486,16 @@ export default async function handler(req, res) {
         WHERE id = ${dashboardId}
       `;
 
-      return res.json({ success: true });
+      const newVersion = writeResult.rows[0]?.updated_at
+        ? new Date(writeResult.rows[0].updated_at).getTime()
+        : Date.now();
+
+      return res.json({
+        success: true,
+        merged,
+        version: newVersion,
+        data: merged ? nextData : undefined
+      });
     }
 
     if (segments.length === 2 && segments[1] === 'membership' && req.method === 'DELETE') {

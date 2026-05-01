@@ -301,7 +301,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
         break;
       case 'recipes':
         if (formData.name) {
-          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, photo: formData.photo || '', prepTime: formData.prepTime || '', link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', createdAt: new Date().toISOString() });
+          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, prepTime: formData.prepTime || '', link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', createdAt: new Date().toISOString() });
           onClose();
         }
         break;
@@ -482,13 +482,10 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
           {activeTab === 'recipes' && (
             <>
               <FormField label="Name" required>
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
               </FormField>
               <FormField label="Prep time">
                 <input type="text" placeholder="e.g. 45 min" className={inputCls} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
-              </FormField>
-              <FormField label="Photo URL">
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
               </FormField>
               <FormField label="Recipe link">
                 <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
@@ -641,7 +638,6 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
     if (isOpen && recipe) {
       setFormData({
         name: recipe.name || '',
-        photo: recipe.photo || '',
         prepTime: recipe.prepTime || '',
         link: recipe.link || '',
         ingredients: recipe.ingredients || '',
@@ -679,9 +675,6 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <FormField label="Name" required>
             <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
-          </FormField>
-          <FormField label="Photo URL">
-            <input type="text" className={inputCls} value={formData.photo || ''} onChange={(e) => setFormData({ ...formData, photo: e.target.value })} />
           </FormField>
           <FormField label="Prep time">
             <input type="text" className={inputCls} value={formData.prepTime || ''} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />

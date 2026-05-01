@@ -71,16 +71,16 @@ const ExpenseCard = ({ expense, onDelete, onEdit }) => {
             {onEdit && (
               <button
                 onClick={() => onEdit(expense)}
-                className="rounded-lg p-1.5 text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-                aria-label="Edit expense"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+                aria-label={`Edit expense ${expense.description || ''}`}
               >
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </button>
             )}
             <button
               onClick={() => onDelete(expense.id)}
-              className="rounded-lg p-1.5 text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-              aria-label="Delete expense"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+              aria-label={`Delete expense ${expense.description || ''}`}
             >
               <Trash size={14} />
             </button>
@@ -157,7 +157,7 @@ const ExpensesView = ({ expenses, onDeleteExpense, onEditExpense, onAddClick }) 
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilterCategory('all')}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${filterCategory === 'all' ? 'bg-[#E63B2E] text-white' : 'bg-white border border-[#E1D8D4] text-[#000000] hover:border-[#FFB4A9] hover:text-[#E63B2E]'}`}
+              className={`min-h-[44px] rounded-full px-3 text-xs font-bold transition ${filterCategory === 'all' ? 'bg-[#E63B2E] text-white' : 'bg-white border border-[#E1D8D4] text-[#000000] hover:border-[#FFB4A9] hover:text-[#E63B2E]'}`}
             >
               All
             </button>
@@ -165,7 +165,7 @@ const ExpensesView = ({ expenses, onDeleteExpense, onEditExpense, onAddClick }) 
               <button
                 key={cat.value}
                 onClick={() => setFilterCategory(cat.value)}
-                className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${filterCategory === cat.value ? 'bg-[#E63B2E] text-white' : 'bg-white border border-[#E1D8D4] text-[#000000] hover:border-[#FFB4A9] hover:text-[#E63B2E]'}`}
+                className={`min-h-[44px] rounded-full px-3 text-xs font-bold transition ${filterCategory === cat.value ? 'bg-[#E63B2E] text-white' : 'bg-white border border-[#E1D8D4] text-[#000000] hover:border-[#FFB4A9] hover:text-[#E63B2E]'}`}
               >
                 {cat.label}
               </button>

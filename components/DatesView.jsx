@@ -317,7 +317,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
               : 'Address not found on the map. The map link opens a search instead.'}
           </p>
         )}
-        {place.notes && <p className="mt-2 line-clamp-3 whiteDashboard-pre-wrap break-words text-sm text-[#000000]" title={place.notes}>{place.notes}</p>}
+        {place.notes && <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words text-sm text-[#000000]" title={place.notes}>{place.notes}</p>}
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
           {safeLink && (

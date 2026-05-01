@@ -259,17 +259,17 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
               {MONTH_NAMES[viewMonth]} {viewYear}
             </h2>
             <div className="flex items-center rounded-lg bg-[#FBF2ED] p-1">
-              <button onClick={goPrev} className="rounded p-1.5 text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Previous month">
+              <button onClick={goPrev} className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Previous month">
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={goNext} className="rounded p-1.5 text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Next month">
+              <button onClick={goNext} className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Next month">
                 <ChevronRight size={18} />
               </button>
             </div>
           </div>
           <button
             onClick={goToday}
-            className="rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
           >
             Today
           </button>
@@ -403,7 +403,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                         const sourceEvent = ev.sourceEvent || ev;
                         onDeleteEvent(sourceEvent.id, sourceEvent);
                       }}
-                      className="rounded-lg p-1.5 text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
                       aria-label="Delete event"
                     >
                       <Trash size={14} />
@@ -417,7 +417,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
                   {formatRecurrence(ev) && (
                     <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#000000]">{formatRecurrence(ev)}</p>
                   )}
-                  {ev.description && <p className="mt-2 whiteDashboard-pre-wrap text-sm text-[#000000]">{ev.description}</p>}
+                  {ev.description && <p className="mt-2 whitespace-pre-wrap text-sm text-[#000000]">{ev.description}</p>}
                 </div>
               </li>
             ))}
