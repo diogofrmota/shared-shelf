@@ -26,7 +26,6 @@ const Header = ({
   onSaveDashboard,
   enabledSections
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [confirmLeaveDashboard, setConfirmLeaveDashboard] = useState(false);
@@ -56,22 +55,10 @@ const Header = ({
   const [profileEmailSaving, setProfileEmailSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
-  const menuRef = useRef(null);
   const settingsRef = useRef(null);
   const profileRef = useRef(null);
   const usernameCheckRef = useRef(null);
   const usernameCheckSeqRef = useRef(0);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handleClickOutside);
-    return () => document.removeEventListener('pointerdown', handleClickOutside);
-  }, [menuOpen]);
 
   useEffect(() => {
     if (!settingsOpen && !profileOpen) return;
@@ -113,7 +100,6 @@ const Header = ({
 
   const handleTabClick = (category, subTab) => {
     onCategoryChange(category, subTab);
-    setMenuOpen(false);
   };
 
   const navTabs = HEADER_NAV_TABS;
@@ -134,7 +120,6 @@ const Header = ({
     ? activeCategory === 'media'
     : activeCategory === tab.category && activeSubTab === tab.id;
 
-  const activeTabLabel = visibleNavTabs.find(isTabActive)?.label || 'Menu';
   const displayName = currentUser?.name || currentUser?.username || currentUser?.email || 'User';
   const username = currentUser?.username || 'User';
   const accountEmail = currentUser?.email || 'Email unavailable';
@@ -176,7 +161,6 @@ const Header = ({
       return nextOpen;
     });
     setProfileOpen(false);
-    setMenuOpen(false);
   };
 
   const openProfileDropdown = () => {
@@ -185,7 +169,14 @@ const Header = ({
     setConfirmLeaveDashboard(false);
     setShareExpanded(false);
     setDashboardSettingsExpanded(false);
-    setMenuOpen(false);
+  };
+
+  const openSharePanel = () => {
+    setSettingsOpen(true);
+    setProfileOpen(false);
+    setShareExpanded(true);
+    setDashboardSettingsExpanded(false);
+    setConfirmLeaveDashboard(false);
   };
 
   const handleLeaveDashboard = async () => {
@@ -379,7 +370,7 @@ const Header = ({
     <header className="sticky top-0 z-40 border-b border-[#E1D8D4] bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         {/* Brand + dashboard name */}
-        <div className="flex min-h-[44px] min-w-0 max-w-[58vw] items-center gap-3 rounded-xl px-1 py-1">
+        <div className="flex min-h-[44px] min-w-0 max-w-[45vw] items-center gap-3 rounded-xl px-1 py-1 sm:max-w-[58vw]">
           <BrandLogo
             subtitle={dashboardName || 'Your dashboard'}
             markClassName="h-9 w-9 sm:h-10 sm:w-10"
@@ -415,8 +406,19 @@ const Header = ({
         </nav>
 
         {/* Right actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="relative hidden sm:block" ref={settingsRef}>
+        <div className="flex items-center gap-1 sm:gap-2">
+          {canGenerateInvite && (
+            <button
+              type="button"
+              onClick={openSharePanel}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:hidden"
+              title="Share"
+              aria-label="Share dashboard"
+            >
+              <ShareIcon size={22} />
+            </button>
+          )}
+          <div className="relative" ref={settingsRef}>
             <button
               type="button"
               onClick={openSettingsDropdown}
@@ -656,7 +658,7 @@ const Header = ({
             )}
           </div>
 
-          <div className="relative hidden sm:block" ref={profileRef}>
+          <div className="relative" ref={profileRef}>
             <button
               type="button"
               onClick={openProfileDropdown}
@@ -920,6 +922,16 @@ const Header = ({
                       <UserIcon size={18} />
                       Edit profile
                     </button>
+                    {onBackToDashboards && (
+                      <button
+                        type="button"
+                        onClick={() => { onBackToDashboards(); setProfileOpen(false); }}
+                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
+                      >
+                        <LogoutIcon size={18} />
+                        Back to dashboards
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -937,98 +949,6 @@ const Header = ({
             )}
           </div>
 
-          {/* Mobile menu trigger */}
-          <div className="relative lg:hidden" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen(prev => !prev)}
-              className="flex h-11 items-center gap-1.5 rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <span className="max-w-[80px] truncate sm:max-w-[120px]">{activeTabLabel}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`}>
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-
-            {menuOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 top-12 z-50 w-60 origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
-              >
-                <div className="p-1">
-                  {visibleNavTabs.map(tab => {
-                    const Icon = getHeaderComponent(tab.icon);
-                    const isActive = isTabActive(tab);
-                    return (
-                      <button
-                        key={tab.id}
-                        role="menuitem"
-                        onClick={() => {
-                          if (tab.id === 'media') handleTabClick('media', 'tvshows');
-                          else handleTabClick(tab.category, tab.id);
-                        }}
-                        className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                          isActive
-                            ? 'bg-[#FFDAD4] text-[#E63B2E]'
-                            : 'text-[#000000] hover:bg-[#FFF8F5]'
-                        }`}
-                      >
-                        <Icon size={18} />
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="border-t border-[#E1D8D4] p-1">
-                  <button
-                    role="menuitem"
-                    onClick={() => openSettingsDropdown()}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
-                  >
-                    <SettingsIcon size={18} />
-                    Settings
-                  </button>
-                  {canGenerateInvite && (
-                    <button
-                      role="menuitem"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setSettingsOpen(true);
-                        setProfileOpen(false);
-                        setShareExpanded(true);
-                        setDashboardSettingsExpanded(false);
-                        setConfirmLeaveDashboard(false);
-                      }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
-                    >
-                      <ShareIcon size={18} />
-                      Share
-                    </button>
-                  )}
-                  <button
-                    role="menuitem"
-                    onClick={() => openProfileDropdown()}
-                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
-                  >
-                    <UserIcon size={18} />
-                    Account
-                  </button>
-                  {onBackToDashboards && (
-                    <button
-                      role="menuitem"
-                      onClick={() => { onBackToDashboards(); setMenuOpen(false); }}
-                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
-                    >
-                      <LogoutIcon size={18} />
-                      Back to dashboards
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </header>

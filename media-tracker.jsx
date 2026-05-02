@@ -976,6 +976,7 @@ function MediaTracker() {
   const EditExpenseModal = window.getWindowComponent?.('EditExpenseModal', window.MissingComponent) || window.MissingComponent;
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
   const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
+  const MobileBottomNav = window.getWindowComponent?.('MobileBottomNav', null);
 
   if (authLoading) return <LoadingScreen label="Loading..." />;
 
@@ -1169,13 +1170,25 @@ function MediaTracker() {
 
       <main
         id="main-content"
-        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
+        className="mx-auto w-full max-w-7xl flex-1 px-4 pb-24 pt-6 sm:px-6 sm:py-8 lg:px-8 lg:pb-8"
         tabIndex="-1"
       >
         {renderPageAddButton()}
         {renderContent()}
       </main>
-      {SiteFooter ? <SiteFooter onNavigate={navigateTo} /> : null}
+      {SiteFooter ? (
+        <div className="hidden lg:block">
+          <SiteFooter onNavigate={navigateTo} />
+        </div>
+      ) : null}
+      {MobileBottomNav ? (
+        <MobileBottomNav
+          activeCategory={activeCategory}
+          activeSubTab={activeSubTab}
+          onCategoryChange={handleCategoryChange}
+          enabledSections={getEnabledSections(currentDashboard)}
+        />
+      ) : null}
 
       {/* Modals */}
       <AddModal
