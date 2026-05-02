@@ -100,7 +100,10 @@ const normalizeTask = (task = {}) => {
     completed: recurrence ? false : Boolean(task.completed),
     recurrence,
     lastCompletedAt: task.lastCompletedAt || null,
-    completionCount: Number(task.completionCount || 0)
+    completionCount: Number(task.completionCount || 0),
+    completedAt: task.completedAt || null,
+    listType: task.listType === 'shared-checklist' ? 'shared-checklist' : 'task',
+    subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((item, idx) => ({ id: item?.id || `subtask-${idx}`, title: String(item?.title || ''), completed: Boolean(item?.completed) })).filter(i => i.title) : []
   };
 };
 

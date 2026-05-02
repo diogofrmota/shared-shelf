@@ -853,6 +853,11 @@ function MediaTracker() {
     });
   };
   const handleUpdateTask = (taskId, updatesOrTitle, newDescription) => {
+    if (taskId === '__add__' && updatesOrTitle?.__quickChecklist) {
+      const uid = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+      setData(prev => ({ ...prev, tasks: [...(prev.tasks || []), normalizeTask({ id: `task-${uid}`, title: updatesOrTitle.title, listType: 'shared-checklist', completed: false, createdAt: new Date().toISOString() })] }));
+      return;
+    }
     setData(prev => ({
       ...prev,
       tasks: prev.tasks.map(t => {
