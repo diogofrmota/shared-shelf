@@ -193,7 +193,15 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
     totalPages: category === 'books'
       ? bookProgress?.totalPages || Number(item.totalPages || item.pages || item.pageCount || 0) || null
       : item.totalPages,
-    progress: category === 'books' ? bookProgress : item.progress,
+    progress: category === 'books'
+      ? bookProgress
+      : (item?.progress && typeof item.progress === 'object'
+        ? {
+          currentSeason: Number.isFinite(Number(item.progress.currentSeason)) ? Math.max(1, Math.floor(Number(item.progress.currentSeason))) : null,
+          currentEpisode: Number.isFinite(Number(item.progress.currentEpisode)) ? Math.max(1, Math.floor(Number(item.progress.currentEpisode))) : null
+        }
+        : null),
+    watchingMode: item.watchingMode === 'alone' ? 'alone' : 'together',
     status: normalizeWatchlistStatus(item, category)
   };
 };
