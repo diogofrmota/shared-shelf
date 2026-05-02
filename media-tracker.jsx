@@ -40,6 +40,7 @@ function MediaTracker() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [addEventInitialData, setAddEventInitialData] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
@@ -671,7 +672,29 @@ function MediaTracker() {
     }));
   };
   const handleAddEvent = (event) => {
-    setData(prev => ({ ...prev, calendarEvents: [...(prev.calendarEvents || []), event] }));
+    const enriched = {
+      ...event,
+      createdByUserId: currentUser?.id ?? null,
+      createdByName: currentUser?.name || currentUser?.username || null
+    };
+    setData(prev => ({ ...prev, calendarEvents: [...(prev.calendarEvents || []), enriched] }));
+  };
+
+  const handleRescheduleEvent = (eventId, newStartIso) => {
+    setData(prev => ({
+      ...prev,
+      calendarEvents: (prev.calendarEvents || []).map(e => {
+        if (e.id !== eventId) return e;
+        const oldStart = e.startDate || e.date || newStartIso;
+        const oldEnd = e.endDate || oldStart;
+        const durationMs = Math.max(0, new Date(oldEnd + 'T00:00:00') - new Date(oldStart + 'T00:00:00'));
+        const newStartDate = new Date(newStartIso + 'T00:00:00');
+        const newEndDate = new Date(newStartDate.getTime() + durationMs);
+        const pad = n => String(n).padStart(2, '0');
+        const toIso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        return { ...e, date: newStartIso, startDate: newStartIso, endDate: toIso(newEndDate) };
+      })
+    }));
   };
   const handleDeleteEvent = (id, event = null) => {
     const sourceEvent = event || (data?.calendarEvents || []).find(e => e.id === id);
@@ -869,6 +892,7 @@ function MediaTracker() {
           type="button"
           onClick={() => {
             setAddCategory(activeSubTab);
+            setAddEventInitialData(null);
             setAddModalOpen(true);
           }}
           className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
@@ -1044,7 +1068,10 @@ function MediaTracker() {
             events={visibleData.calendarEvents || []}
             onDeleteEvent={handleDeleteEvent}
             onEditEvent={handleEditEvent}
-            onAddClick={() => { setAddCategory('calendar'); setAddModalOpen(true); }}
+            onAddClick={() => { setAddCategory('calendar'); setAddEventInitialData(null); setAddModalOpen(true); }}
+            onAddForDate={(iso) => { setAddCategory('calendar'); setAddEventInitialData({ date: iso }); setAddModalOpen(true); }}
+            onRescheduleEvent={handleRescheduleEvent}
+            currentUser={currentUser}
           />
         );
       }
@@ -1130,7 +1157,7 @@ function MediaTracker() {
       {/* Modals */}
       <AddModal
         isOpen={addModalOpen}
-        onClose={() => { setAddModalOpen(false); setAddCategory(null); }}
+        onClose={() => { setAddModalOpen(false); setAddCategory(null); setAddEventInitialData(null); }}
         activeTab={addCategory || activeSubTab}
         onAddMedia={handleAddMedia}
         onAddEvent={handleAddEvent}
@@ -1139,6 +1166,7 @@ function MediaTracker() {
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
         profile={visibleData?.profile}
+        initialData={addEventInitialData}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />

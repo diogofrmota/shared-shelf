@@ -205,9 +205,18 @@ const DollarSign = ({ size = 20, className = '' }) => (
   </svg>
 );
 
+const UsersIcon = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
 Object.assign(window, {
   CheckSquare, Search, Plus, Film, Tv, Book, CalendarIcon, MapPin,
   ChevronLeft, ChevronRight, Trash, LinkIcon, ShareIcon, ThreeDots, Close,
   SettingsIcon, ChefHat, Utensils, Star, Eye, EyeOff, LogoutIcon, UserIcon, PencilIcon, Camera, WifiOff,
-  DollarSign
+  DollarSign, UsersIcon
 });

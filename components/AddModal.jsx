@@ -1,5 +1,5 @@
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const getComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 const getModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
@@ -57,35 +57,67 @@ const formatDateDigits = (value) => {
 
 const DateInput = ({ value, onChange, required = false, autoFocus = false }) => {
   const [displayValue, setDisplayValue] = useState(formatDateForInput(value));
+  const nativeRef = useRef(null);
+  const CalendarIconPicker = getComponent('CalendarIcon');
 
   useEffect(() => {
     setDisplayValue(formatDateForInput(value));
   }, [value]);
 
   const handleChange = (e) => {
-    const nextDisplayValue = formatDateDigits(e.target.value);
-    const nextIsoValue = parseDateInput(nextDisplayValue);
-    setDisplayValue(nextDisplayValue);
-    onChange(nextIsoValue);
+    const nextDisplay = formatDateDigits(e.target.value);
+    const nextIso = parseDateInput(nextDisplay);
+    setDisplayValue(nextDisplay);
+    onChange(nextIso);
     e.target.setCustomValidity(
-      nextDisplayValue && nextDisplayValue.length === 10 && !nextIsoValue
-        ? 'Enter a valid date as dd/mm/yyyy.'
-        : ''
+      nextDisplay && nextDisplay.length === 10 && !nextIso ? 'Enter a valid date as dd/mm/yyyy.' : ''
     );
   };
 
+  const handleNativePick = (e) => {
+    const iso = e.target.value; // YYYY-MM-DD
+    if (iso) onChange(iso);
+    // reset so the same date can be re-picked
+    e.target.value = '';
+  };
+
+  const openPicker = () => {
+    if (!nativeRef.current) return;
+    if (value) nativeRef.current.value = value;
+    try { nativeRef.current.showPicker(); } catch { nativeRef.current.click(); }
+  };
+
   return (
-    <input
-      type="text"
-      inputMode="numeric"
-      placeholder="dd/mm/yyyy"
-      className={inputCls}
-      value={displayValue}
-      onChange={handleChange}
-      pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
-      required={required}
-      autoFocus={autoFocus}
-    />
+    <div className="flex gap-1">
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="dd/mm/yyyy"
+        className={`${inputCls} flex-1`}
+        value={displayValue}
+        onChange={handleChange}
+        pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+        required={required}
+        autoFocus={autoFocus}
+      />
+      <input
+        type="date"
+        ref={nativeRef}
+        onChange={handleNativePick}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <button
+        type="button"
+        onClick={openPicker}
+        className="flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-[#E1D8D4] bg-[#FBF2ED] text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#E63B2E]"
+        aria-label="Open date picker"
+        title="Pick date"
+      >
+        <CalendarIconPicker size={15} />
+      </button>
+    </div>
   );
 };
 
@@ -111,6 +143,32 @@ const buildExpensePayload = (formData = {}) => ({
   paidBy: formData.paidBy || '',
   notes: formData.notes || ''
 });
+
+const EVENT_COLOR_PALETTE = [
+  '#E63B2E', '#2563EB', '#16A34A', '#9333EA',
+  '#D97706', '#0891B2', '#DB2777', '#6B7280'
+];
+
+const DEFAULT_EVENT_COLOR = '#E63B2E';
+
+const ColorPicker = ({ value, onChange }) => {
+  const selected = value || DEFAULT_EVENT_COLOR;
+  return (
+    <div className="flex flex-wrap gap-2 pt-1">
+      {EVENT_COLOR_PALETTE.map(color => (
+        <button
+          type="button"
+          key={color}
+          onClick={() => onChange(color)}
+          className={`h-8 w-8 rounded-full transition hover:scale-110 ${selected === color ? 'ring-2 ring-offset-2 ring-[#000000] scale-110' : ''}`}
+          style={{ backgroundColor: color }}
+          aria-label={`Select color ${color}`}
+          aria-pressed={selected === color}
+        />
+      ))}
+    </div>
+  );
+};
 
 const RECURRENCE_OPTIONS = [
   { value: 'none', label: 'Does not repeat' },
@@ -146,8 +204,35 @@ const buildCalendarEventPayload = (formData = {}) => {
     endDate: endDate || '',
     time: multiDay ? '' : formData.time || '',
     description: formData.description || '',
+    color: formData.color || DEFAULT_EVENT_COLOR,
+    isPersonal: Boolean(formData.isPersonal),
     recurrence: buildEventRecurrence(formData)
   };
+};
+
+const VisibilityToggle = ({ value, onChange }) => {
+  const UserIcon = window.getWindowComponent?.('UserIcon', window.MissingIcon) || window.MissingIcon;
+  const UsersIcon = window.getWindowComponent?.('UsersIcon', window.MissingIcon) || window.MissingIcon;
+  return (
+    <div className="flex overflow-hidden rounded-lg border border-[#E1D8D4]">
+      <button
+        type="button"
+        onClick={() => onChange(false)}
+        className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 text-sm font-bold transition ${!value ? 'bg-[#E63B2E] text-white' : 'bg-white text-[#000000] hover:bg-[#FFF8F5]'}`}
+      >
+        <UsersIcon size={14} />
+        Shared
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange(true)}
+        className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 border-l border-[#E1D8D4] text-sm font-bold transition ${value ? 'bg-[#E63B2E] text-white' : 'bg-white text-[#000000] hover:bg-[#FFF8F5]'}`}
+      >
+        <UserIcon size={14} />
+        Personal
+      </button>
+    </div>
+  );
 };
 
 const getTaskRecurrenceFrequency = (formData = {}) => {
@@ -240,17 +325,17 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
 };
 
 
-const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExpense, onAddRecipe, onAddDate, onAddTask, profile }) => {
+const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExpense, onAddRecipe, onAddDate, onAddTask, profile, initialData }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [showTaskOptions, setShowTaskOptions] = useState(false);
   const [showCalendarOptions, setShowCalendarOptions] = useState(false);
 
   useEffect(() => {
-    setFormData({});
+    setFormData(initialData && typeof initialData === 'object' ? { ...initialData } : {});
     setIsSaving(false);
     setShowTaskOptions(false);
-    setShowCalendarOptions(false);
+    setShowCalendarOptions(Boolean(initialData?.date));
   }, [isOpen, activeTab]);
 
   const getModalTitle = () => {
@@ -289,6 +374,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
         break;
       case 'calendar':
         if (formData.title && formData.date) {
+          if (formData.endDate && formData.date && formData.endDate < formData.date) break; // blocked by inline validation
           onAddEvent({ id: `event-${uid()}`, ...buildCalendarEventPayload(formData) });
           onClose();
         }
@@ -404,6 +490,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               <FormField label="Title" required>
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
               </FormField>
+              <FormField label="For">
+                <VisibilityToggle value={Boolean(formData.isPersonal)} onChange={(v) => setFormData({ ...formData, isPersonal: v })} />
+              </FormField>
               <FormField label="Date" required>
                 <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />
               </FormField>
@@ -426,6 +515,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               </button>
               {showCalendarOptions && (
                 <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                  <FormField label="Colour">
+                    <ColorPicker value={formData.color || DEFAULT_EVENT_COLOR} onChange={(color) => setFormData({ ...formData, color })} />
+                  </FormField>
                   <FormField label="End date">
                     <DateInput
                       value={formData.endDate || ''}
@@ -435,6 +527,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                         time: endDate && endDate > formData.date ? '' : formData.time
                       })}
                     />
+                    {formData.endDate && formData.date && formData.endDate < formData.date && (
+                      <p className="mt-1 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
+                    )}
                   </FormField>
                   <CalendarRecurrenceFields formData={formData} setFormData={setFormData} />
                   <FormField label="Description">
@@ -552,6 +647,8 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         endDate: event.endDate || '',
         time: event.time || '',
         description: event.description || '',
+        color: event.color || DEFAULT_EVENT_COLOR,
+        isPersonal: Boolean(event.isPersonal),
         recurrenceFrequency: event.recurrence?.frequency || event.recurrence || 'none',
         recurrenceUntil: event.recurrence?.until || event.recurrenceUntil || ''
       });
@@ -566,10 +663,8 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.title && formData.date) {
-      onSave({
-        ...event,
-        ...buildCalendarEventPayload(formData)
-      });
+      if (formData.endDate && formData.endDate < formData.date) return;
+      onSave({ ...event, ...buildCalendarEventPayload(formData) });
       onClose();
     }
   };
@@ -593,6 +688,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
           <FormField label="Title" required>
             <input type="text" className={inputCls} value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
           </FormField>
+          <FormField label="For">
+            <VisibilityToggle value={Boolean(formData.isPersonal)} onChange={(v) => setFormData({ ...formData, isPersonal: v })} />
+          </FormField>
           <FormField label="Date" required>
             <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />
           </FormField>
@@ -605,6 +703,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                 time: endDate && endDate > formData.date ? '' : formData.time
               })}
             />
+            {formData.endDate && formData.date && formData.endDate < formData.date && (
+              <p className="mt-1 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
+            )}
           </FormField>
           {!isCalendarMultiDay && (
             <FormField label="Time">
@@ -617,6 +718,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
           <CalendarRecurrenceFields formData={formData} setFormData={setFormData} editing />
           <FormField label="Description">
             <textarea rows="3" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+          </FormField>
+          <FormField label="Colour">
+            <ColorPicker value={formData.color || DEFAULT_EVENT_COLOR} onChange={(color) => setFormData({ ...formData, color })} />
           </FormField>
 
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
