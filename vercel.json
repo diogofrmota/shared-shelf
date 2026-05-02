@@ -34,7 +34,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/dashboard/:path*",
+      "source": "/dashboard/(.*)",
       "destination": "/index.html"
     },
     {
@@ -70,7 +70,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
