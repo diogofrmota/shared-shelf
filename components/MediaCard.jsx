@@ -262,7 +262,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
   const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
   const ThreeDotsIcon = getMediaComponent('ThreeDots');
 
-  const isWatchingTvShow = item.category === 'tvshows' && item.status === 'watching';
+  const isTvShow = item.category === 'tvshows';
   const isBook = item.category === 'books';
   const pageLabel = item.category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
   const progress = item.progress;
@@ -297,6 +297,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
             alt={item.title}
             loading="lazy"
             decoding="async"
+            onError={(e) => { if (e.currentTarget.src !== placeholder) e.currentTarget.src = placeholder; }}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         </div>
@@ -311,6 +312,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
           {pageLabel && (
             <p className="text-[11px] font-semibold text-[#8C4F45]">{pageLabel}</p>
           )}
+          <p className="text-[11px] font-semibold text-[#8C4F45]">{item.watchingMode === 'alone' ? 'Watching alone' : 'Watching together'}</p>
 
           <div className="flex items-start justify-between">
             <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-medium text-[#000000]">
@@ -351,7 +353,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
                       }}
                       className="block min-h-[44px] w-full border-t border-[#E1D8D4] px-3 py-2 text-left text-sm font-semibold text-[#C1121F] transition hover:bg-[#FFDAD4]"
                     >
-                      Remove
+                      Delete item
                     </button>
                   </div>
                 </>
@@ -368,7 +370,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
             </div>
           )}
 
-          {(isWatchingTvShow || isBook) && (
+          {(isTvShow || isBook) && (
             <button
               onClick={() => setShowProgressModal(true)}
               className="mt-1 flex min-h-[44px] w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
@@ -384,7 +386,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
         </div>
       </div>
 
-      {showProgressModal && isWatchingTvShow && (
+      {showProgressModal && isTvShow && (
         <TvProgressModal
           item={item}
           onClose={() => setShowProgressModal(false)}

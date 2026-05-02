@@ -11,6 +11,8 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [watchingMode, setWatchingMode] = useState('together');
+  const [bookTotalPages, setBookTotalPages] = useState('');
 
   useEffect(() => {
     if (!isOpen) {
@@ -18,6 +20,8 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
       setResults([]);
       setError('');
       setHasSearched(false);
+      setWatchingMode(window.localStorage?.getItem('cp:watch-filter') || 'together');
+      setBookTotalPages('');
     }
   }, [isOpen]);
 
@@ -105,6 +109,17 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
               autoFocus
             />
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <span className="text-xs font-bold uppercase tracking-wide text-[#000000]">Mode</span>
+            {['together', 'alone'].map(mode => (
+              <button key={mode} type="button" onClick={() => setWatchingMode(mode)} className={`min-h-[36px] rounded-lg border px-3 text-xs font-bold ${watchingMode === mode ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000]'}`}>
+                {mode === 'together' ? 'Watching together' : 'Watching alone'}
+              </button>
+            ))}
+            {category === 'books' && (
+              <input type="number" min="0" value={bookTotalPages} onChange={(e) => setBookTotalPages(e.target.value)} placeholder="Total pages (optional)" className="min-h-[36px] rounded-lg border border-[#E1D8D4] px-3 text-xs" />
+            )}
+          </div>
 
           {error && (
             <div className="mt-3 rounded-lg border border-[#FFB4A9] bg-[#FFDAD4] p-3 text-sm font-semibold text-[#C1121F]">
@@ -128,7 +143,11 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
             {results.map(item => (
-              <ResultCardComponent key={item.id} item={item} category={category} onAdd={onAdd} />
+              <ResultCardComponent key={item.id} item={item} category={category} onAdd={(selected) => onAdd({
+                ...selected,
+                watchingMode,
+                totalPages: category === 'books' ? (Number(bookTotalPages) || selected.totalPages || null) : selected.totalPages
+              })} />
             ))}
           </div>
         </div>

@@ -56,7 +56,9 @@ const MEDIA_TYPE_EMPTY_COPY = {
   }
 };
 
-const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect }) => {
+const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect, watchFilter, onWatchFilterChange }) => {
+  const { useState } = React;
+  const [showCompleted, setShowCompleted] = useState(true);
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const MediaCard = window.getWindowComponent?.('MediaCard', window.MissingComponent) || window.MissingComponent;
   const Plus = getMediaSectionsComponent('Plus');
@@ -136,6 +138,21 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           Add {addLabel}
         </button>
       </div>
+      <div className="inline-flex rounded-xl border border-[#E1D8D4] bg-white p-1">
+        {[
+          { id: 'together', label: 'Watching together' },
+          { id: 'alone', label: 'Watching alone' }
+        ].map(option => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onWatchFilterChange?.(option.id)}
+            className={`min-h-[44px] rounded-lg px-3 py-2 text-sm font-bold transition ${watchFilter === option.id ? 'bg-[#E63B2E] text-white' : 'text-[#000000] hover:bg-[#FFF8F5]'}`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
 
       {items.length === 0 ? (
         <EmptyState
@@ -147,13 +164,24 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         />
       ) : sections.map(section => {
         const sectionItems = items.filter(item => item.status === section.status);
+        const isCompletedSection = ['completed', 'read'].includes(section.status);
+        if (isCompletedSection && !showCompleted && sectionItems.length > 0) {
+          return (
+            <section key={section.status}>
+              <button type="button" onClick={() => setShowCompleted(true)} className="mb-3 w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-left text-sm font-bold text-[#000000]">
+                Show completed ({sectionItems.length})
+              </button>
+            </section>
+          );
+        }
         return (
           <section key={section.status}>
             <div className="mb-3 flex items-baseline justify-between border-b border-[#E1D8D4] pb-2">
               <h3 className="text-lg font-extrabold text-[#000000] sm:text-xl">{section.title}</h3>
-              <span className="text-xs font-semibold text-[#000000]">
-                {sectionItems.length} {sectionItems.length === 1 ? 'item' : 'items'}
-              </span>
+              <div className="flex items-center gap-2">
+                {isCompletedSection && sectionItems.length > 0 && <button type="button" onClick={() => setShowCompleted(false)} className="text-xs font-bold text-[#E63B2E]">Collapse</button>}
+                <span className="text-xs font-semibold text-[#000000]">{sectionItems.length} {sectionItems.length === 1 ? 'item' : 'items'}</span>
+              </div>
             </div>
             {sectionItems.length === 0 ? (
               <EmptyState
@@ -163,7 +191,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
                 compact
               />
             ) : (
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 sm:gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4">
                 {sectionItems.map(item => (
                   <MediaCard key={item.id} item={item} onStatusChange={onStatusChange} onProgressChange={onProgressChange} />
                 ))}

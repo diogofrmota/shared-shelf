@@ -26,7 +26,8 @@ function MediaTracker() {
 
   // Replace single activeTab with category + sub-tab
   const [activeCategory, setActiveCategory] = useState('plan');
-  const [activeSubTab, setActiveSubTab] = useState('calendar');
+  const [activeSubTab, setActiveSubTab] = useState(() => window.localStorage?.getItem('cp:last-media-type') || 'calendar');
+  const [mediaWatchFilter, setMediaWatchFilter] = useState(() => window.localStorage?.getItem('cp:watch-filter') || 'together');
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -631,11 +632,17 @@ function MediaTracker() {
     setActiveCategory(category);
     setActiveSubTab(category === 'media' && !subTab ? 'tvshows' : subTab);
   };
+  useEffect(() => {
+    if (['tvshows', 'movies', 'books'].includes(activeSubTab)) window.localStorage?.setItem('cp:last-media-type', activeSubTab);
+  }, [activeSubTab]);
+  useEffect(() => {
+    window.localStorage?.setItem('cp:watch-filter', mediaWatchFilter);
+  }, [mediaWatchFilter]);
 
   // Data mutation handlers (unchanged)
   const handleAddMedia = (item) => {
     const defaultStatus = getDefaultStatus(item.category);
-    const newItem = normalizeWatchlistItem({ ...item, status: defaultStatus }, item.category);
+    const newItem = normalizeWatchlistItem({ ...item, status: defaultStatus, watchingMode: item.watchingMode || mediaWatchFilter }, item.category);
     setData(prev => ({ ...prev, watchlist: [...(prev.watchlist || []), newItem] }));
   };
   const handleStatusChange = (mediaType, id, newStatus) => {
@@ -944,9 +951,9 @@ function MediaTracker() {
 
   const activeMediaItems = useMemo(
     () => activeSubTab
-      ? (data?.watchlist || []).filter(item => item.category === activeSubTab)
+      ? (data?.watchlist || []).filter(item => item.category === activeSubTab && (item.watchingMode || 'together') === mediaWatchFilter)
       : (data?.watchlist || []),
-    [data?.watchlist, activeSubTab]
+    [data?.watchlist, activeSubTab, mediaWatchFilter]
   );
   const LoadingScreen = window.getWindowComponent?.('LoadingScreen', window.MissingComponent) || window.MissingComponent;
   const FailureScreen = window.getWindowComponent?.('FailureScreen', window.MissingComponent) || window.MissingComponent;
@@ -1133,6 +1140,8 @@ function MediaTracker() {
           onAddClick={() => { setAddCategory(activeSubTab); setAddModalOpen(true); }}
           onProgressChange={(id, progress) => handleProgressChange(activeSubTab, id, progress)}
           onMediaTypeSelect={(subTab) => setActiveSubTab(subTab)}
+          watchFilter={mediaWatchFilter}
+          onWatchFilterChange={setMediaWatchFilter}
         />
       );
     }
