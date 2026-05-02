@@ -338,6 +338,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
   const [isSaving, setIsSaving] = useState(false);
   const [showTaskOptions, setShowTaskOptions] = useState(false);
   const [showCalendarOptions, setShowCalendarOptions] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const addressLookupTimerRef = useRef(null);
 
   useEffect(() => {
     setFormData(initialData && typeof initialData === 'object' ? { ...initialData } : {});
@@ -345,6 +348,32 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
     setShowTaskOptions(false);
     setShowCalendarOptions(Boolean(initialData?.date));
   }, [isOpen, activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'locations') return;
+    const query = String(formData.address || '').trim();
+    if (addressLookupTimerRef.current) clearTimeout(addressLookupTimerRef.current);
+    if (query.length < 3 || !window.api?.request) {
+      setAddressSuggestions([]);
+      return;
+    }
+    addressLookupTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await window.api.request(`/api/nominatim?q=${encodeURIComponent(query)}`, { auth: true });
+        const suggestions = Array.isArray(results)
+          ? results.slice(0, 5).map(item => String(item.display_name || '').trim()).filter(Boolean)
+          : [];
+        setAddressSuggestions(suggestions);
+        setShowAddressSuggestions(true);
+      } catch (_) {
+        setAddressSuggestions([]);
+      }
+    }, 250);
+
+    return () => {
+      if (addressLookupTimerRef.current) clearTimeout(addressLookupTimerRef.current);
+    };
+  }, [activeTab, formData.address]);
 
   const getModalTitle = () => {
     const titles = {
@@ -653,7 +682,35 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                 </select>
               </FormField>
               <FormField label="Address">
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+                <div className="relative">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={formData.address || ''}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    onFocus={() => setShowAddressSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 120)}
+                    placeholder="Start typing an address..."
+                  />
+                  {showAddressSuggestions && addressSuggestions.length > 0 && (
+                    <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-[#E1D8D4] bg-white shadow-lg">
+                      {addressSuggestions.map((suggestion, idx) => (
+                        <button
+                          key={`${suggestion}-${idx}`}
+                          type="button"
+                          className="block w-full border-b border-[#F2E7E3] px-3 py-2 text-left text-sm text-[#000000] last:border-b-0 hover:bg-[#FFF8F5]"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setFormData({ ...formData, address: suggestion });
+                            setShowAddressSuggestions(false);
+                          }}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </FormField>
               <FormField label="Website">
                 <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
