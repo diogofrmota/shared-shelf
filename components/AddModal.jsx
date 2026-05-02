@@ -173,8 +173,34 @@ const buildCalendarEventPayload = (formData = {}) => {
     time: multiDay ? '' : formData.time || '',
     description: formData.description || '',
     color: formData.color || DEFAULT_EVENT_COLOR,
+    isPersonal: Boolean(formData.isPersonal),
     recurrence: buildEventRecurrence(formData)
   };
+};
+
+const VisibilityToggle = ({ value, onChange }) => {
+  const UserIcon = window.getWindowComponent?.('UserIcon', window.MissingIcon) || window.MissingIcon;
+  const UsersIcon = window.getWindowComponent?.('UsersIcon', window.MissingIcon) || window.MissingIcon;
+  return (
+    <div className="flex overflow-hidden rounded-lg border border-[#E1D8D4]">
+      <button
+        type="button"
+        onClick={() => onChange(false)}
+        className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 text-sm font-bold transition ${!value ? 'bg-[#E63B2E] text-white' : 'bg-white text-[#000000] hover:bg-[#FFF8F5]'}`}
+      >
+        <UsersIcon size={14} />
+        Shared
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange(true)}
+        className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 border-l border-[#E1D8D4] text-sm font-bold transition ${value ? 'bg-[#E63B2E] text-white' : 'bg-white text-[#000000] hover:bg-[#FFF8F5]'}`}
+      >
+        <UserIcon size={14} />
+        Personal
+      </button>
+    </div>
+  );
 };
 
 const getTaskRecurrenceFrequency = (formData = {}) => {
@@ -431,6 +457,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               <FormField label="Title" required>
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
               </FormField>
+              <FormField label="For">
+                <VisibilityToggle value={Boolean(formData.isPersonal)} onChange={(v) => setFormData({ ...formData, isPersonal: v })} />
+              </FormField>
               <FormField label="Date" required>
                 <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />
               </FormField>
@@ -583,6 +612,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         time: event.time || '',
         description: event.description || '',
         color: event.color || DEFAULT_EVENT_COLOR,
+        isPersonal: Boolean(event.isPersonal),
         recurrenceFrequency: event.recurrence?.frequency || event.recurrence || 'none',
         recurrenceUntil: event.recurrence?.until || event.recurrenceUntil || ''
       });
@@ -623,6 +653,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <FormField label="Title" required>
             <input type="text" className={inputCls} value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
+          </FormField>
+          <FormField label="For">
+            <VisibilityToggle value={Boolean(formData.isPersonal)} onChange={(v) => setFormData({ ...formData, isPersonal: v })} />
           </FormField>
           <FormField label="Date" required>
             <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />

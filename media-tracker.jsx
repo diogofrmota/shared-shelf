@@ -672,7 +672,29 @@ function MediaTracker() {
     }));
   };
   const handleAddEvent = (event) => {
-    setData(prev => ({ ...prev, calendarEvents: [...(prev.calendarEvents || []), event] }));
+    const enriched = {
+      ...event,
+      createdByUserId: currentUser?.id ?? null,
+      createdByName: currentUser?.name || currentUser?.username || null
+    };
+    setData(prev => ({ ...prev, calendarEvents: [...(prev.calendarEvents || []), enriched] }));
+  };
+
+  const handleRescheduleEvent = (eventId, newStartIso) => {
+    setData(prev => ({
+      ...prev,
+      calendarEvents: (prev.calendarEvents || []).map(e => {
+        if (e.id !== eventId) return e;
+        const oldStart = e.startDate || e.date || newStartIso;
+        const oldEnd = e.endDate || oldStart;
+        const durationMs = Math.max(0, new Date(oldEnd + 'T00:00:00') - new Date(oldStart + 'T00:00:00'));
+        const newStartDate = new Date(newStartIso + 'T00:00:00');
+        const newEndDate = new Date(newStartDate.getTime() + durationMs);
+        const pad = n => String(n).padStart(2, '0');
+        const toIso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        return { ...e, date: newStartIso, startDate: newStartIso, endDate: toIso(newEndDate) };
+      })
+    }));
   };
   const handleDeleteEvent = (id, event = null) => {
     const sourceEvent = event || (data?.calendarEvents || []).find(e => e.id === id);
@@ -1048,6 +1070,8 @@ function MediaTracker() {
             onEditEvent={handleEditEvent}
             onAddClick={() => { setAddCategory('calendar'); setAddEventInitialData(null); setAddModalOpen(true); }}
             onAddForDate={(iso) => { setAddCategory('calendar'); setAddEventInitialData({ date: iso }); setAddModalOpen(true); }}
+            onRescheduleEvent={handleRescheduleEvent}
+            currentUser={currentUser}
           />
         );
       }
