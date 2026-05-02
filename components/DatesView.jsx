@@ -194,14 +194,12 @@ const StableStarRating = ({ rating = 0, onRate }) => {
 };
 
 const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUpdateDate }) => {
-  const photoInputRef = useRef(null);
   const Star = getDateComponent('Star');
   const Trash = getDateComponent('Trash');
   const MapPin = getDateComponent('MapPin');
   const LinkIcon = getDateComponent('LinkIcon');
   const categoryStyle = DATE_CATEGORY_STYLES[place.category] || DATE_CATEGORY_STYLES.other;
   const safeLink = window.safeExternalUrl?.(place.link) || '';
-  const safePhoto = window.safeImageUrl?.(place.photo) || '';
   const lat = Number(place.lat);
   const lng = Number(place.lng);
   const hasCoordinates = hasLocationCoordinates(place);
@@ -212,27 +210,6 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
       ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(place.address)}`
       : null;
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxW = 800;
-        const scale = img.width > maxW ? maxW / img.width : 1;
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        onUpdateDate?.(place.id, { photo: canvas.toDataURL('image/jpeg', 0.75) });
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
   return (
     <div
       className={`group cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
@@ -242,28 +219,6 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
       }`}
       onClick={() => onFocus(place.id)}
     >
-      {safePhoto ? (
-        <div className="relative h-36 w-full overflow-hidden bg-[#FFDAD4]">
-          <img src={safePhoto} alt={place.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-          <button
-            onClick={e => { e.stopPropagation(); onUpdateDate?.(place.id, { photo: null }); }}
-            className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#000000] opacity-100 shadow-sm transition sm:opacity-0 sm:group-hover:opacity-100"
-            aria-label="Remove photo"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }}
-          className="flex min-h-[44px] w-full items-center justify-center gap-1.5 border-b border-[#E1D8D4] text-xs font-semibold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          Add photo
-        </button>
-      )}
-      <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -330,12 +285,6 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
               <MapPin size={14} /> Map
             </a>
           )}
-          {safePhoto && (
-            <button onClick={e => { e.stopPropagation(); photoInputRef.current?.click(); }} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#000000] transition hover:text-[#000000]">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              Change photo
-            </button>
-          )}
         </div>
       </div>
     </div>
@@ -345,15 +294,19 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
 const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onAddClick }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [onlyFavourites, setOnlyFavourites] = useState(false);
-  const [onlyVisited, setOnlyVisited] = useState(false);
+  const [visitedFilter, setVisitedFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
 
   const filtered = useMemo(() => places.filter(p => {
     if (onlyFavourites && !p.isFavourite) return false;
-    if (onlyVisited && !p.beenThere) return false;
+    if (visitedFilter === 'visited' && !p.beenThere) return false;
+    if (visitedFilter === 'unvisited' && p.beenThere) return false;
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
+    const query = searchQuery.trim().toLowerCase();
+    if (query && !String(p.name || '').toLowerCase().includes(query)) return false;
     return true;
-  }), [places, onlyFavourites, onlyVisited, categoryFilter]);
+  }), [places, onlyFavourites, visitedFilter, categoryFilter, searchQuery]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if ((b.isFavourite ? 1 : 0) !== (a.isFavourite ? 1 : 0)) return (b.isFavourite ? 1 : 0) - (a.isFavourite ? 1 : 0);
@@ -372,6 +325,17 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
       </div>
 
       <DatesLeafletMap places={filtered} focusedId={focusedId} />
+      <div>
+        <label htmlFor="locations-search" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Search by name</label>
+        <input
+          id="locations-search"
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search locations..."
+          className="min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
+        />
+      </div>
 
       <FilterBar label="Filter:">
         <FilterButton label="All" isActive={categoryFilter === 'all'} onClick={() => setCategoryFilter('all')} />
@@ -379,7 +343,8 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
           <FilterButton key={c.value} label={c.label} isActive={categoryFilter === c.value} onClick={() => setCategoryFilter(c.value)} />
         ))}
         <FilterButton label="★ Favourites" isActive={onlyFavourites} onClick={() => setOnlyFavourites(v => !v)} />
-        <FilterButton label="✅ Visited" isActive={onlyVisited} onClick={() => setOnlyVisited(v => !v)} />
+        <FilterButton label="✅ Visited" isActive={visitedFilter === 'visited'} onClick={() => setVisitedFilter(v => v === 'visited' ? 'all' : 'visited')} />
+        <FilterButton label="🕒 Unvisited" isActive={visitedFilter === 'unvisited'} onClick={() => setVisitedFilter(v => v === 'unvisited' ? 'all' : 'unvisited')} />
       </FilterBar>
 
       {sorted.length === 0 ? (
