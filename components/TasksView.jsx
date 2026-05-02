@@ -11,6 +11,7 @@ const todayLocalIso = () => {
 };
 
 const TASK_RECURRENCE_OPTIONS = [
+  { value: 'none', label: 'None' },
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
   { value: 'monthly', label: 'Monthly' },
@@ -23,8 +24,8 @@ const TASK_RECURRENCE_LABELS = TASK_RECURRENCE_OPTIONS.reduce((labels, option) =
 }), {});
 
 const getTaskRecurrenceFrequency = (task = {}) => {
-  const frequency = task.taskRecurrenceFrequency || task.recurrence?.frequency || task.recurrence || 'weekly';
-  return TASK_RECURRENCE_LABELS[frequency] ? frequency : 'weekly';
+  const frequency = task.taskRecurrenceFrequency || task.recurrence?.frequency || task.recurrence || 'none';
+  return TASK_RECURRENCE_LABELS[frequency] ? frequency : 'none';
 };
 
 const isRecurringTask = (task = {}) => Boolean(task.recurrence);
@@ -39,6 +40,15 @@ const isSameLocalDay = (isoDate) => {
     && date.getDate() === today.getDate();
 };
 
+
+const daysOverdueFrom = (isoDate) => {
+  if (!isoDate) return 0;
+  const today = new Date(`${todayLocalIso()}T00:00:00`);
+  const due = new Date(`${String(isoDate).split('T')[0]}T00:00:00`);
+  const ms = today - due;
+  return ms > 0 ? Math.floor(ms / 86400000) : 0;
+};
+
 const formatTaskDate = (value) => {
   if (!value) return '';
   const datePart = String(value).split('T')[0];
@@ -51,6 +61,8 @@ const formatTaskDate = (value) => {
 
 const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderTasks, onAddClick, profile }) => {
   const [filter, setFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('tasks');
+  const [quickChecklistText, setQuickChecklistText] = useState('');
   const [editingTask, setEditingTask] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
   const [draggedIndex, setDraggedIndex] = useState(null);
@@ -72,8 +84,13 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
 
   const activeTasks = useMemo(() => sortedTasks.filter(t => !t.completed), [sortedTasks]);
   const completedTasks = useMemo(() => sortedTasks.filter(t => t.completed), [sortedTasks]);
-  const activeCnt = activeTasks.length;
+  const visibleTasks = sortedTasks.filter(t => (viewMode === 'checklist' ? t.listType === 'shared-checklist' : t.listType !== 'shared-checklist'));
   const todayIso = todayLocalIso();
+  const scopedActiveTasks = visibleTasks.filter(t => !t.completed);
+  const scopedCompletedTasks = visibleTasks.filter(t => t.completed);
+  const myUserId = users?.[0]?.id || null;
+  const filteredActiveTasks = scopedActiveTasks.filter(t => filter === 'all' ? true : filter === 'active' ? true : filter === 'mine' ? t.assignedTo === myUserId : filter === 'partner' ? Boolean(t.assignedTo && t.assignedTo !== myUserId) : false);
+  const activeCnt = scopedActiveTasks.length;
   const FilterButton = window.getWindowComponent?.('FilterButton', window.MissingComponent) || window.MissingComponent;
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const CheckSquare = getTaskComponent('CheckSquare');
@@ -170,9 +187,11 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     const isOverdue = task.dueDate && !task.completed && task.dueDate < todayIso;
     const taskIsRecurring = isRecurringTask(task);
     const completedThisOccurrence = taskIsRecurring ? isSameLocalDay(task.lastCompletedAt) : Boolean(task.completed);
-    const recurrenceLabel = taskIsRecurring ? `Repeats ${TASK_RECURRENCE_LABELS[getTaskRecurrenceFrequency(task)].toLowerCase()}` : '';
+    const recurrenceFrequency = getTaskRecurrenceFrequency(task);
+    const recurrenceLabel = taskIsRecurring && recurrenceFrequency !== 'none' ? `Repeats ${TASK_RECURRENCE_LABELS[recurrenceFrequency].toLowerCase()}` : '';
+    const overdueDays = daysOverdueFrom(task.dueDate);
     const lastCompletedLabel = taskIsRecurring && task.lastCompletedAt
-      ? (completedThisOccurrence ? 'Done today' : `Last done ${formatTaskDate(task.lastCompletedAt)}`)
+      ? (completedThisOccurrence ? 'Done today' : `Last done ${formatTaskDate(task.lastCompletedAt)}${overdueDays > 0 ? ` · ${overdueDays} day${overdueDays===1?'':'s'} overdue` : ''}`)
       : '';
 
     return (
@@ -262,6 +281,9 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 <p className={`line-clamp-2 font-bold leading-snug ${task.completed ? 'text-[#000000] line-through' : 'text-[#000000]'}`} title={task.title}>
                   {task.title}
                 </p>
+                {task.completedAt && (
+                  <p className="mt-1 text-xs font-semibold text-[#2F6B47]">Completed on {new Date(task.completedAt).toLocaleDateString()}</p>
+                )}
                 {task.description && (
                   <p className={`mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#000000]'}`} title={task.description}>
                     {task.description}
@@ -280,9 +302,19 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     {task.dueDate && (
                       <span className={`flex items-center gap-1 text-xs font-medium ${isOverdue ? 'text-[#C1121F]' : 'text-[#000000]'}`}>
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        {isOverdue ? 'Overdue · ' : ''}{task.dueDate.split('-').reverse().join('/')}
+                        {isOverdue ? `${overdueDays} day${overdueDays===1?'':'s'} overdue · ` : ''}{task.dueDate.split('-').reverse().join('/')}
                       </span>
                     )}
+                  </div>
+                )}
+                {Array.isArray(task.subtasks) && task.subtasks.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {task.subtasks.map(sub => (
+                      <label key={sub.id} className="flex items-center gap-2 text-xs text-[#000000]">
+                        <input type="checkbox" checked={Boolean(sub.completed)} onChange={(e)=>onUpdateTask?.(task.id,{ subtasks: (task.subtasks||[]).map(it=>it.id===sub.id?{...it, completed:e.target.checked}:it) })} className="h-3.5 w-3.5 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+                        <span className={sub.completed ? 'line-through text-[#A89A95]' : ''}>{sub.title}</span>
+                      </label>
+                    ))}
                   </div>
                 )}
                 {(recurrenceLabel || lastCompletedLabel) && (
@@ -348,13 +380,27 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
           )}
         </div>
         <div className="flex flex-wrap gap-2">
+          <FilterButton label="Tasks" isActive={viewMode==='tasks'} onClick={()=>setViewMode('tasks')} />
+          <FilterButton label="Shared checklist" isActive={viewMode==='checklist'} onClick={()=>setViewMode('checklist')} />
           <FilterButton label="All"       isActive={filter === 'all'}       onClick={() => setFilter('all')} />
           <FilterButton label="Active"    isActive={filter === 'active'}    onClick={() => setFilter('active')} />
+          <FilterButton label="Mine" isActive={filter === 'mine'} onClick={() => setFilter('mine')} />
+          <FilterButton label="Partner" isActive={filter === 'partner'} onClick={() => setFilter('partner')} />
           <FilterButton label="Completed" isActive={filter === 'completed'} onClick={() => setFilter('completed')} />
         </div>
       </div>
 
-      {tasks.length === 0 ? (
+      {viewMode === 'checklist' && (
+        <div className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+          <p className="mb-2 text-sm font-bold text-[#000000]">Quick add to shared checklist</p>
+          <div className="flex gap-2">
+            <input value={quickChecklistText} onChange={(e)=>setQuickChecklistText(e.target.value)} className="flex-1 rounded-lg border border-[#E1D8D4] px-3 py-2" placeholder="Milk, passports, socks..." />
+            <button className="rounded-lg bg-[#E63B2E] px-3 py-2 text-white" onClick={()=>{ if(!quickChecklistText.trim())return; onUpdateTask?.('__add__',{__quickChecklist:true,title:quickChecklistText.trim()}); setQuickChecklistText(''); }}>Add</button>
+          </div>
+        </div>
+      )}
+
+      {visibleTasks.length === 0 ? (
         <EmptyState
           title="No tasks yet"
           message="Capture the next shared to-do."
@@ -364,22 +410,22 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
         />
       ) : (
         <>
-          {filter !== 'completed' && activeTasks.length === 0 && (
+          {filter !== 'completed' && filteredActiveTasks.length === 0 && (
             <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
               No active tasks.
             </div>
           )}
 
-          {filter !== 'completed' && activeTasks.length > 0 && (
+          {filter !== 'completed' && filteredActiveTasks.length > 0 && (
             <div className="space-y-2">
-              {activeTasks.map(task => {
+              {filteredActiveTasks.map(task => {
                 const idx = sortedIndexById.get(task.id);
                 return renderTaskItem(task, idx);
               })}
             </div>
           )}
 
-          {(filter === 'all' || filter === 'completed') && completedTasks.length > 0 && (
+          {(filter === 'all' || filter === 'completed') && scopedCompletedTasks.length > 0 && (
             <div className="space-y-2">
               {filter === 'all' ? (
                 <>
@@ -387,7 +433,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     onClick={() => setShowCompleted(!showCompleted)}
                     className="flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#000000]"
                   >
-                    <span>Completed ({completedTasks.length})</span>
+                    <span>Completed ({scopedCompletedTasks.length})</span>
                     <svg
                       className={`h-5 w-5 transition-transform ${showCompleted ? 'rotate-180' : ''}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -397,7 +443,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                   </button>
                   {showCompleted && (
                     <div className="space-y-2">
-                      {completedTasks.map(task => {
+                      {scopedCompletedTasks.map(task => {
                         const idx = sortedIndexById.get(task.id);
                         return renderTaskItem(task, idx);
                       })}
@@ -405,7 +451,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                   )}
                 </>
               ) : (
-                completedTasks.map(task => {
+                scopedCompletedTasks.map(task => {
                   const idx = sortedIndexById.get(task.id);
                   return renderTaskItem(task, idx);
                 })
@@ -413,7 +459,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
             </div>
           )}
 
-          {filter === 'completed' && completedTasks.length === 0 && (
+          {filter === 'completed' && scopedCompletedTasks.length === 0 && (
             <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
               No completed tasks.
             </div>

@@ -236,13 +236,15 @@ const VisibilityToggle = ({ value, onChange }) => {
 };
 
 const getTaskRecurrenceFrequency = (formData = {}) => {
-  const frequency = formData.taskRecurrenceFrequency || formData.recurrence?.frequency || 'weekly';
-  return TASK_RECURRENCE_OPTIONS.some(option => option.value === frequency) ? frequency : 'weekly';
+  const frequency = formData.taskRecurrenceFrequency || formData.recurrence?.frequency || 'none';
+  return TASK_RECURRENCE_OPTIONS.some(option => option.value === frequency) ? frequency : 'none';
 };
 
 const buildTaskRecurrence = (formData = {}) => {
   if (!formData.isRecurring) return null;
-  return { frequency: getTaskRecurrenceFrequency(formData) };
+  const frequency = getTaskRecurrenceFrequency(formData);
+  if (frequency === 'none') return null;
+  return { frequency };
 };
 
 const CalendarRecurrenceFields = ({ formData, setFormData, editing = false }) => {
@@ -367,6 +369,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
             recurrence: buildTaskRecurrence(formData),
             lastCompletedAt: null,
             completionCount: 0,
+            subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+            listType: formData.listType || 'task',
             createdAt: new Date().toISOString()
           });
           onClose();
@@ -381,13 +385,17 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
         break;
       case 'expenses':
         if (formData.description) {
-          onAddExpense({ id: `expense-${uid()}`, ...buildExpensePayload(formData), createdAt: new Date().toISOString() });
+          onAddExpense({ id: `expense-${uid()}`, ...buildExpensePayload(formData), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+            listType: formData.listType || 'task',
+            createdAt: new Date().toISOString() });
           onClose();
         }
         break;
       case 'recipes':
         if (formData.name) {
-          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, prepTime: formData.prepTime || '', link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', createdAt: new Date().toISOString() });
+          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, prepTime: formData.prepTime || '', link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+            listType: formData.listType || 'task',
+            createdAt: new Date().toISOString() });
           onClose();
         }
         break;
@@ -412,6 +420,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
             notes: formData.notes || '',
             link: formData.link || '',
             isFavourite: formData.isFavourite || false,
+            subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+            listType: formData.listType || 'task',
             createdAt: new Date().toISOString()
           });
           onClose();
@@ -478,6 +488,17 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                 <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
                   <FormField label="Due date">
                     <DateInput value={formData.dueDate || ''} onChange={(dueDate) => setFormData({ ...formData, dueDate })} />
+                  </FormField>
+                  {Array.isArray(profile?.users) && profile.users.length > 0 && (
+                    <FormField label="Assign to">
+                      <select className={selectCls} value={formData.assignedTo || ''} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value || null })}>
+                        <option value="">Unassigned</option>
+                        {profile.users.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
+                      </select>
+                    </FormField>
+                  )}
+                  <FormField label="Checklist items">
+                    <textarea rows="3" placeholder="One item per line" className={inputCls} onChange={(e) => setFormData({ ...formData, subtasksText: e.target.value })} />
                   </FormField>
                   <TaskRecurrenceFields formData={formData} setFormData={setFormData} />
                 </div>
