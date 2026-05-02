@@ -1,5 +1,5 @@
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const getComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 const getModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
@@ -57,35 +57,67 @@ const formatDateDigits = (value) => {
 
 const DateInput = ({ value, onChange, required = false, autoFocus = false }) => {
   const [displayValue, setDisplayValue] = useState(formatDateForInput(value));
+  const nativeRef = useRef(null);
+  const CalendarIconPicker = getComponent('CalendarIcon');
 
   useEffect(() => {
     setDisplayValue(formatDateForInput(value));
   }, [value]);
 
   const handleChange = (e) => {
-    const nextDisplayValue = formatDateDigits(e.target.value);
-    const nextIsoValue = parseDateInput(nextDisplayValue);
-    setDisplayValue(nextDisplayValue);
-    onChange(nextIsoValue);
+    const nextDisplay = formatDateDigits(e.target.value);
+    const nextIso = parseDateInput(nextDisplay);
+    setDisplayValue(nextDisplay);
+    onChange(nextIso);
     e.target.setCustomValidity(
-      nextDisplayValue && nextDisplayValue.length === 10 && !nextIsoValue
-        ? 'Enter a valid date as dd/mm/yyyy.'
-        : ''
+      nextDisplay && nextDisplay.length === 10 && !nextIso ? 'Enter a valid date as dd/mm/yyyy.' : ''
     );
   };
 
+  const handleNativePick = (e) => {
+    const iso = e.target.value; // YYYY-MM-DD
+    if (iso) onChange(iso);
+    // reset so the same date can be re-picked
+    e.target.value = '';
+  };
+
+  const openPicker = () => {
+    if (!nativeRef.current) return;
+    if (value) nativeRef.current.value = value;
+    try { nativeRef.current.showPicker(); } catch { nativeRef.current.click(); }
+  };
+
   return (
-    <input
-      type="text"
-      inputMode="numeric"
-      placeholder="dd/mm/yyyy"
-      className={inputCls}
-      value={displayValue}
-      onChange={handleChange}
-      pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
-      required={required}
-      autoFocus={autoFocus}
-    />
+    <div className="flex gap-1">
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="dd/mm/yyyy"
+        className={`${inputCls} flex-1`}
+        value={displayValue}
+        onChange={handleChange}
+        pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+        required={required}
+        autoFocus={autoFocus}
+      />
+      <input
+        type="date"
+        ref={nativeRef}
+        onChange={handleNativePick}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <button
+        type="button"
+        onClick={openPicker}
+        className="flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-[#E1D8D4] bg-[#FBF2ED] text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#E63B2E]"
+        aria-label="Open date picker"
+        title="Pick date"
+      >
+        <CalendarIconPicker size={15} />
+      </button>
+    </div>
   );
 };
 
@@ -342,6 +374,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
         break;
       case 'calendar':
         if (formData.title && formData.date) {
+          if (formData.endDate && formData.date && formData.endDate < formData.date) break; // blocked by inline validation
           onAddEvent({ id: `event-${uid()}`, ...buildCalendarEventPayload(formData) });
           onClose();
         }
@@ -494,6 +527,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                         time: endDate && endDate > formData.date ? '' : formData.time
                       })}
                     />
+                    {formData.endDate && formData.date && formData.endDate < formData.date && (
+                      <p className="mt-1 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
+                    )}
                   </FormField>
                   <CalendarRecurrenceFields formData={formData} setFormData={setFormData} />
                   <FormField label="Description">
@@ -627,10 +663,8 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.title && formData.date) {
-      onSave({
-        ...event,
-        ...buildCalendarEventPayload(formData)
-      });
+      if (formData.endDate && formData.endDate < formData.date) return;
+      onSave({ ...event, ...buildCalendarEventPayload(formData) });
       onClose();
     }
   };
@@ -669,6 +703,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
                 time: endDate && endDate > formData.date ? '' : formData.time
               })}
             />
+            {formData.endDate && formData.date && formData.endDate < formData.date && (
+              <p className="mt-1 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
+            )}
           </FormField>
           {!isCalendarMultiDay && (
             <FormField label="Time">
