@@ -1,12 +1,7 @@
 const React = window.React;
 const { useMemo, useState } = React;
 
-// ============================================================================
-// EXPENSES VIEW COMPONENT
-// ============================================================================
-
 const getExpenseComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
-const getExpenseModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 const EXPENSE_CATEGORIES = [
   { value: 'food', label: 'Food & Drink' },
@@ -17,181 +12,91 @@ const EXPENSE_CATEGORIES = [
   { value: 'health', label: 'Health' },
   { value: 'other', label: 'Other' }
 ];
-
-const getCategoryLabel = (value) => {
-  const found = EXPENSE_CATEGORIES.find(c => c.value === value);
-  return found ? found.label : 'Other';
-};
-
-const formatExpenseDate = (date) => {
-  if (!date) return '';
-  const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-};
-
-const formatAmount = (amount) => {
-  const num = Number(amount);
-  if (!Number.isFinite(num)) return '—';
-  return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
-const CATEGORY_COLORS = {
-  food: 'bg-[#FFDAD4] text-[#A9372C]',
-  transport: 'bg-[#E8F0FF] text-[#3B5BDB]',
-  accommodation: 'bg-[#E8F8F0] text-[#2F7D52]',
-  entertainment: 'bg-[#FFF3CD] text-[#856404]',
-  shopping: 'bg-[#F3E8FF] text-[#6B21A8]',
-  health: 'bg-[#FFE4F0] text-[#9D174D]',
-  other: 'bg-[#F0E8E4] text-[#5C3C35]'
-};
-
-const CategoryBadge = ({ category }) => (
-  <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${CATEGORY_COLORS[category] || CATEGORY_COLORS.other}`}>
-    {getCategoryLabel(category)}
-  </span>
-);
+const getCategoryLabel = (value) => (EXPENSE_CATEGORIES.find(c => c.value === value)?.label || 'Other');
+const formatExpenseDate = (date) => date ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+const formatAmount = (amount) => Number.isFinite(Number(amount)) ? `€${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
 
 const ExpenseCard = ({ expense, onDelete, onEdit }) => {
   const Trash = getExpenseComponent('Trash');
-  const dateStr = formatExpenseDate(expense.date);
-
+  const recurrenceLabel = expense?.recurrence?.frequency ? `Repeats ${expense.recurrence.frequency}` : '';
   return (
-    <div className="group flex items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm transition hover:shadow-md hover:shadow-[#000000]/5">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FFF8F5] text-lg font-extrabold text-[#E63B2E]">
-        {expense.amount != null ? (
-          <span className="text-sm font-extrabold">{formatAmount(expense.amount)}</span>
-        ) : '—'}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <p className="text-base font-bold text-[#000000] leading-snug">{expense.description || 'Untitled expense'}</p>
-          <div className="flex shrink-0 items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
-            {onEdit && (
-              <button
-                onClick={() => onEdit(expense)}
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-                aria-label={`Edit expense ${expense.description || ''}`}
-              >
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-              </button>
-            )}
-            <button
-              onClick={() => onDelete(expense.id)}
-              className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-              aria-label={`Delete expense ${expense.description || ''}`}
-            >
-              <Trash size={14} />
-            </button>
-          </div>
+    <div className="group rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-bold text-[#000000]">{expense.description || 'Untitled expense'}</p>
+          <p className="text-sm text-[#E63B2E] font-extrabold">{formatAmount(expense.amount)}</p>
         </div>
-
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <CategoryBadge category={expense.category} />
-          {expense.paidBy && (
-            <span className="text-xs font-semibold text-[#000000]">Paid by {expense.paidBy}</span>
-          )}
-          {dateStr && (
-            <span className="text-xs text-[#000000]">{dateStr}</span>
-          )}
+        <div className="flex items-center gap-1">
+          <button onClick={() => onEdit(expense)} className="h-10 w-10">✎</button>
+          <button onClick={() => onDelete(expense.id)} className="h-10 w-10"><Trash size={14} /></button>
         </div>
-
-        {expense.notes && (
-          <p className="mt-1.5 text-sm text-[#000000] line-clamp-2">{expense.notes}</p>
-        )}
       </div>
+      <p className="mt-1 text-xs text-[#000000]">{getCategoryLabel(expense.category)} • {formatExpenseDate(expense.date)} • Paid by {expense.paidBy || '—'}</p>
+      {recurrenceLabel && <p className="mt-1 text-xs font-semibold text-[#000000]">{recurrenceLabel}</p>}
+      {Array.isArray(expense.splitBy) && expense.splitBy.length > 0 && (
+        <p className="mt-1 text-xs text-[#000000]">Split: {expense.splitBy.map(s => `${s.name} ${Number(s.percent || 0)}%`).join(', ')}</p>
+      )}
+      {Array.isArray(expense.billSplits) && expense.billSplits.length > 0 && (
+        <p className="mt-1 text-xs text-[#000000]">Bill split: {expense.billSplits.map(s => `${getCategoryLabel(s.category)} ${formatAmount(s.amount)}`).join(' · ')}</p>
+      )}
+      {expense.notes && <details className="mt-2"><summary className="cursor-pointer text-xs font-bold">View details</summary><p className="text-sm whitespace-pre-wrap">{expense.notes}</p></details>}
     </div>
   );
 };
 
 const ExpensesView = ({ expenses, onDeleteExpense, onEditExpense, onAddClick }) => {
   const [filterCategory, setFilterCategory] = useState('all');
-  const DollarSign = getExpenseComponent('DollarSign');
-  const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
+  const [sortBy, setSortBy] = useState('date_desc');
+  const [rangeType, setRangeType] = useState('all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
-  const sorted = useMemo(() => (
-    [...expenses].sort((a, b) => {
-      const da = a.date || a.createdAt || '';
-      const db = b.date || b.createdAt || '';
-      return db.localeCompare(da);
-    })
-  ), [expenses]);
+  const filtered = useMemo(() => {
+    const now = new Date();
+    return (expenses || []).filter(e => {
+      if (filterCategory !== 'all' && e.category !== filterCategory) return false;
+      if (!e.date) return rangeType === 'all';
+      if (rangeType === 'month') return e.date.slice(0, 7) === now.toISOString().slice(0, 7);
+      if (rangeType === 'year') return e.date.slice(0, 4) === String(now.getFullYear());
+      if (rangeType === 'custom') return (!fromDate || e.date >= fromDate) && (!toDate || e.date <= toDate);
+      return true;
+    });
+  }, [expenses, filterCategory, rangeType, fromDate, toDate]);
 
-  const filtered = useMemo(() => (
-    filterCategory === 'all' ? sorted : sorted.filter(e => e.category === filterCategory)
-  ), [sorted, filterCategory]);
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
+    if (sortBy === 'amount_desc') return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+    if (sortBy === 'amount_asc') return (Number(a.amount) || 0) - (Number(b.amount) || 0);
+    if (sortBy === 'date_asc') return (a.date || '').localeCompare(b.date || '');
+    return (b.date || '').localeCompare(a.date || '');
+  }), [filtered, sortBy]);
 
-  const totalAll = useMemo(() => (
-    sorted.reduce((sum, e) => sum + (Number.isFinite(Number(e.amount)) ? Number(e.amount) : 0), 0)
-  ), [sorted]);
+  const byMonth = useMemo(() => sorted.reduce((acc, e) => {
+    const key = e.date ? e.date.slice(0, 7) : 'No date';
+    (acc[key] = acc[key] || []).push(e);
+    return acc;
+  }, {}), [sorted]);
 
-  const totalFiltered = useMemo(() => (
-    filtered.reduce((sum, e) => sum + (Number.isFinite(Number(e.amount)) ? Number(e.amount) : 0), 0)
-  ), [filtered]);
+  const partnerTotals = useMemo(() => sorted.reduce((acc, e) => {
+    const key = e.paidBy || 'Unknown';
+    acc[key] = (acc[key] || 0) + (Number(e.amount) || 0);
+    return acc;
+  }, {}), [sorted]);
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {expenses.length === 0 && (
-        <EmptyState
-          title="No expenses yet"
-          message="Track shared spending by adding your first expense."
-          actionLabel="Add expense"
-          icon={DollarSign}
-          onAddClick={onAddClick}
-        />
-      )}
-
-      {expenses.length > 0 && (
-        <>
-          <div className="rounded-2xl border border-[#E1D8D4] bg-white p-5 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-wide text-[#000000]">Total spent</p>
-            <p className="mt-1 text-3xl font-extrabold text-[#E63B2E]">{formatAmount(totalAll)}</p>
-            {filterCategory !== 'all' && (
-              <p className="mt-1 text-sm text-[#000000]">
-                {getCategoryLabel(filterCategory)}: <span className="font-bold">{formatAmount(totalFiltered)}</span>
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setFilterCategory('all')}
-              className={`min-h-[44px] rounded-full px-3 text-xs font-bold transition ${filterCategory === 'all' ? 'bg-[#E63B2E] text-white' : 'bg-white border border-[#E1D8D4] text-[#000000] hover:border-[#FFB4A9] hover:text-[#E63B2E]'}`}
-            >
-              All
-            </button>
-            {EXPENSE_CATEGORIES.map(cat => (
-              <button
-                key={cat.value}
-                onClick={() => setFilterCategory(cat.value)}
-                className={`min-h-[44px] rounded-full px-3 text-xs font-bold transition ${filterCategory === cat.value ? 'bg-[#E63B2E] text-white' : 'bg-white border border-[#E1D8D4] text-[#000000] hover:border-[#FFB4A9] hover:text-[#E63B2E]'}`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {filtered.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
-              No expenses in this category yet.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map(expense => (
-                <ExpenseCard
-                  key={expense.id}
-                  expense={expense}
-                  onDelete={onDeleteExpense}
-                  onEdit={onEditExpense}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+  return <div className="space-y-4">
+    <div className="rounded-2xl border p-4 bg-white">
+      <p className="text-xs font-bold">Total spent</p>
+      <p className="text-3xl font-extrabold text-[#E63B2E]">{formatAmount(sorted.reduce((s, e) => s + (Number(e.amount) || 0), 0))}</p>
+      <p className="text-xs mt-1">{Object.entries(partnerTotals).map(([k, v]) => `${k}: ${formatAmount(v)}`).join(' • ') || 'No partner totals yet'}</p>
     </div>
-  );
+    <div className="flex flex-wrap gap-2">
+      <select className="rounded border px-2" value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="date_desc">Newest</option><option value="date_asc">Oldest</option><option value="amount_desc">Amount high-low</option><option value="amount_asc">Amount low-high</option></select>
+      <select className="rounded border px-2" value={rangeType} onChange={(e) => setRangeType(e.target.value)}><option value="all">All time</option><option value="month">This month</option><option value="year">This year</option><option value="custom">Custom</option></select>
+      {rangeType === 'custom' && <><input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /><input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} /></>}
+      <button onClick={() => setFilterCategory('all')}>All</button>
+      {EXPENSE_CATEGORIES.map(cat => <button key={cat.value} onClick={() => setFilterCategory(cat.value)}>{cat.label}</button>)}
+    </div>
+    {Object.keys(byMonth).length === 0 ? <div className="rounded border-dashed border p-5">No expenses found.</div> : Object.entries(byMonth).map(([month, list]) => <div key={month} className="space-y-2"><h3 className="font-bold">{month === 'No date' ? 'No date' : new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>{list.map(expense => <ExpenseCard key={expense.id} expense={expense} onDelete={onDeleteExpense} onEdit={onEditExpense} />)}</div>)}
+  </div>;
 };
 
 Object.assign(window, { ExpensesView, EXPENSE_CATEGORIES });
