@@ -40,6 +40,7 @@ function MediaTracker() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [addEventInitialData, setAddEventInitialData] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
   const skipNextSaveRef = useRef(false);
   const dataEditedAfterLoadRef = useRef(false);
@@ -869,6 +870,7 @@ function MediaTracker() {
           type="button"
           onClick={() => {
             setAddCategory(activeSubTab);
+            setAddEventInitialData(null);
             setAddModalOpen(true);
           }}
           className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
@@ -1044,7 +1046,8 @@ function MediaTracker() {
             events={visibleData.calendarEvents || []}
             onDeleteEvent={handleDeleteEvent}
             onEditEvent={handleEditEvent}
-            onAddClick={() => { setAddCategory('calendar'); setAddModalOpen(true); }}
+            onAddClick={() => { setAddCategory('calendar'); setAddEventInitialData(null); setAddModalOpen(true); }}
+            onAddForDate={(iso) => { setAddCategory('calendar'); setAddEventInitialData({ date: iso }); setAddModalOpen(true); }}
           />
         );
       }
@@ -1130,7 +1133,7 @@ function MediaTracker() {
       {/* Modals */}
       <AddModal
         isOpen={addModalOpen}
-        onClose={() => { setAddModalOpen(false); setAddCategory(null); }}
+        onClose={() => { setAddModalOpen(false); setAddCategory(null); setAddEventInitialData(null); }}
         activeTab={addCategory || activeSubTab}
         onAddMedia={handleAddMedia}
         onAddEvent={handleAddEvent}
@@ -1139,6 +1142,7 @@ function MediaTracker() {
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
         profile={visibleData?.profile}
+        initialData={addEventInitialData}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />

@@ -112,6 +112,32 @@ const buildExpensePayload = (formData = {}) => ({
   notes: formData.notes || ''
 });
 
+const EVENT_COLOR_PALETTE = [
+  '#E63B2E', '#2563EB', '#16A34A', '#9333EA',
+  '#D97706', '#0891B2', '#DB2777', '#6B7280'
+];
+
+const DEFAULT_EVENT_COLOR = '#E63B2E';
+
+const ColorPicker = ({ value, onChange }) => {
+  const selected = value || DEFAULT_EVENT_COLOR;
+  return (
+    <div className="flex flex-wrap gap-2 pt-1">
+      {EVENT_COLOR_PALETTE.map(color => (
+        <button
+          type="button"
+          key={color}
+          onClick={() => onChange(color)}
+          className={`h-8 w-8 rounded-full transition hover:scale-110 ${selected === color ? 'ring-2 ring-offset-2 ring-[#000000] scale-110' : ''}`}
+          style={{ backgroundColor: color }}
+          aria-label={`Select color ${color}`}
+          aria-pressed={selected === color}
+        />
+      ))}
+    </div>
+  );
+};
+
 const RECURRENCE_OPTIONS = [
   { value: 'none', label: 'Does not repeat' },
   { value: 'daily', label: 'Daily' },
@@ -146,6 +172,7 @@ const buildCalendarEventPayload = (formData = {}) => {
     endDate: endDate || '',
     time: multiDay ? '' : formData.time || '',
     description: formData.description || '',
+    color: formData.color || DEFAULT_EVENT_COLOR,
     recurrence: buildEventRecurrence(formData)
   };
 };
@@ -240,17 +267,17 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
 };
 
 
-const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExpense, onAddRecipe, onAddDate, onAddTask, profile }) => {
+const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExpense, onAddRecipe, onAddDate, onAddTask, profile, initialData }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [showTaskOptions, setShowTaskOptions] = useState(false);
   const [showCalendarOptions, setShowCalendarOptions] = useState(false);
 
   useEffect(() => {
-    setFormData({});
+    setFormData(initialData && typeof initialData === 'object' ? { ...initialData } : {});
     setIsSaving(false);
     setShowTaskOptions(false);
-    setShowCalendarOptions(false);
+    setShowCalendarOptions(Boolean(initialData?.date));
   }, [isOpen, activeTab]);
 
   const getModalTitle = () => {
@@ -426,6 +453,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               </button>
               {showCalendarOptions && (
                 <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                  <FormField label="Colour">
+                    <ColorPicker value={formData.color || DEFAULT_EVENT_COLOR} onChange={(color) => setFormData({ ...formData, color })} />
+                  </FormField>
                   <FormField label="End date">
                     <DateInput
                       value={formData.endDate || ''}
@@ -552,6 +582,7 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
         endDate: event.endDate || '',
         time: event.time || '',
         description: event.description || '',
+        color: event.color || DEFAULT_EVENT_COLOR,
         recurrenceFrequency: event.recurrence?.frequency || event.recurrence || 'none',
         recurrenceUntil: event.recurrence?.until || event.recurrenceUntil || ''
       });
@@ -617,6 +648,9 @@ const EditEventModal = ({ isOpen, onClose, event, onSave }) => {
           <CalendarRecurrenceFields formData={formData} setFormData={setFormData} editing />
           <FormField label="Description">
             <textarea rows="3" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+          </FormField>
+          <FormField label="Colour">
+            <ColorPicker value={formData.color || DEFAULT_EVENT_COLOR} onChange={(color) => setFormData({ ...formData, color })} />
           </FormField>
 
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">

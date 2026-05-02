@@ -13,6 +13,8 @@ const MONTH_NAMES = [
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const DEFAULT_EVENT_COLOR = '#E63B2E';
+
 const formatTime = (time) => time || '';
 
 const formatDateDisplay = (isoDate) => {
@@ -180,99 +182,211 @@ const formatRecurrence = (event) => {
   return `${RECURRENCE_LABELS[recurrence.frequency]}${recurrence.until ? ` until ${formatDateDisplay(recurrence.until)}` : ''}`;
 };
 
-const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
+// Returns a hex color for event chip background (light tint) given the event color
+const getEventChipStyle = (color) => {
+  const c = color || DEFAULT_EVENT_COLOR;
+  return { backgroundColor: c + '28', borderLeft: `3px solid ${c}` };
+};
+
+// Returns the Sunday of the week containing `date`
+const getWeekStart = (date) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+};
+
+const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddForDate }) => {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(null);
+  const [calendarView, setCalendarView] = useState('month');
+  const [weekStart, setWeekStart] = useState(() => getWeekStart(today));
 
-  const cells = buildMonthGrid(viewYear, viewMonth);
   const todayIso = isoDateFromParts(today.getFullYear(), today.getMonth(), today.getDate());
+
+  // ── Month view helpers ──────────────────────────────────────────────────────
+  const cells = buildMonthGrid(viewYear, viewMonth);
   const monthStart = isoDateFromParts(viewYear, viewMonth, 1);
   const monthEnd = isoDateFromParts(viewYear, viewMonth, new Date(viewYear, viewMonth + 1, 0).getDate());
-  const visibleOccurrences = events.flatMap(ev => expandEventOccurrences(ev, monthStart, monthEnd));
+  const monthOccurrences = events.flatMap(ev => expandEventOccurrences(ev, monthStart, monthEnd));
 
-  const eventsByDate = visibleOccurrences.reduce((acc, ev) => {
-    const start = ev.startDate || ev.date;
-    const end = ev.endDate || start;
-    const startDate = parseIsoDate(start);
-    if (!startDate) return acc;
-    const parsedEndDate = parseIsoDate(end);
-    const cur = new Date(startDate);
-    const endD = parsedEndDate && parsedEndDate >= startDate ? parsedEndDate : startDate;
-    while (cur <= endD) {
-      const iso = formatIsoDate(cur);
-      if (!acc[iso]) acc[iso] = [];
-      acc[iso].push(ev);
-      cur.setDate(cur.getDate() + 1);
-    }
-    return acc;
-  }, {});
+  const buildEventsByDate = (occurrences) => {
+    const map = occurrences.reduce((acc, ev) => {
+      const start = ev.startDate || ev.date;
+      const end = ev.endDate || start;
+      const startDate = parseIsoDate(start);
+      if (!startDate) return acc;
+      const parsedEndDate = parseIsoDate(end);
+      const cur = new Date(startDate);
+      const endD = parsedEndDate && parsedEndDate >= startDate ? parsedEndDate : startDate;
+      while (cur <= endD) {
+        const iso = formatIsoDate(cur);
+        if (!acc[iso]) acc[iso] = [];
+        acc[iso].push(ev);
+        cur.setDate(cur.getDate() + 1);
+      }
+      return acc;
+    }, {});
+    Object.keys(map).forEach(d => {
+      map[d].sort((a, b) => (a.startHour || a.time || '').localeCompare(b.startHour || b.time || ''));
+    });
+    return map;
+  };
 
-  Object.keys(eventsByDate).forEach(d => {
-    eventsByDate[d].sort((a, b) => (a.startHour || a.time || '').localeCompare(b.startHour || b.time || ''));
-  });
+  const monthEventsByDate = buildEventsByDate(monthOccurrences);
 
-  const goPrev = () => {
+  // ── Week view helpers ───────────────────────────────────────────────────────
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekStartIso = formatIsoDate(weekStart);
+  const weekEndIso = formatIsoDate(weekDays[6]);
+  const weekOccurrences = events.flatMap(ev => expandEventOccurrences(ev, weekStartIso, weekEndIso));
+  const weekEventsByDate = buildEventsByDate(weekOccurrences);
+
+  // ── Month navigation ────────────────────────────────────────────────────────
+  const goPrevMonth = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
     else { setViewMonth(m => m - 1); }
     setSelectedDate(null);
   };
 
-  const goNext = () => {
+  const goNextMonth = () => {
     if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
     else { setViewMonth(m => m + 1); }
     setSelectedDate(null);
   };
 
+  // ── Week navigation ─────────────────────────────────────────────────────────
+  const goPrevWeek = () => { setWeekStart(d => addDays(d, -7)); setSelectedDate(null); };
+  const goNextWeek = () => { setWeekStart(d => addDays(d, 7)); setSelectedDate(null); };
+
   const goToday = () => {
     setViewYear(today.getFullYear());
     setViewMonth(today.getMonth());
+    setWeekStart(getWeekStart(today));
     setSelectedDate(null);
   };
 
-  const monthEvents = visibleOccurrences
-    .sort((a, b) => {
-      const aStart = a.startDate || a.date;
-      const bStart = b.startDate || b.date;
-      if (aStart !== bStart) return aStart.localeCompare(bStart);
-      return (a.startHour || a.time || '').localeCompare(b.startHour || b.time || '');
-    });
+  // ── View switch ─────────────────────────────────────────────────────────────
+  const switchView = (v) => {
+    setCalendarView(v);
+    setSelectedDate(null);
+    if (v === 'week') {
+      // When switching to week, show the week containing the 1st of the current month (or today if same month)
+      const base = (viewYear === today.getFullYear() && viewMonth === today.getMonth())
+        ? today
+        : new Date(viewYear, viewMonth, 1);
+      setWeekStart(getWeekStart(base));
+    } else {
+      // When switching to month, sync month to the week being viewed
+      setViewYear(weekStart.getFullYear());
+      setViewMonth(weekStart.getMonth());
+    }
+  };
 
-  const agendaEvents = selectedDate ? (eventsByDate[selectedDate] || []) : monthEvents;
+  // ── Agenda data ─────────────────────────────────────────────────────────────
+  const isMonthView = calendarView === 'month';
+  const activeOccurrences = isMonthView ? monthOccurrences : weekOccurrences;
+  const activeEventsByDate = isMonthView ? monthEventsByDate : weekEventsByDate;
+
+  const sortedOccurrences = [...activeOccurrences].sort((a, b) => {
+    const aStart = a.startDate || a.date;
+    const bStart = b.startDate || b.date;
+    if (aStart !== bStart) return aStart.localeCompare(bStart);
+    return (a.startHour || a.time || '').localeCompare(b.startHour || b.time || '');
+  });
+
+  const agendaEvents = selectedDate ? (activeEventsByDate[selectedDate] || []) : sortedOccurrences;
   const agendaTitle = selectedDate
     ? formatDateLong(selectedDate)
-    : `Agenda - ${MONTH_NAMES[viewMonth]} ${viewYear}`;
+    : isMonthView
+      ? `Agenda - ${MONTH_NAMES[viewMonth]} ${viewYear}`
+      : `Agenda - Week of ${formatDateDisplay(weekStartIso)}`;
+
+  // ── Icons ───────────────────────────────────────────────────────────────────
   const ChevronLeft = getCalendarComponent('ChevronLeft');
   const ChevronRight = getCalendarComponent('ChevronRight');
   const CalendarIcon = getCalendarComponent('CalendarIcon');
   const Trash = getCalendarComponent('Trash');
+  const Plus = getCalendarComponent('Plus');
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
+
+  // ── Shared day-cell "+" button ──────────────────────────────────────────────
+  const AddDayButton = ({ iso }) => {
+    if (!onAddForDate) return null;
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); onAddForDate(iso); }}
+        className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded-full bg-[#E63B2E] text-white opacity-0 transition group-hover:flex group-hover:opacity-100 focus:flex focus:opacity-100"
+        aria-label={`Add event on ${iso}`}
+        title="Add event for this day"
+      >
+        <Plus size={10} />
+      </button>
+    );
+  };
+
+  // ── Week header label ───────────────────────────────────────────────────────
+  const weekMonthLabel = (() => {
+    const sm = weekDays[0].getMonth();
+    const em = weekDays[6].getMonth();
+    const sy = weekDays[0].getFullYear();
+    const ey = weekDays[6].getFullYear();
+    if (sy !== ey) return `${MONTH_NAMES[sm]} ${sy} – ${MONTH_NAMES[em]} ${ey}`;
+    if (sm !== em) return `${MONTH_NAMES[sm]} – ${MONTH_NAMES[em]} ${sy}`;
+    return `${MONTH_NAMES[sm]} ${sy}`;
+  })();
 
   return (
     <div className="grid w-full gap-6 lg:grid-cols-12">
       {/* Calendar grid */}
       <section className="rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm sm:p-6 lg:col-span-8">
+        {/* Header row */}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-extrabold text-[#000000] sm:text-2xl">
-              {MONTH_NAMES[viewMonth]} {viewYear}
+              {isMonthView ? `${MONTH_NAMES[viewMonth]} ${viewYear}` : weekMonthLabel}
             </h2>
             <div className="flex items-center rounded-lg bg-[#FBF2ED] p-1">
-              <button onClick={goPrev} className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Previous month">
+              <button
+                onClick={isMonthView ? goPrevMonth : goPrevWeek}
+                className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
+                aria-label={isMonthView ? 'Previous month' : 'Previous week'}
+              >
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={goNext} className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label="Next month">
+              <button
+                onClick={isMonthView ? goNextMonth : goNextWeek}
+                className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]"
+                aria-label={isMonthView ? 'Next month' : 'Next week'}
+              >
                 <ChevronRight size={18} />
               </button>
             </div>
           </div>
-          <button
-            onClick={goToday}
-            className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-          >
-            Today
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex rounded-lg border border-[#E1D8D4] bg-[#FBF2ED] p-0.5">
+              <button
+                onClick={() => switchView('month')}
+                className={`min-h-[36px] rounded-md px-3 text-xs font-bold transition ${isMonthView ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#E63B2E]'}`}
+              >
+                Month
+              </button>
+              <button
+                onClick={() => switchView('week')}
+                className={`min-h-[36px] rounded-md px-3 text-xs font-bold transition ${!isMonthView ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#E63B2E]'}`}
+              >
+                Week
+              </button>
+            </div>
+            <button
+              onClick={goToday}
+              className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+            >
+              Today
+            </button>
+          </div>
         </div>
 
         {/* Weekday labels */}
@@ -282,68 +396,124 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
           ))}
         </div>
 
-        {/* Day grid */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2">
-          {cells.map((day, idx) => {
-            if (day === null) {
-              return <div key={`empty-${idx}`} className="aspect-square sm:aspect-auto sm:min-h-[88px]" />;
-            }
-            const iso = isoDateFromParts(viewYear, viewMonth, day);
-            const dayEvents = eventsByDate[iso] || [];
-            const isToday = iso === todayIso;
-            const isSelected = iso === selectedDate;
+        {/* ── Month view grid ── */}
+        {isMonthView && (
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {cells.map((day, idx) => {
+              if (day === null) {
+                return <div key={`empty-${idx}`} className="aspect-square sm:aspect-auto sm:min-h-[88px]" />;
+              }
+              const iso = isoDateFromParts(viewYear, viewMonth, day);
+              const dayEvents = monthEventsByDate[iso] || [];
+              const isToday = iso === todayIso;
+              const isSelected = iso === selectedDate;
 
-            const handleDayClick = () => {
-              if (isSelected) setSelectedDate(null);
-              else setSelectedDate(iso);
-            };
-
-            return (
-              <button
-                key={iso}
-                onClick={handleDayClick}
-                className={`flex aspect-square flex-col rounded-lg border p-1.5 text-left transition sm:aspect-auto sm:min-h-[88px] sm:p-2 ${
-                  isSelected
-                    ? 'border-[#E63B2E] bg-[#FFDAD4]'
-                    : isToday
-                      ? 'border-[#FFB4A9] bg-[#FFF8F5]'
-                      : 'border-[#E1D8D4] bg-white hover:border-[#FFB4A9] hover:bg-[#FFF8F5]'
-                }`}
-              >
-                <span className={`text-xs font-bold sm:text-sm ${
-                  isToday
-                    ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#E63B2E] text-white'
-                    : isSelected
-                      ? 'text-[#000000]'
+              return (
+                <button
+                  key={iso}
+                  onClick={() => setSelectedDate(isSelected ? null : iso)}
+                  className={`group relative flex aspect-square flex-col rounded-lg border p-1.5 text-left transition sm:aspect-auto sm:min-h-[88px] sm:p-2 ${
+                    isSelected
+                      ? 'border-[#E63B2E] bg-[#FFDAD4]'
+                      : isToday
+                        ? 'border-[#FFB4A9] bg-[#FFF8F5]'
+                        : 'border-[#E1D8D4] bg-white hover:border-[#FFB4A9] hover:bg-[#FFF8F5]'
+                  }`}
+                >
+                  <AddDayButton iso={iso} />
+                  <span className={`text-xs font-bold sm:text-sm ${
+                    isToday
+                      ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#E63B2E] text-white'
                       : 'text-[#000000]'
-                }`}>
-                  {day}
-                </span>
-                <div className="mt-1 hidden flex-1 space-y-0.5 overflow-hidden sm:block">
-                  {dayEvents.slice(0, 2).map(ev => (
-                    <div
-                      key={ev.occurrenceKey || ev.id}
-                      className="truncate rounded bg-[#FFDAD4] px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#000000]"
-                      title={[ev.title, formatRecurrence(ev)].filter(Boolean).join(' - ')}
-                    >
-                      {(ev.startHour || ev.time) && <span className="mr-1 font-bold">{ev.startHour || ev.time}</span>}
-                      {ev.isRecurringOccurrence && <span className="mr-1 font-black">R</span>}
-                      {ev.title}
-                    </div>
-                  ))}
-                  {dayEvents.length > 2 && (
-                    <div className="text-[10px] font-semibold text-[#000000]">+{dayEvents.length - 2} more</div>
-                  )}
-                </div>
-                {dayEvents.length > 0 && (
-                  <div className="mt-auto flex justify-center sm:hidden">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#E63B2E]"></span>
+                  }`}>
+                    {day}
+                  </span>
+                  <div className="mt-1 hidden flex-1 space-y-0.5 overflow-hidden sm:block">
+                    {dayEvents.slice(0, 2).map(ev => {
+                      const chipColor = ev.color || DEFAULT_EVENT_COLOR;
+                      return (
+                        <div
+                          key={ev.occurrenceKey || ev.id}
+                          className="truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#000000]"
+                          style={getEventChipStyle(chipColor)}
+                          title={[ev.title, formatRecurrence(ev)].filter(Boolean).join(' - ')}
+                        >
+                          {(ev.startHour || ev.time) && <span className="mr-1 font-bold">{ev.startHour || ev.time}</span>}
+                          {ev.isRecurringOccurrence && <span className="mr-1 font-black">R</span>}
+                          {ev.title}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.length > 2 && (
+                      <div className="text-[10px] font-semibold text-[#000000]">+{dayEvents.length - 2} more</div>
+                    )}
                   </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+                  {dayEvents.length > 0 && (
+                    <div className="mt-auto flex justify-center sm:hidden">
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: dayEvents[0].color || DEFAULT_EVENT_COLOR }}></span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Week view grid ── */}
+        {!isMonthView && (
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {weekDays.map((dayDate) => {
+              const iso = formatIsoDate(dayDate);
+              const dayEvents = weekEventsByDate[iso] || [];
+              const isToday = iso === todayIso;
+              const isSelected = iso === selectedDate;
+              const dayNum = dayDate.getDate();
+
+              return (
+                <button
+                  key={iso}
+                  onClick={() => setSelectedDate(isSelected ? null : iso)}
+                  className={`group relative flex min-h-[120px] flex-col rounded-lg border p-1.5 text-left transition sm:min-h-[160px] sm:p-2 ${
+                    isSelected
+                      ? 'border-[#E63B2E] bg-[#FFDAD4]'
+                      : isToday
+                        ? 'border-[#FFB4A9] bg-[#FFF8F5]'
+                        : 'border-[#E1D8D4] bg-white hover:border-[#FFB4A9] hover:bg-[#FFF8F5]'
+                  }`}
+                >
+                  <AddDayButton iso={iso} />
+                  <span className={`mb-1 text-xs font-bold sm:text-sm ${
+                    isToday
+                      ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#E63B2E] text-white'
+                      : 'text-[#000000]'
+                  }`}>
+                    {dayNum}
+                  </span>
+                  <div className="flex flex-1 flex-col space-y-0.5 overflow-hidden">
+                    {dayEvents.slice(0, 4).map(ev => {
+                      const chipColor = ev.color || DEFAULT_EVENT_COLOR;
+                      return (
+                        <div
+                          key={ev.occurrenceKey || ev.id}
+                          className="truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-[#000000]"
+                          style={getEventChipStyle(chipColor)}
+                          title={[ev.title, formatRecurrence(ev)].filter(Boolean).join(' - ')}
+                        >
+                          {(ev.startHour || ev.time) && <span className="mr-1 font-bold">{ev.startHour || ev.time}</span>}
+                          {ev.isRecurringOccurrence && <span className="mr-1 font-black">R</span>}
+                          {ev.title}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.length > 4 && (
+                      <div className="text-[10px] font-semibold text-[#000000]">+{dayEvents.length - 4} more</div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Agenda */}
@@ -355,7 +525,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
               onClick={() => setSelectedDate(null)}
               className="text-xs font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
             >
-              Show month
+              {isMonthView ? 'Show month' : 'Show week'}
             </button>
           )}
         </div>
@@ -372,7 +542,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
             />
           ) : (
             <EmptyState
-              title={selectedDate ? 'No activities this day' : 'No activities this month'}
+              title={selectedDate ? 'No activities this day' : isMonthView ? 'No activities this month' : 'No activities this week'}
               message="Try another date or add something new."
               icon={CalendarIcon}
               compact
@@ -382,45 +552,51 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick }) => {
           )
         ) : (
           <ul className="space-y-3">
-            {agendaEvents.map(ev => (
-              <li
-                key={ev.occurrenceKey || ev.id}
-                onClick={() => onEditEvent(ev.sourceEvent || ev)}
-                className="group flex cursor-pointer gap-3 rounded-xl border border-[#E1D8D4] bg-white p-3 shadow-sm transition hover:border-[#E63B2E]/40 hover:shadow-md sm:p-4"
-              >
-                <div className="flex min-w-[64px] flex-col items-center justify-center rounded-lg bg-[#FFDAD4] px-2 py-1.5 text-[#000000]">
-                  <span className="text-xs font-bold tabular-nums">{formatDateDisplay(ev.startDate || ev.date)}</span>
-                  {ev.endDate && ev.endDate !== (ev.startDate || ev.date) && (
-                    <span className="text-[10px] tabular-nums opacity-80">→ {formatDateDisplay(ev.endDate)}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="truncate font-bold text-[#000000]">{ev.title}</h4>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const sourceEvent = ev.sourceEvent || ev;
-                        onDeleteEvent(sourceEvent.id, sourceEvent);
-                      }}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-                      aria-label="Delete event"
-                    >
-                      <Trash size={14} />
-                    </button>
+            {agendaEvents.map(ev => {
+              const accentColor = ev.color || DEFAULT_EVENT_COLOR;
+              return (
+                <li
+                  key={ev.occurrenceKey || ev.id}
+                  onClick={() => onEditEvent(ev.sourceEvent || ev)}
+                  className="group flex cursor-pointer gap-3 rounded-xl border border-[#E1D8D4] bg-white p-3 shadow-sm transition hover:border-[#E63B2E]/40 hover:shadow-md sm:p-4"
+                >
+                  <div
+                    className="flex min-w-[64px] flex-col items-center justify-center rounded-lg px-2 py-1.5 text-[#000000]"
+                    style={{ backgroundColor: accentColor + '22', borderLeft: `3px solid ${accentColor}` }}
+                  >
+                    <span className="text-xs font-bold tabular-nums">{formatDateDisplay(ev.startDate || ev.date)}</span>
+                    {ev.endDate && ev.endDate !== (ev.startDate || ev.date) && (
+                      <span className="text-[10px] tabular-nums opacity-80">→ {formatDateDisplay(ev.endDate)}</span>
+                    )}
                   </div>
-                  {(ev.time || ev.startHour || ev.endHour) && (
-                    <p className="mt-0.5 text-sm font-medium text-[#000000]">
-                      {ev.time ? ev.time : `${formatTime(ev.startHour)}${ev.startHour && ev.endHour ? ' – ' : ''}${formatTime(ev.endHour)}`}
-                    </p>
-                  )}
-                  {formatRecurrence(ev) && (
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#000000]">{formatRecurrence(ev)}</p>
-                  )}
-                  {ev.description && <p className="mt-2 whitespace-pre-wrap text-sm text-[#000000]">{ev.description}</p>}
-                </div>
-              </li>
-            ))}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="truncate font-bold text-[#000000]">{ev.title}</h4>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const sourceEvent = ev.sourceEvent || ev;
+                          onDeleteEvent(sourceEvent.id, sourceEvent);
+                        }}
+                        className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                        aria-label="Delete event"
+                      >
+                        <Trash size={14} />
+                      </button>
+                    </div>
+                    {(ev.time || ev.startHour || ev.endHour) && (
+                      <p className="mt-0.5 text-sm font-medium text-[#000000]">
+                        {ev.time ? ev.time : `${formatTime(ev.startHour)}${ev.startHour && ev.endHour ? ' – ' : ''}${formatTime(ev.endHour)}`}
+                      </p>
+                    )}
+                    {formatRecurrence(ev) && (
+                      <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#000000]">{formatRecurrence(ev)}</p>
+                    )}
+                    {ev.description && <p className="mt-2 whitespace-pre-wrap text-sm text-[#000000]">{ev.description}</p>}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
