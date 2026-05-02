@@ -219,7 +219,8 @@ const normalizeDashboardDataForClient = (DashboardData = {}) => {
       photo: window.safeImageUrl?.(recipe?.photo) || '',
       link: window.safeExternalUrl?.(recipe?.link || recipe?.url) || '',
       ingredients: recipe?.ingredients || '',
-      instructions: recipe?.instructions || ''
+      instructions: recipe?.instructions || '',
+      isFavourite: Boolean(recipe?.isFavourite)
     })),
     watchlist: Array.from(watchlistByKey.values()),
     profile: raw.profile || defaultDashboardData().profile

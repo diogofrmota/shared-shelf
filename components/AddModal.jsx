@@ -393,7 +393,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
         break;
       case 'recipes':
         if (formData.name) {
-          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, prepTime: formData.prepTime || '', link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', isFavourite: Boolean(formData.isFavourite), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
             listType: formData.listType || 'task',
             createdAt: new Date().toISOString() });
           onClose();
@@ -600,9 +600,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               <FormField label="Name" required>
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
               </FormField>
-              <FormField label="Prep time">
-                <input type="text" placeholder="e.g. 45 min" className={inputCls} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
-              </FormField>
               <FormField label="Recipe link">
                 <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
               </FormField>
@@ -611,6 +608,12 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               </FormField>
               <FormField label="Instructions">
                 <textarea rows="5" className={inputCls} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
+              </FormField>
+              <FormField label="Favourite">
+                <label className="flex min-h-[44px] items-center gap-2 pt-1 text-sm font-medium text-[#000000]">
+                  <input type="checkbox" onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+                  Mark as favourite
+                </label>
               </FormField>
             </>
           )}
@@ -763,8 +766,8 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
     if (isOpen && recipe) {
       setFormData({
         name: recipe.name || '',
-        prepTime: recipe.prepTime || '',
         link: recipe.link || '',
+        isFavourite: Boolean(recipe.isFavourite),
         ingredients: recipe.ingredients || '',
         instructions: recipe.instructions || '',
       });
@@ -801,9 +804,6 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           <FormField label="Name" required>
             <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
           </FormField>
-          <FormField label="Prep time">
-            <input type="text" className={inputCls} value={formData.prepTime || ''} onChange={(e) => setFormData({ ...formData, prepTime: e.target.value })} />
-          </FormField>
           <FormField label="Recipe link">
             <input type="url" className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
           </FormField>
@@ -812,6 +812,12 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           </FormField>
           <FormField label="Instructions">
             <textarea rows="5" className={inputCls} value={formData.instructions || ''} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
+          </FormField>
+          <FormField label="Favourite">
+            <label className="flex min-h-[44px] items-center gap-2 pt-1 text-sm font-medium text-[#000000]">
+              <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+              Mark as favourite
+            </label>
           </FormField>
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
             Save changes
