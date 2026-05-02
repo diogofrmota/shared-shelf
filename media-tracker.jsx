@@ -746,6 +746,14 @@ function MediaTracker() {
   const handleSaveRecipe = (updatedRecipe) => {
     setData(prev => ({ ...prev, recipes: prev.recipes.map(r => r.id === updatedRecipe.id ? updatedRecipe : r) }));
   };
+  const handleToggleFavouriteRecipe = (recipeOrId) => {
+    const recipeId = typeof recipeOrId === 'object' ? recipeOrId?.id : recipeOrId;
+    if (!recipeId) return;
+    setData(prev => ({
+      ...prev,
+      recipes: (prev.recipes || []).map(r => r.id === recipeId ? { ...r, isFavourite: !r.isFavourite } : r)
+    }));
+  };
   const withGeocodedAddress = async (place) => {
     const address = String(place?.address || '').trim();
     const hasCoordinates = Number.isFinite(Number(place?.lat)) && Number.isFinite(Number(place?.lng));
@@ -1109,6 +1117,7 @@ function MediaTracker() {
             recipes={visibleData.recipes || []}
             onDeleteRecipe={handleDeleteRecipe}
             onEditRecipe={handleEditRecipe}
+            onToggleFavouriteRecipe={handleToggleFavouriteRecipe}
             onAddClick={() => { setAddCategory('recipes'); setAddModalOpen(true); }}
           />
         );

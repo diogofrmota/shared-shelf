@@ -40,11 +40,9 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
         <div className="space-y-5 p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              {recipe.prepTime && (
-                <p className="text-sm font-medium text-[#000000]">⏱ {recipe.prepTime}</p>
-              )}
+              {recipe.isFavourite && <p className="text-sm font-bold text-[#E63B2E]">★ Favourite</p>}
             </div>
-            {onEdit && (
+          {onEdit && (
               <button
                 onClick={() => { onEdit(recipe); onClose(); }}
                 className="min-h-[44px] shrink-0 rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
@@ -92,11 +90,12 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
   );
 };
 
-const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
+const RecipeCard = ({ recipe, onDelete, onEdit, onToggleFavourite, onViewDetails }) => {
   const safeLink = window.safeExternalUrl?.(recipe.link) || '';
   const ChefHat = getRecipeComponent('ChefHat');
   const LinkIcon = getRecipeComponent('LinkIcon');
   const Trash = getRecipeComponent('Trash');
+  const Star = getRecipeComponent('Star');
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -123,9 +122,17 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
           <h4 className="text-base font-bold text-[#000000]">
             <span className="line-clamp-2 min-w-0" title={recipe.name}>{recipe.name}</span>
           </h4>
-          {recipe.prepTime && <p className="mt-1 text-sm font-medium text-[#000000]">⏱ {recipe.prepTime}</p>}
         </div>
         <div className="flex items-center gap-1">
+          {onToggleFavourite && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavourite(recipe); }}
+              className={`flex h-11 w-11 items-center justify-center rounded-lg transition ${recipe.isFavourite ? 'text-[#E63B2E] hover:bg-[#FFF1EE]' : 'text-[#000000] hover:bg-[#FFF8F5] hover:text-[#E63B2E]'}`}
+              aria-label={recipe.isFavourite ? `Remove ${recipe.name} from favourites` : `Add ${recipe.name} to favourites`}
+            >
+              <Star size={16} fill={recipe.isFavourite ? 'currentColor' : 'none'} aria-hidden="true" />
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(recipe); }}
@@ -162,7 +169,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit, onViewDetails }) => {
   );
 };
 
-const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
+const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onToggleFavouriteRecipe, onAddClick }) => {
   const [query, setQuery] = useState('');
   const [detailRecipe, setDetailRecipe] = useState(null);
 
@@ -174,7 +181,10 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
         (r.ingredients || '').toLowerCase().includes(trimmedQuery)
       )
       : recipes;
-    return [...filtered].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    return [...filtered].sort((a, b) => {
+      if (Boolean(a.isFavourite) !== Boolean(b.isFavourite)) return a.isFavourite ? -1 : 1;
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
   }, [recipes, query]);
   const Search = getRecipeComponent('Search');
   const ChefHat = getRecipeComponent('ChefHat');
@@ -226,6 +236,7 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
               recipe={recipe}
               onDelete={onDeleteRecipe}
               onEdit={onEditRecipe}
+              onToggleFavourite={onToggleFavouriteRecipe}
               onViewDetails={setDetailRecipe}
             />
           ))}
