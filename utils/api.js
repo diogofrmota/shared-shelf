@@ -15,8 +15,14 @@ let userDashboardsCache = { userId: '', dashboards: [], timestamp: 0 };
 let userDashboardsFetch = null;
 const USER_DASHBOARDS_CACHE_TTL = 10000;
 
+// Opt-in debug logging. Enable in DevTools with `localStorage.setItem('cp:debug','1')`.
+let perfLogEnabled = null;
 const perfLog = (label, details = {}) => {
-  if (!window?.console?.debug) return;
+  if (perfLogEnabled === null) {
+    try { perfLogEnabled = localStorage.getItem('cp:debug') === '1'; }
+    catch { perfLogEnabled = false; }
+  }
+  if (!perfLogEnabled || !window?.console?.debug) return;
   const elapsed = Math.round(performance.now());
   console.debug(`[perf] ${label}`, { elapsedMs: elapsed, ...details });
 };

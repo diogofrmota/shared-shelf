@@ -30,15 +30,22 @@ export default async function handler(req, res) {
   url.searchParams.set('query', String(query).trim());
   url.searchParams.set('include_adult', 'false');
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), { signal: controller.signal });
     if (!response.ok) {
       return res.status(response.status).json({ error: 'TMDB request failed' });
     }
     const data = await response.json();
     return res.status(200).json(data);
   } catch (error) {
+    if (error?.name === 'AbortError') {
+      return res.status(504).json({ error: 'TMDB request timed out' });
+    }
     console.error('TMDB proxy error:', error);
     return res.status(502).json({ error: 'Upstream error' });
+  } finally {
+    clearTimeout(timeout);
   }
 }

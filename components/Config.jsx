@@ -18,28 +18,7 @@ const API_CONFIG = {
   }
 };
 
-const STORAGE_CONFIG = {
-  KEY: 'media-tracker-data',
-  CACHE_KEY: 'media-tracker-data-cache',
-  SCHEMA: {
-    calendarEvents: [],
-    tasks: [],
-    locations: [],
-    expenses: [],
-    recipes: [],
-    watchlist: [],
-    profile: { users: [] }
-  }
-};
-
-const createDefaultStoredData = () => JSON.parse(JSON.stringify(STORAGE_CONFIG.SCHEMA));
-
 const API_BASE_URL = '';
-
-const FEATURES = {
-  USE_REMOTE_STORAGE: false,
-  SYNC_ENABLED: true
-};
 
 const STATUS_CONFIG = {
   MOVIES_TV: {
@@ -136,39 +115,6 @@ const RECIPE_PHOTO_PLACEHOLDER = createSvgPlaceholder('Recipe');
 const API_REQUEST_CONFIG = {
   DEBOUNCE_DELAY: 300,
   TIMEOUT: 10000
-};
-
-// ============================================================================
-// AUTHENTICATION
-// ============================================================================
-
-const AUTH_STORAGE_KEY = 'media-tracker-auth';
-
-const isAuthenticated = () => {
-  return localStorage.getItem(AUTH_STORAGE_KEY) === 'true';
-};
-
-const authenticate = async (username, password) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await response.json();
-    if (data.authenticated) {
-      localStorage.setItem(AUTH_STORAGE_KEY, 'true');
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('Authentication error:', error);
-    return false;
-  }
-};
-
-const logout = () => {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
 };
 
 // ============================================================================
@@ -319,31 +265,6 @@ const searchBooks = async (query) => {
   }
 };
 
-const getStoredData = async () => {
-  try {
-    const stored = localStorage.getItem(STORAGE_CONFIG.KEY);
-    if (stored) return JSON.parse(stored);
-  } catch (error) {
-    console.error('Error retrieving stored data:', error);
-  }
-
-  const cached = localStorage.getItem(STORAGE_CONFIG.CACHE_KEY);
-  if (cached) {
-    try { return JSON.parse(cached); } catch (e) { console.error('Failed to parse cached data:', e); }
-  }
-
-  return createDefaultStoredData();
-};
-
-const saveData = async (data) => {
-  try {
-    localStorage.setItem(STORAGE_CONFIG.KEY, JSON.stringify(data));
-    localStorage.setItem(STORAGE_CONFIG.CACHE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-};
-
 const formatStatusLabel = (status) => STATUS_LABELS[status] || status;
 
 const getStatusOptions = (category) => {
@@ -397,15 +318,12 @@ const getWindowComponent = (name, fallback = MissingComponent) => {
 };
 
 Object.assign(window, {
-  API_CONFIG, STORAGE_CONFIG, API_BASE_URL, FEATURES,
+  API_CONFIG, API_BASE_URL,
   STATUS_CONFIG, STATUS_STYLES, STATUS_LABELS, FILTER_CONFIG,
   TAB_CONFIG, DATE_CATEGORIES, DATE_CATEGORY_STYLES,
   SECTION_OPTIONS, MEDIA_TABS, PLACEHOLDER_IMAGE, RECIPE_PHOTO_PLACEHOLDER, API_REQUEST_CONFIG,
-  AUTH_STORAGE_KEY,
-  isAuthenticated, authenticate, logout,
   transformMovieData, transformAnimeData, transformBookData,
   searchMovies, searchTvShows, searchAnime, searchBooks,
-  getStoredData, saveData,
   formatStatusLabel, getStatusOptions, getFilterOptions, getDefaultStatus,
   filterByQuery, getCategoryName,
   fetchTvDetails, fetchAnimeDetails,

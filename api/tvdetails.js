@@ -24,10 +24,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'TMDB_API_KEY is not configured' });
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const url = new URL(`https://api.themoviedb.org/3/tv/${tvId}`);
     url.searchParams.set('api_key', apiKey);
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), { signal: controller.signal });
     if (!response.ok) {
       return res.status(response.status).json({ error: 'TMDB request failed' });
     }
@@ -46,7 +48,12 @@ export default async function handler(req, res) {
         }))
     });
   } catch (error) {
+    if (error?.name === 'AbortError') {
+      return res.status(504).json({ error: 'TMDB request timed out' });
+    }
     console.error('TMDB TV details proxy error:', error);
     return res.status(502).json({ error: 'Upstream error' });
+  } finally {
+    clearTimeout(timeout);
   }
 }
