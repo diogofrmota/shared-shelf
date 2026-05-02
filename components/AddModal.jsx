@@ -141,7 +141,13 @@ const buildExpensePayload = (formData = {}) => ({
   category: formData.category || 'other',
   date: formData.date || '',
   paidBy: formData.paidBy || '',
-  notes: formData.notes || ''
+  notes: formData.notes || '',
+  recurrence: formData.expenseRecurrenceFrequency && formData.expenseRecurrenceFrequency !== 'none' ? {
+    frequency: formData.expenseRecurrenceFrequency,
+    until: formData.expenseRecurrenceUntil || ''
+  } : null,
+  splitBy: Array.isArray(formData.splitBy) ? formData.splitBy.filter(row => row.name).map((row, idx) => ({ id: row.id || `split-${idx}`, name: row.name, percent: Number(row.percent) || 0 })) : [],
+  billSplits: Array.isArray(formData.billSplits) ? formData.billSplits.filter(row => Number(row.amount) > 0).map((row, idx) => ({ id: row.id || `bill-${idx}`, category: row.category || 'other', amount: Number(row.amount) || 0, note: row.note || '' })) : []
 });
 
 const EVENT_COLOR_PALETTE = [
@@ -473,7 +479,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
               </FormField>
               <FormField label="Description">
-                <textarea rows="3" placeholder="Optional details…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+                <textarea rows="3" placeholder="Optional notes/details for this expense…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </FormField>
               <button
                 type="button"
@@ -563,11 +569,11 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
 
           {activeTab === 'expenses' && (
             <>
-              <FormField label="Description" required>
+              <FormField label="Title" required>
                 <input type="text" className={inputCls} placeholder="e.g. Dinner at restaurant" onChange={(e) => setFormData({ ...formData, description: e.target.value })} required autoFocus />
               </FormField>
-              <FormField label="Amount" required>
-                <input type="number" min="0" step="0.01" placeholder="0.00" className={inputCls} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
+              <FormField label="Amount (€)" required>
+                <input type="number" min="0" step="0.01" placeholder="€0.00" className={inputCls} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
               </FormField>
               <FormField label="Category">
                 <select className={selectCls} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
@@ -579,18 +585,34 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               <FormField label="Date">
                 <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} />
               </FormField>
-              {Array.isArray(profile?.users) && profile.users.length > 0 && (
-                <FormField label="Paid by">
-                  <select className={selectCls} onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })}>
-                    <option value="">— select —</option>
-                    {profile.users.map(u => (
-                      <option key={u.id} value={u.name}>{u.name}</option>
-                    ))}
-                  </select>
+              <FormField label="Repeat">
+                <select className={selectCls} value={formData.expenseRecurrenceFrequency || 'none'} onChange={(e) => setFormData({ ...formData, expenseRecurrenceFrequency: e.target.value })}>
+                  {RECURRENCE_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </FormField>
+              {(formData.expenseRecurrenceFrequency && formData.expenseRecurrenceFrequency !== 'none') && (
+                <FormField label="Repeat until">
+                  <DateInput value={formData.expenseRecurrenceUntil || ''} onChange={(expenseRecurrenceUntil) => setFormData({ ...formData, expenseRecurrenceUntil })} />
                 </FormField>
               )}
-              <FormField label="Notes">
-                <textarea rows="3" placeholder="Optional details…" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+              <FormField label="Paid by">
+                <input list="expense-payers" type="text" className={inputCls} value={formData.paidBy || ""} placeholder="Who paid?" onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })} />
+                <datalist id="expense-payers">{(profile?.users || []).map(u => <option key={u.id} value={u.name || u.username} />)}</datalist>
+              </FormField>
+              <FormField label="Split between partners (%)">
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="number" min="0" max="100" step="1" placeholder="Partner A %" className={inputCls} value={formData.partnerAPercent || ''} onChange={(e) => setFormData({ ...formData, partnerAPercent: e.target.value, splitBy: [{ name: 'Partner A', percent: Number(e.target.value) || 0 }, { name: 'Partner B', percent: Number(formData.partnerBPercent) || 0 }] })} />
+                  <input type="number" min="0" max="100" step="1" placeholder="Partner B %" className={inputCls} value={formData.partnerBPercent || ''} onChange={(e) => setFormData({ ...formData, partnerBPercent: e.target.value, splitBy: [{ name: 'Partner A', percent: Number(formData.partnerAPercent) || 0 }, { name: 'Partner B', percent: Number(e.target.value) || 0 }] })} />
+                </div>
+              </FormField>
+              <FormField label="Split bill amounts (€)">
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="number" min="0" step="0.01" placeholder="Food" className={inputCls} onChange={(e) => setFormData({ ...formData, billSplits: [{ category: 'food', amount: Number(e.target.value) || 0 }, ...(formData.billSplits || []).filter(s => s.category !== 'food')] })} />
+                  <input type="number" min="0" step="0.01" placeholder="Transport" className={inputCls} onChange={(e) => setFormData({ ...formData, billSplits: [{ category: 'transport', amount: Number(e.target.value) || 0 }, ...(formData.billSplits || []).filter(s => s.category !== 'transport')] })} />
+                </div>
+              </FormField>
+              <FormField label="Details (optional)">
+                <textarea rows="3" placeholder="Optional notes/details for this expense…" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
             </>
           )}
@@ -636,7 +658,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
               <FormField label="Website">
                 <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
               </FormField>
-              <FormField label="Notes">
+              <FormField label="Details (optional)">
                 <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
               <FormField label="Favourite">
@@ -874,10 +896,10 @@ const EditExpenseModal = ({ isOpen, onClose, expense, onSave, profile }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <FormField label="Description" required>
+          <FormField label="Title" required>
             <input type="text" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required autoFocus />
           </FormField>
-          <FormField label="Amount" required>
+          <FormField label="Amount (€)" required>
             <input type="number" min="0" step="0.01" className={inputCls} value={formData.amount ?? ''} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
           </FormField>
           <FormField label="Category">
@@ -890,17 +912,11 @@ const EditExpenseModal = ({ isOpen, onClose, expense, onSave, profile }) => {
           <FormField label="Date">
             <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} />
           </FormField>
-          {Array.isArray(profile?.users) && profile.users.length > 0 && (
-            <FormField label="Paid by">
-              <select className={selectCls} value={formData.paidBy || ''} onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })}>
-                <option value="">— select —</option>
-                {profile.users.map(u => (
-                  <option key={u.id} value={u.name}>{u.name}</option>
-                ))}
-              </select>
-            </FormField>
-          )}
-          <FormField label="Notes">
+          <FormField label="Paid by">
+            <input list="expense-payers-edit" type="text" className={inputCls} value={formData.paidBy || ''} onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })} />
+            <datalist id="expense-payers-edit">{(profile?.users || []).map(u => <option key={u.id} value={u.name || u.username} />)}</datalist>
+          </FormField>
+          <FormField label="Details (optional)">
             <textarea rows="3" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
           </FormField>
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">

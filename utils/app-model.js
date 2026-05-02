@@ -113,6 +113,17 @@ const normalizeExpense = (expense = {}) => {
   const rawAmount = expense.amount;
   const amount = (rawAmount === null || rawAmount === undefined || rawAmount === '') ? null : (Number.isFinite(Number(rawAmount)) ? Number(rawAmount) : null);
   const category = VALID_EXPENSE_CATEGORIES.has(String(expense.category || '')) ? String(expense.category) : 'other';
+  const splitBy = Array.isArray(expense.splitBy) ? expense.splitBy.map((item, idx) => ({
+    id: item?.id || `split-${idx}`,
+    name: String(item?.name || '').trim(),
+    percent: Number.isFinite(Number(item?.percent)) ? Number(item.percent) : 0
+  })).filter(item => item.name) : [];
+  const billSplits = Array.isArray(expense.billSplits) ? expense.billSplits.map((item, idx) => ({
+    id: item?.id || `bill-${idx}`,
+    category: VALID_EXPENSE_CATEGORIES.has(String(item?.category || '')) ? String(item.category) : 'other',
+    amount: Number.isFinite(Number(item?.amount)) ? Number(item.amount) : 0,
+    note: String(item?.note || '')
+  })) : [];
 
   return {
     ...expense,
@@ -121,7 +132,13 @@ const normalizeExpense = (expense = {}) => {
     category,
     date: expense.date || '',
     paidBy: expense.paidBy || '',
-    notes: expense.notes || ''
+    notes: expense.notes || '',
+    recurrence: expense?.recurrence?.frequency ? {
+      frequency: expense.recurrence.frequency,
+      until: expense.recurrence.until || ''
+    } : null,
+    splitBy,
+    billSplits
   };
 };
 
