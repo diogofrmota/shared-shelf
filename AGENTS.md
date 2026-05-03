@@ -4,7 +4,7 @@ Guidance for AI coding agents working on **Couple Planner**.
 
 ## Project Overview
 
-Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, locations, expenses, recipes, and entertainment. The frontend uses CDN-loaded React, Tailwind, Leaflet, and Lucide; the backend is a set of Vercel Serverless Functions with a Neon Postgres database. See `README.md` for full tech stack, routes, APIs, and data model.
+Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, dates, trips, recipes, and entertainment. The frontend uses CDN-loaded React, Tailwind, Leaflet, and Lucide; the backend is a set of Vercel Serverless Functions with a Neon Postgres database. See `README.md` for full tech stack, routes, APIs, and data model.
 
 ## Critical Constraints
 
@@ -21,7 +21,7 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 ## Frontend Guidance
 
 - Routing is handled by `media-tracker.jsx` and `vercel.json` rewrites. Keep both in sync when adding routes.
-- Main components: `Login.jsx` (`/login`), `DashboardSelector.jsx` (dashboard list, create/join), `Header.jsx` (in-dashboard nav), `CalendarView.jsx`, `TasksView.jsx`, `DatesView.jsx` (locations), `ExpensesView.jsx`, `RecipesView.jsx`, `MediaSectionsView.jsx`, etc.
+- Main components: `Login.jsx` (`/login`), `DashboardSelector.jsx` (dashboard list, create/join), `Header.jsx` (in-dashboard nav), `CalendarView.jsx`, `TasksView.jsx`, `DatesView.jsx` (Dates section — date ideas/places), `TripsView.jsx` (Trips section — trip planning), `RecipesView.jsx`, `MediaSectionsView.jsx`, etc.
 - Visual design: warm red palette (`#E63B2E`), cream/off-white surfaces, Epilogue headings, Manrope body text. Use visible labels, accessible touch targets, and existing conventions.
 - When adding a new category/feature: update navigation (Header), add/edit modals, persistence, empty states, and data normalization together.
 - `window` globals are common; respect the script loading order in `index.html`.
@@ -39,9 +39,12 @@ Couple Planner is a Vercel-hosted app for couples to share calendar, tasks, loca
 
 ## Data Model Notes (see `README.md` for full table details)
 
-- Recurring calendar events/tasks: render occurrences at render time; editing/deleting affects the whole series.
-- Task recurrence status stored in `lastCompletedAt`/`completionCount`; recurring tasks remain active.
-- Expenses: normalize missing `amount`, `category`, `date`, etc. on load. Valid categories: `food`, `transport`, `accommodation`, `entertainment`, `shopping`, `health`, `other`.
+- Recurring calendar events/tasks: render occurrences at render time; editing/deleting affects the whole series. Calendar events also support a `color` field (hex string) chosen from the AddModal palette.
+- Task recurrence status stored in `lastCompletedAt`/`completionCount`; recurring tasks remain active. Each completion (recurring or one-off) appends an entry to `completionHistory` (`{ completedAt, completedBy, completedByName }`).
+- Tasks support `priority` (`low`|`medium`|`high`|null), `assignedTo`, `dueDate`. Always normalize missing fields on load.
+- Dates (the `dates` array) require `name`, `address`, `category`, `status` (`want-to-go`|`visited`), and `notes`. Old `locations` data and `beenThere` booleans are migrated automatically (see `lib/db.js`).
+- Trips (the `trips` array) carry `destination`, `startDate`/`endDate`, `flights`, `hotel`, `budget`, `itinerary` (per-day plans), `packingList`, `placesToVisit`, `restaurants`, `documents`, `notes`. The legacy `expenses` data shape is *not* migrated — old expenses are dropped and the `trips` array starts empty.
+- Section ids: legacy `locations`/`expenses` are remapped to `dates`/`trips` in both `lib/db.js` (`normalizeDashboardSections`) and the client (`utils/app-model.js`). Always run new section ids through `remapLegacySection` before comparing.
 - Entertainment items are stored in `watchlist` as objects with `mediaType`, `title`, `status`, etc. Use the statuses listed in README.
 
 ## Verification
@@ -60,7 +63,7 @@ Checklist:
 - `/login?mode=signup` opens on register tab.
 - Login, registration, password reset, and confirmation screens render.
 - dashboard list/create/join/share/settings/profile flows still work.
-- Add/edit/delete flows for calendar, tasks, locations, expenses, recipes, entertainment still work.
+- Add/edit/delete flows for calendar, tasks, dates, trips, recipes, entertainment still work.
 - Media search still works.
 - Offline/localStorage fallback still shows cached data.
 

@@ -16,7 +16,7 @@ const JOIN_CODE_RATE_LIMIT = { limit: 10, windowSeconds: 15 * 60 };
 const JOIN_CODE_IP_RATE_LIMIT = { limit: 60, windowSeconds: 15 * 60 };
 let schemaPromise = null;
 
-const MERGEABLE_ARRAY_SECTIONS = ['calendarEvents', 'tasks', 'locations', 'expenses', 'recipes', 'watchlist'];
+const MERGEABLE_ARRAY_SECTIONS = ['calendarEvents', 'tasks', 'dates', 'trips', 'recipes', 'watchlist'];
 
 function mergeArraySection(serverItems = [], clientItems = [], deletedIds = []) {
   const removed = new Set(deletedIds.filter(Boolean));

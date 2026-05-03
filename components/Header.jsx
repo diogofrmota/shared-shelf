@@ -6,8 +6,8 @@ const getHeaderComponent = (name) => window.getWindowComponent?.(name, window.Mi
 const HEADER_NAV_TABS = [
   { id: 'calendar', label: 'Calendar', category: 'plan', icon: 'CalendarIcon' },
   { id: 'tasks', label: 'Tasks', category: 'plan', icon: 'CheckSquare' },
-  { id: 'locations', label: 'Locations', category: 'go', icon: 'MapPin' },
-  { id: 'expenses', label: 'Expenses', category: 'go', icon: 'DollarSign' },
+  { id: 'dates', label: 'Dates', category: 'go', icon: 'MapPin' },
+  { id: 'trips', label: 'Trips', category: 'go', icon: 'Plane' },
   { id: 'recipes', label: 'Recipes', category: 'go', icon: 'ChefHat' },
   { id: 'media', label: 'Entertainment', category: 'media', icon: 'Tv' }
 ];
@@ -113,7 +113,7 @@ const Header = ({
   const Trash = getHeaderComponent('Trash');
   const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
     ? enabledSections
-    : ['calendar', 'tasks', 'locations', 'expenses', 'recipes', 'watchlist']);
+    : ['calendar', 'tasks', 'dates', 'trips', 'recipes', 'watchlist']);
   const visibleNavTabs = navTabs.filter(tab => tab.id === 'media' ? enabledSet.has('watchlist') : enabledSet.has(tab.id));
 
   const isTabActive = (tab) => tab.id === 'media'

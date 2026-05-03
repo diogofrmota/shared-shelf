@@ -125,29 +125,31 @@ const isMultiDayCalendarEvent = (formData = {}) => (
   Boolean(formData.date && formData.endDate && formData.endDate > formData.date)
 );
 
-const EXPENSE_CATEGORIES = window.EXPENSE_CATEGORIES || [
-  { value: 'food', label: 'Food & Drink' },
-  { value: 'transport', label: 'Transport' },
-  { value: 'accommodation', label: 'Accommodation' },
-  { value: 'entertainment', label: 'Entertainment' },
-  { value: 'shopping', label: 'Shopping' },
-  { value: 'health', label: 'Health' },
-  { value: 'other', label: 'Other' }
+const DATE_STATUS_OPTIONS = window.DATE_STATUS_OPTIONS || [
+  { value: 'want-to-go', label: 'Want to go' },
+  { value: 'visited', label: 'Visited' }
 ];
 
-const buildExpensePayload = (formData = {}) => ({
-  description: formData.description || '',
-  amount: formData.amount != null && formData.amount !== '' ? Number(formData.amount) : null,
-  category: formData.category || 'other',
-  date: formData.date || '',
-  paidBy: formData.paidBy || '',
-  notes: formData.notes || '',
-  recurrence: formData.expenseRecurrenceFrequency && formData.expenseRecurrenceFrequency !== 'none' ? {
-    frequency: formData.expenseRecurrenceFrequency,
-    until: formData.expenseRecurrenceUntil || ''
-  } : null,
-  splitBy: Array.isArray(formData.splitBy) ? formData.splitBy.filter(row => row.name).map((row, idx) => ({ id: row.id || `split-${idx}`, name: row.name, percent: Number(row.percent) || 0 })) : [],
-  billSplits: Array.isArray(formData.billSplits) ? formData.billSplits.filter(row => Number(row.amount) > 0).map((row, idx) => ({ id: row.id || `bill-${idx}`, category: row.category || 'other', amount: Number(row.amount) || 0, note: row.note || '' })) : []
+const TASK_PRIORITY_OPTIONS = window.TASK_PRIORITY_OPTIONS || [
+  { value: 'none', label: 'None' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' }
+];
+
+const buildTripPayload = (formData = {}) => ({
+  destination: formData.destination || '',
+  startDate: formData.startDate || '',
+  endDate: formData.endDate || formData.startDate || '',
+  flights: formData.flights || '',
+  hotel: formData.hotel || '',
+  budget: formData.budget != null && formData.budget !== '' ? Number(formData.budget) : null,
+  itinerary: [],
+  packingList: [],
+  placesToVisit: [],
+  restaurants: [],
+  documents: formData.documents || '',
+  notes: formData.notes || ''
 });
 
 const EVENT_COLOR_PALETTE = [
@@ -333,7 +335,7 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
 };
 
 
-const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExpense, onAddRecipe, onAddDate, onAddTask, profile, initialData }) => {
+const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [showTaskOptions, setShowTaskOptions] = useState(false);
@@ -350,7 +352,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
   }, [isOpen, activeTab]);
 
   useEffect(() => {
-    if (activeTab !== 'locations') return;
+    if (activeTab !== 'dates') return;
     const query = String(formData.address || '').trim();
     if (addressLookupTimerRef.current) clearTimeout(addressLookupTimerRef.current);
     if (query.length < 3 || !window.api?.request) {
@@ -378,8 +380,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
   const getModalTitle = () => {
     const titles = {
       tasks: 'Add task', movies: 'Add movie', tvshows: 'Add TV show',
-      books: 'Add book', calendar: 'Add activity', expenses: 'Add expense',
-      locations: 'Add location', recipes: 'Add recipe'
+      books: 'Add book', calendar: 'Add activity', trips: 'Add trip',
+      dates: 'Add date', recipes: 'Add recipe'
     };
     return titles[activeTab] || 'Add item';
   };
@@ -400,10 +402,12 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
             description: formData.description || '',
             assignedTo: formData.assignedTo || null,
             dueDate: formData.dueDate || null,
+            priority: formData.priority && formData.priority !== 'none' ? formData.priority : null,
             completed: false,
             recurrence: buildTaskRecurrence(formData),
             lastCompletedAt: null,
             completionCount: 0,
+            completionHistory: [],
             subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
             listType: formData.listType || 'task',
             createdAt: new Date().toISOString()
@@ -418,11 +422,14 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
           onClose();
         }
         break;
-      case 'expenses':
-        if (formData.description) {
-          onAddExpense({ id: `expense-${uid()}`, ...buildExpensePayload(formData), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
-            listType: formData.listType || 'task',
-            createdAt: new Date().toISOString() });
+      case 'trips':
+        if (formData.destination) {
+          if (formData.endDate && formData.startDate && formData.endDate < formData.startDate) break;
+          onAddTrip({
+            id: `trip-${uid()}`,
+            ...buildTripPayload(formData),
+            createdAt: new Date().toISOString()
+          });
           onClose();
         }
         break;
@@ -434,15 +441,16 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
           onClose();
         }
         break;
-      case 'locations':
+      case 'dates':
         if (formData.name) {
           setIsSaving(true);
           const address = String(formData.address || '').trim();
           const geocoded = window.geocodeAddress
             ? await window.geocodeAddress(address)
             : { lat: null, lng: null, status: address ? 'failed' : 'empty', error: address ? 'Address lookup unavailable' : '' };
+          const status = formData.status === 'visited' ? 'visited' : 'want-to-go';
           onAddDate({
-            id: `location-${uid()}`,
+            id: `date-${uid()}`,
             name: formData.name,
             category: formData.category || 'restaurant',
             address,
@@ -453,10 +461,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
             geocodedAddress: geocoded.displayName || '',
             geocodedAt: geocoded.status === 'resolved' ? new Date().toISOString() : null,
             notes: formData.notes || '',
-            link: formData.link || '',
-            isFavourite: formData.isFavourite || false,
-            subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
-            listType: formData.listType || 'task',
+            status,
+            beenThere: status === 'visited',
+            isFavourite: false,
             createdAt: new Date().toISOString()
           });
           onClose();
@@ -508,7 +515,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
               </FormField>
               <FormField label="Description">
-                <textarea rows="3" placeholder="Optional notes/details for this expense…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+                <textarea rows="3" placeholder="Optional notes/details for this task…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </FormField>
               <button
                 type="button"
@@ -523,6 +530,17 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                 <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
                   <FormField label="Due date">
                     <DateInput value={formData.dueDate || ''} onChange={(dueDate) => setFormData({ ...formData, dueDate })} />
+                  </FormField>
+                  <FormField label="Priority">
+                    <select
+                      className={selectCls}
+                      value={formData.priority || 'none'}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                    >
+                      {TASK_PRIORITY_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
                   </FormField>
                   {Array.isArray(profile?.users) && profile.users.length > 0 && (
                     <FormField label="Assign to">
@@ -596,53 +614,38 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
             </>
           )}
 
-          {activeTab === 'expenses' && (
+          {activeTab === 'trips' && (
             <>
-              <FormField label="Title" required>
-                <input type="text" className={inputCls} placeholder="e.g. Dinner at restaurant" onChange={(e) => setFormData({ ...formData, description: e.target.value })} required autoFocus />
+              <FormField label="Destination" required>
+                <input type="text" className={inputCls} value={formData.destination || ''} placeholder="e.g. Lisbon, Portugal" onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
               </FormField>
-              <FormField label="Amount (€)" required>
-                <input type="number" min="0" step="0.01" placeholder="€0.00" className={inputCls} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
-              </FormField>
-              <FormField label="Category">
-                <select className={selectCls} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                  {EXPENSE_CATEGORIES.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
-              </FormField>
-              <FormField label="Date">
-                <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} />
-              </FormField>
-              <FormField label="Repeat">
-                <select className={selectCls} value={formData.expenseRecurrenceFrequency || 'none'} onChange={(e) => setFormData({ ...formData, expenseRecurrenceFrequency: e.target.value })}>
-                  {RECURRENCE_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
-              </FormField>
-              {(formData.expenseRecurrenceFrequency && formData.expenseRecurrenceFrequency !== 'none') && (
-                <FormField label="Repeat until">
-                  <DateInput value={formData.expenseRecurrenceUntil || ''} onChange={(expenseRecurrenceUntil) => setFormData({ ...formData, expenseRecurrenceUntil })} />
+              <div className="grid grid-cols-2 gap-2">
+                <FormField label="Start date">
+                  <DateInput value={formData.startDate || ''} onChange={(startDate) => setFormData({ ...formData, startDate })} />
                 </FormField>
+                <FormField label="End date">
+                  <DateInput value={formData.endDate || ''} onChange={(endDate) => setFormData({ ...formData, endDate })} />
+                </FormField>
+              </div>
+              {formData.endDate && formData.startDate && formData.endDate < formData.startDate && (
+                <p className="-mt-2 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
               )}
-              <FormField label="Paid by">
-                <input list="expense-payers" type="text" className={inputCls} value={formData.paidBy || ""} placeholder="Who paid?" onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })} />
-                <datalist id="expense-payers">{(profile?.users || []).map(u => <option key={u.id} value={u.name || u.username} />)}</datalist>
+              <FormField label="Flights">
+                <textarea rows="2" placeholder="Outbound + return flights, confirmation numbers..." className={inputCls} value={formData.flights || ''} onChange={(e) => setFormData({ ...formData, flights: e.target.value })} />
               </FormField>
-              <FormField label="Split between partners (%)">
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="number" min="0" max="100" step="1" placeholder="Partner A %" className={inputCls} value={formData.partnerAPercent || ''} onChange={(e) => setFormData({ ...formData, partnerAPercent: e.target.value, splitBy: [{ name: 'Partner A', percent: Number(e.target.value) || 0 }, { name: 'Partner B', percent: Number(formData.partnerBPercent) || 0 }] })} />
-                  <input type="number" min="0" max="100" step="1" placeholder="Partner B %" className={inputCls} value={formData.partnerBPercent || ''} onChange={(e) => setFormData({ ...formData, partnerBPercent: e.target.value, splitBy: [{ name: 'Partner A', percent: Number(formData.partnerAPercent) || 0 }, { name: 'Partner B', percent: Number(e.target.value) || 0 }] })} />
-                </div>
+              <FormField label="Hotel">
+                <input type="text" className={inputCls} placeholder="Hotel name" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
               </FormField>
-              <FormField label="Split bill amounts (€)">
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="number" min="0" step="0.01" placeholder="Food" className={inputCls} onChange={(e) => setFormData({ ...formData, billSplits: [{ category: 'food', amount: Number(e.target.value) || 0 }, ...(formData.billSplits || []).filter(s => s.category !== 'food')] })} />
-                  <input type="number" min="0" step="0.01" placeholder="Transport" className={inputCls} onChange={(e) => setFormData({ ...formData, billSplits: [{ category: 'transport', amount: Number(e.target.value) || 0 }, ...(formData.billSplits || []).filter(s => s.category !== 'transport')] })} />
-                </div>
+              <FormField label="Budget (€)">
+                <input type="number" min="0" step="0.01" placeholder="0" className={inputCls} value={formData.budget ?? ''} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} />
               </FormField>
-              <FormField label="Details (optional)">
-                <textarea rows="3" placeholder="Optional notes/details for this expense…" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+              <FormField label="Documents">
+                <textarea rows="2" placeholder="Passport, visa, insurance..." className={inputCls} value={formData.documents || ''} onChange={(e) => setFormData({ ...formData, documents: e.target.value })} />
               </FormField>
+              <FormField label="Shared notes">
+                <textarea rows="3" placeholder="Anything to remember together..." className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+              </FormField>
+              <p className="text-xs font-medium text-[#534340]">Itinerary, packing list, places to visit and restaurants can be added once the trip is created.</p>
             </>
           )}
 
@@ -669,19 +672,12 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
             </>
           )}
 
-          {activeTab === 'locations' && (
+          {activeTab === 'dates' && (
             <>
               <FormField label="Place name" required>
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
               </FormField>
-              <FormField label="Category">
-                <select className={selectCls} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                  {dateCategories.map(category => (
-                    <option key={category.value} value={category.value}>{category.label}</option>
-                  ))}
-                </select>
-              </FormField>
-              <FormField label="Address">
+              <FormField label="Location">
                 <div className="relative">
                   <input
                     type="text"
@@ -712,23 +708,28 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddExp
                   )}
                 </div>
               </FormField>
-              <FormField label="Website">
-                <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+              <FormField label="Category">
+                <select className={selectCls} value={formData.category || 'restaurant'} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+                  {dateCategories.map(category => (
+                    <option key={category.value} value={category.value}>{category.label}</option>
+                  ))}
+                </select>
               </FormField>
-              <FormField label="Details (optional)">
-                <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+              <FormField label="Status">
+                <select className={selectCls} value={formData.status || 'want-to-go'} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
+                  {DATE_STATUS_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
               </FormField>
-              <FormField label="Favourite">
-                <label className="flex min-h-[44px] items-center gap-2 pt-1 text-sm font-medium text-[#000000]">
-                  <input type="checkbox" onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
-                  Mark as favourite
-                </label>
+              <FormField label="Notes">
+                <textarea rows="3" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
             </>
           )}
 
           <button type="submit" disabled={isSaving} className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:cursor-not-allowed disabled:bg-[#D8C2BE] disabled:shadow-none">
-            {isSaving && activeTab === 'locations' ? 'Locating address...' : getModalTitle()}
+            {isSaving && activeTab === 'dates' ? 'Locating address...' : getModalTitle()}
           </button>
         </form>
     </ModalShell>
@@ -906,82 +907,4 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   );
 };
 
-// ============================================================================
-// EDIT EXPENSE MODAL
-// ============================================================================
-
-const EditExpenseModal = ({ isOpen, onClose, expense, onSave, profile }) => {
-  const [formData, setFormData] = useState({});
-
-  useEffect(() => {
-    if (isOpen && expense) {
-      setFormData({
-        description: expense.description || '',
-        amount: expense.amount != null ? expense.amount : '',
-        category: expense.category || 'other',
-        date: expense.date || '',
-        paidBy: expense.paidBy || '',
-        notes: expense.notes || ''
-      });
-    }
-  }, [isOpen, expense]);
-
-  if (!isOpen || !expense) return null;
-  const ModalShell = getModalShell();
-  const CloseIcon = getComponent('Close');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.description) {
-      onSave({ ...expense, ...buildExpensePayload(formData) });
-      onClose();
-    }
-  };
-
-  return (
-    <ModalShell
-      isOpen={isOpen}
-      onClose={onClose}
-      zClass="z-[130]"
-      ariaLabel="Edit expense"
-      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
-    >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
-          <h2 className="text-xl font-extrabold text-[#000000]">Edit expense</h2>
-          <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit expense">
-            <CloseIcon size={22} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4 p-5">
-          <FormField label="Title" required>
-            <input type="text" className={inputCls} value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required autoFocus />
-          </FormField>
-          <FormField label="Amount (€)" required>
-            <input type="number" min="0" step="0.01" className={inputCls} value={formData.amount ?? ''} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
-          </FormField>
-          <FormField label="Category">
-            <select className={selectCls} value={formData.category || 'other'} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-              {EXPENSE_CATEGORIES.map(cat => (
-                <option key={cat.value} value={cat.value}>{cat.label}</option>
-              ))}
-            </select>
-          </FormField>
-          <FormField label="Date">
-            <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} />
-          </FormField>
-          <FormField label="Paid by">
-            <input list="expense-payers-edit" type="text" className={inputCls} value={formData.paidBy || ''} onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })} />
-            <datalist id="expense-payers-edit">{(profile?.users || []).map(u => <option key={u.id} value={u.name || u.username} />)}</datalist>
-          </FormField>
-          <FormField label="Details (optional)">
-            <textarea rows="3" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-          </FormField>
-          <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
-            Save changes
-          </button>
-        </form>
-    </ModalShell>
-  );
-};
-
-Object.assign(window, { AddModal, EditEventModal, EditRecipeModal, EditExpenseModal });
+Object.assign(window, { AddModal, EditEventModal, EditRecipeModal });

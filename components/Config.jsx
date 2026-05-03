@@ -67,8 +67,8 @@ const FILTER_CONFIG = {
 const TAB_CONFIG = {
   TASKS: { id: 'tasks', label: 'Tasks' },
   CALENDAR: { id: 'calendar', label: 'Calendar' },
-  LOCATIONS: { id: 'locations', label: 'Locations' },
-  EXPENSES: { id: 'expenses', label: 'Expenses' },
+  DATES: { id: 'dates', label: 'Dates' },
+  TRIPS: { id: 'trips', label: 'Trips' },
   RECIPES: { id: 'recipes', label: 'Recipes' },
   TV_SHOWS: { id: 'tvshows', label: 'TV Shows' },
   MOVIES: { id: 'movies', label: 'Movies' },
@@ -96,11 +96,29 @@ const DATE_CATEGORY_STYLES = {
 const SECTION_OPTIONS = [
   { id: 'calendar', label: 'Calendar' },
   { id: 'tasks', label: 'Tasks' },
-  { id: 'locations', label: 'Locations' },
-  { id: 'expenses', label: 'Expenses' },
+  { id: 'dates', label: 'Dates' },
+  { id: 'trips', label: 'Trips' },
   { id: 'recipes', label: 'Recipes' },
   { id: 'watchlist', label: 'Entertainment' }
 ];
+
+const DATE_STATUS_OPTIONS = [
+  { value: 'want-to-go', label: 'Want to go' },
+  { value: 'visited', label: 'Visited' }
+];
+
+const TASK_PRIORITY_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' }
+];
+
+const TASK_PRIORITY_STYLES = {
+  low: { bg: '#E1F5EE', text: '#0E5A40', border: '#91D7BF' },
+  medium: { bg: '#FFEFD7', text: '#A85B00', border: '#F2B27A' },
+  high: { bg: '#FFDAD4', text: '#A9372C', border: '#FFB4A9' }
+};
 
 const MEDIA_TABS = ['movies', 'tvshows', 'books'];
 
@@ -297,7 +315,8 @@ const getCategoryName = (category) => ({
   movies: 'Movies',
   tvshows: 'TV Shows',
   books: 'Books',
-  locations: 'Locations'
+  dates: 'Dates',
+  trips: 'Trips'
 }[category] || category.charAt(0).toUpperCase() + category.slice(1));
 
 const MissingComponent = ({ children = null }) => children;
@@ -322,6 +341,7 @@ Object.assign(window, {
   STATUS_CONFIG, STATUS_STYLES, STATUS_LABELS, FILTER_CONFIG,
   TAB_CONFIG, DATE_CATEGORIES, DATE_CATEGORY_STYLES,
   SECTION_OPTIONS, MEDIA_TABS, PLACEHOLDER_IMAGE, RECIPE_PHOTO_PLACEHOLDER, API_REQUEST_CONFIG,
+  DATE_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_PRIORITY_STYLES,
   transformMovieData, transformAnimeData, transformBookData,
   searchMovies, searchTvShows, searchAnime, searchBooks,
   formatStatusLabel, getStatusOptions, getFilterOptions, getDefaultStatus,

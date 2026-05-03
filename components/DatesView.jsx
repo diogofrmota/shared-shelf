@@ -17,6 +17,11 @@ const DATE_CATEGORY_STYLES = window.DATE_CATEGORY_STYLES || {
   other: 'bg-[#FFDAD4] text-[#000000] border-[#FFB4A9]',
 };
 
+const DATE_STATUS_OPTIONS = window.DATE_STATUS_OPTIONS || [
+  { value: 'want-to-go', label: 'Want to go' },
+  { value: 'visited', label: 'Visited' }
+];
+
 const getDateComponent = (name) => window.getWindowComponent?.(name, window.MissingIcon) || window.MissingIcon;
 
 // ============================================================================
@@ -26,6 +31,11 @@ const getDateComponent = (name) => window.getWindowComponent?.(name, window.Miss
 const getDateCategoryLabel = (value) => {
   const found = DATE_CATEGORIES.find(c => c.value === value);
   return found ? found.label : 'Other';
+};
+
+const getDateStatusLabel = (value) => {
+  const found = DATE_STATUS_OPTIONS.find(s => s.value === value);
+  return found ? found.label : 'Want to go';
 };
 
 const hasLocationCoordinates = (place) => {
@@ -123,12 +133,13 @@ const DatesLeafletMap = ({ places, focusedId }) => {
         hasMarkers = true;
         const safeName = window.escapeHtml?.(place.name || '') || '';
         const safeCategory = window.escapeHtml?.(getDateCategoryLabel(place.category)) || 'Other';
+        const safeStatus = window.escapeHtml?.(getDateStatusLabel(place.status)) || 'Want to go';
         const safeAddress = window.escapeHtml?.(place.address || '') || '';
         const safeLink = window.safeExternalUrl?.(place.link) || '';
         const popupContent = `
           <div style="min-width:180px;">
             <strong>${safeName}</strong><br/>
-            <span style="text-transform:capitalize;">${safeCategory}</span><br/>
+            <span style="text-transform:capitalize;">${safeCategory}</span> · <span>${safeStatus}</span><br/>
             ${safeAddress ? `<span>${safeAddress}</span><br/>` : ''}
             ${safeLink ? `<a href="${safeLink}" target="_blank" rel="noreferrer noopener" style="color:#E63B2E;">Open link</a>` : ''}
           </div>
@@ -187,7 +198,7 @@ const StableStarRating = ({ rating = 0, onRate }) => {
           onClick={() => onRate(rating === n ? 0 : n)}
           className={`flex h-11 w-11 items-center justify-center text-base transition ${n <= (hover || rating) ? 'text-[#FFB300]' : 'text-[#D8C2BE] hover:text-[#FBD08A]'}`}
           aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
-        >{'\u2605'}</button>
+        >{'★'}</button>
       ))}
     </div>
   );
@@ -204,11 +215,17 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
   const lng = Number(place.lng);
   const hasCoordinates = hasLocationCoordinates(place);
   const hasUnresolvedAddress = Boolean(place.address && !hasCoordinates);
+  const isVisited = place.status === 'visited';
   const mapsLink = hasCoordinates
     ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`
     : place.address
       ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(place.address)}`
       : null;
+
+  const cycleStatus = () => {
+    const nextStatus = isVisited ? 'want-to-go' : 'visited';
+    onUpdateDate?.(place.id, { status: nextStatus, beenThere: nextStatus === 'visited' });
+  };
 
   return (
     <div
@@ -231,18 +248,25 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
               >
                 <Star size={16} filled={place.isFavourite} />
               </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onUpdateDate?.(place.id, { beenThere: !place.beenThere }); }}
-                className={`flex h-11 w-11 items-center justify-center rounded text-base transition ${place.beenThere ? 'text-[#2F855A]' : 'text-[#000000] hover:text-[#2F855A]'}`}
-                aria-label={place.beenThere ? 'Mark as not visited' : 'Mark as visited'}
-                title={place.beenThere ? 'Visited' : 'Mark as visited'}
-              >✅</button>
             </div>
 
-            <div className="mt-1.5">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-bold capitalize ${categoryStyle}`}>
                 {getDateCategoryLabel(place.category)}
               </span>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); cycleStatus(); }}
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold transition ${
+                  isVisited
+                    ? 'border-[#91D7BF] bg-[#E1F5EE] text-[#0E5A40] hover:bg-[#CCEFE0]'
+                    : 'border-[#FFB4A9] bg-[#FFDAD4] text-[#A9372C] hover:bg-[#FFC7BD]'
+                }`}
+                aria-label={isVisited ? 'Mark as want to go' : 'Mark as visited'}
+                title="Toggle status"
+              >
+                {isVisited ? '✅ Visited' : '★ Want to go'}
+              </button>
             </div>
 
             <div className="mt-2">
@@ -257,7 +281,7 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(place.id); }}
               className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-              aria-label="Delete place"
+              aria-label="Delete date"
             >
               <Trash size={16} />
             </button>
@@ -294,19 +318,19 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
 const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onAddClick }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [onlyFavourites, setOnlyFavourites] = useState(false);
-  const [visitedFilter, setVisitedFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
 
   const filtered = useMemo(() => places.filter(p => {
     if (onlyFavourites && !p.isFavourite) return false;
-    if (visitedFilter === 'visited' && !p.beenThere) return false;
-    if (visitedFilter === 'unvisited' && p.beenThere) return false;
+    if (statusFilter === 'visited' && p.status !== 'visited') return false;
+    if (statusFilter === 'want-to-go' && p.status !== 'want-to-go') return false;
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
     const query = searchQuery.trim().toLowerCase();
     if (query && !String(p.name || '').toLowerCase().includes(query)) return false;
     return true;
-  }), [places, onlyFavourites, visitedFilter, categoryFilter, searchQuery]);
+  }), [places, onlyFavourites, statusFilter, categoryFilter, searchQuery]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if ((b.isFavourite ? 1 : 0) !== (a.isFavourite ? 1 : 0)) return (b.isFavourite ? 1 : 0) - (a.isFavourite ? 1 : 0);
@@ -320,19 +344,19 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Locations</h2>
+        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Dates</h2>
         <p className="mt-1 text-sm text-[#000000]">Restaurants, bars, viewpoints, and places worth saving.</p>
       </div>
 
       <DatesLeafletMap places={filtered} focusedId={focusedId} />
       <div>
-        <label htmlFor="locations-search" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Search by name</label>
+        <label htmlFor="dates-search" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Search by name</label>
         <input
-          id="locations-search"
+          id="dates-search"
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search locations..."
+          placeholder="Search dates..."
           className="min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
         />
       </div>
@@ -343,22 +367,22 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
           <FilterButton key={c.value} label={c.label} isActive={categoryFilter === c.value} onClick={() => setCategoryFilter(c.value)} />
         ))}
         <FilterButton label="★ Favourites" isActive={onlyFavourites} onClick={() => setOnlyFavourites(v => !v)} />
-        <FilterButton label="✅ Visited" isActive={visitedFilter === 'visited'} onClick={() => setVisitedFilter(v => v === 'visited' ? 'all' : 'visited')} />
-        <FilterButton label="🕒 Unvisited" isActive={visitedFilter === 'unvisited'} onClick={() => setVisitedFilter(v => v === 'unvisited' ? 'all' : 'unvisited')} />
+        <FilterButton label="✅ Visited" isActive={statusFilter === 'visited'} onClick={() => setStatusFilter(v => v === 'visited' ? 'all' : 'visited')} />
+        <FilterButton label="🕒 Want to go" isActive={statusFilter === 'want-to-go'} onClick={() => setStatusFilter(v => v === 'want-to-go' ? 'all' : 'want-to-go')} />
       </FilterBar>
 
       {sorted.length === 0 ? (
         places.length === 0 ? (
           <EmptyState
-            title="No locations yet"
+            title="No dates yet"
             message="Save restaurants, views, and places to try."
-            actionLabel="Add location"
+            actionLabel="Add date"
             icon={MapPin}
             onAddClick={onAddClick}
           />
         ) : (
           <EmptyState
-            title="No locations match"
+            title="No dates match"
             message="Adjust the filters to see more saved places."
             icon={MapPin}
             compact

@@ -23,7 +23,7 @@ const FEATURES = [
   },
   {
     icon: 'MapPin',
-    title: 'Locations',
+    title: 'Dates',
     description: 'Save restaurants, bars, and date ideas on a shared map.',
     bg: '#FFE8D7',
     border: '#F2B27A',
@@ -31,13 +31,13 @@ const FEATURES = [
     fade: '#F39A3D'
   },
   {
-    icon: 'DollarSign',
-    title: 'Expenses',
+    icon: 'Plane',
+    title: 'Trips',
     bg: '#E4EEFF',
     border: '#9CBFF4',
     accent: '#1D6BDA',
     fade: '#6EA5F2',
-    description: 'Track shared spending, split costs, and see where your money goes.'
+    description: 'Plan trips together — destination, flights, hotels, itinerary, packing list and more.'
   },
   {
     icon: 'ChefHat',
@@ -540,7 +540,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is an app that lets you and your partner create a shared
-                dashboard. One private place to share your calendar, tasks, date ideas, expenses, recipes,
+                dashboard. One private place to share your calendar, tasks, dates, trips, recipes,
                 and watchlists.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -593,7 +593,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
             </figure>
             <p className="mt-2.5 text-base text-[#000000] sm:text-lg">
               Couple Planner brings together everything you coordinate as a couple, including
-              your calendar, tasks, date ideas, expenses, recipes, and shared entertainment, into
+              your calendar, tasks, dates, trips, recipes, and shared entertainment, into
               one private dashboard. Both partners can read and update the same content, so nothing
               gets lost across multiple apps.
             </p>

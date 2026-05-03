@@ -37,8 +37,6 @@ function MediaTracker() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
-  const [editExpenseModalOpen, setEditExpenseModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [addEventInitialData, setAddEventInitialData] = useState(null);
@@ -84,8 +82,6 @@ function MediaTracker() {
     setAddCategory(null);
     setEditRecipeModalOpen(false);
     setEditingRecipe(null);
-    setEditExpenseModalOpen(false);
-    setEditingExpense(null);
     setEditEventModalOpen(false);
     setEditingEvent(null);
     setConfirmation(null);
@@ -180,7 +176,6 @@ function MediaTracker() {
       currentDashboard && (
         addModalOpen
         || editRecipeModalOpen
-        || editExpenseModalOpen
         || editEventModalOpen
         || confirmation
       )
@@ -189,7 +184,6 @@ function MediaTracker() {
     currentDashboard,
     addModalOpen,
     editRecipeModalOpen,
-    editExpenseModalOpen,
     editEventModalOpen,
     confirmation
   ]);
@@ -721,21 +715,26 @@ function MediaTracker() {
   const handleSaveEvent = (updatedEvent) => {
     setData(prev => ({ ...prev, calendarEvents: prev.calendarEvents.map(e => e.id === updatedEvent.id ? updatedEvent : e) }));
   };
-  const handleAddExpense = (expense) => setData(prev => ({ ...prev, expenses: [...(prev.expenses || []), expense] }));
-  const handleDeleteExpense = (id) => {
-    const expense = (data?.expenses || []).find(e => e.id === id);
+  const handleAddTrip = (trip) => setData(prev => ({
+    ...prev,
+    trips: [...(prev.trips || []), window.normalizeTrip ? window.normalizeTrip(trip) : trip]
+  }));
+  const handleDeleteTrip = (id) => {
+    const trip = (data?.trips || []).find(t => t.id === id);
     requestConfirmation({
-      title: 'Delete expense?',
-      message: `${getItemLabel(expense, 'This expense')} will be deleted from this dashboard.`,
+      title: 'Delete trip?',
+      message: `${getItemLabel(trip, 'This trip')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => {
-      trackDeletion('expenses', id);
-      setData(prev => ({ ...prev, expenses: prev.expenses.filter(e => e.id !== id) }));
+      trackDeletion('trips', id);
+      setData(prev => ({ ...prev, trips: (prev.trips || []).filter(t => t.id !== id) }));
     });
   };
-  const handleEditExpense = (expense) => { setEditingExpense(expense); setEditExpenseModalOpen(true); };
-  const handleSaveExpense = (updatedExpense) => {
-    setData(prev => ({ ...prev, expenses: prev.expenses.map(e => e.id === updatedExpense.id ? updatedExpense : e) }));
+  const handleUpdateTrip = (id, updates) => {
+    setData(prev => ({
+      ...prev,
+      trips: (prev.trips || []).map(t => t.id === id ? (window.normalizeTrip ? window.normalizeTrip({ ...t, ...updates }) : { ...t, ...updates }) : t)
+    }));
   };
   const handleAddRecipe = (recipe) => setData(prev => ({ ...prev, recipes: [...(prev.recipes || []), recipe] }));
   const handleDeleteRecipe = (id) => {
@@ -784,29 +783,29 @@ function MediaTracker() {
 
   const handleAddDate = async (place) => {
     const nextPlace = await withGeocodedAddress(place);
-    setData(prev => ({ ...prev, locations: [...(prev.locations || []), nextPlace] }));
+    setData(prev => ({ ...prev, dates: [...(prev.dates || []), nextPlace] }));
   };
   const handleDeleteDate = (id) => {
-    const place = (data?.locations || []).find(p => p.id === id);
+    const place = (data?.dates || []).find(p => p.id === id);
     requestConfirmation({
-      title: 'Delete location?',
-      message: `${getItemLabel(place, 'This location')} will be deleted from this dashboard.`,
+      title: 'Delete date?',
+      message: `${getItemLabel(place, 'This date')} will be deleted from this dashboard.`,
       confirmLabel: 'Delete'
     }, () => {
-      trackDeletion('locations', id);
-      setData(prev => ({ ...prev, locations: prev.locations.filter(p => p.id !== id) }));
+      trackDeletion('dates', id);
+      setData(prev => ({ ...prev, dates: (prev.dates || []).filter(p => p.id !== id) }));
     });
   };
   const handleToggleFavouriteDate = (id) => {
-    setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, isFavourite: !p.isFavourite } : p) }));
+    setData(prev => ({ ...prev, dates: (prev.dates || []).map(p => p.id === id ? { ...p, isFavourite: !p.isFavourite } : p) }));
   };
   const handleUpdateDate = async (id, updates) => {
     if (Object.prototype.hasOwnProperty.call(updates || {}, 'address')) {
-      const current = (data?.locations || []).find(p => p.id === id);
+      const current = (data?.dates || []).find(p => p.id === id);
       const nextAddress = String(updates?.address || '').trim();
       const currentAddress = String(current?.address || '').trim();
       if (nextAddress === currentAddress) {
-        setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...updates, address: nextAddress } : p) }));
+        setData(prev => ({ ...prev, dates: (prev.dates || []).map(p => p.id === id ? { ...p, ...updates, address: nextAddress } : p) }));
         return;
       }
       const nextPlace = await withGeocodedAddress({
@@ -820,38 +819,48 @@ function MediaTracker() {
         geocodedAddress: '',
         geocodedAt: null
       });
-      setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...nextPlace } : p) }));
+      setData(prev => ({ ...prev, dates: (prev.dates || []).map(p => p.id === id ? { ...p, ...nextPlace } : p) }));
       return;
     }
-    setData(prev => ({ ...prev, locations: prev.locations.map(p => p.id === id ? { ...p, ...updates } : p) }));
+    setData(prev => ({ ...prev, dates: (prev.dates || []).map(p => p.id === id ? { ...p, ...updates } : p) }));
   };
   const handleAddTask = (task) => setData(prev => ({ ...prev, tasks: [...(prev.tasks || []), normalizeTask(task)] }));
   const handleToggleTask = (id, checked) => {
+    const completedByName = currentUser?.name || currentUser?.username || null;
+    const completedBy = currentUser?.id || null;
     setData(prev => ({
       ...prev,
       tasks: prev.tasks.map(t => {
         if (t.id !== id) return t;
+        const history = Array.isArray(t.completionHistory) ? t.completionHistory : [];
         if (t.recurrence) {
           if (checked === false) {
             return {
               ...t,
               completed: false,
               lastCompletedAt: null,
-              completionCount: Math.max(0, Number(t.completionCount || 0) - 1)
+              completionCount: Math.max(0, Number(t.completionCount || 0) - 1),
+              completionHistory: history.slice(0, -1)
             };
           }
+          const completedAt = new Date().toISOString();
           return {
             ...t,
             completed: false,
-            lastCompletedAt: new Date().toISOString(),
-            completionCount: Number(t.completionCount || 0) + 1
+            lastCompletedAt: completedAt,
+            completionCount: Number(t.completionCount || 0) + 1,
+            completionHistory: [...history, { completedAt, completedBy, completedByName }]
           };
         }
         const completed = typeof checked === 'boolean' ? checked : !t.completed;
+        const completedAt = completed ? new Date().toISOString() : null;
         return {
           ...t,
           completed,
-          completedAt: completed ? new Date().toISOString() : null
+          completedAt,
+          completionHistory: completed
+            ? [...history, { completedAt, completedBy, completedByName }]
+            : history.slice(0, -1)
         };
       })
     }));
@@ -889,8 +898,8 @@ function MediaTracker() {
   const addActionByTab = {
     calendar: { label: 'Activity', icon: 'CalendarIcon' },
     tasks: { label: 'Task', icon: 'CheckSquare' },
-    locations: { label: 'Location', icon: 'MapPin' },
-    expenses: { label: 'Expense', icon: 'DollarSign' },
+    dates: { label: 'Date', icon: 'MapPin' },
+    trips: { label: 'Trip', icon: 'Plane' },
     recipes: { label: 'Recipe', icon: 'ChefHat' },
     tvshows: { label: 'TV Show', icon: 'Tv' },
     movies: { label: 'Movie', icon: 'Film' },
@@ -966,14 +975,13 @@ function MediaTracker() {
   const TasksView = window.getWindowComponent?.('TasksView', window.MissingComponent) || window.MissingComponent;
   const CalendarView = window.getWindowComponent?.('CalendarView', window.MissingComponent) || window.MissingComponent;
   const DatesView = window.getWindowComponent?.('DatesView', window.MissingComponent) || window.MissingComponent;
-  const ExpensesView = window.getWindowComponent?.('ExpensesView', window.MissingComponent) || window.MissingComponent;
+  const TripsView = window.getWindowComponent?.('TripsView', window.MissingComponent) || window.MissingComponent;
   const RecipesView = window.getWindowComponent?.('RecipesView', window.MissingComponent) || window.MissingComponent;
   const MediaSectionsView = window.getWindowComponent?.('MediaSectionsView', window.MissingComponent) || window.MissingComponent;
   const Header = window.getWindowComponent?.('Header', window.MissingComponent) || window.MissingComponent;
   const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
   const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
   const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
-  const EditExpenseModal = window.getWindowComponent?.('EditExpenseModal', window.MissingComponent) || window.MissingComponent;
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
   const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
   const MobileBottomNav = window.getWindowComponent?.('MobileBottomNav', null);
@@ -1098,24 +1106,24 @@ function MediaTracker() {
       }
     }
     if (activeCategory === 'go') {
-      if (activeSubTab === 'locations') {
+      if (activeSubTab === 'dates') {
         return (
           <DatesView
-            places={visibleData.locations || []}
+            places={visibleData.dates || []}
             onDeletePlace={handleDeleteDate}
             onToggleFavourite={handleToggleFavouriteDate}
             onUpdateDate={handleUpdateDate}
-            onAddClick={() => { setAddCategory('locations'); setAddModalOpen(true); }}
+            onAddClick={() => { setAddCategory('dates'); setAddModalOpen(true); }}
           />
         );
       }
-      if (activeSubTab === 'expenses') {
+      if (activeSubTab === 'trips') {
         return (
-          <ExpensesView
-            expenses={visibleData.expenses || []}
-            onDeleteExpense={handleDeleteExpense}
-            onEditExpense={handleEditExpense}
-            onAddClick={() => { setAddCategory('expenses'); setAddModalOpen(true); }}
+          <TripsView
+            trips={visibleData.trips || []}
+            onDeleteTrip={handleDeleteTrip}
+            onUpdateTrip={handleUpdateTrip}
+            onAddClick={() => { setAddCategory('trips'); setAddModalOpen(true); }}
           />
         );
       }
@@ -1197,7 +1205,7 @@ function MediaTracker() {
         activeTab={addCategory || activeSubTab}
         onAddMedia={handleAddMedia}
         onAddEvent={handleAddEvent}
-        onAddExpense={handleAddExpense}
+        onAddTrip={handleAddTrip}
         onAddRecipe={handleAddRecipe}
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
@@ -1206,7 +1214,6 @@ function MediaTracker() {
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
-      <EditExpenseModal isOpen={editExpenseModalOpen} onClose={() => setEditExpenseModalOpen(false)} expense={editingExpense} onSave={handleSaveExpense} profile={visibleData?.profile} />
       <ConfirmationDialog
         isOpen={Boolean(confirmation)}
         title={confirmation?.title || 'Are you sure?'}
