@@ -23,6 +23,21 @@ const TASK_RECURRENCE_LABELS = TASK_RECURRENCE_OPTIONS.reduce((labels, option) =
   [option.value]: option.label
 }), {});
 
+const TASK_PRIORITY_OPTIONS = window.TASK_PRIORITY_OPTIONS || [
+  { value: 'none', label: 'None' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' }
+];
+
+const TASK_PRIORITY_STYLES = window.TASK_PRIORITY_STYLES || {
+  low: { bg: '#E1F5EE', text: '#0E5A40', border: '#91D7BF' },
+  medium: { bg: '#FFEFD7', text: '#A85B00', border: '#F2B27A' },
+  high: { bg: '#FFDAD4', text: '#A9372C', border: '#FFB4A9' }
+};
+
+const PRIORITY_LABELS = { low: 'Low priority', medium: 'Medium priority', high: 'High priority' };
+
 const getTaskRecurrenceFrequency = (task = {}) => {
   const frequency = task.taskRecurrenceFrequency || task.recurrence?.frequency || task.recurrence || 'none';
   return TASK_RECURRENCE_LABELS[frequency] ? frequency : 'none';
@@ -64,7 +79,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const [viewMode, setViewMode] = useState('tasks');
   const [quickChecklistText, setQuickChecklistText] = useState('');
   const [editingTask, setEditingTask] = useState(null);
-  const [editForm, setEditForm] = useState({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
+  const [editForm, setEditForm] = useState({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly', priority: 'none', dueDate: '', assignedTo: '' });
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -102,7 +117,10 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
       title: task.title,
       description: task.description || '',
       isRecurring: isRecurringTask(task),
-      taskRecurrenceFrequency: getTaskRecurrenceFrequency(task)
+      taskRecurrenceFrequency: getTaskRecurrenceFrequency(task),
+      priority: task.priority || 'none',
+      dueDate: task.dueDate || '',
+      assignedTo: task.assignedTo || ''
     });
   };
 
@@ -111,16 +129,19 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     onUpdateTask?.(taskId, {
       title: editForm.title.trim(),
       description: editForm.description.trim(),
+      priority: editForm.priority && editForm.priority !== 'none' ? editForm.priority : null,
+      dueDate: editForm.dueDate || null,
+      assignedTo: editForm.assignedTo || null,
       recurrence: editForm.isRecurring ? { frequency: getTaskRecurrenceFrequency(editForm) } : null,
       ...(editForm.isRecurring ? {} : { lastCompletedAt: null, completionCount: 0 })
     });
     setEditingTask(null);
-    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
+    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly', priority: 'none', dueDate: '', assignedTo: '' });
   };
 
   const handleCancelEdit = () => {
     setEditingTask(null);
-    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly' });
+    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly', priority: 'none', dueDate: '', assignedTo: '' });
   };
 
   // Reorders operate on the original `tasks` array (source order),
@@ -226,6 +247,42 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 placeholder="Description (optional)"
                 rows="2"
               />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Priority</label>
+                  <select
+                    value={editForm.priority || 'none'}
+                    onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
+                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
+                  >
+                    {TASK_PRIORITY_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Due date</label>
+                  <input
+                    type="date"
+                    value={editForm.dueDate || ''}
+                    onChange={(e) => setEditForm({ ...editForm, dueDate: e.target.value })}
+                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
+                  />
+                </div>
+              </div>
+              {Array.isArray(users) && users.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Assign to</label>
+                  <select
+                    value={editForm.assignedTo || ''}
+                    onChange={(e) => setEditForm({ ...editForm, assignedTo: e.target.value })}
+                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
+                  >
+                    <option value="">Unassigned</option>
+                    {users.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
+                  </select>
+                </div>
+              )}
               <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
                 <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#000000]">
                   <input
@@ -317,8 +374,20 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     ))}
                   </div>
                 )}
-                {(recurrenceLabel || lastCompletedLabel) && (
+                {(recurrenceLabel || lastCompletedLabel || task.priority) && (
                   <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {task.priority && TASK_PRIORITY_STYLES[task.priority] && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-bold"
+                        style={{
+                          backgroundColor: TASK_PRIORITY_STYLES[task.priority].bg,
+                          color: TASK_PRIORITY_STYLES[task.priority].text,
+                          borderColor: TASK_PRIORITY_STYLES[task.priority].border
+                        }}
+                      >
+                        {PRIORITY_LABELS[task.priority] || task.priority}
+                      </span>
+                    )}
                     {recurrenceLabel && (
                       <span className="inline-flex items-center rounded-full bg-[#FFF0EE] px-2 py-1 text-xs font-bold text-[#A9372C]">
                         {recurrenceLabel}
@@ -330,6 +399,21 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                       </span>
                     )}
                   </div>
+                )}
+                {Array.isArray(task.completionHistory) && task.completionHistory.length > 0 && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-xs font-bold text-[#A9372C]">
+                      Completion history ({task.completionHistory.length})
+                    </summary>
+                    <ul className="mt-1.5 space-y-1 pl-3 text-xs text-[#534340]">
+                      {task.completionHistory.slice().reverse().slice(0, 8).map((entry, idx) => (
+                        <li key={`${entry.completedAt}-${idx}`} className="list-disc">
+                          {new Date(entry.completedAt).toLocaleDateString()}
+                          {entry.completedByName ? ` · ${entry.completedByName}` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
               </div>
 

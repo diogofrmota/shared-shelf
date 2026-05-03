@@ -1,6 +1,6 @@
 # Couple Planner
 
-Lightweight Vercel-hosted web app for couples to plan together. Users create a private shared dashboard, invite their partner, and manage calendar, tasks, locations, expenses, recipes, and entertainment (movies, TV, books).
+Lightweight Vercel-hosted web app for couples to plan together. Users create a private shared dashboard, invite their partner, and manage calendar, tasks, dates, trips, recipes, and entertainment (movies, TV, books).
 
 ## Tech Stack
 
@@ -78,20 +78,29 @@ Typical `dashboard_data.data` JSONB shape:
 
 ```json
 {
-  "tasks": [...],
-  "locations": [...],
   "calendarEvents": [...],
-  "expenses": [...],
+  "tasks": [...],
+  "dates": [...],
+  "trips": [...],
   "recipes": [...],
   "watchlist": [...],
   "profile": { "users": [] }
 }
 ```
 
-Recurrence fields: `recurrence: { frequency: "daily"|"weekly"|"monthly"|"yearly", until? }`.  
-Locations may contain `lat`, `lng`, `geocodingStatus`, `geocodingError`, `geocodedAddress`, and `geocodedAt`; missing coordinates are normalized to `null` and shown with an address-search fallback.  
-Expenses contain `description`, `amount` (number|null), `category` (`food`|`transport`|`accommodation`|`entertainment`|`shopping`|`health`|`other`), `date`, `paidBy`, `notes`.  
+Recurrence fields: `recurrence: { frequency: "daily"|"weekly"|"monthly"|"yearly", until? }`.
+
+Calendar events: support `color` (hex string, defaults to `#E63B2E`) and `recurrence` for repeating activities.
+
+Tasks contain `title`, `description`, `assignedTo` (user id), `dueDate` (ISO date), `priority` (`low`|`medium`|`high`|null), `completed`, `completedAt`, `recurrence`, `lastCompletedAt`, `completionCount`, and `completionHistory` (array of `{ completedAt, completedBy, completedByName }` entries) for completion history.
+
+Dates (formerly Locations) contain `name` (place name), `address` (location), `category`, `status` (`want-to-go`|`visited`), and `notes`. They may also include `lat`, `lng`, `geocodingStatus`, `geocodingError`, `geocodedAddress`, `geocodedAt`, `link`, `isFavourite`, and `starRating`; missing coordinates are normalized to `null` and shown with an address-search fallback.
+
+Trips (replacing Expenses) contain `destination`, `startDate`, `endDate`, `flights`, `hotel`, `budget` (number|null), `itinerary` (array of `{ id, day, date, title, notes }`), `packingList` / `placesToVisit` / `restaurants` (each an array of `{ id, title, notes, completed }`), `documents`, and `notes` (shared notes).
+
 Entertainment statuses: Movies/TV: `plan-to-watch`, `watching`, `completed`; Books: `plan-to-read`, `reading`, `read`.
+
+Backwards compatibility: legacy `locations` arrays are migrated into `dates` on read; legacy `expenses` data is replaced with an empty `trips` array (the data shapes are not compatible). Legacy enabled-section ids `locations` and `expenses` are remapped to `dates` and `trips` respectively in both the client and the server.
 
 Always add normalization/defaults so old saved data still renders.
 

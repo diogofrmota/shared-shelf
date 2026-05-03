@@ -1,4 +1,5 @@
-const DEFAULT_DASHBOARD_SECTIONS = ['calendar', 'tasks', 'locations', 'expenses', 'recipes', 'watchlist'];
+const DEFAULT_DASHBOARD_SECTIONS = ['calendar', 'tasks', 'dates', 'trips', 'recipes', 'watchlist'];
+const LEGACY_SECTION_MAP = { locations: 'dates', expenses: 'trips' };
 const PUBLIC_ROUTE_TYPES = new Set(['home', 'login', 'privacy', 'terms', 'bug-report', 'not-found']);
 const STATIC_PUBLIC_ROUTE_TYPES = new Set(['privacy', 'terms', 'bug-report', 'not-found']);
 const LEGACY_PROFILE_COLOR_MAP = {
@@ -19,8 +20,8 @@ function defaultDashboardData() {
   return {
     calendarEvents: [],
     tasks: [],
-    locations: [],
-    expenses: [],
+    dates: [],
+    trips: [],
     recipes: [],
     watchlist: [],
     profile: {
@@ -39,16 +40,21 @@ const normalizeProfileUsers = (users = []) => users.map((user, index) => ({
   color: LEGACY_PROFILE_COLOR_MAP[user.color] || user.color || (index % 2 === 0 ? '#E63B2E' : '#8C4F45')
 }));
 
-const getEnabledSections = (dashboard) => (
-  Array.isArray(dashboard?.enabledSections) && dashboard.enabledSections.length
+const remapLegacySection = (section) => LEGACY_SECTION_MAP[section] || section;
+
+const getEnabledSections = (dashboard) => {
+  const raw = Array.isArray(dashboard?.enabledSections) && dashboard.enabledSections.length
     ? dashboard.enabledSections
-    : DEFAULT_DASHBOARD_SECTIONS
-);
+    : DEFAULT_DASHBOARD_SECTIONS;
+  const mapped = raw.map(remapLegacySection);
+  return Array.from(new Set(mapped));
+};
 
 const sectionToView = (section) => {
-  if (section === 'watchlist') return { category: 'media', subTab: null };
-  if (section === 'calendar' || section === 'tasks') return { category: 'plan', subTab: section };
-  return { category: 'go', subTab: section };
+  const id = remapLegacySection(section);
+  if (id === 'watchlist') return { category: 'media', subTab: null };
+  if (id === 'calendar' || id === 'tasks') return { category: 'plan', subTab: id };
+  return { category: 'go', subTab: id };
 };
 
 const readAppRoute = (pathname = window.location.pathname) => {
@@ -90,6 +96,25 @@ const normalizeTaskRecurrence = (task = {}) => {
   return { frequency };
 };
 
+const VALID_TASK_PRIORITIES = new Set(['low', 'medium', 'high']);
+
+const normalizeTaskPriority = (value) => {
+  const raw = String(value || '').toLowerCase();
+  return VALID_TASK_PRIORITIES.has(raw) ? raw : null;
+};
+
+const normalizeCompletionHistory = (history = []) => (
+  Array.isArray(history)
+    ? history
+      .map(entry => ({
+        completedAt: typeof entry?.completedAt === 'string' ? entry.completedAt : '',
+        completedBy: entry?.completedBy || null,
+        completedByName: entry?.completedByName || ''
+      }))
+      .filter(entry => entry.completedAt)
+    : []
+);
+
 const normalizeTask = (task = {}) => {
   const recurrence = normalizeTaskRecurrence(task);
   return {
@@ -97,50 +122,86 @@ const normalizeTask = (task = {}) => {
     description: task.description || '',
     assignedTo: task.assignedTo || null,
     dueDate: task.dueDate || null,
+    priority: normalizeTaskPriority(task.priority),
     completed: recurrence ? false : Boolean(task.completed),
     recurrence,
     lastCompletedAt: task.lastCompletedAt || null,
     completionCount: Number(task.completionCount || 0),
     completedAt: task.completedAt || null,
+    completionHistory: normalizeCompletionHistory(task.completionHistory),
     listType: task.listType === 'shared-checklist' ? 'shared-checklist' : 'task',
     subtasks: Array.isArray(task.subtasks) ? task.subtasks.map((item, idx) => ({ id: item?.id || `subtask-${idx}`, title: String(item?.title || ''), completed: Boolean(item?.completed) })).filter(i => i.title) : []
   };
 };
 
-const VALID_EXPENSE_CATEGORIES = new Set(['food', 'transport', 'accommodation', 'entertainment', 'shopping', 'health', 'other']);
+const VALID_DATE_STATUSES = new Set(['want-to-go', 'visited']);
 
-const normalizeExpense = (expense = {}) => {
-  const rawAmount = expense.amount;
-  const amount = (rawAmount === null || rawAmount === undefined || rawAmount === '') ? null : (Number.isFinite(Number(rawAmount)) ? Number(rawAmount) : null);
-  const category = VALID_EXPENSE_CATEGORIES.has(String(expense.category || '')) ? String(expense.category) : 'other';
-  const splitBy = Array.isArray(expense.splitBy) ? expense.splitBy.map((item, idx) => ({
-    id: item?.id || `split-${idx}`,
-    name: String(item?.name || '').trim(),
-    percent: Number.isFinite(Number(item?.percent)) ? Number(item.percent) : 0
-  })).filter(item => item.name) : [];
-  const billSplits = Array.isArray(expense.billSplits) ? expense.billSplits.map((item, idx) => ({
-    id: item?.id || `bill-${idx}`,
-    category: VALID_EXPENSE_CATEGORIES.has(String(item?.category || '')) ? String(item.category) : 'other',
-    amount: Number.isFinite(Number(item?.amount)) ? Number(item.amount) : 0,
-    note: String(item?.note || '')
-  })) : [];
+const normalizeDateStatus = (place = {}) => {
+  const raw = String(place?.status || place?.dateStatus || '').toLowerCase();
+  if (VALID_DATE_STATUSES.has(raw)) return raw;
+  if (place?.beenThere === true) return 'visited';
+  return 'want-to-go';
+};
 
+const normalizeDatePlace = (place = {}) => {
+  const status = normalizeDateStatus(place);
   return {
-    ...expense,
-    description: expense.description || '',
-    amount,
-    category,
-    date: expense.date || '',
-    paidBy: expense.paidBy || '',
-    notes: expense.notes || '',
-    recurrence: expense?.recurrence?.frequency ? {
-      frequency: expense.recurrence.frequency,
-      until: expense.recurrence.until || ''
-    } : null,
-    splitBy,
-    billSplits
+    ...place,
+    name: place?.name || '',
+    address: place?.address || '',
+    notes: place?.notes || '',
+    category: place?.category || 'restaurant',
+    link: window.safeExternalUrl?.(place?.link || place?.url) || '',
+    photo: window.safeImageUrl?.(place?.photo) || '',
+    lat: Number.isFinite(Number(place?.lat)) ? Number(place.lat) : null,
+    lng: Number.isFinite(Number(place?.lng)) ? Number(place.lng) : null,
+    status,
+    beenThere: status === 'visited',
+    isFavourite: Boolean(place?.isFavourite),
+    starRating: Number.isFinite(Number(place?.starRating)) ? Number(place.starRating) : 0
   };
 };
+
+const normalizeChecklistEntries = (items = []) => (
+  Array.isArray(items)
+    ? items
+      .map((item, idx) => ({
+        id: item?.id || `entry-${idx}`,
+        title: String(item?.title || item?.name || '').trim(),
+        notes: String(item?.notes || ''),
+        completed: Boolean(item?.completed)
+      }))
+      .filter(item => item.title)
+    : []
+);
+
+const normalizeItineraryEntries = (items = []) => (
+  Array.isArray(items)
+    ? items.map((item, idx) => ({
+      id: item?.id || `day-${idx}`,
+      day: Number.isFinite(Number(item?.day)) ? Number(item.day) : idx + 1,
+      date: item?.date || '',
+      title: String(item?.title || '').trim(),
+      notes: String(item?.notes || '')
+    }))
+    : []
+);
+
+const normalizeTrip = (trip = {}) => ({
+  ...trip,
+  destination: String(trip?.destination || trip?.title || '').trim(),
+  startDate: trip?.startDate || trip?.dateStart || '',
+  endDate: trip?.endDate || trip?.dateEnd || '',
+  flights: String(trip?.flights || ''),
+  hotel: String(trip?.hotel || ''),
+  budget: trip?.budget === null || trip?.budget === undefined || trip?.budget === '' ? null : (Number.isFinite(Number(trip.budget)) ? Number(trip.budget) : null),
+  itinerary: normalizeItineraryEntries(trip?.itinerary),
+  packingList: normalizeChecklistEntries(trip?.packingList),
+  placesToVisit: normalizeChecklistEntries(trip?.placesToVisit),
+  restaurants: normalizeChecklistEntries(trip?.restaurants),
+  documents: String(trip?.documents || ''),
+  notes: String(trip?.notes || '')
+});
 
 const normalizeMediaCategory = (item = {}, fallbackCategory = '') => {
   const category = String(item.category || fallbackCategory || '').toLowerCase();
@@ -224,20 +285,12 @@ const normalizeDashboardDataForClient = (DashboardData = {}) => {
   addWatchlistItems(raw.anime, 'tvshows');
   addWatchlistItems(raw.books, 'books');
 
+  const datesSource = asArray(raw.dates).length ? asArray(raw.dates) : asArray(raw.locations);
   const migrated = {
     calendarEvents: asArray(raw.calendarEvents).map(normalizeCalendarEvent),
     tasks: asArray(raw.tasks).map(normalizeTask),
-    locations: (asArray(raw.locations).length ? asArray(raw.locations) : asArray(raw.dates)).map(location => ({
-      ...location,
-      name: location?.name || '',
-      address: location?.address || '',
-      notes: location?.notes || '',
-      link: window.safeExternalUrl?.(location?.link || location?.url) || '',
-      photo: window.safeImageUrl?.(location?.photo) || '',
-      lat: Number.isFinite(Number(location?.lat)) ? Number(location.lat) : null,
-      lng: Number.isFinite(Number(location?.lng)) ? Number(location.lng) : null
-    })),
-    expenses: asArray(raw.expenses).map(normalizeExpense),
+    dates: datesSource.map(normalizeDatePlace),
+    trips: asArray(raw.trips).map(normalizeTrip),
     recipes: asArray(raw.recipes).map(recipe => ({
       ...recipe,
       name: recipe?.name || '',
@@ -263,7 +316,10 @@ Object.assign(window, {
   getEnabledSections,
   normalizeDashboardDataForClient,
   normalizeTask,
+  normalizeTrip,
+  normalizeDatePlace,
   normalizeWatchlistItem,
   readAppRoute,
-  sectionToView
+  sectionToView,
+  remapLegacySection
 });

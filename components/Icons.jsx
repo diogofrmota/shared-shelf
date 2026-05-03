@@ -214,9 +214,22 @@ const UsersIcon = ({ size = 20, className = '' }) => (
   </svg>
 );
 
+const Plane = ({ size = 20, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3.5S18.5 3 17 4.5L13.5 8 5.3 6.2 4 7.5l6.5 3.5L7 14.5l-3-.5-1 1 4 2 2 4 1-1-.5-3 3.5-3.5 3.5 6.5z"></path>
+  </svg>
+);
+
+const FlagIcon = ({ size = 16, className = '' }) => (
+  <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className={className}>
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+    <line x1="4" y1="22" x2="4" y2="15"></line>
+  </svg>
+);
+
 Object.assign(window, {
   CheckSquare, Search, Plus, Film, Tv, Book, CalendarIcon, MapPin,
   ChevronLeft, ChevronRight, Trash, LinkIcon, ShareIcon, ThreeDots, Close,
   SettingsIcon, ChefHat, Utensils, Star, Eye, EyeOff, LogoutIcon, UserIcon, PencilIcon, Camera, WifiOff,
-  DollarSign, UsersIcon
+  DollarSign, UsersIcon, Plane, FlagIcon
 });
