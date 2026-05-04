@@ -393,7 +393,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Tasks</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Tasks List</h2>
           
             <p className="mt-1 text-sm font-medium text-[#000000]">
               {activeCnt} remaining · {tasks.length - activeCnt} done
