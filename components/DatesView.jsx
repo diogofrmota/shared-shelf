@@ -345,11 +345,23 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const MapPin = getDateComponent('MapPin');
 
+  const Plus = getDateComponent('Plus');
+
   return (
     <div className="space-y-5 animate-fade-in">
-      <div>
-        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Dates</h2>
-        <p className="mt-1 text-sm text-[#000000]">Restaurants, bars, viewpoints, and places worth saving.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Dates</h2>
+          <p className="mt-1 text-sm text-[#000000]">Restaurants, bars, viewpoints, and places worth saving.</p>
+        </div>
+        <button
+          type="button"
+          onClick={onAddClick}
+          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
+        >
+          <Plus size={16} />
+          Add date
+        </button>
       </div>
 
       <FilterBar label="Filter:">

@@ -538,6 +538,18 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <div className="space-y-5 animate-fade-in">
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Calendar</h2>
+        <button
+          type="button"
+          onClick={onAddClick}
+          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
+        >
+          <Plus size={16} />
+          Add Event
+        </button>
+      </div>
     <div className="grid min-w-0 w-full gap-4 sm:gap-6 lg:grid-cols-12">
 
       {/* Calendar section */}
@@ -648,12 +660,12 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
 
         {agendaEvents.length === 0 ? (
           events.length === 0 ? (
-            <EmptyState title="No activities yet" message="Add a plan, reminder, or shared date." actionLabel="Add activity" icon={CalendarIcon} compact onAddClick={onAddClick} />
+            <EmptyState title="No events yet" message="Add a plan, reminder, or shared date." actionLabel="Add Event" icon={CalendarIcon} compact onAddClick={onAddClick} />
           ) : (
             <EmptyState
-              title={selectedDate ? 'No activities this day' : isMonthView ? 'No activities this month' : 'No activities this week'}
+              title={selectedDate ? 'No events this day' : isMonthView ? 'No events this month' : 'No events this week'}
               message="Try another date or add something new."
-              icon={CalendarIcon} compact onAddClick={onAddClick} actionLabel="Add activity"
+              icon={CalendarIcon} compact onAddClick={onAddClick} actionLabel="Add Event"
             />
           )
         ) : (
@@ -712,6 +724,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
           </ul>
         )}
       </section>
+    </div>
     </div>
   );
 };

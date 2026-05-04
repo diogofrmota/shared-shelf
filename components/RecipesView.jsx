@@ -96,24 +96,33 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
   const ChefHat = getRecipeComponent('ChefHat');
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
 
+  const Plus = getRecipeComponent('Plus');
+
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Recipes</h2>
-          <p className="mt-1 text-sm text-[#000000]">A gallery of shared culinary inspirations.</p>
-        </div>
-        <div className="relative w-full sm:max-w-xs">
-          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#000000]">
-            <Search size={16} />
-          </span>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search recipes..."
-            className="w-full rounded-xl border border-[#E1D8D4] bg-white py-2.5 pl-10 pr-4 text-sm text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
-          />
+        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Recipes</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#000000]">
+              <Search size={16} />
+            </span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search recipes..."
+              className="w-full rounded-xl border border-[#E1D8D4] bg-white py-2.5 pl-10 pr-4 text-sm text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={onAddClick}
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
+          >
+            <Plus size={16} />
+            Add recipe
+          </button>
         </div>
       </div>
 
