@@ -138,9 +138,7 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
           <EmptyState
             title="No recipes yet"
             message="Save a shared favorite or something new to cook."
-            actionLabel="Add recipe"
             icon={ChefHat}
-            onAddClick={onAddClick}
           />
         )
       ) : (

@@ -377,9 +377,7 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
           <EmptyState
             title="No dates yet"
             message="Save restaurants, views, and places to try."
-            actionLabel="Add date"
             icon={MapPin}
-            onAddClick={onAddClick}
           />
         ) : (
           <EmptyState
