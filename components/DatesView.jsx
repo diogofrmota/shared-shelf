@@ -335,7 +335,7 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
     <div className="space-y-5 animate-fade-in">
       <div>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Locations for Dates</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Dates Locations</h2>
           <button
             type="button"
             onClick={onAddClick}

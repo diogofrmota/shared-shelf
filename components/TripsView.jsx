@@ -330,7 +330,7 @@ const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
     <div className="space-y-5 animate-fade-in">
       <div>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Trips Manager</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Trips Planning</h2>
           <button
             type="button"
             onClick={onAddClick}
