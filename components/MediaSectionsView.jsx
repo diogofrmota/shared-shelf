@@ -156,6 +156,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         />
       ) : sections.map(section => {
         const sectionItems = items.filter(item => item.status === section.status);
+        if (sectionItems.length === 0) return null;
         const isCompletedSection = ['completed', 'read'].includes(section.status);
         if (isCompletedSection && !showCompleted && sectionItems.length > 0) {
           return (
@@ -175,15 +176,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
                 <span className="text-xs font-semibold text-[#000000]">{sectionItems.length} {sectionItems.length === 1 ? 'item' : 'items'}</span>
               </div>
             </div>
-            {sectionItems.length === 0 ? (
-              <EmptyState
-                title={`No ${section.title.toLowerCase()} items`}
-                message={`Move items here when they are ${section.title.toLowerCase()}.`}
-                icon={EmptyIcon}
-                compact
-              />
-            ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 sm:gap-3">
                 {sectionItems.map(item => (
                   <MediaCard
                     key={item.id}
@@ -194,7 +187,6 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
                   />
                 ))}
               </div>
-            )}
           </section>
         );
       })}

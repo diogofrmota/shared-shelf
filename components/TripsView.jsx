@@ -358,24 +358,15 @@ const TripCard = ({ trip, expanded, onToggleExpanded, onDelete, onUpdateTrip }) 
 
 const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
   const [expandedId, setExpandedId] = useState(null);
-  const [filter, setFilter] = useState('all');
-
-  const todayIso = useMemo(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }, []);
 
   const sorted = useMemo(() => {
-    const list = [...(trips || [])].filter(trip => {
-      if (filter === 'upcoming') return !trip.endDate || trip.endDate >= todayIso;
-      if (filter === 'past') return trip.endDate && trip.endDate < todayIso;
-      return true;
+    return [...(trips || [])].sort((a, b) => {
+      const aDate = a.startDate || '9999-12-31';
+      const bDate = b.startDate || '9999-12-31';
+      return aDate.localeCompare(bDate);
     });
-    return list.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
-  }, [trips, filter, todayIso]);
+  }, [trips]);
 
-  const FilterBar = window.getWindowComponent?.('FilterBar', window.MissingComponent) || window.MissingComponent;
-  const FilterButton = window.getWindowComponent?.('FilterButton', window.MissingComponent) || window.MissingComponent;
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const Plane = getTripsComponent('Plane');
 
@@ -383,32 +374,17 @@ const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
     <div className="space-y-5 animate-fade-in">
       <div>
         <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Trips</h2>
-        <p className="mt-1 text-sm text-[#000000]">Plan trips together — destinations, flights, hotels, itineraries, and shared lists.</p>
+        <p className="mt-1 text-sm text-[#000000]">Plan trips together, setup destinations, flights, accommodation and itineraries.</p>
       </div>
 
-      <FilterBar label="Filter:">
-        <FilterButton label="All" isActive={filter === 'all'} onClick={() => setFilter('all')} />
-        <FilterButton label="Upcoming" isActive={filter === 'upcoming'} onClick={() => setFilter('upcoming')} />
-        <FilterButton label="Past" isActive={filter === 'past'} onClick={() => setFilter('past')} />
-      </FilterBar>
-
       {sorted.length === 0 ? (
-        (trips?.length || 0) === 0 ? (
-          <EmptyState
-            title="No trips yet"
-            message="Plan your next escape together — destination, dates, hotels and lists."
-            actionLabel="Add trip"
-            icon={Plane}
-            onAddClick={onAddClick}
-          />
-        ) : (
-          <EmptyState
-            title="No trips match"
-            message="Try a different filter to see more trips."
-            icon={Plane}
-            compact
-          />
-        )
+        <EmptyState
+          title="No trips yet"
+          message="Plan your next escape together — destination, dates, hotels and lists."
+          actionLabel="Add trip"
+          icon={Plane}
+          onAddClick={onAddClick}
+        />
       ) : (
         <div className="space-y-3">
           {sorted.map(trip => (

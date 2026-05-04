@@ -4,248 +4,242 @@ const getMediaComponent = (name) => window.getWindowComponent?.(name, window.Mis
 const getMediaModalShell = () => window.getWindowComponent?.('ModalShell', window.MissingComponent) || window.MissingComponent;
 
 // ============================================================================
-// TV SHOW PROGRESS MODAL
+// MEDIA DETAIL MODAL
 // ============================================================================
 
-const TvProgressModal = ({ item, onClose, onSave }) => {
+const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, watchModeLabel }) => {
+  const statusOptions = window.getStatusOptions?.(item.category) || [];
+  const placeholder = window.PLACEHOLDER_IMAGE || '';
+  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
+  const ModalShell = getMediaModalShell();
+  const CloseIcon = getMediaComponent('Close');
+
+  const isTvShow = item.category === 'tvshows';
+  const isBook = item.category === 'books';
   const itemId = String(item?.id ?? '');
   const isTmdb = itemId.startsWith('tmdb-');
   const isAnime = itemId.startsWith('mal-');
+  const progress = item.progress;
 
-  const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(isTvShow);
   const [seasons, setSeasons] = useState(null);
   const [totalEpisodes, setTotalEpisodes] = useState(null);
-  const [currentSeason, setCurrentSeason] = useState(item.progress?.currentSeason || 1);
-  const [currentEpisode, setCurrentEpisode] = useState(item.progress?.currentEpisode || 1);
+  const [currentSeason, setCurrentSeason] = useState(progress?.currentSeason || 1);
+  const [currentEpisode, setCurrentEpisode] = useState(progress?.currentEpisode || 1);
+  const initialTotalPages = Math.max(0, Math.floor(Number(progress?.totalPages ?? item.totalPages ?? 0) || 0));
+  const [currentPage, setCurrentPage] = useState(Math.min(
+    Math.max(0, Math.floor(Number(progress?.currentPage ?? 0) || 0)),
+    initialTotalPages || Number.MAX_SAFE_INTEGER
+  ));
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
 
   useEffect(() => {
+    if (!isTvShow) return undefined;
     let active = true;
     const load = async () => {
-      setLoading(true);
+      setLoadingProgress(true);
       if (isTmdb) {
-        const tmdbId = itemId.replace('tmdb-', '');
-        const details = await window.fetchTvDetails?.(tmdbId);
+        const details = await window.fetchTvDetails?.(itemId.replace('tmdb-', ''));
         if (!active) return;
         if (details?.seasons?.length) {
           setSeasons(details.seasons);
-          setCurrentSeason(item.progress?.currentSeason || 1);
-          setCurrentEpisode(item.progress?.currentEpisode || 1);
+          setCurrentSeason(progress?.currentSeason || 1);
+          setCurrentEpisode(progress?.currentEpisode || 1);
         }
       } else if (isAnime) {
-        const malId = itemId.replace('mal-', '');
-        const details = await window.fetchAnimeDetails?.(malId);
+        const details = await window.fetchAnimeDetails?.(itemId.replace('mal-', ''));
         if (!active) return;
         setTotalEpisodes(details?.episodes || null);
-        setCurrentEpisode(item.progress?.currentEpisode || 1);
+        setCurrentEpisode(progress?.currentEpisode || 1);
       }
-      setLoading(false);
+      if (active) setLoadingProgress(false);
     };
     load();
     return () => { active = false; };
   }, [itemId]);
 
-  const episodeCount = isTmdb && seasons
-    ? (seasons.find(s => s.season_number === currentSeason)?.episode_count || null)
-    : totalEpisodes;
+  const progressLabel = (() => {
+    if (!progress) return '';
+    if (isBook && Number.isFinite(Number(progress.currentPage))) {
+      const page = Math.max(0, Math.floor(Number(progress.currentPage) || 0));
+      const total = Math.max(0, Math.floor(Number(progress.totalPages || item.totalPages || 0) || 0));
+      return total ? `${Math.min(page, total)} / ${total} pages` : `Page ${page}`;
+    }
+    if (progress.currentSeason) return `S${progress.currentSeason} E${progress.currentEpisode}`;
+    if (progress.currentEpisode) return `Ep ${progress.currentEpisode}`;
+    return '';
+  })();
 
-  const handleSave = () => {
-    const progress = isTmdb
+  const episodeCount = isTmdb && seasons
+    ? (seasons.find(season => season.season_number === currentSeason)?.episode_count || null)
+    : totalEpisodes;
+  const normalizedCurrentPage = totalPages ? Math.min(currentPage, totalPages) : currentPage;
+  const bookProgressPercent = isBook && totalPages ? Math.round((normalizedCurrentPage / totalPages) * 100) : null;
+  const fieldCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#000000] outline-none transition focus:border-[#E63B2E]";
+
+  const saveTvProgress = () => {
+    const nextProgress = isTmdb
       ? { currentSeason, currentEpisode, seasons }
       : { currentEpisode, totalEpisodes };
-    onSave(progress);
-    onClose();
+    onProgressChange?.(item.id, nextProgress);
   };
 
-  const selectCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#000000] outline-none transition focus:border-[#E63B2E]";
-  const ModalShell = getMediaModalShell();
-  const CloseIcon = getMediaComponent('Close');
-
-  return (
-    <ModalShell
-      isOpen={true}
-      onClose={onClose}
-      ariaLabel={`Progress for ${item.title}`}
-      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
-    >
-        <div className="p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="mr-3 min-w-0 flex-1">
-              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
-              <h3 className="line-clamp-2 text-sm font-bold text-[#000000]" title={item.title}>{item.title}</h3>
-            </div>
-            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
-              <CloseIcon size={20} />
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="py-6 text-center text-sm text-[#000000]">Loading show info…</div>
-          ) : (
-            <div className="space-y-4">
-              {isTmdb && seasons && seasons.length > 0 && (
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Season</label>
-                  <select
-                    value={currentSeason}
-                    onChange={e => {
-                      const s = Number(e.target.value);
-                      setCurrentSeason(s);
-                      setCurrentEpisode(1);
-                    }}
-                    className={selectCls}
-                  >
-                    {seasons.map(s => (
-                      <option key={s.season_number} value={s.season_number}>
-                        Season {s.season_number} ({s.episode_count} ep)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Episode</label>
-                {episodeCount ? (
-                  <select
-                    value={currentEpisode}
-                    onChange={e => setCurrentEpisode(Number(e.target.value))}
-                    className={selectCls}
-                  >
-                    {Array.from({ length: episodeCount }, (_, i) => i + 1).map(ep => (
-                      <option key={ep} value={ep}>Episode {ep}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="number"
-                    min="1"
-                    value={currentEpisode}
-                    onChange={e => setCurrentEpisode(Math.max(1, Number(e.target.value)))}
-                    className={selectCls}
-                    placeholder="Episode number"
-                  />
-                )}
-              </div>
-
-              <button
-                onClick={handleSave}
-                className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]"
-              >
-                Save progress
-              </button>
-            </div>
-          )}
-        </div>
-    </ModalShell>
-  );
-};
-
-// ============================================================================
-// BOOK PROGRESS MODAL
-// ============================================================================
-
-const BookProgressModal = ({ item, onClose, onSave }) => {
-  const initialTotalPages = Math.max(0, Math.floor(Number(item.progress?.totalPages ?? item.totalPages ?? 0) || 0));
-  const initialCurrentPage = Math.min(
-    Math.max(0, Math.floor(Number(item.progress?.currentPage ?? 0) || 0)),
-    initialTotalPages || Number.MAX_SAFE_INTEGER
-  );
-
-  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
-  const [totalPages, setTotalPages] = useState(initialTotalPages);
-
-  const clampedCurrentPage = totalPages ? Math.min(currentPage, totalPages) : currentPage;
-  const progressPercent = totalPages ? Math.round((clampedCurrentPage / totalPages) * 100) : null;
-  const numberInputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#000000] outline-none transition focus:border-[#E63B2E]";
-
-  const handleCurrentPageChange = (value) => {
-    const nextPage = Math.max(0, Math.floor(Number(value) || 0));
-    setCurrentPage(totalPages ? Math.min(nextPage, totalPages) : nextPage);
-  };
-
-  const handleTotalPagesChange = (value) => {
-    const nextTotal = Math.max(0, Math.floor(Number(value) || 0));
-    setTotalPages(nextTotal);
-    setCurrentPage(page => nextTotal ? Math.min(page, nextTotal) : page);
-  };
-
-  const handleSave = () => {
-    const normalizedTotalPages = totalPages || null;
-    const normalizedCurrentPage = normalizedTotalPages ? Math.min(currentPage, normalizedTotalPages) : currentPage;
-    onSave({
-      currentPage: normalizedCurrentPage,
-      totalPages: normalizedTotalPages
+  const saveBookProgress = () => {
+    onProgressChange?.(item.id, {
+      currentPage: totalPages ? Math.min(currentPage, totalPages) : currentPage,
+      totalPages: totalPages || null
     });
-    onClose();
   };
-  const ModalShell = getMediaModalShell();
-  const CloseIcon = getMediaComponent('Close');
 
   return (
     <ModalShell
       isOpen={true}
       onClose={onClose}
-      ariaLabel={`Progress for ${item.title}`}
-      dialogClassName="w-full max-w-sm rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
+      ariaLabel={`Details for ${item.title}`}
+      dialogClassName="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
     >
-        <div className="p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="mr-3 min-w-0 flex-1">
-              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Progress</p>
-              <h3 className="line-clamp-2 text-sm font-bold text-[#000000]" title={item.title}>{item.title}</h3>
-            </div>
-            <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close progress">
-              <CloseIcon size={20} />
-            </button>
+      <div className="flex max-h-[90vh] flex-col">
+        <div className="flex items-center justify-between gap-3 border-b border-[#E1D8D4] p-4 sm:p-5">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Details</p>
+            <h3 className="truncate text-lg font-extrabold text-[#000000]" title={item.title}>{item.title}</h3>
+          </div>
+          <button onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close details">
+            <CloseIcon size={20} />
+          </button>
+        </div>
+
+        <div className="grid flex-1 gap-5 overflow-y-auto p-4 sm:grid-cols-[11rem_1fr] sm:p-5">
+          <div className="mx-auto w-36 overflow-hidden rounded-xl border border-[#E1D8D4] bg-[#FFDAD4] sm:mx-0 sm:w-full">
+            <img
+              src={safeThumbnail}
+              alt={item.title}
+              onError={(e) => { if (e.currentTarget.src !== placeholder) e.currentTarget.src = placeholder; }}
+              className="aspect-[2/3] h-full w-full object-cover"
+            />
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Current page</label>
-              <input
-                type="number"
-                min="0"
-                max={totalPages || undefined}
-                value={currentPage}
-                onChange={e => handleCurrentPageChange(e.target.value)}
-                className={numberInputCls}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Total pages</label>
-              <input
-                type="number"
-                min="0"
-                value={totalPages}
-                onChange={e => handleTotalPagesChange(e.target.value)}
-                className={numberInputCls}
-              />
-            </div>
-
-            {totalPages > 0 && (
-              <div>
-                <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#000000]">
-                  <span>{clampedCurrentPage} / {totalPages} pages</span>
-                  <span>{progressPercent}%</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[#FFDAD4]">
-                  <div
-                    className="h-full rounded-full bg-[#E63B2E] transition-all"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <h4 className="text-xl font-extrabold text-[#000000]">{item.title}</h4>
+              {item.author && <p className="text-sm font-semibold text-[#534340]">{item.author}</p>}
+              <div className="flex flex-wrap gap-2 text-xs font-bold text-[#8C4F45]">
+                {item.year && <span className="rounded-full bg-[#FFF8F5] px-2.5 py-1">{item.year}</span>}
+                {item.rating && <span className="rounded-full bg-[#FFF8F5] px-2.5 py-1">Rating {item.rating}</span>}
+                {item.totalPages && <span className="rounded-full bg-[#FFF8F5] px-2.5 py-1">{item.totalPages} pages</span>}
+                {watchModeLabel && <span className="rounded-full bg-[#FFF8F5] px-2.5 py-1">{watchModeLabel}</span>}
+                {progressLabel && <span className="rounded-full bg-[#FFF8F5] px-2.5 py-1">{progressLabel}</span>}
               </div>
+            </div>
+
+            <section>
+              <h5 className="mb-2 text-sm font-extrabold text-[#000000]">Status</h5>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {statusOptions.map(status => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => onStatusChange?.(item.id, status)}
+                    className={`min-h-[44px] rounded-lg border px-3 text-sm font-bold transition ${item.status === status ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000] hover:bg-[#FFF8F5]'}`}
+                  >
+                    {window.formatStatusLabel?.(status) || status}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {isTvShow && (
+              <section className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                <h5 className="text-sm font-extrabold text-[#000000]">Progress</h5>
+                {loadingProgress ? (
+                  <div className="py-3 text-sm font-semibold text-[#534340]">Loading show info...</div>
+                ) : (
+                  <>
+                    {isTmdb && seasons && seasons.length > 0 && (
+                      <div>
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Season</label>
+                        <select
+                          value={currentSeason}
+                          onChange={e => {
+                            const nextSeason = Number(e.target.value);
+                            setCurrentSeason(nextSeason);
+                            setCurrentEpisode(1);
+                          }}
+                          className={fieldCls}
+                        >
+                          {seasons.map(season => (
+                            <option key={season.season_number} value={season.season_number}>
+                              Season {season.season_number} ({season.episode_count} ep)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Episode</label>
+                      {episodeCount ? (
+                        <select value={currentEpisode} onChange={e => setCurrentEpisode(Number(e.target.value))} className={fieldCls}>
+                          {Array.from({ length: episodeCount }, (_, index) => index + 1).map(episode => (
+                            <option key={episode} value={episode}>Episode {episode}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input type="number" min="1" value={currentEpisode} onChange={e => setCurrentEpisode(Math.max(1, Number(e.target.value) || 1))} className={fieldCls} />
+                      )}
+                    </div>
+                    <button type="button" onClick={saveTvProgress} className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]">
+                      Save progress
+                    </button>
+                  </>
+                )}
+              </section>
+            )}
+
+            {isBook && (
+              <section className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+                <h5 className="text-sm font-extrabold text-[#000000]">Progress</h5>
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Current page</label>
+                  <input type="number" min="0" max={totalPages || undefined} value={currentPage} onChange={e => setCurrentPage(Math.max(0, Math.floor(Number(e.target.value) || 0)))} className={fieldCls} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Total pages</label>
+                  <input type="number" min="0" value={totalPages} onChange={e => {
+                    const nextTotal = Math.max(0, Math.floor(Number(e.target.value) || 0));
+                    setTotalPages(nextTotal);
+                    setCurrentPage(page => nextTotal ? Math.min(page, nextTotal) : page);
+                  }} className={fieldCls} />
+                </div>
+                {bookProgressPercent !== null && (
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#000000]">
+                      <span>{normalizedCurrentPage} / {totalPages} pages</span>
+                      <span>{bookProgressPercent}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-[#FFDAD4]">
+                      <div className="h-full rounded-full bg-[#E63B2E] transition-all" style={{ width: `${bookProgressPercent}%` }} />
+                    </div>
+                  </div>
+                )}
+                <button type="button" onClick={saveBookProgress} className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]">
+                  Save progress
+                </button>
+              </section>
             )}
 
             <button
-              onClick={handleSave}
-              className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]"
+              type="button"
+              onClick={() => {
+                onClose();
+                onStatusChange?.(item.id, 'remove');
+              }}
+              className="min-h-[44px] w-full rounded-xl border border-[#FFDAD4] bg-white px-3 text-sm font-bold text-[#C1121F] transition hover:bg-[#FFDAD4]"
             >
-              Save progress
+              Delete item
             </button>
           </div>
         </div>
+      </div>
     </ModalShell>
   );
 };
@@ -255,149 +249,35 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 // ============================================================================
 
 const MediaCard = ({ item, onStatusChange, onProgressChange, watchModeLabel }) => {
-  const [showMenu, setShowMenu] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const statusOptions = window.getStatusOptions?.(item.category) || [];
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const placeholder = window.PLACEHOLDER_IMAGE || '';
   const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
-  const ThreeDotsIcon = getMediaComponent('ThreeDots');
-
-  const isTvShow = item.category === 'tvshows';
-  const isBook = item.category === 'books';
-  const pageLabel = item.category === 'books' && item.totalPages ? `${item.totalPages} pages` : null;
-  const progress = item.progress;
-
-  const progressLabel = (() => {
-    if (isBook && !progress) return 'Set progress...';
-    if (!progress) return null;
-    if (isBook && Number.isFinite(Number(progress.currentPage))) {
-      const currentPage = Math.max(0, Math.floor(Number(progress.currentPage) || 0));
-      const totalPages = Math.max(0, Math.floor(Number(progress.totalPages || item.totalPages || 0) || 0));
-      return totalPages ? `${Math.min(currentPage, totalPages)} / ${totalPages} pages` : `Page ${currentPage}`;
-    }
-    if (progress.currentSeason) return `S${progress.currentSeason} E${progress.currentEpisode}`;
-    if (progress.currentEpisode) return `Ep ${progress.currentEpisode}`;
-    return null;
-  })();
-
-  const bookProgressPercent = (() => {
-    if (!isBook) return null;
-    const totalPages = Math.max(0, Math.floor(Number(progress?.totalPages || item.totalPages || 0) || 0));
-    if (!totalPages) return null;
-    const currentPage = Math.min(Math.max(0, Math.floor(Number(progress?.currentPage || 0) || 0)), totalPages);
-    return Math.round((currentPage / totalPages) * 100);
-  })();
 
   return (
     <>
-      <div className="group relative overflow-hidden rounded-xl border border-[#E1D8D4] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10">
-        <div className="aspect-[2/3] overflow-hidden bg-[#FFDAD4]">
-          <img
-            src={safeThumbnail}
-            alt={item.title}
-            loading="lazy"
-            decoding="async"
-            onError={(e) => { if (e.currentTarget.src !== placeholder) e.currentTarget.src = placeholder; }}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-        </div>
-
-        <div className="space-y-1.5 p-2 sm:p-3">
-          <h3 className="line-clamp-2 text-xs font-bold leading-tight text-[#000000] sm:text-sm" title={item.title}>
-            {item.title}
-          </h3>
-          {item.author && (
-            <p className="truncate text-[11px] font-medium text-[#000000]" title={item.author}>{item.author}</p>
-          )}
-          {pageLabel && (
-            <p className="text-[11px] font-semibold text-[#8C4F45]">{pageLabel}</p>
-          )}
-          <p className="text-[11px] font-semibold text-[#8C4F45]">{watchModeLabel || (item.watchingMode === 'alone' ? 'Personal pick' : 'Together')}</p>
-
-          <div className="flex items-start justify-between">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-medium text-[#000000]">
-              <span className="flex items-center gap-0.5">⭐ {item.rating}</span>
-              <span>·</span>
-              <span>{item.year}</span>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
-                aria-label="Options"
-              >
-                <ThreeDotsIcon size={14} />
-              </button>
-
-              {showMenu && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute bottom-full right-0 z-20 mb-2 w-44 overflow-hidden rounded-lg border border-[#E1D8D4] bg-white py-1 shadow-xl shadow-[#000000]/15">
-                    {statusOptions.map(status => (
-                      <button
-                        key={status}
-                        onClick={() => {
-                          onStatusChange(item.id, status);
-                          setShowMenu(false);
-                        }}
-                        className="block min-h-[44px] w-full px-3 py-2 text-left text-sm text-[#000000] transition hover:bg-[#FFF8F5]"
-                      >
-                        {window.formatStatusLabel?.(status) || status}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => {
-                        onStatusChange(item.id, 'remove');
-                        setShowMenu(false);
-                      }}
-                      className="block min-h-[44px] w-full border-t border-[#E1D8D4] px-3 py-2 text-left text-sm font-semibold text-[#C1121F] transition hover:bg-[#FFDAD4]"
-                    >
-                      Delete item
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {bookProgressPercent !== null && (
-            <div className="h-1.5 overflow-hidden rounded-full bg-[#FFDAD4]">
-              <div
-                className="h-full rounded-full bg-[#E63B2E]"
-                style={{ width: `${bookProgressPercent}%` }}
-              />
-            </div>
-          )}
-
-          {(isTvShow || isBook) && (
-            <button
-              onClick={() => setShowProgressModal(true)}
-              className="mt-1 flex min-h-[44px] w-full items-center justify-between gap-1 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-2 py-1.5 transition hover:bg-[#FFDAD4]"
-              aria-label={progressLabel || 'Set progress'}
-              title={progressLabel || 'Set progress'}
-            >
-              <span className="truncate text-[11px] font-bold text-[#E63B2E]">
-                {progressLabel || 'Set progress…'}
-              </span>
-              <span className="shrink-0 text-[10px] text-[#A9372C] opacity-70">✎</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {showProgressModal && isTvShow && (
-        <TvProgressModal
-          item={item}
-          onClose={() => setShowProgressModal(false)}
-          onSave={(progress) => onProgressChange && onProgressChange(item.id, progress)}
+      <button
+        type="button"
+        onClick={() => setShowDetailModal(true)}
+        className="group aspect-[2/3] overflow-hidden rounded-lg border border-[#E1D8D4] bg-[#FFDAD4] shadow-sm transition hover:-translate-y-0.5 hover:border-[#FFB4A9] hover:shadow-md hover:shadow-[#000000]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
+        aria-label={`Open details for ${item.title}`}
+      >
+        <img
+          src={safeThumbnail}
+          alt={item.title}
+          loading="lazy"
+          decoding="async"
+          onError={(e) => { if (e.currentTarget.src !== placeholder) e.currentTarget.src = placeholder; }}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
-      )}
-      {showProgressModal && isBook && (
-        <BookProgressModal
+      </button>
+
+      {showDetailModal && (
+        <MediaDetailModal
           item={item}
-          onClose={() => setShowProgressModal(false)}
-          onSave={(progress) => onProgressChange && onProgressChange(item.id, progress)}
+          onClose={() => setShowDetailModal(false)}
+          onStatusChange={onStatusChange}
+          onProgressChange={onProgressChange}
+          watchModeLabel={watchModeLabel}
         />
       )}
     </>
@@ -436,8 +316,8 @@ const ResultCard = ({ item, category, onAdd }) => {
         <p className="mt-0.5 text-[11px] font-semibold text-white/80">{pageLabel}</p>
       )}
       <div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-white/85 sm:gap-2">
-        <span className="flex items-center gap-0.5">⭐ {item.rating}</span>
-        <span>·</span>
+        <span>Rating {item.rating}</span>
+        <span>/</span>
         <span>{item.year}</span>
       </div>
     </div>

@@ -144,59 +144,13 @@ const buildTripPayload = (formData = {}) => ({
   flights: formData.flights || '',
   hotel: formData.hotel || '',
   budget: formData.budget != null && formData.budget !== '' ? Number(formData.budget) : null,
-  itinerary: parseTripItinerary(formData.itineraryText || formData.itinerary),
-  packingList: [],
-  placesToVisit: [],
-  restaurants: [],
+  itinerary: Array.isArray(formData.itinerary) ? formData.itinerary : [],
+  packingList: Array.isArray(formData.packingList) ? formData.packingList : [],
+  placesToVisit: Array.isArray(formData.placesToVisit) ? formData.placesToVisit : [],
+  restaurants: Array.isArray(formData.restaurants) ? formData.restaurants : [],
   documents: formData.documents || '',
   notes: formData.notes || ''
 });
-
-const parseTripItinerary = (value) => {
-  if (Array.isArray(value)) return value;
-  const text = String(value || '').trim();
-  if (!text) return [];
-
-  const lines = text.split(/\r?\n/);
-  const days = [];
-  let current = null;
-  const uid = () => `day-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-  lines.forEach((line) => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-    const dayMatch = trimmed.match(/^day\s+(\d+)/i);
-    if (dayMatch) {
-      const title = trimmed.replace(/^day\s+\d+\s*[:.-]?\s*/i, '').trim();
-      current = {
-        id: uid(),
-        day: Number(dayMatch[1]),
-        date: '',
-        title,
-        notes: ''
-      };
-      days.push(current);
-      return;
-    }
-
-    if (!current) {
-      current = {
-        id: uid(),
-        day: days.length + 1,
-        date: '',
-        title: `Day ${days.length + 1}`,
-        notes: ''
-      };
-      days.push(current);
-    }
-    current.notes = current.notes ? `${current.notes}\n${trimmed}` : trimmed;
-  });
-
-  return days.map((day, idx) => ({
-    ...day,
-    day: Number.isFinite(Number(day.day)) ? Number(day.day) : idx + 1
-  }));
-};
 
 const EVENT_COLOR_PALETTE = [
   '#E63B2E', '#2563EB', '#16A34A', '#9333EA',
@@ -448,6 +402,140 @@ const RecipeIngredientFields = ({ formData, setFormData }) => {
   );
 };
 
+const TripSectionHeading = ({ title, count }) => (
+  <div className="flex items-center gap-2">
+    <h4 className="text-sm font-extrabold uppercase tracking-wide text-[#A9372C]">{title}</h4>
+    {typeof count === 'number' && count > 0 && (
+      <span className="rounded-full bg-[#FFDAD4] px-2 py-0.5 text-[10px] font-bold text-[#A9372C]">{count}</span>
+    )}
+  </div>
+);
+
+const TripItineraryEditor = ({ items = [], onChange }) => {
+  const CloseIcon = getComponent('Close');
+  const uid = () => `day-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const handleAdd = () => {
+    const nextDay = (items?.length || 0) + 1;
+    onChange([...(items || []), { id: uid(), day: nextDay, date: '', title: '', notes: '' }]);
+  };
+
+  const handleUpdate = (id, patch) => {
+    onChange((items || []).map(item => item.id === id ? { ...item, ...patch } : item));
+  };
+
+  const handleRemove = (id) => {
+    onChange((items || []).filter(item => item.id !== id).map((item, idx) => ({ ...item, day: idx + 1 })));
+  };
+
+  return (
+    <div className="space-y-2">
+      {(items || []).map(item => (
+        <div key={item.id} className="rounded-lg border border-[#E1D8D4] bg-white p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-extrabold uppercase tracking-wide text-[#A9372C]">Day {item.day}</p>
+            <button
+              type="button"
+              onClick={() => handleRemove(item.id)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+              aria-label="Remove day"
+              title="Remove day"
+            >
+              <CloseIcon size={14} />
+            </button>
+          </div>
+          <input
+            type="text"
+            value={item.title || ''}
+            onChange={(e) => handleUpdate(item.id, { title: e.target.value })}
+            placeholder="Headline (e.g. Arrival, Old town)"
+            className={`${inputCls} mt-2`}
+          />
+          <div className="mt-2">
+            <DateInput value={item.date || ''} onChange={(date) => handleUpdate(item.id, { date })} />
+          </div>
+          <textarea
+            value={item.notes || ''}
+            onChange={(e) => handleUpdate(item.id, { notes: e.target.value })}
+            placeholder="Plans, reservations, transport..."
+            rows="2"
+            className={`${inputCls} mt-2 min-h-[60px]`}
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={handleAdd}
+        className="min-h-[40px] w-full rounded-lg border border-dashed border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#A9372C] transition hover:bg-[#FFF8F5]"
+      >
+        + Add day
+      </button>
+    </div>
+  );
+};
+
+const TripChecklistEditor = ({ items = [], onChange, placeholder, withCheckbox = false }) => {
+  const [draft, setDraft] = useState('');
+  const CloseIcon = getComponent('Close');
+  const uid = () => `entry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const handleAdd = () => {
+    const value = draft.trim();
+    if (!value) return;
+    onChange([...(items || []), { id: uid(), title: value, notes: '', completed: false }]);
+    setDraft('');
+  };
+
+  return (
+    <div className="space-y-2">
+      {(items || []).length > 0 && (
+        <ul className="space-y-1.5">
+          {(items || []).map(item => (
+            <li key={item.id} className="flex items-center gap-2 rounded-lg border border-[#E1D8D4] bg-white px-3 py-1.5">
+              {withCheckbox && (
+                <input
+                  type="checkbox"
+                  checked={Boolean(item.completed)}
+                  onChange={() => onChange((items || []).map(entry => entry.id === item.id ? { ...entry, completed: !entry.completed } : entry))}
+                  className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                  aria-label={`Toggle ${item.title}`}
+                />
+              )}
+              <span className={`flex-1 truncate text-sm text-[#000000] ${withCheckbox && item.completed ? 'line-through opacity-60' : ''}`}>{item.title}</span>
+              <button
+                type="button"
+                onClick={() => onChange((items || []).filter(entry => entry.id !== item.id))}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                aria-label={`Remove ${item.title}`}
+                title="Remove item"
+              >
+                <CloseIcon size={14} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
+          placeholder={placeholder}
+          className={inputCls}
+        />
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="min-h-[44px] shrink-0 rounded-lg bg-[#E63B2E] px-3 text-sm font-bold text-white transition hover:bg-[#CC302F]"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData, mediaWatchOptions, mediaWatchFilter }) => {
   const [formData, setFormData] = useState({});
@@ -463,6 +551,12 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     if (activeTab === 'recipes') {
       nextFormData.ingredientFields = parseIngredientFields(nextFormData.ingredients);
       nextFormData.ingredients = serializeIngredientFields(nextFormData.ingredientFields);
+    }
+    if (activeTab === 'trips') {
+      nextFormData.itinerary = Array.isArray(nextFormData.itinerary) ? nextFormData.itinerary : [];
+      nextFormData.packingList = Array.isArray(nextFormData.packingList) ? nextFormData.packingList : [];
+      nextFormData.placesToVisit = Array.isArray(nextFormData.placesToVisit) ? nextFormData.placesToVisit : [];
+      nextFormData.restaurants = Array.isArray(nextFormData.restaurants) ? nextFormData.restaurants : [];
     }
     setFormData(nextFormData);
     setIsSaving(false);
@@ -620,7 +714,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
       onClose={onClose}
       zClass="z-[100]"
       ariaLabel={getModalTitle()}
-      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
+      dialogClassName={`max-h-[90vh] w-full ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'} overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30`}
     >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#000000]">{getModalTitle()}</h2>
@@ -737,28 +831,60 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
           {activeTab === 'trips' && (
             <>
-              <FormField label="Destination" required>
-                <input type="text" className={inputCls} value={formData.destination || ''} placeholder="e.g. Lisbon, Portugal" onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
-              </FormField>
-              <div className="grid grid-cols-2 gap-2">
-                <FormField label="Start date">
-                  <DateInput value={formData.startDate || ''} onChange={(startDate) => setFormData({ ...formData, startDate })} />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FormField label="Destination" required>
+                  <input type="text" className={inputCls} value={formData.destination || ''} placeholder="Lisbon, Portugal" onChange={(e) => setFormData({ ...formData, destination: e.target.value })} required autoFocus />
                 </FormField>
-                <FormField label="End date">
-                  <DateInput value={formData.endDate || ''} onChange={(endDate) => setFormData({ ...formData, endDate })} />
+                <div className="grid grid-cols-2 gap-2">
+                  <FormField label="Start">
+                    <DateInput value={formData.startDate || ''} onChange={(startDate) => setFormData({ ...formData, startDate })} />
+                  </FormField>
+                  <FormField label="End">
+                    <DateInput value={formData.endDate || ''} onChange={(endDate) => setFormData({ ...formData, endDate })} />
+                  </FormField>
+                </div>
+                <FormField label="Hotel">
+                  <input type="text" className={inputCls} placeholder="Hotel name & address" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
+                </FormField>
+                <FormField label="Budget (€)">
+                  <input type="number" min="0" step="0.01" placeholder="0" className={inputCls} value={formData.budget ?? ''} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} />
                 </FormField>
               </div>
               {formData.endDate && formData.startDate && formData.endDate < formData.startDate && (
                 <p className="-mt-2 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
               )}
               <FormField label="Flights">
-                <textarea rows="2" placeholder="Airline company, hour for departure and arrival, terminal number, etc" className={inputCls} value={formData.flights || ''} onChange={(e) => setFormData({ ...formData, flights: e.target.value })} />
+                <textarea rows="2" placeholder="Airline company, hour for departure and arrival, terminal number, etc" className={`${inputCls} min-h-[60px]`} value={formData.flights || ''} onChange={(e) => setFormData({ ...formData, flights: e.target.value })} />
               </FormField>
-              <FormField label="Accommodation">
-                <input type="text" className={inputCls} placeholder="Address" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
+              <div>
+                <TripSectionHeading title="Itinerary by day" count={formData.itinerary?.length} />
+                <div className="mt-2">
+                  <TripItineraryEditor items={formData.itinerary || []} onChange={(itinerary) => setFormData({ ...formData, itinerary })} />
+                </div>
+              </div>
+              <div>
+                <TripSectionHeading title="Packing list" count={formData.packingList?.length} />
+                <div className="mt-2">
+                  <TripChecklistEditor items={formData.packingList || []} onChange={(packingList) => setFormData({ ...formData, packingList })} placeholder="Add a packing item..." withCheckbox />
+                </div>
+              </div>
+              <div>
+                <TripSectionHeading title="Places to visit" count={formData.placesToVisit?.length} />
+                <div className="mt-2">
+                  <TripChecklistEditor items={formData.placesToVisit || []} onChange={(placesToVisit) => setFormData({ ...formData, placesToVisit })} placeholder="Add a place..." withCheckbox />
+                </div>
+              </div>
+              <div>
+                <TripSectionHeading title="Restaurants" count={formData.restaurants?.length} />
+                <div className="mt-2">
+                  <TripChecklistEditor items={formData.restaurants || []} onChange={(restaurants) => setFormData({ ...formData, restaurants })} placeholder="Add a restaurant..." withCheckbox />
+                </div>
+              </div>
+              <FormField label="Documents">
+                <textarea rows="2" placeholder="Passport, visa, insurance, vaccination certificates..." className={`${inputCls} min-h-[60px]`} value={formData.documents || ''} onChange={(e) => setFormData({ ...formData, documents: e.target.value })} />
               </FormField>
-              <FormField label="Itinerary">
-                <textarea rows="5" placeholder={`Day 1\n1. Eiffel Tower\n2. Louvre Museum\n...`} className={inputCls} value={formData.itineraryText || ''} onChange={(e) => setFormData({ ...formData, itineraryText: e.target.value })} />
+              <FormField label="Shared notes">
+                <textarea rows="3" placeholder="Anything to remember together..." className={`${inputCls} min-h-[80px]`} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
             </>
           )}

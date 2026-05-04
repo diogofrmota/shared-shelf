@@ -56,7 +56,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
       </div>
 
       {ingredients.length > 0 && (
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#000000]">
+        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#000000]">
           {ingredients.join('\n')}
         </p>
       )}
