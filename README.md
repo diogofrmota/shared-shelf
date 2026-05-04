@@ -1,4 +1,4 @@
-# Couple Planner
+# Couple Planner 2
 
 Lightweight Vercel-hosted web app for couples to plan together. Users create a private shared dashboard, invite their partner, and manage calendar, tasks, dates, trips, recipes, and entertainment (movies, TV, books).
 
