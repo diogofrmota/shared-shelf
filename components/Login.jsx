@@ -397,7 +397,7 @@ function LoginScreen({ onLogin, onNavigate }) {
   };
 
   const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-base text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
-  const passwordInputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white pl-4 pr-11 py-3 text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
+  const passwordInputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white pl-4 pr-11 py-3 text-base text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
   const labelClass = "mb-1.5 block text-sm font-bold text-[#000000]";
 
   return (
@@ -440,7 +440,6 @@ function LoginScreen({ onLogin, onNavigate }) {
                     value={newPassword}
                     onChange={(e) => handleInput('newPassword', e.target.value)}
                     className={passwordInputClass}
-                    style={{ fontSize: showNewPassword ? '1rem' : '0.5rem' }}
                   />
                   <button
                     type="button"
@@ -603,7 +602,6 @@ function LoginScreen({ onLogin, onNavigate }) {
                     value={password}
                     onChange={(e) => handleInput('password', e.target.value)}
                     className={passwordInputClass}
-                    style={{ fontSize: showPassword ? '1rem' : '0.5rem' }}
                   />
                   <button
                     type="button"
