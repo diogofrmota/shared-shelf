@@ -1,4 +1,4 @@
-# Couple Planner 2
+# Couple Planner
 
 Lightweight Vercel-hosted web app for couples to plan together. Users create a private shared dashboard, invite their partner, and manage calendar, tasks, dates, trips, recipes, and entertainment (movies, TV, books).
 
@@ -98,7 +98,7 @@ Dates (formerly Locations) contain `name` (place name), `address` (location), `c
 
 Trips (replacing Expenses) contain `destination`, `startDate`, `endDate`, `flights`, `hotel`, `budget` (number|null), `itinerary` (array of `{ id, day, date, title, notes }`), `packingList` / `placesToVisit` / `restaurants` (each an array of `{ id, title, notes, completed }`), `documents`, and `notes` (shared notes).
 
-Entertainment statuses: Movies/TV: `plan-to-watch`, `watching`, `completed`; Books: `plan-to-read`, `reading`, `read`.
+Entertainment statuses: Movies/TV: `plan-to-watch`, `watching`, `completed`; Books: `plan-to-read`, `reading`, `read`. Entertainment ownership is stored in `watchingMode`: `together` for shared picks, `user:<id>` for a specific member's picks, and legacy `alone` entries are treated as the signed-in user's picks on the client.
 
 Backwards compatibility: legacy `locations` arrays are migrated into `dates` on read; legacy `expenses` data is replaced with an empty `trips` array (the data shapes are not compatible). Legacy enabled-section ids `locations` and `expenses` are remapped to `dates` and `trips` respectively in both the client and the server.
 

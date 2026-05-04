@@ -244,6 +244,12 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
   const category = normalizeMediaCategory(item, fallbackCategory);
   const typeByCategory = { movies: 'Movie', tvshows: 'Tv Show', books: 'Book' };
   const bookProgress = category === 'books' ? normalizeBookProgress(item) : null;
+  const rawWatchingMode = String(item.watchingMode || '').trim();
+  const watchingMode = rawWatchingMode === 'alone'
+    || rawWatchingMode === 'together'
+    || rawWatchingMode.startsWith('user:')
+      ? rawWatchingMode
+      : 'together';
 
   return {
     ...item,
@@ -262,7 +268,7 @@ const normalizeWatchlistItem = (item, fallbackCategory) => {
           currentEpisode: Number.isFinite(Number(item.progress.currentEpisode)) ? Math.max(1, Math.floor(Number(item.progress.currentEpisode))) : null
         }
         : null),
-    watchingMode: item.watchingMode === 'alone' ? 'alone' : 'together',
+    watchingMode,
     status: normalizeWatchlistStatus(item, category)
   };
 };

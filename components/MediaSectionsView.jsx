@@ -56,14 +56,17 @@ const MEDIA_TYPE_EMPTY_COPY = {
   }
 };
 
-const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect, watchFilter, onWatchFilterChange }) => {
+const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect, watchFilter, onWatchFilterChange, watchOptions }) => {
   const { useState } = React;
   const [showCompleted, setShowCompleted] = useState(true);
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const MediaCard = window.getWindowComponent?.('MediaCard', window.MissingComponent) || window.MissingComponent;
   const Plus = getMediaSectionsComponent('Plus');
-  const Film = getMediaSectionsComponent('Film');
   const ChevronLeft = getMediaSectionsComponent('ChevronLeft');
+  const filterOptions = Array.isArray(watchOptions) && watchOptions.length
+    ? watchOptions
+    : [{ id: 'together', label: 'Together' }];
+  const watchLabelById = filterOptions.reduce((labels, option) => ({ ...labels, [option.id]: option.label }), {});
   if (!activeTab) {
     return (
       <div className="space-y-5 animate-fade-in">
@@ -71,14 +74,6 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Entertainment</h2>
           <p className="mt-1 text-sm text-[#000000]">Keep track of what you're watching and reading.</p>
         </div>
-        {items.length === 0 && (
-          <EmptyState
-            title="No entertainment items yet"
-            message="Choose a category to add the first movie, show, or book."
-            icon={Film}
-            compact
-          />
-        )}
         <div className="grid gap-4 sm:grid-cols-3">
           {MEDIA_TYPE_TILES.map(({ id, label, icon, description }) => {
             const Icon = getMediaSectionsComponent(icon);
@@ -139,10 +134,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
         </button>
       </div>
       <div className="inline-flex rounded-xl border border-[#E1D8D4] bg-white p-1">
-        {[
-          { id: 'together', label: 'Watching together' },
-          { id: 'alone', label: 'Watching alone' }
-        ].map(option => (
+        {filterOptions.map(option => (
           <button
             key={option.id}
             type="button"
@@ -193,7 +185,13 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4">
                 {sectionItems.map(item => (
-                  <MediaCard key={item.id} item={item} onStatusChange={onStatusChange} onProgressChange={onProgressChange} />
+                  <MediaCard
+                    key={item.id}
+                    item={item}
+                    onStatusChange={onStatusChange}
+                    onProgressChange={onProgressChange}
+                    watchModeLabel={watchLabelById[item.watchingMode] || (item.watchingMode === 'alone' ? 'Personal pick' : 'Together')}
+                  />
                 ))}
               </div>
             )}

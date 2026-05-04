@@ -73,16 +73,7 @@ const RecipeDetailModal = ({ recipe, onClose, onEdit }) => {
             </div>
           )}
 
-          {recipe.instructions && (
-            <div>
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#E63B2E]">Instructions</h3>
-              <p className="whitespace-pre-wrap rounded-xl bg-[#FFF8F5] p-4 text-sm leading-relaxed text-[#000000]">
-                {recipe.instructions}
-              </p>
-            </div>
-          )}
-
-          {!recipe.ingredients && !recipe.instructions && (
+          {!recipe.ingredients && (
             <p className="text-sm italic text-[#000000]">No details saved.</p>
           )}
         </div>

@@ -5,13 +5,19 @@ const { useState, useEffect } = React;
 // SEARCH MODAL COMPONENT
 // ============================================================================
 
-const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
+const SearchModal = ({ isOpen, onClose, category, onAdd, watchOptions, defaultWatchFilter }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const [watchingMode, setWatchingMode] = useState('together');
+  const availableWatchOptions = Array.isArray(watchOptions) && watchOptions.length
+    ? watchOptions
+    : [{ id: 'together', label: 'Together' }];
+  const defaultMode = availableWatchOptions.some(option => option.id === defaultWatchFilter)
+    ? defaultWatchFilter
+    : availableWatchOptions[0].id;
+  const [watchingMode, setWatchingMode] = useState(defaultMode);
   const [bookTotalPages, setBookTotalPages] = useState('');
 
   useEffect(() => {
@@ -20,10 +26,10 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
       setResults([]);
       setError('');
       setHasSearched(false);
-      setWatchingMode(window.localStorage?.getItem('cp:watch-filter') || 'together');
+      setWatchingMode(defaultMode);
       setBookTotalPages('');
     }
-  }, [isOpen]);
+  }, [isOpen, defaultMode]);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -111,9 +117,9 @@ const SearchModal = ({ isOpen, onClose, category, onAdd }) => {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <span className="text-xs font-bold uppercase tracking-wide text-[#000000]">Mode</span>
-            {['together', 'alone'].map(mode => (
-              <button key={mode} type="button" onClick={() => setWatchingMode(mode)} className={`min-h-[36px] rounded-lg border px-3 text-xs font-bold ${watchingMode === mode ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000]'}`}>
-                {mode === 'together' ? 'Watching together' : 'Watching alone'}
+            {availableWatchOptions.map(option => (
+              <button key={option.id} type="button" onClick={() => setWatchingMode(option.id)} className={`min-h-[36px] rounded-lg border px-3 text-xs font-bold ${watchingMode === option.id ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000]'}`}>
+                {option.label}
               </button>
             ))}
             {category === 'books' && (

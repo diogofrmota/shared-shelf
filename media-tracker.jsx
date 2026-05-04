@@ -624,7 +624,7 @@ function MediaTracker() {
 
   const handleCategoryChange = (category, subTab) => {
     setActiveCategory(category);
-    setActiveSubTab(category === 'media' && !subTab ? 'tvshows' : subTab);
+    setActiveSubTab(category === 'media' ? (subTab || null) : subTab);
   };
   useEffect(() => {
     if (['tvshows', 'movies', 'books'].includes(activeSubTab)) window.localStorage?.setItem('cp:last-media-type', activeSubTab);
@@ -958,11 +958,57 @@ function MediaTracker() {
       });
   };
 
+  const getUserDisplayName = (user) => (
+    user?.name || user?.username || user?.email || 'User'
+  );
+
+  const mediaWatchOptions = useMemo(() => {
+    const members = Array.isArray(currentDashboard?.members) ? currentDashboard.members : [];
+    const byId = new Map();
+    members.forEach(member => {
+      if (member?.id) byId.set(String(member.id), member);
+    });
+    if (currentUser?.id) byId.set(String(currentUser.id), { ...byId.get(String(currentUser.id)), ...currentUser });
+
+    const currentUserId = currentUser?.id ? String(currentUser.id) : '';
+    const currentMember = currentUserId ? byId.get(currentUserId) : currentUser;
+    const otherMembers = Array.from(byId.values()).filter(member => String(member?.id || '') !== currentUserId);
+    const options = [
+      { id: 'together', label: 'Together' },
+      { id: currentUserId ? `user:${currentUserId}` : 'alone', label: getUserDisplayName(currentMember) }
+    ];
+
+    if (byId.size === 2 && otherMembers[0]?.id) {
+      options.push({ id: `user:${otherMembers[0].id}`, label: getUserDisplayName(otherMembers[0]) });
+    }
+
+    return options;
+  }, [currentDashboard?.members, currentUser]);
+
+  useEffect(() => {
+    if (!mediaWatchOptions.length) return;
+    const validFilters = mediaWatchOptions.map(option => option.id);
+    if (mediaWatchFilter === 'alone' && currentUser?.id) {
+      setMediaWatchFilter(`user:${currentUser.id}`);
+      return;
+    }
+    if (!validFilters.includes(mediaWatchFilter)) {
+      setMediaWatchFilter('together');
+    }
+  }, [mediaWatchOptions, mediaWatchFilter, currentUser?.id]);
+
+  const watchModeMatchesFilter = (watchingMode, filter) => {
+    const mode = watchingMode || 'together';
+    if (filter === 'together') return mode === 'together';
+    if (filter === `user:${currentUser?.id}`) return mode === filter || mode === 'alone';
+    return mode === filter;
+  };
+
   const activeMediaItems = useMemo(
     () => activeSubTab
-      ? (data?.watchlist || []).filter(item => item.category === activeSubTab && (item.watchingMode || 'together') === mediaWatchFilter)
+      ? (data?.watchlist || []).filter(item => item.category === activeSubTab && watchModeMatchesFilter(item.watchingMode, mediaWatchFilter))
       : (data?.watchlist || []),
-    [data?.watchlist, activeSubTab, mediaWatchFilter]
+    [data?.watchlist, activeSubTab, mediaWatchFilter, currentUser?.id]
   );
   const LoadingScreen = window.getWindowComponent?.('LoadingScreen', window.MissingComponent) || window.MissingComponent;
   const FailureScreen = window.getWindowComponent?.('FailureScreen', window.MissingComponent) || window.MissingComponent;
@@ -1151,6 +1197,7 @@ function MediaTracker() {
           onMediaTypeSelect={(subTab) => setActiveSubTab(subTab)}
           watchFilter={mediaWatchFilter}
           onWatchFilterChange={setMediaWatchFilter}
+          watchOptions={mediaWatchOptions}
         />
       );
     }
@@ -1211,6 +1258,8 @@ function MediaTracker() {
         onAddTask={handleAddTask}
         profile={visibleData?.profile}
         initialData={addEventInitialData}
+        mediaWatchOptions={mediaWatchOptions}
+        mediaWatchFilter={mediaWatchFilter}
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />

@@ -42,7 +42,7 @@ const FEATURES = [
   {
     icon: 'ChefHat',
     title: 'Recipes',
-    description: 'Build a shared recipe book with all ingredients and instructions.',
+    description: 'Build a shared recipe book with ingredients and links.',
     bg: '#FFE4F6',
     border: '#EAA3D6',
     accent: '#B8329B',

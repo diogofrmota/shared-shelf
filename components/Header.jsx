@@ -380,7 +380,7 @@ const Header = ({
                 key={tab.id}
                 aria-current={isActive ? 'page' : undefined}
                 onClick={() => {
-                  if (tab.id === 'media') handleTabClick('media', 'tvshows');
+                  if (tab.id === 'media') handleTabClick('media', null);
                   else handleTabClick(tab.category, tab.id);
                 }}
                 className={`relative inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${

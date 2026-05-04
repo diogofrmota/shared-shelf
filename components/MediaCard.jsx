@@ -254,7 +254,7 @@ const BookProgressModal = ({ item, onClose, onSave }) => {
 // MEDIA CARD COMPONENT
 // ============================================================================
 
-const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
+const MediaCard = ({ item, onStatusChange, onProgressChange, watchModeLabel }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const statusOptions = window.getStatusOptions?.(item.category) || [];
@@ -312,7 +312,7 @@ const MediaCard = ({ item, onStatusChange, onProgressChange }) => {
           {pageLabel && (
             <p className="text-[11px] font-semibold text-[#8C4F45]">{pageLabel}</p>
           )}
-          <p className="text-[11px] font-semibold text-[#8C4F45]">{item.watchingMode === 'alone' ? 'Watching alone' : 'Watching together'}</p>
+          <p className="text-[11px] font-semibold text-[#8C4F45]">{watchModeLabel || (item.watchingMode === 'alone' ? 'Personal pick' : 'Together')}</p>
 
           <div className="flex items-start justify-between">
             <div className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-medium text-[#000000]">

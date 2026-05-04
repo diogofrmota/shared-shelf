@@ -8,7 +8,7 @@ const MOBILE_NAV_TABS = [
   { id: 'dates', label: 'Dates', category: 'go', icon: 'MapPin' },
   { id: 'trips', label: 'Trips', category: 'go', icon: 'Plane' },
   { id: 'recipes', label: 'Recipes', category: 'go', icon: 'ChefHat' },
-  { id: 'media', label: 'Watchlist', category: 'media', icon: 'Tv' }
+  { id: 'media', label: 'Entertainment', category: 'media', icon: 'Tv' }
 ];
 
 function MobileBottomNav({
@@ -31,7 +31,7 @@ function MobileBottomNav({
     : activeCategory === tab.category && activeSubTab === tab.id;
 
   const handleClick = (tab) => {
-    if (tab.id === 'media') onCategoryChange('media', 'tvshows');
+    if (tab.id === 'media') onCategoryChange('media', null);
     else onCategoryChange(tab.category, tab.id);
   };
 

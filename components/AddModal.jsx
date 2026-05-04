@@ -144,13 +144,59 @@ const buildTripPayload = (formData = {}) => ({
   flights: formData.flights || '',
   hotel: formData.hotel || '',
   budget: formData.budget != null && formData.budget !== '' ? Number(formData.budget) : null,
-  itinerary: [],
+  itinerary: parseTripItinerary(formData.itineraryText || formData.itinerary),
   packingList: [],
   placesToVisit: [],
   restaurants: [],
   documents: formData.documents || '',
   notes: formData.notes || ''
 });
+
+const parseTripItinerary = (value) => {
+  if (Array.isArray(value)) return value;
+  const text = String(value || '').trim();
+  if (!text) return [];
+
+  const lines = text.split(/\r?\n/);
+  const days = [];
+  let current = null;
+  const uid = () => `day-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    const dayMatch = trimmed.match(/^day\s+(\d+)/i);
+    if (dayMatch) {
+      const title = trimmed.replace(/^day\s+\d+\s*[:.-]?\s*/i, '').trim();
+      current = {
+        id: uid(),
+        day: Number(dayMatch[1]),
+        date: '',
+        title,
+        notes: ''
+      };
+      days.push(current);
+      return;
+    }
+
+    if (!current) {
+      current = {
+        id: uid(),
+        day: days.length + 1,
+        date: '',
+        title: `Day ${days.length + 1}`,
+        notes: ''
+      };
+      days.push(current);
+    }
+    current.notes = current.notes ? `${current.notes}\n${trimmed}` : trimmed;
+  });
+
+  return days.map((day, idx) => ({
+    ...day,
+    day: Number.isFinite(Number(day.day)) ? Number(day.day) : idx + 1
+  }));
+};
 
 const EVENT_COLOR_PALETTE = [
   '#E63B2E', '#2563EB', '#16A34A', '#9333EA',
@@ -335,7 +381,7 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
 };
 
 
-const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData }) => {
+const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData, mediaWatchOptions, mediaWatchFilter }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [showTaskOptions, setShowTaskOptions] = useState(false);
@@ -435,7 +481,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         break;
       case 'recipes':
         if (formData.name) {
-          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, link: formData.link || '', ingredients: formData.ingredients || '', instructions: formData.instructions || '', isFavourite: Boolean(formData.isFavourite), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, link: formData.link || '', ingredients: formData.ingredients || '', isFavourite: Boolean(formData.isFavourite), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
             listType: formData.listType || 'task',
             createdAt: new Date().toISOString() });
           onClose();
@@ -483,6 +529,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         onClose={onClose}
         category={activeTab}
         onAdd={(item) => { onAddMedia(item); onClose(); }}
+        watchOptions={mediaWatchOptions}
+        defaultWatchFilter={mediaWatchFilter}
       />
     );
   }
@@ -631,21 +679,14 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                 <p className="-mt-2 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
               )}
               <FormField label="Flights">
-                <textarea rows="2" placeholder="Outbound + return flights, confirmation numbers..." className={inputCls} value={formData.flights || ''} onChange={(e) => setFormData({ ...formData, flights: e.target.value })} />
+                <textarea rows="2" placeholder="Airline company, hour for departure and arrival, terminal number, etc" className={inputCls} value={formData.flights || ''} onChange={(e) => setFormData({ ...formData, flights: e.target.value })} />
               </FormField>
-              <FormField label="Hotel">
-                <input type="text" className={inputCls} placeholder="Hotel name" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
+              <FormField label="Accommodation">
+                <input type="text" className={inputCls} placeholder="Address" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
               </FormField>
-              <FormField label="Budget (€)">
-                <input type="number" min="0" step="0.01" placeholder="0" className={inputCls} value={formData.budget ?? ''} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} />
+              <FormField label="Itinerary">
+                <textarea rows="5" placeholder={`Day 1\n1. Eiffel Tower\n2. Louvre Museum\n...`} className={inputCls} value={formData.itineraryText || ''} onChange={(e) => setFormData({ ...formData, itineraryText: e.target.value })} />
               </FormField>
-              <FormField label="Documents">
-                <textarea rows="2" placeholder="Passport, visa, insurance..." className={inputCls} value={formData.documents || ''} onChange={(e) => setFormData({ ...formData, documents: e.target.value })} />
-              </FormField>
-              <FormField label="Shared notes">
-                <textarea rows="3" placeholder="Anything to remember together..." className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-              </FormField>
-              <p className="text-xs font-medium text-[#534340]">Itinerary, packing list, places to visit and restaurants can be added once the trip is created.</p>
             </>
           )}
 
@@ -654,21 +695,16 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Name" required>
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
               </FormField>
-              <FormField label="Recipe link">
-                <input type="url" className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
-              </FormField>
               <FormField label="Ingredients">
                 <textarea placeholder="One per line" rows="4" className={inputCls} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
               </FormField>
-              <FormField label="Instructions">
-                <textarea rows="5" className={inputCls} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
+              <FormField label="Recipe Link">
+                <input type="url" placeholder="Paste TikTok link, or something from the web..." className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
               </FormField>
-              <FormField label="Favourite">
-                <label className="flex min-h-[44px] items-center gap-2 pt-1 text-sm font-medium text-[#000000]">
-                  <input type="checkbox" onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
-                  Mark as favourite
-                </label>
-              </FormField>
+              <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+                <input type="checkbox" onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+                Mark as favourite
+              </label>
             </>
           )}
 
@@ -849,7 +885,6 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
         link: recipe.link || '',
         isFavourite: Boolean(recipe.isFavourite),
         ingredients: recipe.ingredients || '',
-        instructions: recipe.instructions || '',
       });
     }
   }, [isOpen, recipe]);
@@ -884,21 +919,16 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           <FormField label="Name" required>
             <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
           </FormField>
-          <FormField label="Recipe link">
-            <input type="url" className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
-          </FormField>
           <FormField label="Ingredients">
-            <textarea rows="4" className={inputCls} value={formData.ingredients || ''} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
+            <textarea placeholder="One per line" rows="4" className={inputCls} value={formData.ingredients || ''} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
           </FormField>
-          <FormField label="Instructions">
-            <textarea rows="5" className={inputCls} value={formData.instructions || ''} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} />
+          <FormField label="Recipe Link">
+            <input type="url" placeholder="Paste TikTok link, or something from the web..." className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
           </FormField>
-          <FormField label="Favourite">
-            <label className="flex min-h-[44px] items-center gap-2 pt-1 text-sm font-medium text-[#000000]">
-              <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
-              Mark as favourite
-            </label>
-          </FormField>
+          <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+            <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+            Mark as favourite
+          </label>
           <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
             Save changes
           </button>
