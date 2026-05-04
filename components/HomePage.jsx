@@ -540,7 +540,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
               </p>
               <p className="mt-5 max-w-xl text-base font-medium text-white/90 sm:text-lg">
                 Couple Planner is an app that lets you and your partner create a shared
-                dashboard. One private place to share your calendar, tasks, dates, trips, recipes,
+                dashboard. One private place to share your calendar, tasks, dates, trips, recipes
                 and watchlists.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">

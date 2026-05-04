@@ -171,14 +171,6 @@ const Header = ({
     setDashboardSettingsExpanded(false);
   };
 
-  const openSharePanel = () => {
-    setSettingsOpen(true);
-    setProfileOpen(false);
-    setShareExpanded(true);
-    setDashboardSettingsExpanded(false);
-    setConfirmLeaveDashboard(false);
-  };
-
   const handleLeaveDashboard = async () => {
     if (!onLeaveDashboard) return;
     setLeavingDashboard(true);
@@ -407,17 +399,6 @@ const Header = ({
 
         {/* Right actions */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {canGenerateInvite && (
-            <button
-              type="button"
-              onClick={openSharePanel}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-[#000000] transition hover:bg-[#F5EFEC] sm:hidden"
-              title="Share"
-              aria-label="Share dashboard"
-            >
-              <ShareIcon size={22} />
-            </button>
-          )}
           <div className="relative" ref={settingsRef}>
             <button
               type="button"
@@ -922,16 +903,6 @@ const Header = ({
                       <UserIcon size={18} />
                       Edit profile
                     </button>
-                    {onBackToDashboards && (
-                      <button
-                        type="button"
-                        onClick={() => { onBackToDashboards(); setProfileOpen(false); }}
-                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#000000] transition hover:bg-[#FFF8F5]"
-                      >
-                        <LogoutIcon size={18} />
-                        Back to dashboards
-                      </button>
-                    )}
                     <button
                       type="button"
                       onClick={() => {

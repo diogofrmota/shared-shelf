@@ -431,7 +431,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
 
     return (
       <div
-        className={`group relative flex flex-col rounded-lg border p-1 transition sm:p-1.5 ${
+        className={`group relative min-w-0 flex flex-col rounded-lg border p-1 transition sm:p-1.5 ${
           isDragTarget
             ? 'border-[#E63B2E] bg-[#FFF0EE] ring-2 ring-[#E63B2E]/25'
             : isSelected
@@ -498,7 +498,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(7, 1fr)',
+              gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
               gridTemplateRows: `repeat(${numLanes}, 22px)`,
               gap: '2px 4px',
               marginBottom: '2px',
@@ -512,7 +512,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
             if (!iso) return (
               <div
                 key={`empty-${colIdx}`}
-                className={weekView ? 'min-h-[80px] sm:min-h-[120px]' : 'min-h-[52px] sm:min-h-[60px]'}
+                className={weekView ? 'min-h-[80px] min-w-0 sm:min-h-[120px]' : 'min-h-[52px] min-w-0 sm:min-h-[60px]'}
               />
             );
             const dayNum   = parseInt(iso.split('-')[2], 10);
@@ -538,18 +538,18 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="grid w-full gap-6 lg:grid-cols-12">
+    <div className="grid min-w-0 w-full gap-4 sm:gap-6 lg:grid-cols-12">
 
       {/* Calendar section */}
-      <section className="rounded-2xl border border-[#E1D8D4] bg-white p-4 shadow-sm sm:p-6 lg:col-span-8">
+      <section className="min-w-0 overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white p-3 shadow-sm sm:p-6 lg:col-span-8">
 
         {/* Header */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-extrabold text-[#000000] sm:text-2xl">
+        <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:gap-3">
+            <h2 className="min-w-0 flex-1 text-xl font-extrabold text-[#000000] sm:flex-none sm:text-2xl">
               {isMonthView ? `${MONTH_NAMES[viewMonth]} ${viewYear}` : weekMonthLabel}
             </h2>
-            <div className="flex items-center rounded-lg bg-[#FBF2ED] p-1">
+            <div className="flex shrink-0 items-center rounded-lg bg-[#FBF2ED] p-1">
               <button onClick={isMonthView ? goPrevMonth : goPrevWeek} className="flex h-11 w-11 items-center justify-center rounded text-[#000000] transition hover:bg-white hover:text-[#E63B2E]" aria-label={isMonthView ? 'Previous month' : 'Previous week'}>
                 <ChevronLeft size={18} />
               </button>
@@ -558,8 +558,8 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border border-[#E1D8D4] bg-[#FBF2ED] p-0.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 flex-1 rounded-lg border border-[#E1D8D4] bg-[#FBF2ED] p-0.5 sm:flex-none">
               <button onClick={() => switchView('month')} className={`min-h-[36px] rounded-md px-3 text-xs font-bold transition ${isMonthView ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#E63B2E]'}`}>Month</button>
               <button onClick={() => switchView('week')}  className={`min-h-[36px] rounded-md px-3 text-xs font-bold transition ${!isMonthView ? 'bg-white text-[#E63B2E] shadow-sm' : 'text-[#000000] hover:text-[#E63B2E]'}`}>Week</button>
             </div>
@@ -568,13 +568,13 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
         </div>
 
         {/* Weekday labels */}
-        <div className="mb-2 grid grid-cols-7 gap-1">
+        <div className="mb-2 grid min-w-0 grid-cols-7 gap-1">
           {WEEKDAY_LABELS.map(d => <div key={d} className="py-1 text-center text-xs font-bold uppercase tracking-wider text-[#000000] sm:text-sm">{d}</div>)}
         </div>
 
         {/* Month view */}
         {isMonthView && (
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             {weeks.map((weekCells, wIdx) => {
               const weekIsos = weekCells.map((day, i) => day === null ? null : isoDateFromParts(viewYear, viewMonth, day));
               const validIsos = weekIsos.filter(Boolean);
@@ -636,7 +636,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
       </section>
 
       {/* Agenda panel */}
-      <section className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4 shadow-sm sm:p-6 lg:col-span-4">
+      <section className="min-w-0 rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-4 shadow-sm sm:p-6 lg:col-span-4">
         <div className="mb-5 flex items-center justify-between gap-2">
           <h3 className="text-lg font-extrabold text-[#000000] sm:text-xl">{agendaTitle}</h3>
           {selectedDate && (
