@@ -347,9 +347,7 @@ const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
         <EmptyState
           title="No trips yet"
           message="Plan your next escape together — destination, dates, accommodation and lists."
-          actionLabel="Add trip"
           icon={Plane}
-          onAddClick={onAddClick}
         />
       ) : (
         <div className="space-y-3">

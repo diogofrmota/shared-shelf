@@ -660,12 +660,12 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
 
         {agendaEvents.length === 0 ? (
           events.length === 0 ? (
-            <EmptyState title="No events yet" message="Add a plan, reminder, or shared date." actionLabel="Add Event" icon={CalendarIcon} compact onAddClick={onAddClick} />
+            <EmptyState title="No events yet" message="Add a plan, reminder, or shared date." icon={CalendarIcon} compact />
           ) : (
             <EmptyState
               title={selectedDate ? 'No events this day' : isMonthView ? 'No events this month' : 'No events this week'}
               message="Try another date or add something new."
-              icon={CalendarIcon} compact onAddClick={onAddClick} actionLabel="Add Event"
+              icon={CalendarIcon} compact
             />
           )
         ) : (

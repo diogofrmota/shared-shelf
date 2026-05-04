@@ -416,7 +416,7 @@ const Header = ({
             {settingsOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in"
+                className="absolute right-[-48px] top-12 z-50 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-[#E1D8D4] bg-white shadow-xl shadow-[#000000]/10 animate-scale-in sm:right-0"
               >
                 <div className="p-2">
                   {canEditDashboardSettings && (
