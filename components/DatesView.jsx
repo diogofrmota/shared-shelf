@@ -160,8 +160,11 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     });
 
     if (hasMarkers) {
-      map.invalidateSize();
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+      setTimeout(() => {
+        if (!mapInstanceRef.current) return;
+        mapInstanceRef.current.invalidateSize();
+        mapInstanceRef.current.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+      }, 150);
     }
   }, [places, mapReady]);
 
@@ -217,20 +220,12 @@ const StableStarRating = ({ rating = 0, onRate }) => {
 const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUpdateDate }) => {
   const Star = getDateComponent('Star');
   const Trash = getDateComponent('Trash');
-  const MapPin = getDateComponent('MapPin');
   const LinkIcon = getDateComponent('LinkIcon');
   const categoryStyle = DATE_CATEGORY_STYLES[place.category] || DATE_CATEGORY_STYLES.other;
   const safeLink = window.safeExternalUrl?.(place.link) || '';
-  const lat = Number(place.lat);
-  const lng = Number(place.lng);
   const hasCoordinates = hasLocationCoordinates(place);
   const hasUnresolvedAddress = Boolean(place.address && !hasCoordinates);
   const isVisited = place.status === 'visited';
-  const mapsLink = hasCoordinates
-    ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`
-    : place.address
-      ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(place.address)}`
-      : null;
 
   const cycleStatus = () => {
     const nextStatus = isVisited ? 'want-to-go' : 'visited';
@@ -279,12 +274,6 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
               </button>
             </div>
 
-            <div className="mt-2">
-              <StableStarRating
-                rating={place.starRating || 0}
-                onRate={(starRating) => onUpdateDate?.(place.id, { starRating })}
-              />
-            </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
@@ -302,8 +291,8 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
         {hasUnresolvedAddress && (
           <p className="mt-2 rounded-lg border border-[#FFB4A9] bg-[#FFF8F5] px-3 py-2 text-xs font-semibold text-[#A9372C]">
             {place.geocodingStatus === 'failed'
-              ? 'Address lookup failed. The map link opens a search instead.'
-              : 'Address not found on the map. The map link opens a search instead.'}
+              ? 'Address lookup failed. It may not appear on the map.'
+              : 'Address not found on the map.'}
           </p>
         )}
         {place.notes && <p className="mt-2 line-clamp-3 whitespace-pre-wrap break-words text-sm text-[#000000]" title={place.notes}>{place.notes}</p>}
@@ -312,11 +301,6 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
           {safeLink && (
             <a href={safeLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
               <LinkIcon size={14} /> Link
-            </a>
-          )}
-          {mapsLink && (
-            <a href={mapsLink} target="_blank" rel="noreferrer noopener" onClick={(e) => e.stopPropagation()} className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-[#E63B2E] transition hover:text-[#A9372C]">
-              <MapPin size={14} /> Map
             </a>
           )}
         </div>
