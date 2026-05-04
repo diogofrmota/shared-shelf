@@ -908,6 +908,7 @@ function MediaTracker() {
 
   const renderPageAddButton = () => {
     if (activeCategory === 'media') return null;
+    if (activeSubTab === 'tasks') return null;
 
     const action = addActionByTab[activeSubTab];
     if (!action) return null;

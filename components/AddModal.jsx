@@ -130,13 +130,6 @@ const DATE_STATUS_OPTIONS = window.DATE_STATUS_OPTIONS || [
   { value: 'visited', label: 'Visited' }
 ];
 
-const TASK_PRIORITY_OPTIONS = window.TASK_PRIORITY_OPTIONS || [
-  { value: 'none', label: 'None' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' }
-];
-
 const buildTripPayload = (formData = {}) => ({
   destination: formData.destination || '',
   startDate: formData.startDate || '',
@@ -185,8 +178,6 @@ const RECURRENCE_OPTIONS = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'yearly', label: 'Yearly' }
 ];
-
-const TASK_RECURRENCE_OPTIONS = RECURRENCE_OPTIONS.filter(option => option.value !== 'none');
 
 const getRecurrenceFrequency = (formData = {}) => {
   const frequency = formData.recurrenceFrequency || formData.recurrence?.frequency || 'none';
@@ -243,18 +234,6 @@ const VisibilityToggle = ({ value, onChange }) => {
   );
 };
 
-const getTaskRecurrenceFrequency = (formData = {}) => {
-  const frequency = formData.taskRecurrenceFrequency || formData.recurrence?.frequency || 'none';
-  return TASK_RECURRENCE_OPTIONS.some(option => option.value === frequency) ? frequency : 'none';
-};
-
-const buildTaskRecurrence = (formData = {}) => {
-  if (!formData.isRecurring) return null;
-  const frequency = getTaskRecurrenceFrequency(formData);
-  if (frequency === 'none') return null;
-  return { frequency };
-};
-
 const CalendarRecurrenceFields = ({ formData, setFormData, editing = false }) => {
   const frequency = getRecurrenceFrequency(formData);
 
@@ -285,48 +264,6 @@ const CalendarRecurrenceFields = ({ formData, setFormData, editing = false }) =>
           </FormField>
           <p className="text-xs font-medium text-[#000000]">
             {editing ? 'Saving changes updates every occurrence in this series.' : 'Leave blank to keep showing this series in future months.'}
-          </p>
-        </>
-      )}
-    </div>
-  );
-};
-
-const TaskRecurrenceFields = ({ formData, setFormData }) => {
-  const isRecurring = Boolean(formData.isRecurring);
-
-  return (
-    <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-      <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#000000]">
-        <input
-          type="checkbox"
-          checked={isRecurring}
-          onChange={(e) => setFormData({
-            ...formData,
-            isRecurring: e.target.checked,
-            taskRecurrenceFrequency: e.target.checked
-              ? getTaskRecurrenceFrequency(formData)
-              : 'weekly'
-          })}
-          className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
-        />
-        Recurring task
-      </label>
-      {isRecurring && (
-        <>
-          <FormField label="Repeat every">
-            <select
-              className={selectCls}
-              value={getTaskRecurrenceFrequency(formData)}
-              onChange={(e) => setFormData({ ...formData, taskRecurrenceFrequency: e.target.value })}
-            >
-              {TASK_RECURRENCE_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </FormField>
-          <p className="text-xs font-medium text-[#000000]">
-            Checking a recurring task records one completed occurrence and keeps it active.
           </p>
         </>
       )}
@@ -395,7 +332,7 @@ const RecipeIngredientFields = ({ formData, setFormData }) => {
           onClick={() => updateFields([...fields, ''])}
           className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-[#FFF8F5] px-3 py-2 text-sm font-bold text-[#000000] transition hover:border-[#FFB4A9] hover:bg-[#FFDAD4]/35"
         >
-          Add ingredient
+          Add more ingredients
         </button>
       </div>
     </FormField>
@@ -540,7 +477,6 @@ const TripChecklistEditor = ({ items = [], onChange, placeholder, withCheckbox =
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData, mediaWatchOptions, mediaWatchFilter }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
-  const [showTaskOptions, setShowTaskOptions] = useState(false);
   const [showCalendarOptions, setShowCalendarOptions] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
@@ -560,7 +496,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     }
     setFormData(nextFormData);
     setIsSaving(false);
-    setShowTaskOptions(false);
     setShowCalendarOptions(Boolean(initialData?.date));
   }, [isOpen, activeTab]);
 
@@ -615,13 +550,13 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             description: formData.description || '',
             assignedTo: formData.assignedTo || null,
             dueDate: formData.dueDate || null,
-            priority: formData.priority && formData.priority !== 'none' ? formData.priority : null,
+            priority: null,
             completed: false,
-            recurrence: buildTaskRecurrence(formData),
+            recurrence: null,
             lastCompletedAt: null,
             completionCount: 0,
             completionHistory: [],
-            subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+            subtasks: [],
             listType: formData.listType || 'task',
             createdAt: new Date().toISOString()
           });
@@ -706,6 +641,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
   const CloseIcon = getComponent('Close');
   const ChevronRightIcon = getComponent('ChevronRight');
   const dateCategories = window.DATE_CATEGORIES || [];
+  const profileUsers = Array.isArray(profile?.users) ? profile.users : [];
   const isCalendarMultiDay = isMultiDayCalendarEvent(formData);
 
   return (
@@ -732,45 +668,15 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Description">
                 <textarea rows="3" placeholder="Optional notes/details for this task…" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </FormField>
-              <button
-                type="button"
-                onClick={() => setShowTaskOptions(open => !open)}
-                className="flex min-h-[44px] w-full items-center justify-between rounded-lg border border-[#E1D8D4] bg-[#FFF8F5] px-3 py-2 text-sm font-bold text-[#000000] transition hover:border-[#FFB4A9] hover:bg-[#FFDAD4]/35"
-                aria-expanded={showTaskOptions}
-              >
-                <span>More options</span>
-                <ChevronRightIcon size={18} className={`transition ${showTaskOptions ? 'rotate-90' : ''}`} />
-              </button>
-              {showTaskOptions && (
-                <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                  <FormField label="Due date">
-                    <DateInput value={formData.dueDate || ''} onChange={(dueDate) => setFormData({ ...formData, dueDate })} />
-                  </FormField>
-                  <FormField label="Priority">
-                    <select
-                      className={selectCls}
-                      value={formData.priority || 'none'}
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    >
-                      {TASK_PRIORITY_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </FormField>
-                  {Array.isArray(profile?.users) && profile.users.length > 0 && (
-                    <FormField label="Assign to">
-                      <select className={selectCls} value={formData.assignedTo || ''} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value || null })}>
-                        <option value="">Unassigned</option>
-                        {profile.users.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
-                      </select>
-                    </FormField>
-                  )}
-                  <FormField label="Checklist items">
-                    <textarea rows="3" placeholder="One item per line" className={inputCls} onChange={(e) => setFormData({ ...formData, subtasksText: e.target.value })} />
-                  </FormField>
-                  <TaskRecurrenceFields formData={formData} setFormData={setFormData} />
-                </div>
-              )}
+              <FormField label="Assign to">
+                <select className={selectCls} value={formData.assignedTo || ''} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value || null })}>
+                  <option value="">Unassigned</option>
+                  {profileUsers.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
+                </select>
+              </FormField>
+              <FormField label="Due date">
+                <DateInput value={formData.dueDate || ''} onChange={(dueDate) => setFormData({ ...formData, dueDate })} />
+              </FormField>
             </>
           )}
 
@@ -843,11 +749,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                     <DateInput value={formData.endDate || ''} onChange={(endDate) => setFormData({ ...formData, endDate })} />
                   </FormField>
                 </div>
-                <FormField label="Hotel">
-                  <input type="text" className={inputCls} placeholder="Hotel name & address" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
-                </FormField>
-                <FormField label="Budget (€)">
-                  <input type="number" min="0" step="0.01" placeholder="0" className={inputCls} value={formData.budget ?? ''} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} />
+                <FormField label="Accommodation">
+                  <input type="text" className={inputCls} placeholder="Accommodation name & address" value={formData.hotel || ''} onChange={(e) => setFormData({ ...formData, hotel: e.target.value })} />
                 </FormField>
               </div>
               {formData.endDate && formData.startDate && formData.endDate < formData.startDate && (
@@ -863,12 +766,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                 </div>
               </div>
               <div>
-                <TripSectionHeading title="Packing list" count={formData.packingList?.length} />
-                <div className="mt-2">
-                  <TripChecklistEditor items={formData.packingList || []} onChange={(packingList) => setFormData({ ...formData, packingList })} placeholder="Add a packing item..." withCheckbox />
-                </div>
-              </div>
-              <div>
                 <TripSectionHeading title="Places to visit" count={formData.placesToVisit?.length} />
                 <div className="mt-2">
                   <TripChecklistEditor items={formData.placesToVisit || []} onChange={(placesToVisit) => setFormData({ ...formData, placesToVisit })} placeholder="Add a place..." withCheckbox />
@@ -880,9 +777,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                   <TripChecklistEditor items={formData.restaurants || []} onChange={(restaurants) => setFormData({ ...formData, restaurants })} placeholder="Add a restaurant..." withCheckbox />
                 </div>
               </div>
-              <FormField label="Documents">
-                <textarea rows="2" placeholder="Passport, visa, insurance, vaccination certificates..." className={`${inputCls} min-h-[60px]`} value={formData.documents || ''} onChange={(e) => setFormData({ ...formData, documents: e.target.value })} />
-              </FormField>
               <FormField label="Shared notes">
                 <textarea rows="3" placeholder="Anything to remember together..." className={`${inputCls} min-h-[80px]`} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>

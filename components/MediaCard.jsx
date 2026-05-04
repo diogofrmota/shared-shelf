@@ -9,8 +9,6 @@ const getMediaModalShell = () => window.getWindowComponent?.('ModalShell', windo
 
 const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, watchModeLabel }) => {
   const statusOptions = window.getStatusOptions?.(item.category) || [];
-  const placeholder = window.PLACEHOLDER_IMAGE || '';
-  const safeThumbnail = window.safeImageUrl?.(item.thumbnail, placeholder) || placeholder;
   const ModalShell = getMediaModalShell();
   const CloseIcon = getMediaComponent('Close');
 
@@ -109,16 +107,7 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
           </button>
         </div>
 
-        <div className="grid flex-1 gap-5 overflow-y-auto p-4 sm:grid-cols-[11rem_1fr] sm:p-5">
-          <div className="mx-auto w-36 overflow-hidden rounded-xl border border-[#E1D8D4] bg-[#FFDAD4] sm:mx-0 sm:w-full">
-            <img
-              src={safeThumbnail}
-              alt={item.title}
-              onError={(e) => { if (e.currentTarget.src !== placeholder) e.currentTarget.src = placeholder; }}
-              className="aspect-[2/3] h-full w-full object-cover"
-            />
-          </div>
-
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           <div className="space-y-5">
             <div className="space-y-2">
               <h4 className="text-xl font-extrabold text-[#000000]">{item.title}</h4>

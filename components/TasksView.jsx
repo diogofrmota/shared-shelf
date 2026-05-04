@@ -23,13 +23,6 @@ const TASK_RECURRENCE_LABELS = TASK_RECURRENCE_OPTIONS.reduce((labels, option) =
   [option.value]: option.label
 }), {});
 
-const TASK_PRIORITY_OPTIONS = window.TASK_PRIORITY_OPTIONS || [
-  { value: 'none', label: 'None' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' }
-];
-
 const TASK_PRIORITY_STYLES = window.TASK_PRIORITY_STYLES || {
   low: { bg: '#E1F5EE', text: '#0E5A40', border: '#91D7BF' },
   medium: { bg: '#FFEFD7', text: '#A85B00', border: '#F2B27A' },
@@ -75,13 +68,10 @@ const formatTaskDate = (value) => {
 // ============================================================================
 
 const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderTasks, onAddClick, profile }) => {
-  const [filter, setFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('tasks');
-  const [quickChecklistText, setQuickChecklistText] = useState('');
   const [editingTask, setEditingTask] = useState(null);
-  const [editForm, setEditForm] = useState({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly', priority: 'none', dueDate: '', assignedTo: '' });
+  const emptyEditForm = { title: '', description: '', dueDate: '', assignedTo: '' };
+  const [editForm, setEditForm] = useState(emptyEditForm);
   const [draggedIndex, setDraggedIndex] = useState(null);
-  const [showCompleted, setShowCompleted] = useState(false);
 
   const users = profile?.users || [];
   const getUserById = (id) => users.find(u => u.id === id);
@@ -91,24 +81,19 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     return a.completed ? 1 : -1;
   }), [tasks]);
 
+  const visibleTasks = sortedTasks;
+
   const sortedIndexById = useMemo(() => {
     const map = new Map();
-    sortedTasks.forEach((task, idx) => map.set(task.id, idx));
+    visibleTasks.forEach((task, idx) => map.set(task.id, idx));
     return map;
-  }, [sortedTasks]);
+  }, [visibleTasks]);
 
-  const activeTasks = useMemo(() => sortedTasks.filter(t => !t.completed), [sortedTasks]);
-  const completedTasks = useMemo(() => sortedTasks.filter(t => t.completed), [sortedTasks]);
-  const visibleTasks = sortedTasks.filter(t => (viewMode === 'checklist' ? t.listType === 'shared-checklist' : t.listType !== 'shared-checklist'));
   const todayIso = todayLocalIso();
-  const scopedActiveTasks = visibleTasks.filter(t => !t.completed);
-  const scopedCompletedTasks = visibleTasks.filter(t => t.completed);
-  const myUserId = users?.[0]?.id || null;
-  const filteredActiveTasks = scopedActiveTasks.filter(t => filter === 'all' ? true : filter === 'active' ? true : filter === 'mine' ? t.assignedTo === myUserId : filter === 'partner' ? Boolean(t.assignedTo && t.assignedTo !== myUserId) : false);
-  const activeCnt = scopedActiveTasks.length;
-  const FilterButton = window.getWindowComponent?.('FilterButton', window.MissingComponent) || window.MissingComponent;
+  const activeCnt = visibleTasks.filter(t => !t.completed).length;
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const CheckSquare = getTaskComponent('CheckSquare');
+  const Plus = getTaskComponent('Plus');
   const Trash = getTaskComponent('Trash');
 
   const handleEditTask = (task) => {
@@ -116,9 +101,6 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     setEditForm({
       title: task.title,
       description: task.description || '',
-      isRecurring: isRecurringTask(task),
-      taskRecurrenceFrequency: getTaskRecurrenceFrequency(task),
-      priority: task.priority || 'none',
       dueDate: task.dueDate || '',
       assignedTo: task.assignedTo || ''
     });
@@ -129,19 +111,16 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     onUpdateTask?.(taskId, {
       title: editForm.title.trim(),
       description: editForm.description.trim(),
-      priority: editForm.priority && editForm.priority !== 'none' ? editForm.priority : null,
       dueDate: editForm.dueDate || null,
-      assignedTo: editForm.assignedTo || null,
-      recurrence: editForm.isRecurring ? { frequency: getTaskRecurrenceFrequency(editForm) } : null,
-      ...(editForm.isRecurring ? {} : { lastCompletedAt: null, completionCount: 0 })
+      assignedTo: editForm.assignedTo || null
     });
     setEditingTask(null);
-    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly', priority: 'none', dueDate: '', assignedTo: '' });
+    setEditForm(emptyEditForm);
   };
 
   const handleCancelEdit = () => {
     setEditingTask(null);
-    setEditForm({ title: '', description: '', isRecurring: false, taskRecurrenceFrequency: 'weekly', priority: 'none', dueDate: '', assignedTo: '' });
+    setEditForm(emptyEditForm);
   };
 
   // Reorders operate on the original `tasks` array (source order),
@@ -168,9 +147,9 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
 
   const handleMoveTask = (indexInSorted, direction) => {
     const newIndex = direction === 'up' ? indexInSorted - 1 : indexInSorted + 1;
-    if (newIndex < 0 || newIndex >= sortedTasks.length) return;
-    const task = sortedTasks[indexInSorted];
-    const targetTask = sortedTasks[newIndex];
+    if (newIndex < 0 || newIndex >= visibleTasks.length) return;
+    const task = visibleTasks[indexInSorted];
+    const targetTask = visibleTasks[newIndex];
     if (task.completed !== targetTask.completed) return;
     swapById(task.id, targetTask.id);
   };
@@ -189,8 +168,8 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const handleDrop = (e, dropIndexInSorted) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === dropIndexInSorted) return;
-    const draggedTask = sortedTasks[draggedIndex];
-    const targetTask = sortedTasks[dropIndexInSorted];
+    const draggedTask = visibleTasks[draggedIndex];
+    const targetTask = visibleTasks[dropIndexInSorted];
     if (!draggedTask || !targetTask) { setDraggedIndex(null); return; }
     if (draggedTask.completed !== targetTask.completed) { setDraggedIndex(null); return; }
     moveBeforeById(draggedTask.id, targetTask.id);
@@ -232,45 +211,28 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
         <div className="flex items-start gap-3 p-4">
           {editingTask === task.id ? (
             <div className="flex-1 space-y-3">
-              <input
-                type="text"
-                value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
-                placeholder="Task title"
-                autoFocus
-              />
-              <textarea
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
-                placeholder="Description (optional)"
-                rows="2"
-              />
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Priority</label>
-                  <select
-                    value={editForm.priority || 'none'}
-                    onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
-                  >
-                    {TASK_PRIORITY_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Due date</label>
-                  <input
-                    type="date"
-                    value={editForm.dueDate || ''}
-                    onChange={(e) => setEditForm({ ...editForm, dueDate: e.target.value })}
-                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Title</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
+                  placeholder="Task title"
+                  autoFocus
+                />
               </div>
-              {Array.isArray(users) && users.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Description</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
+                  placeholder="Description (optional)"
+                  rows="2"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Assign to</label>
                   <select
@@ -282,40 +244,15 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     {users.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
                   </select>
                 </div>
-              )}
-              <div className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                <label className="flex min-h-[44px] items-center gap-2 text-sm font-bold text-[#000000]">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Due date</label>
                   <input
-                    type="checkbox"
-                    checked={editForm.isRecurring}
-                    onChange={(e) => setEditForm({
-                      ...editForm,
-                      isRecurring: e.target.checked,
-                      taskRecurrenceFrequency: e.target.checked ? getTaskRecurrenceFrequency(editForm) : 'weekly'
-                    })}
-                    className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                    type="date"
+                    value={editForm.dueDate || ''}
+                    onChange={(e) => setEditForm({ ...editForm, dueDate: e.target.value })}
+                    className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                   />
-                  Recurring task
-                </label>
-                {editForm.isRecurring && (
-                  <>
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Repeat every</label>
-                      <select
-                        value={getTaskRecurrenceFrequency(editForm)}
-                        onChange={(e) => setEditForm({ ...editForm, taskRecurrenceFrequency: e.target.value })}
-                        className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
-                      >
-                        {TASK_RECURRENCE_OPTIONS.map(option => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <p className="text-xs font-medium text-[#000000]">
-                      Checking a recurring task records one completed occurrence and keeps it active.
-                    </p>
-                  </>
-                )}
+                </div>
               </div>
               <div className="flex gap-2">
                 <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(task.id); }} className="min-h-[44px] rounded-lg bg-[#E63B2E] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#CC302F]">Save</button>
@@ -422,7 +359,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                   <>
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'up')}
-                      disabled={indexInSorted === 0 || sortedTasks[indexInSorted - 1]?.completed}
+                      disabled={indexInSorted === 0 || visibleTasks[indexInSorted - 1]?.completed}
                       className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                       aria-label="Move up"
                     >
@@ -430,7 +367,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     </button>
                     <button
                       onClick={() => handleMoveTask(indexInSorted, 'down')}
-                      disabled={indexInSorted === sortedTasks.length - 1 || sortedTasks[indexInSorted + 1]?.completed}
+                      disabled={indexInSorted === visibleTasks.length - 1 || visibleTasks[indexInSorted + 1]?.completed}
                       className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                       aria-label="Move down"
                     >
@@ -454,101 +391,39 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Tasks</h2>
-          {tasks.length > 0 && (
+          
             <p className="mt-1 text-sm font-medium text-[#000000]">
               {activeCnt} remaining · {tasks.length - activeCnt} done
             </p>
-          )}
+          
         </div>
-        <div className="flex flex-wrap gap-2">
-          <FilterButton label="Tasks" isActive={viewMode==='tasks'} onClick={()=>setViewMode('tasks')} />
-          <FilterButton label="Shared checklist" isActive={viewMode==='checklist'} onClick={()=>setViewMode('checklist')} />
-          <FilterButton label="All"       isActive={filter === 'all'}       onClick={() => setFilter('all')} />
-          <FilterButton label="Active"    isActive={filter === 'active'}    onClick={() => setFilter('active')} />
-          <FilterButton label="Mine" isActive={filter === 'mine'} onClick={() => setFilter('mine')} />
-          <FilterButton label="Partner" isActive={filter === 'partner'} onClick={() => setFilter('partner')} />
-          <FilterButton label="Completed" isActive={filter === 'completed'} onClick={() => setFilter('completed')} />
-        </div>
+        <button
+          type="button"
+          onClick={onAddClick}
+          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
+        >
+          <Plus size={16} />
+          <CheckSquare size={16} />
+          Add task
+        </button>
       </div>
-
-      {viewMode === 'checklist' && (
-        <div className="rounded-2xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-          <p className="mb-2 text-sm font-bold text-[#000000]">Quick add to shared checklist</p>
-          <div className="flex gap-2">
-            <input value={quickChecklistText} onChange={(e)=>setQuickChecklistText(e.target.value)} className="flex-1 rounded-lg border border-[#E1D8D4] px-3 py-2" placeholder="Milk, passports, socks..." />
-            <button className="rounded-lg bg-[#E63B2E] px-3 py-2 text-white" onClick={()=>{ if(!quickChecklistText.trim())return; onUpdateTask?.('__add__',{__quickChecklist:true,title:quickChecklistText.trim()}); setQuickChecklistText(''); }}>Add</button>
-          </div>
-        </div>
-      )}
 
       {visibleTasks.length === 0 ? (
         <EmptyState
           title="No tasks yet"
           message="Capture the next shared to-do."
-          actionLabel="Add task"
           icon={CheckSquare}
-          onAddClick={onAddClick}
         />
       ) : (
-        <>
-          {filter !== 'completed' && filteredActiveTasks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
-              No active tasks.
-            </div>
-          )}
-
-          {filter !== 'completed' && filteredActiveTasks.length > 0 && (
-            <div className="space-y-2">
-              {filteredActiveTasks.map(task => {
-                const idx = sortedIndexById.get(task.id);
-                return renderTaskItem(task, idx);
-              })}
-            </div>
-          )}
-
-          {(filter === 'all' || filter === 'completed') && scopedCompletedTasks.length > 0 && (
-            <div className="space-y-2">
-              {filter === 'all' ? (
-                <>
-                  <button
-                    onClick={() => setShowCompleted(!showCompleted)}
-                    className="flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-[#E1D8D4] bg-white px-4 py-2.5 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#000000]"
-                  >
-                    <span>Completed ({scopedCompletedTasks.length})</span>
-                    <svg
-                      className={`h-5 w-5 transition-transform ${showCompleted ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {showCompleted && (
-                    <div className="space-y-2">
-                      {scopedCompletedTasks.map(task => {
-                        const idx = sortedIndexById.get(task.id);
-                        return renderTaskItem(task, idx);
-                      })}
-                    </div>
-                  )}
-                </>
-              ) : (
-                scopedCompletedTasks.map(task => {
-                  const idx = sortedIndexById.get(task.id);
-                  return renderTaskItem(task, idx);
-                })
-              )}
-            </div>
-          )}
-
-          {filter === 'completed' && scopedCompletedTasks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[#E1D8D4] bg-white py-10 text-center text-sm text-[#000000]">
-              No completed tasks.
-            </div>
-          )}
-        </>
+        <div className="space-y-2">
+          {visibleTasks.map(task => {
+            const idx = sortedIndexById.get(task.id);
+            return renderTaskItem(task, idx);
+          })}
+        </div>
       )}
     </div>
   );

@@ -20,13 +20,6 @@ const formatRange = (start, end) => {
   return formatTripDate(start || end);
 };
 
-const formatBudget = (value) => {
-  if (value === null || value === undefined || value === '') return '';
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '';
-  return `€${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-};
-
 const inputCls = 'min-h-[40px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-sm text-[#000000] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]';
 
 const SectionHeading = ({ title, count }) => (
@@ -181,8 +174,6 @@ const TripCard = ({ trip, expanded, onToggleExpanded, onDelete, onUpdateTrip }) 
   const updateField = (patch) => onUpdateTrip(trip.id, patch);
 
   const dateRange = formatRange(trip.startDate, trip.endDate);
-  const budgetLabel = formatBudget(trip.budget);
-
   return (
     <article className="rounded-2xl border border-[#E1D8D4] bg-white shadow-sm transition hover:border-[#FFB4A9]">
       <button
@@ -199,7 +190,6 @@ const TripCard = ({ trip, expanded, onToggleExpanded, onDelete, onUpdateTrip }) 
           <p className="mt-0.5 text-sm font-medium text-[#534340]">{dateRange}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-[#534340]">
             {trip.hotel && <span className="rounded-full bg-[#FFF8F5] px-2 py-0.5">🏨 {trip.hotel}</span>}
-            {budgetLabel && <span className="rounded-full bg-[#FFF8F5] px-2 py-0.5">💰 {budgetLabel}</span>}
             {trip.itinerary?.length > 0 && <span className="rounded-full bg-[#FFF8F5] px-2 py-0.5">{trip.itinerary.length} day{trip.itinerary.length === 1 ? '' : 's'}</span>}
           </div>
         </div>
@@ -252,25 +242,13 @@ const TripCard = ({ trip, expanded, onToggleExpanded, onDelete, onUpdateTrip }) 
               </label>
             </div>
             <label className="block">
-              <span className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Hotel</span>
+              <span className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Accommodation</span>
               <input
                 type="text"
                 value={trip.hotel || ''}
                 onChange={(e) => updateField({ hotel: e.target.value })}
                 className={`${inputCls} mt-1`}
-                placeholder="Hotel name & address"
-              />
-            </label>
-            <label className="block">
-              <span className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Budget (€)</span>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={trip.budget ?? ''}
-                onChange={(e) => updateField({ budget: e.target.value === '' ? null : e.target.value })}
-                className={`${inputCls} mt-1`}
-                placeholder="0"
+                placeholder="Accommodation name & address"
               />
             </label>
           </div>
@@ -290,18 +268,6 @@ const TripCard = ({ trip, expanded, onToggleExpanded, onDelete, onUpdateTrip }) 
             <SectionHeading title="Itinerary by day" count={trip.itinerary?.length} />
             <div className="mt-2">
               <ItineraryEditor items={trip.itinerary || []} onChange={(itinerary) => updateField({ itinerary })} />
-            </div>
-          </div>
-
-          <div>
-            <SectionHeading title="Packing list" count={trip.packingList?.length} />
-            <div className="mt-2">
-              <ChecklistEditor
-                items={trip.packingList || []}
-                onChange={(packingList) => updateField({ packingList })}
-                placeholder="Add a packing item..."
-                withCheckbox
-              />
             </div>
           </div>
 
@@ -328,17 +294,6 @@ const TripCard = ({ trip, expanded, onToggleExpanded, onDelete, onUpdateTrip }) 
               />
             </div>
           </div>
-
-          <label className="block">
-            <span className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Documents</span>
-            <textarea
-              value={trip.documents || ''}
-              onChange={(e) => updateField({ documents: e.target.value })}
-              rows="2"
-              className={`${inputCls} mt-1 min-h-[60px]`}
-              placeholder="Passport, visa, insurance, vaccination certificates..."
-            />
-          </label>
 
           <label className="block">
             <span className="block text-xs font-bold uppercase tracking-wide text-[#000000]">Shared notes</span>
@@ -380,7 +335,7 @@ const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
       {sorted.length === 0 ? (
         <EmptyState
           title="No trips yet"
-          message="Plan your next escape together — destination, dates, hotels and lists."
+          message="Plan your next escape together — destination, dates, accommodation and lists."
           actionLabel="Add trip"
           icon={Plane}
           onAddClick={onAddClick}

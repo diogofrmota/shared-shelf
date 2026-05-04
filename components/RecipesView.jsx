@@ -23,7 +23,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
   return (
     <article className="rounded-xl border border-[#E1D8D4] bg-white p-4 shadow-sm transition hover:border-[#FFB4A9] hover:shadow-md hover:shadow-[#000000]/5">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className="flex min-w-0 items-center gap-2 text-base font-extrabold text-[#000000]">
             <span className="break-words">{recipe.name}</span>
             {recipe.isFavourite && (
@@ -32,6 +32,23 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
               </span>
             )}
           </h3>
+          {ingredients.length > 0 && (
+            <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#000000]">
+              {ingredients.join('\n')}
+            </p>
+          )}
+
+          {safeLink && (
+            <a
+              href={safeLink}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="mt-2 inline-flex min-h-[44px] max-w-full items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+            >
+              <LinkIcon size={14} className="shrink-0" aria-hidden="true" />
+              <span className="truncate">Source</span>
+            </a>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {onEdit && (
@@ -54,24 +71,6 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
           </button>
         </div>
       </div>
-
-      {ingredients.length > 0 && (
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#000000]">
-          {ingredients.join('\n')}
-        </p>
-      )}
-
-      {safeLink && (
-        <a
-          href={safeLink}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="mt-3 inline-flex min-h-[44px] max-w-full items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
-        >
-          <LinkIcon size={14} className="shrink-0" aria-hidden="true" />
-          <span className="truncate">Source</span>
-        </a>
-      )}
     </article>
   );
 };
