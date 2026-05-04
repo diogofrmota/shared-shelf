@@ -57,8 +57,15 @@ const MEDIA_TYPE_EMPTY_COPY = {
 };
 
 const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onProgressChange, onMediaTypeSelect, watchFilter, onWatchFilterChange, watchOptions }) => {
-  const { useState } = React;
+  const { useState, useEffect } = React;
   const [showCompleted, setShowCompleted] = useState(true);
+
+  useEffect(() => {
+    if (!activeTab) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [activeTab]);
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const MediaCard = window.getWindowComponent?.('MediaCard', window.MissingComponent) || window.MissingComponent;
   const Plus = getMediaSectionsComponent('Plus');
