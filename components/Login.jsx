@@ -23,6 +23,8 @@ function LoginScreen({ onLogin, onNavigate }) {
   const [serverSuccess, setServerSuccess] = useState('');
   const [linkIssue, setLinkIssue] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
   const usernameCheckRef = React.useRef(null);
   const usernameCheckSeqRef = React.useRef(0);
@@ -394,7 +396,8 @@ function LoginScreen({ onLogin, onNavigate }) {
     }
   };
 
-  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
+  const inputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white px-4 py-3 text-base text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
+  const passwordInputClass = "w-full rounded-xl border border-[#E1D8D4] bg-white pl-4 pr-11 py-3 text-base text-[#000000] placeholder-[#000000] shadow-sm transition focus:border-[#E63B2E] focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40";
   const labelClass = "mb-1.5 block text-sm font-bold text-[#000000]";
 
   return (
@@ -427,16 +430,26 @@ function LoginScreen({ onLogin, onNavigate }) {
             {!resetLinkIssue && (
               <div>
                 <label className={labelClass} htmlFor="new-password">New Password</label>
-                <input
-                  id="new-password"
-                  type="password"
-                  name="new-password"
-                  autoComplete="new-password"
-                  placeholder="New password"
-                  value={newPassword}
-                  onChange={(e) => handleInput('newPassword', e.target.value)}
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <input
+                    id="new-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    name="new-password"
+                    autoComplete="new-password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={(e) => handleInput('newPassword', e.target.value)}
+                    className={passwordInputClass}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowNewPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a6a65] hover:text-[#E63B2E] transition-colors"
+                  >
+                    {showNewPassword ? React.createElement(EyeOff, { size: 18 }) : React.createElement(Eye, { size: 18 })}
+                  </button>
+                </div>
                 {errors.newPassword && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.newPassword}</p>}
               </div>
             )}
@@ -579,16 +592,26 @@ function LoginScreen({ onLogin, onNavigate }) {
                     </button>
                   )}
                 </div>
-                <input
-                  id="login-password"
-                  type="password"
-                  name="password"
-                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => handleInput('password', e.target.value)}
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <input
+                    id="login-password"
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => handleInput('password', e.target.value)}
+                    className={passwordInputClass}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a6a65] hover:text-[#E63B2E] transition-colors"
+                  >
+                    {showPassword ? React.createElement(EyeOff, { size: 18 }) : React.createElement(Eye, { size: 18 })}
+                  </button>
+                </div>
                 {errors.password && <p className="mt-1 text-xs font-semibold text-[#C1121F]">{errors.password}</p>}
               </div>
 
