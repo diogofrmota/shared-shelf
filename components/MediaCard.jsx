@@ -19,6 +19,7 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
   const isAnime = itemId.startsWith('mal-');
   const progress = item.progress;
 
+  const [pendingStatus, setPendingStatus] = useState(item.status);
   const [loadingProgress, setLoadingProgress] = useState(isTvShow);
   const [seasons, setSeasons] = useState(null);
   const [totalEpisodes, setTotalEpisodes] = useState(null);
@@ -30,6 +31,8 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
     initialTotalPages || Number.MAX_SAFE_INTEGER
   ));
   const [totalPages, setTotalPages] = useState(initialTotalPages);
+
+  const showProgress = (isTvShow && pendingStatus === 'watching') || (isBook && pendingStatus === 'reading');
 
   useEffect(() => {
     if (!isTvShow) return undefined;
@@ -75,18 +78,23 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
   const bookProgressPercent = isBook && totalPages ? Math.round((normalizedCurrentPage / totalPages) * 100) : null;
   const fieldCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm text-[#000000] outline-none transition focus:border-[#E63B2E]";
 
-  const saveTvProgress = () => {
-    const nextProgress = isTmdb
-      ? { currentSeason, currentEpisode, seasons }
-      : { currentEpisode, totalEpisodes };
-    onProgressChange?.(item.id, nextProgress);
-  };
-
-  const saveBookProgress = () => {
-    onProgressChange?.(item.id, {
-      currentPage: totalPages ? Math.min(currentPage, totalPages) : currentPage,
-      totalPages: totalPages || null
-    });
+  const handleSave = () => {
+    if (pendingStatus !== item.status) {
+      onStatusChange?.(item.id, pendingStatus);
+    }
+    if (showProgress) {
+      if (isTvShow) {
+        onProgressChange?.(item.id, isTmdb
+          ? { currentSeason, currentEpisode, seasons }
+          : { currentEpisode, totalEpisodes });
+      } else if (isBook) {
+        onProgressChange?.(item.id, {
+          currentPage: totalPages ? Math.min(currentPage, totalPages) : currentPage,
+          totalPages: totalPages || null
+        });
+      }
+    }
+    onClose();
   };
 
   return (
@@ -110,7 +118,6 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           <div className="space-y-5">
             <div className="space-y-2">
-              <h4 className="text-xl font-extrabold text-[#000000]">{item.title}</h4>
               {item.author && <p className="text-sm font-semibold text-[#534340]">{item.author}</p>}
               <div className="flex flex-wrap gap-2 text-xs font-bold text-[#8C4F45]">
                 {item.year && <span className="rounded-full bg-[#FFF8F5] px-2.5 py-1">{item.year}</span>}
@@ -128,8 +135,8 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
                   <button
                     key={status}
                     type="button"
-                    onClick={() => onStatusChange?.(item.id, status)}
-                    className={`min-h-[44px] rounded-lg border px-3 text-sm font-bold transition ${item.status === status ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000] hover:bg-[#FFF8F5]'}`}
+                    onClick={() => setPendingStatus(status)}
+                    className={`min-h-[44px] rounded-lg border px-3 text-sm font-bold transition ${pendingStatus === status ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000] hover:bg-[#FFF8F5]'}`}
                   >
                     {window.formatStatusLabel?.(status) || status}
                   </button>
@@ -137,8 +144,8 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
               </div>
             </section>
 
-            {isTvShow && (
-              <section className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+            {showProgress && isTvShow && (
+              <section className="space-y-3">
                 <h5 className="text-sm font-extrabold text-[#000000]">Progress</h5>
                 {loadingProgress ? (
                   <div className="py-3 text-sm font-semibold text-[#534340]">Loading show info...</div>
@@ -176,16 +183,13 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
                         <input type="number" min="1" value={currentEpisode} onChange={e => setCurrentEpisode(Math.max(1, Number(e.target.value) || 1))} className={fieldCls} />
                       )}
                     </div>
-                    <button type="button" onClick={saveTvProgress} className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]">
-                      Save progress
-                    </button>
                   </>
                 )}
               </section>
             )}
 
-            {isBook && (
-              <section className="space-y-3 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
+            {showProgress && isBook && (
+              <section className="space-y-3">
                 <h5 className="text-sm font-extrabold text-[#000000]">Progress</h5>
                 <div>
                   <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Current page</label>
@@ -210,11 +214,16 @@ const MediaDetailModal = ({ item, onClose, onStatusChange, onProgressChange, wat
                     </div>
                   </div>
                 )}
-                <button type="button" onClick={saveBookProgress} className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]">
-                  Save progress
-                </button>
               </section>
             )}
+
+            <button
+              type="button"
+              onClick={handleSave}
+              className="min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-2.5 text-sm font-bold text-white transition hover:bg-[#CC302F]"
+            >
+              Save
+            </button>
 
             <button
               type="button"
