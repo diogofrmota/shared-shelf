@@ -33,7 +33,7 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
             )}
           </h3>
           {ingredients.length > 0 && (
-            <p className="mt-1 text-sm leading-relaxed text-[#000000]">
+            <p className="mt-1 w-full break-words text-sm leading-relaxed text-[#000000]">
               {ingredients.join(', ')}
             </p>
           )}
