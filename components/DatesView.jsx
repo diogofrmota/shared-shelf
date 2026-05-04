@@ -121,6 +121,16 @@ const DatesLeafletMap = ({ places, focusedId }) => {
     layerGroup.clearLayers();
     markersRef.current.clear();
 
+    const customIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
     const bounds = L.latLngBounds([]);
     let hasMarkers = false;
 
@@ -144,7 +154,7 @@ const DatesLeafletMap = ({ places, focusedId }) => {
             ${safeLink ? `<a href="${safeLink}" target="_blank" rel="noreferrer noopener" style="color:#E63B2E;">Open link</a>` : ''}
           </div>
         `;
-        const marker = L.marker(latLng).bindPopup(popupContent).addTo(layerGroup);
+        const marker = L.marker(latLng, { icon: customIcon }).bindPopup(popupContent).addTo(layerGroup);
         markersRef.current.set(place.id, marker);
       }
     });
@@ -318,19 +328,13 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
 const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onAddClick }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [onlyFavourites, setOnlyFavourites] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
 
   const filtered = useMemo(() => places.filter(p => {
     if (onlyFavourites && !p.isFavourite) return false;
-    if (statusFilter === 'visited' && p.status !== 'visited') return false;
-    if (statusFilter === 'want-to-go' && p.status !== 'want-to-go') return false;
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
-    const query = searchQuery.trim().toLowerCase();
-    if (query && !String(p.name || '').toLowerCase().includes(query)) return false;
     return true;
-  }), [places, onlyFavourites, statusFilter, categoryFilter, searchQuery]);
+  }), [places, onlyFavourites, categoryFilter]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if ((b.isFavourite ? 1 : 0) !== (a.isFavourite ? 1 : 0)) return (b.isFavourite ? 1 : 0) - (a.isFavourite ? 1 : 0);
@@ -348,27 +352,12 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
         <p className="mt-1 text-sm text-[#000000]">Restaurants, bars, viewpoints, and places worth saving.</p>
       </div>
 
-      <DatesLeafletMap places={filtered} focusedId={focusedId} />
-      <div>
-        <label htmlFor="dates-search" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#000000]">Search by name</label>
-        <input
-          id="dates-search"
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search dates..."
-          className="min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]"
-        />
-      </div>
-
       <FilterBar label="Filter:">
         <FilterButton label="All" isActive={categoryFilter === 'all'} onClick={() => setCategoryFilter('all')} />
         {DATE_CATEGORIES.map(c => (
           <FilterButton key={c.value} label={c.label} isActive={categoryFilter === c.value} onClick={() => setCategoryFilter(c.value)} />
         ))}
         <FilterButton label="★ Favourites" isActive={onlyFavourites} onClick={() => setOnlyFavourites(v => !v)} />
-        <FilterButton label="✅ Visited" isActive={statusFilter === 'visited'} onClick={() => setStatusFilter(v => v === 'visited' ? 'all' : 'visited')} />
-        <FilterButton label="🕒 Want to go" isActive={statusFilter === 'want-to-go'} onClick={() => setStatusFilter(v => v === 'want-to-go' ? 'all' : 'want-to-go')} />
       </FilterBar>
 
       {sorted.length === 0 ? (
@@ -403,6 +392,8 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
           ))}
         </div>
       )}
+
+      <DatesLeafletMap places={filtered} focusedId={focusedId} />
     </div>
   );
 };

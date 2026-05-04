@@ -503,16 +503,21 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     if (activeTab !== 'dates') return;
     const query = String(formData.address || '').trim();
     if (addressLookupTimerRef.current) clearTimeout(addressLookupTimerRef.current);
-    if (query.length < 3 || !window.api?.request) {
+    if (query.length < 3) {
       setAddressSuggestions([]);
       return;
     }
     addressLookupTimerRef.current = setTimeout(async () => {
       try {
-        const results = await window.api.request(`/api/nominatim?q=${encodeURIComponent(query)}`, { auth: true });
-        const suggestions = Array.isArray(results)
-          ? results.slice(0, 5).map(item => String(item.display_name || '').trim()).filter(Boolean)
-          : [];
+        const response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+        if (!response.ok) throw new Error('Request failed');
+        const data = await response.json();
+        const features = Array.isArray(data?.features) ? data.features : [];
+        const suggestions = features.map(f => {
+          const p = f.properties || {};
+          const parts = [p.name, p.street && p.housenumber ? `${p.street} ${p.housenumber}` : p.street, p.city || p.town || p.village, p.country].filter(Boolean);
+          return parts.join(', ');
+        }).filter(Boolean);
         setAddressSuggestions(suggestions);
         setShowAddressSuggestions(true);
       } catch (_) {
@@ -596,7 +601,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
           const geocoded = window.geocodeAddress
             ? await window.geocodeAddress(address)
             : { lat: null, lng: null, status: address ? 'failed' : 'empty', error: address ? 'Address lookup unavailable' : '' };
-          const status = formData.status === 'visited' ? 'visited' : 'want-to-go';
           onAddDate({
             id: `date-${uid()}`,
             name: formData.name,
@@ -609,9 +613,9 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             geocodedAddress: geocoded.displayName || '',
             geocodedAt: geocoded.status === 'resolved' ? new Date().toISOString() : null,
             notes: formData.notes || '',
-            status,
-            beenThere: status === 'visited',
-            isFavourite: false,
+            status: 'want-to-go',
+            beenThere: false,
+            isFavourite: Boolean(formData.isFavourite),
             createdAt: new Date().toISOString()
           });
           onClose();
@@ -842,16 +846,13 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                   ))}
                 </select>
               </FormField>
-              <FormField label="Status">
-                <select className={selectCls} value={formData.status || 'want-to-go'} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
-                  {DATE_STATUS_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </FormField>
               <FormField label="Notes">
                 <textarea rows="3" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
               </FormField>
+              <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+                <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+                Favourite
+              </label>
             </>
           )}
 
