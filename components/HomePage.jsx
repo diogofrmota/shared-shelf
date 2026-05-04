@@ -314,7 +314,7 @@ function HomePage({ onNavigate, currentUser, onUpdateUser, onLogout }) {
                 onClick={goTo('/dashboard-selection/')}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#E63B2E] px-3 py-2 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] sm:px-4"
               >
-                Go to dashboard
+                Dashboard
               </a>
               <div className="relative" ref={profileRef}>
                 <button
