@@ -329,7 +329,7 @@ const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Trips Manager</h2>
           <p className="mt-1 text-sm text-[#000000]">Plan trips together, setup destinations, flights, accommodation and itineraries.</p>
         </div>
