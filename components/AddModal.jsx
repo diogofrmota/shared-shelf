@@ -846,9 +846,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                   ))}
                 </select>
               </FormField>
-              <FormField label="Notes">
-                <textarea rows="3" className={inputCls} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-              </FormField>
               <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
                 <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
                 Favourite
