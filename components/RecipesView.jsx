@@ -101,7 +101,7 @@ const RecipesView = ({ recipes, onDeleteRecipe, onEditRecipe, onAddClick }) => {
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Recipes</h2>
+        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Our Recipes</h2>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#000000]">

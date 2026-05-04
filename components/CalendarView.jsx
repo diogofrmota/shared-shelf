@@ -540,7 +540,7 @@ const CalendarView = ({ events, onDeleteEvent, onEditEvent, onAddClick, onAddFor
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Calendar</h2>
+        <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Shared Calendar</h2>
         <button
           type="button"
           onClick={onAddClick}

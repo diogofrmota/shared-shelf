@@ -78,7 +78,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
     return (
       <div className="space-y-5 animate-fade-in">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Entertainment</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Entertainment Tracker</h2>
           <p className="mt-1 text-sm text-[#000000]">Keep track of what you're watching and reading.</p>
         </div>
         <div className="grid gap-4">
