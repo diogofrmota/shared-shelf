@@ -380,6 +380,74 @@ const TaskRecurrenceFields = ({ formData, setFormData }) => {
   );
 };
 
+const parseIngredientFields = (value) => {
+  const source = Array.isArray(value) ? value : String(value || '').split(/\r?\n/);
+  const fields = source.map(item => String(item || '').trim()).filter(Boolean);
+  return fields.length ? fields : [''];
+};
+
+const serializeIngredientFields = (fields) => (
+  (Array.isArray(fields) ? fields : parseIngredientFields(fields))
+    .map(item => String(item || '').trim())
+    .filter(Boolean)
+    .join('\n')
+);
+
+const RecipeIngredientFields = ({ formData, setFormData }) => {
+  const CloseIcon = getComponent('Close');
+  const fields = Array.isArray(formData.ingredientFields) && formData.ingredientFields.length
+    ? formData.ingredientFields
+    : parseIngredientFields(formData.ingredients);
+
+  const updateFields = (nextFields) => {
+    setFormData({
+      ...formData,
+      ingredientFields: nextFields,
+      ingredients: serializeIngredientFields(nextFields)
+    });
+  };
+
+  return (
+    <FormField label="Ingredients">
+      <div className="space-y-2">
+        {fields.map((ingredient, idx) => (
+          <div key={idx} className="flex gap-2">
+            <input
+              type="text"
+              className={inputCls}
+              value={ingredient}
+              placeholder={idx === 0 ? 'Ingredient' : `Ingredient ${idx + 1}`}
+              onChange={(e) => {
+                const nextFields = fields.slice();
+                nextFields[idx] = e.target.value;
+                updateFields(nextFields);
+              }}
+            />
+            {fields.length > 1 && (
+              <button
+                type="button"
+                onClick={() => updateFields(fields.filter((_, fieldIdx) => fieldIdx !== idx))}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#E1D8D4] bg-white text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
+                aria-label={`Remove ingredient ${idx + 1}`}
+                title="Remove ingredient"
+              >
+                <CloseIcon size={16} />
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => updateFields([...fields, ''])}
+          className="min-h-[44px] rounded-lg border border-[#E1D8D4] bg-[#FFF8F5] px-3 py-2 text-sm font-bold text-[#000000] transition hover:border-[#FFB4A9] hover:bg-[#FFDAD4]/35"
+        >
+          Add ingredient
+        </button>
+      </div>
+    </FormField>
+  );
+};
+
 
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData, mediaWatchOptions, mediaWatchFilter }) => {
   const [formData, setFormData] = useState({});
@@ -391,7 +459,12 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
   const addressLookupTimerRef = useRef(null);
 
   useEffect(() => {
-    setFormData(initialData && typeof initialData === 'object' ? { ...initialData } : {});
+    const nextFormData = initialData && typeof initialData === 'object' ? { ...initialData } : {};
+    if (activeTab === 'recipes') {
+      nextFormData.ingredientFields = parseIngredientFields(nextFormData.ingredients);
+      nextFormData.ingredients = serializeIngredientFields(nextFormData.ingredientFields);
+    }
+    setFormData(nextFormData);
     setIsSaving(false);
     setShowTaskOptions(false);
     setShowCalendarOptions(Boolean(initialData?.date));
@@ -481,7 +554,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         break;
       case 'recipes':
         if (formData.name) {
-          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, link: formData.link || '', ingredients: formData.ingredients || '', isFavourite: Boolean(formData.isFavourite), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
+          onAddRecipe({ id: `recipe-${uid()}`, name: formData.name, link: formData.link || '', ingredients: serializeIngredientFields(formData.ingredientFields), isFavourite: Boolean(formData.isFavourite), subtasks: String(formData.subtasksText || '').split('\n').map(v => v.trim()).filter(Boolean).map((title, idx) => ({ id: `subtask-${uid()}-${idx}`, title, completed: false })),
             listType: formData.listType || 'task',
             createdAt: new Date().toISOString() });
           onClose();
@@ -695,9 +768,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Name" required>
                 <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
               </FormField>
-              <FormField label="Ingredients">
-                <textarea placeholder="One per line" rows="4" className={inputCls} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
-              </FormField>
+              <RecipeIngredientFields formData={formData} setFormData={setFormData} />
               <FormField label="Recipe Link">
                 <input type="url" placeholder="Paste TikTok link, or something from the web..." className={inputCls} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
               </FormField>
@@ -885,6 +956,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
         link: recipe.link || '',
         isFavourite: Boolean(recipe.isFavourite),
         ingredients: recipe.ingredients || '',
+        ingredientFields: parseIngredientFields(recipe.ingredients),
       });
     }
   }, [isOpen, recipe]);
@@ -896,7 +968,8 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.name) {
-      onSave({ ...recipe, ...formData });
+      const { ingredientFields, ...recipeData } = formData;
+      onSave({ ...recipe, ...recipeData, ingredients: serializeIngredientFields(ingredientFields) });
       onClose();
     }
   };
@@ -919,9 +992,7 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
           <FormField label="Name" required>
             <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
           </FormField>
-          <FormField label="Ingredients">
-            <textarea placeholder="One per line" rows="4" className={inputCls} value={formData.ingredients || ''} onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })} />
-          </FormField>
+          <RecipeIngredientFields formData={formData} setFormData={setFormData} />
           <FormField label="Recipe Link">
             <input type="url" placeholder="Paste TikTok link, or something from the web..." className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
           </FormField>

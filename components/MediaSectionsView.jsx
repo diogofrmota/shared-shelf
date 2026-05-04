@@ -37,7 +37,7 @@ const MEDIA_TYPE_LABELS = {
 
 const MEDIA_TYPE_EMPTY_COPY = {
   tvshows: {
-    title: 'No TV shows yet',
+    title: 'No TV Shows yet',
     message: 'Add a series to track what you are watching.',
     actionLabel: 'Add TV show',
     icon: 'Tv'
@@ -74,7 +74,7 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
           <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Entertainment</h2>
           <p className="mt-1 text-sm text-[#000000]">Keep track of what you're watching and reading.</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4">
           {MEDIA_TYPE_TILES.map(({ id, label, icon, description }) => {
             const Icon = getMediaSectionsComponent(icon);
             return (
@@ -82,12 +82,12 @@ const MediaSectionsView = ({ activeTab, items, onStatusChange, onAddClick, onPro
               key={id}
               type="button"
               onClick={() => onMediaTypeSelect?.(id)}
-              className="group flex min-h-[44px] flex-col items-start gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#000000] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
+              className="group flex min-h-[44px] items-center gap-4 rounded-2xl border border-[#E1D8D4] bg-white p-6 text-left text-[#000000] shadow-sm transition hover:-translate-y-1 hover:border-[#FFB4A9] hover:shadow-lg hover:shadow-[#000000]/10 focus:outline-none focus:ring-4 focus:ring-[#FFB4A9]/40"
             >
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#FFDAD4] text-[#E63B2E] transition group-hover:bg-[#E63B2E] group-hover:text-white">
                 <Icon size={26} />
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="text-lg font-extrabold">{label}</p>
                 <p className="mt-1 text-sm font-medium text-[#000000]">{description}</p>
               </div>
