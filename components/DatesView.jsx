@@ -217,9 +217,10 @@ const StableStarRating = ({ rating = 0, onRate }) => {
   );
 };
 
-const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUpdateDate }) => {
+const DateCard = ({ place, onDelete, onEdit, onFocus, isFocused, onUpdateDate }) => {
   const Star = getDateComponent('Star');
   const Trash = getDateComponent('Trash');
+  const PencilIcon = getDateComponent('PencilIcon');
   const LinkIcon = getDateComponent('LinkIcon');
   const categoryStyle = DATE_CATEGORY_STYLES[place.category] || DATE_CATEGORY_STYLES.other;
   const safeLink = window.safeExternalUrl?.(place.link) || '';
@@ -233,26 +234,25 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
   };
 
   return (
-    <div
-      className={`group cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
+    <article
+      className={`cursor-pointer rounded-xl border bg-white p-4 shadow-sm transition ${
         isFocused
           ? 'border-[#E63B2E] shadow-md shadow-[#E63B2E]/15'
-          : 'border-[#E1D8D4] hover:border-[#FFB4A9] hover:shadow-md'
+          : 'border-[#E1D8D4] hover:border-[#FFB4A9] hover:shadow-md hover:shadow-[#000000]/5'
       }`}
       onClick={() => onFocus(place.id)}
     >
-      <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="min-w-0 flex-1 truncate text-base font-bold text-[#000000]" title={place.name}>{place.name}</h4>
-              <button
-                onClick={(e) => { e.stopPropagation(); onToggleFavourite(place.id); }}
-                className={`flex h-11 w-11 items-center justify-center rounded transition ${place.isFavourite ? 'text-[#FFB300]' : 'text-[#000000] hover:text-[#FFB300]'}`}
-                aria-label={place.isFavourite ? 'Remove from favourites' : 'Add to favourites'}
-              >
-                <Star size={16} filled={place.isFavourite} />
-              </button>
+              <h3 className="flex min-w-0 flex-1 items-center gap-2 text-base font-extrabold text-[#000000]" title={place.name}>
+                <span className="break-words">{place.name}</span>
+                {place.isFavourite && (
+                  <span className="shrink-0 text-[#E63B2E]" aria-label="Favourite" title="Favourite">
+                    <Star size={16} filled />
+                  </span>
+                )}
+              </h3>
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
@@ -270,19 +270,30 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
                 aria-label={isVisited ? 'Mark as want to go' : 'Mark as visited'}
                 title="Toggle status"
               >
-                {isVisited ? '✅ Visited' : '★ Want to go'}
+                {isVisited ? 'Visited' : 'Want to go'}
               </button>
             </div>
 
           </div>
 
-          <div className="flex shrink-0 items-center gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+          <div className="flex shrink-0 items-center gap-1">
+            {onEdit && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(place); }}
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]"
+                aria-label={`Edit date ${place.name}`}
+                title="Edit date"
+              >
+                <PencilIcon size={16} aria-hidden="true" />
+              </button>
+            )}
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(place.id); }}
               className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFDAD4] hover:text-[#C1121F]"
-              aria-label="Delete date"
+              aria-label={`Delete date ${place.name}`}
+              title="Delete date"
             >
-              <Trash size={16} />
+              <Trash size={16} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -304,12 +315,11 @@ const DateCard = ({ place, onDelete, onFocus, onToggleFavourite, isFocused, onUp
             </a>
           )}
         </div>
-      </div>
-    </div>
+    </article>
   );
 };
 
-const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onAddClick }) => {
+const DatesView = ({ places, onDeletePlace, onEditDate, onToggleFavourite, onUpdateDate, onAddClick }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [onlyFavourites, setOnlyFavourites] = useState(false);
   const [focusedId, setFocusedId] = useState(null);
@@ -324,7 +334,6 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
     if ((b.isFavourite ? 1 : 0) !== (a.isFavourite ? 1 : 0)) return (b.isFavourite ? 1 : 0) - (a.isFavourite ? 1 : 0);
     return (b.createdAt || '').localeCompare(a.createdAt || '');
   }), [filtered]);
-  const FilterBar = window.getWindowComponent?.('FilterBar', window.MissingComponent) || window.MissingComponent;
   const FilterButton = window.getWindowComponent?.('FilterButton', window.MissingComponent) || window.MissingComponent;
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const MapPin = getDateComponent('MapPin');
@@ -348,13 +357,22 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
         <p className="mt-1 text-sm text-[#000000]">Restaurants, bars, viewpoints, and places worth saving.</p>
       </div>
 
-      <FilterBar label="Filter:">
-        <FilterButton label="All" isActive={categoryFilter === 'all'} onClick={() => setCategoryFilter('all')} />
-        {DATE_CATEGORIES.map(c => (
-          <FilterButton key={c.value} label={c.label} isActive={categoryFilter === c.value} onClick={() => setCategoryFilter(c.value)} />
-        ))}
+      <div className="flex flex-col gap-3 rounded-2xl border border-[#E1D8D4] bg-white p-3 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+        <label className="min-w-0 flex-1 text-xs font-bold uppercase tracking-wide text-[#000000]">
+          Category
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="mt-1 min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-sm font-semibold normal-case tracking-normal text-[#000000] outline-none transition focus:border-[#E63B2E]"
+          >
+            <option value="all">All date locations</option>
+            {DATE_CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
+        </label>
         <FilterButton label="★ Favourites" isActive={onlyFavourites} onClick={() => setOnlyFavourites(v => !v)} />
-      </FilterBar>
+      </div>
 
       {sorted.length === 0 ? (
         places.length === 0 ? (
@@ -379,8 +397,8 @@ const DatesView = ({ places, onDeletePlace, onToggleFavourite, onUpdateDate, onA
               place={place}
               isFocused={focusedId === place.id}
               onDelete={onDeletePlace}
+              onEdit={onEditDate}
               onFocus={setFocusedId}
-              onToggleFavourite={onToggleFavourite}
               onUpdateDate={onUpdateDate}
             />
           ))}

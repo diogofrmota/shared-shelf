@@ -97,9 +97,9 @@ const SECTION_OPTIONS = [
   { id: 'calendar', label: 'Calendar' },
   { id: 'tasks', label: 'Tasks' },
   { id: 'dates', label: 'Dates' },
+  { id: 'watchlist', label: 'Entertainment' },
   { id: 'trips', label: 'Trips' },
-  { id: 'recipes', label: 'Recipes' },
-  { id: 'watchlist', label: 'Entertainment' }
+  { id: 'recipes', label: 'Recipes' }
 ];
 
 const DATE_STATUS_OPTIONS = [

@@ -32,23 +32,6 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
               </span>
             )}
           </h3>
-          {ingredients.length > 0 && (
-            <p className="mt-1 w-full break-words text-sm leading-relaxed text-[#000000]">
-              {ingredients.join(', ')}
-            </p>
-          )}
-
-          {safeLink && (
-            <a
-              href={safeLink}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-2 inline-flex min-h-[44px] max-w-full items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
-            >
-              <LinkIcon size={14} className="shrink-0" aria-hidden="true" />
-              <span className="truncate">Source</span>
-            </a>
-          )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {onEdit && (
@@ -71,6 +54,23 @@ const RecipeCard = ({ recipe, onDelete, onEdit }) => {
           </button>
         </div>
       </div>
+      {ingredients.length > 0 && (
+        <p className="mt-1 w-full break-words text-sm leading-relaxed text-[#000000]">
+          {ingredients.join(', ')}
+        </p>
+      )}
+
+      {safeLink && (
+        <a
+          href={safeLink}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-2 inline-flex min-h-[44px] max-w-full items-center gap-1.5 text-sm font-bold text-[#E63B2E] transition hover:text-[#A9372C]"
+        >
+          <LinkIcon size={14} className="shrink-0" aria-hidden="true" />
+          <span className="truncate">Source</span>
+        </a>
+      )}
     </article>
   );
 };

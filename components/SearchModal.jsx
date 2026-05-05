@@ -116,7 +116,7 @@ const SearchModal = ({ isOpen, onClose, category, onAdd, watchOptions, defaultWa
             />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wide text-[#000000]">Mode</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-[#000000]">Who</span>
             {availableWatchOptions.map(option => (
               <button key={option.id} type="button" onClick={() => setWatchingMode(option.id)} className={`min-h-[36px] rounded-lg border px-3 text-xs font-bold ${watchingMode === option.id ? 'border-[#E63B2E] bg-[#FFDAD4] text-[#E63B2E]' : 'border-[#E1D8D4] text-[#000000]'}`}>
                 {option.label}

@@ -6,9 +6,9 @@ const MOBILE_NAV_TABS = [
   { id: 'calendar', label: 'Calendar', category: 'plan', icon: 'CalendarIcon' },
   { id: 'tasks', label: 'Tasks', category: 'plan', icon: 'CheckSquare' },
   { id: 'dates', label: 'Dates', category: 'go', icon: 'MapPin' },
+  { id: 'media', label: 'Entertainment', category: 'media', icon: 'Tv' },
   { id: 'trips', label: 'Trips', category: 'go', icon: 'Plane' },
-  { id: 'recipes', label: 'Recipes', category: 'go', icon: 'ChefHat' },
-  { id: 'media', label: 'Entertainment', category: 'media', icon: 'Tv' }
+  { id: 'recipes', label: 'Recipes', category: 'go', icon: 'ChefHat' }
 ];
 
 function MobileBottomNav({
@@ -19,7 +19,7 @@ function MobileBottomNav({
 }) {
   const enabledSet = new Set(Array.isArray(enabledSections) && enabledSections.length
     ? enabledSections
-    : ['calendar', 'tasks', 'dates', 'trips', 'recipes', 'watchlist']);
+    : ['calendar', 'tasks', 'dates', 'watchlist', 'trips', 'recipes']);
   const visibleTabs = MOBILE_NAV_TABS.filter(tab =>
     tab.id === 'media' ? enabledSet.has('watchlist') : enabledSet.has(tab.id)
   );

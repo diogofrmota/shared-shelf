@@ -37,6 +37,8 @@ function MediaTracker() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [editRecipeModalOpen, setEditRecipeModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
+  const [editDateModalOpen, setEditDateModalOpen] = useState(false);
+  const [editingDate, setEditingDate] = useState(null);
   const [editEventModalOpen, setEditEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [addEventInitialData, setAddEventInitialData] = useState(null);
@@ -82,6 +84,8 @@ function MediaTracker() {
     setAddCategory(null);
     setEditRecipeModalOpen(false);
     setEditingRecipe(null);
+    setEditDateModalOpen(false);
+    setEditingDate(null);
     setEditEventModalOpen(false);
     setEditingEvent(null);
     setConfirmation(null);
@@ -799,6 +803,7 @@ function MediaTracker() {
   const handleToggleFavouriteDate = (id) => {
     setData(prev => ({ ...prev, dates: (prev.dates || []).map(p => p.id === id ? { ...p, isFavourite: !p.isFavourite } : p) }));
   };
+  const handleEditDate = (date) => { setEditingDate(date); setEditDateModalOpen(true); };
   const handleUpdateDate = async (id, updates) => {
     if (Object.prototype.hasOwnProperty.call(updates || {}, 'address')) {
       const current = (data?.dates || []).find(p => p.id === id);
@@ -806,6 +811,16 @@ function MediaTracker() {
       const currentAddress = String(current?.address || '').trim();
       if (nextAddress === currentAddress) {
         setData(prev => ({ ...prev, dates: (prev.dates || []).map(p => p.id === id ? { ...p, ...updates, address: nextAddress } : p) }));
+        return;
+      }
+      const hasProvidedCoordinates = Number.isFinite(Number(updates?.lat)) && Number.isFinite(Number(updates?.lng));
+      if (hasProvidedCoordinates) {
+        setData(prev => ({
+          ...prev,
+          dates: (prev.dates || []).map(p => p.id === id
+            ? { ...p, ...updates, address: nextAddress, lat: Number(updates.lat), lng: Number(updates.lng) }
+            : p)
+        }));
         return;
       }
       const nextPlace = await withGeocodedAddress({
@@ -1029,6 +1044,7 @@ function MediaTracker() {
   const AddModal = window.getWindowComponent?.('AddModal', window.MissingComponent) || window.MissingComponent;
   const EditEventModal = window.getWindowComponent?.('EditEventModal', window.MissingComponent) || window.MissingComponent;
   const EditRecipeModal = window.getWindowComponent?.('EditRecipeModal', window.MissingComponent) || window.MissingComponent;
+  const EditDateModal = window.getWindowComponent?.('EditDateModal', window.MissingComponent) || window.MissingComponent;
   const ConfirmationDialog = window.getWindowComponent?.('ConfirmationDialog', window.MissingComponent) || window.MissingComponent;
   const SiteFooter = window.getWindowComponent?.('SiteFooter', null);
   const MobileBottomNav = window.getWindowComponent?.('MobileBottomNav', null);
@@ -1158,6 +1174,7 @@ function MediaTracker() {
           <DatesView
             places={visibleData.dates || []}
             onDeletePlace={handleDeleteDate}
+            onEditDate={handleEditDate}
             onToggleFavourite={handleToggleFavouriteDate}
             onUpdateDate={handleUpdateDate}
             onAddClick={() => { setAddCategory('dates'); setAddModalOpen(true); }}
@@ -1264,6 +1281,7 @@ function MediaTracker() {
       />
       <EditEventModal isOpen={editEventModalOpen} onClose={() => setEditEventModalOpen(false)} event={editingEvent} onSave={handleSaveEvent} />
       <EditRecipeModal isOpen={editRecipeModalOpen} onClose={() => setEditRecipeModalOpen(false)} recipe={editingRecipe} onSave={handleSaveRecipe} />
+      <EditDateModal isOpen={editDateModalOpen} onClose={() => { setEditDateModalOpen(false); setEditingDate(null); }} date={editingDate} onSave={handleUpdateDate} />
       <ConfirmationDialog
         isOpen={Boolean(confirmation)}
         title={confirmation?.title || 'Are you sure?'}

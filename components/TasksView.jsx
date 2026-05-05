@@ -72,6 +72,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const emptyEditForm = { title: '', description: '', dueDate: '', assignedTo: '' };
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [completedExpanded, setCompletedExpanded] = useState(false);
 
   const users = profile?.users || [];
   const getUserById = (id) => users.find(u => u.id === id);
@@ -82,6 +83,8 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   }), [tasks]);
 
   const visibleTasks = sortedTasks;
+  const activeTasks = sortedTasks.filter(task => !task.completed);
+  const completedTasks = sortedTasks.filter(task => task.completed);
 
   const sortedIndexById = useMemo(() => {
     const map = new Map();
@@ -90,11 +93,12 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   }, [visibleTasks]);
 
   const todayIso = todayLocalIso();
-  const activeCnt = visibleTasks.filter(t => !t.completed).length;
+  const activeCnt = activeTasks.length;
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const CheckSquare = getTaskComponent('CheckSquare');
   const Plus = getTaskComponent('Plus');
   const Trash = getTaskComponent('Trash');
+  const ChevronRight = getTaskComponent('ChevronRight');
 
   const handleEditTask = (task) => {
     setEditingTask(task.id);
@@ -275,13 +279,13 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                 <p className={`line-clamp-2 font-bold leading-snug ${task.completed ? 'text-[#000000] line-through' : 'text-[#000000]'}`} title={task.title}>
                   {task.title}
                 </p>
-                {task.completedAt && (
-                  <p className="mt-1 text-xs font-semibold text-[#2F6B47]">Completed on {new Date(task.completedAt).toLocaleDateString()}</p>
-                )}
                 {task.description && (
                   <p className={`mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm ${task.completed ? 'text-[#A89A95]' : 'text-[#000000]'}`} title={task.description}>
                     {task.description}
                   </p>
+                )}
+                {task.completedAt && (
+                  <p className="mt-1 text-xs font-semibold text-[#2F6B47]">Completed on {new Date(task.completedAt).toLocaleDateString()}</p>
                 )}
                 {(assignedUser || task.dueDate) && (
                   <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -337,21 +341,6 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     )}
                   </div>
                 )}
-                {Array.isArray(task.completionHistory) && task.completionHistory.length > 0 && (
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-xs font-bold text-[#A9372C]">
-                      Completion history ({task.completionHistory.length})
-                    </summary>
-                    <ul className="mt-1.5 space-y-1 pl-3 text-xs text-[#534340]">
-                      {task.completionHistory.slice().reverse().slice(0, 8).map((entry, idx) => (
-                        <li key={`${entry.completedAt}-${idx}`} className="list-disc">
-                          {new Date(entry.completedAt).toLocaleDateString()}
-                          {entry.completedByName ? ` · ${entry.completedByName}` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                )}
               </div>
 
               <div className="flex shrink-0 flex-col items-center gap-1 opacity-100 transition sm:flex-row sm:opacity-0 sm:group-hover:opacity-100" onClick={e => e.stopPropagation()}>
@@ -393,7 +382,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Tasks List</h2>
+          <h2 className="text-2xl font-extrabold text-[#000000] sm:text-3xl">Tasks</h2>
           
             <p className="mt-1 text-sm font-medium text-[#000000]">
               {activeCnt} remaining · {tasks.length - activeCnt} done
@@ -419,10 +408,34 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
         />
       ) : (
         <div className="space-y-2">
-          {visibleTasks.map(task => {
+          {activeTasks.map(task => {
             const idx = sortedIndexById.get(task.id);
             return renderTaskItem(task, idx);
           })}
+          {completedTasks.length > 0 && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setCompletedExpanded(value => !value)}
+                className="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-2xl border border-[#E1D8D4] bg-white px-4 py-3 text-left shadow-sm transition hover:bg-[#FFF8F5]"
+                aria-expanded={completedExpanded}
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-extrabold text-[#000000]">Completed Tasks</span>
+                  <span className="block text-xs font-semibold text-[#534340]">{completedTasks.length} done</span>
+                </span>
+                <ChevronRight size={18} className={`shrink-0 text-[#A9372C] transition-transform ${completedExpanded ? 'rotate-90' : ''}`} />
+              </button>
+              {completedExpanded && (
+                <div className="space-y-2">
+                  {completedTasks.map(task => {
+                    const idx = sortedIndexById.get(task.id);
+                    return renderTaskItem(task, idx);
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

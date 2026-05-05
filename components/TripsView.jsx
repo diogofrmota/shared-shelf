@@ -340,7 +340,7 @@ const TripsView = ({ trips, onDeleteTrip, onUpdateTrip, onAddClick }) => {
             Add trip
           </button>
         </div>
-        <p className="mt-1 text-sm text-[#000000]">Plan trips together, setup destinations, flights, accommodation and itineraries.</p>
+        <p className="mt-1 text-sm text-[#000000]">Plan trips together, choose destinations, flights, accommodation and itineraries.</p>
       </div>
 
       {sorted.length === 0 ? (

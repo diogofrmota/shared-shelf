@@ -130,6 +130,33 @@ const DATE_STATUS_OPTIONS = window.DATE_STATUS_OPTIONS || [
   { value: 'visited', label: 'Visited' }
 ];
 
+const isDateVisited = (data = {}) => data.status === 'visited' || data.beenThere === true;
+
+const getPhotonSuggestionLabel = (feature = {}) => {
+  const properties = feature.properties || {};
+  const streetLine = properties.street && properties.housenumber
+    ? `${properties.street} ${properties.housenumber}`
+    : properties.street;
+  return [
+    properties.name,
+    streetLine,
+    properties.city || properties.town || properties.village,
+    properties.country
+  ].filter(Boolean).join(', ');
+};
+
+const normalizePhotonSuggestion = (feature = {}) => {
+  const label = getPhotonSuggestionLabel(feature);
+  const coordinates = Array.isArray(feature.geometry?.coordinates) ? feature.geometry.coordinates : [];
+  const lng = Number(coordinates[0]);
+  const lat = Number(coordinates[1]);
+  return {
+    label,
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null
+  };
+};
+
 const buildTripPayload = (formData = {}) => ({
   destination: formData.destination || '',
   startDate: formData.startDate || '',
@@ -496,6 +523,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     }
     setFormData(nextFormData);
     setIsSaving(false);
+    setAddressSuggestions([]);
+    setShowAddressSuggestions(false);
     setShowCalendarOptions(Boolean(initialData?.date));
   }, [isOpen, activeTab]);
 
@@ -513,11 +542,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         if (!response.ok) throw new Error('Request failed');
         const data = await response.json();
         const features = Array.isArray(data?.features) ? data.features : [];
-        const suggestions = features.map(f => {
-          const p = f.properties || {};
-          const parts = [p.name, p.street && p.housenumber ? `${p.street} ${p.housenumber}` : p.street, p.city || p.town || p.village, p.country].filter(Boolean);
-          return parts.join(', ');
-        }).filter(Boolean);
+        const suggestions = features.map(normalizePhotonSuggestion).filter(suggestion => suggestion.label);
         setAddressSuggestions(suggestions);
         setShowAddressSuggestions(true);
       } catch (_) {
@@ -598,9 +623,18 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
         if (formData.name) {
           setIsSaving(true);
           const address = String(formData.address || '').trim();
-          const geocoded = window.geocodeAddress
+          const selectedLat = Number(formData.selectedAddressLat);
+          const selectedLng = Number(formData.selectedAddressLng);
+          const hasSelectedAddressCoordinates = address
+            && formData.selectedAddressLabel === address
+            && Number.isFinite(selectedLat)
+            && Number.isFinite(selectedLng);
+          const geocoded = hasSelectedAddressCoordinates
+            ? { lat: selectedLat, lng: selectedLng, status: 'resolved', error: '', displayName: address }
+            : window.geocodeAddress
             ? await window.geocodeAddress(address)
             : { lat: null, lng: null, status: address ? 'failed' : 'empty', error: address ? 'Address lookup unavailable' : '' };
+          const dateStatus = isDateVisited(formData) ? 'visited' : 'want-to-go';
           onAddDate({
             id: `date-${uid()}`,
             name: formData.name,
@@ -613,8 +647,8 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
             geocodedAddress: geocoded.displayName || '',
             geocodedAt: geocoded.status === 'resolved' ? new Date().toISOString() : null,
             notes: formData.notes || '',
-            status: 'want-to-go',
-            beenThere: false,
+            status: dateStatus,
+            beenThere: dateStatus === 'visited',
             isFavourite: Boolean(formData.isFavourite),
             createdAt: new Date().toISOString()
           });
@@ -814,7 +848,13 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                     type="text"
                     className={inputCls}
                     value={formData.address || ''}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      address: e.target.value,
+                      selectedAddressLabel: '',
+                      selectedAddressLat: null,
+                      selectedAddressLng: null
+                    })}
                     onFocus={() => setShowAddressSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 120)}
                     placeholder="Start typing an address..."
@@ -823,16 +863,22 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                     <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-[#E1D8D4] bg-white shadow-lg">
                       {addressSuggestions.map((suggestion, idx) => (
                         <button
-                          key={`${suggestion}-${idx}`}
+                          key={`${suggestion.label}-${idx}`}
                           type="button"
                           className="block w-full border-b border-[#F2E7E3] px-3 py-2 text-left text-sm text-[#000000] last:border-b-0 hover:bg-[#FFF8F5]"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            setFormData({ ...formData, address: suggestion });
+                            setFormData({
+                              ...formData,
+                              address: suggestion.label,
+                              selectedAddressLabel: suggestion.label,
+                              selectedAddressLat: suggestion.lat,
+                              selectedAddressLng: suggestion.lng
+                            });
                             setShowAddressSuggestions(false);
                           }}
                         >
-                          {suggestion}
+                          {suggestion.label}
                         </button>
                       ))}
                     </div>
@@ -849,6 +895,19 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
                 <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
                 Favourite
+              </label>
+              <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+                <input
+                  type="checkbox"
+                  checked={isDateVisited(formData)}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    status: e.target.checked ? 'visited' : 'want-to-go',
+                    beenThere: e.target.checked
+                  })}
+                  className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                />
+                Visited
               </label>
             </>
           )}
@@ -1026,4 +1085,188 @@ const EditRecipeModal = ({ isOpen, onClose, recipe, onSave }) => {
   );
 };
 
-Object.assign(window, { AddModal, EditEventModal, EditRecipeModal });
+const EditDateModal = ({ isOpen, onClose, date, onSave }) => {
+  const [formData, setFormData] = useState({});
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const addressLookupTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen || !date) return;
+    setFormData({
+      name: date.name || '',
+      address: date.address || '',
+      category: date.category || 'restaurant',
+      notes: date.notes || '',
+      link: date.link || '',
+      isFavourite: Boolean(date.isFavourite),
+      status: isDateVisited(date) ? 'visited' : 'want-to-go',
+      beenThere: isDateVisited(date)
+    });
+    setAddressSuggestions([]);
+    setShowAddressSuggestions(false);
+  }, [isOpen, date]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const query = String(formData.address || '').trim();
+    if (addressLookupTimerRef.current) clearTimeout(addressLookupTimerRef.current);
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+    addressLookupTimerRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+        if (!response.ok) throw new Error('Request failed');
+        const data = await response.json();
+        const features = Array.isArray(data?.features) ? data.features : [];
+        setAddressSuggestions(features.map(normalizePhotonSuggestion).filter(suggestion => suggestion.label));
+        setShowAddressSuggestions(true);
+      } catch (_) {
+        setAddressSuggestions([]);
+      }
+    }, 250);
+
+    return () => {
+      if (addressLookupTimerRef.current) clearTimeout(addressLookupTimerRef.current);
+    };
+  }, [isOpen, formData.address]);
+
+  if (!isOpen || !date) return null;
+  const ModalShell = getModalShell();
+  const CloseIcon = getComponent('Close');
+  const dateCategories = window.DATE_CATEGORIES || [];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name) return;
+    const address = String(formData.address || '').trim();
+    const selectedLat = Number(formData.selectedAddressLat);
+    const selectedLng = Number(formData.selectedAddressLng);
+    const hasSelectedAddressCoordinates = address
+      && formData.selectedAddressLabel === address
+      && Number.isFinite(selectedLat)
+      && Number.isFinite(selectedLng);
+    const status = isDateVisited(formData) ? 'visited' : 'want-to-go';
+    onSave(date.id, {
+      name: formData.name,
+      category: formData.category || 'restaurant',
+      address,
+      notes: formData.notes || '',
+      link: window.safeExternalUrl?.(formData.link) || '',
+      isFavourite: Boolean(formData.isFavourite),
+      status,
+      beenThere: status === 'visited',
+      ...(hasSelectedAddressCoordinates ? {
+        lat: selectedLat,
+        lng: selectedLng,
+        geocodingStatus: 'resolved',
+        geocodingError: '',
+        geocodedAddress: address,
+        geocodedAt: new Date().toISOString()
+      } : {})
+    });
+    onClose();
+  };
+
+  return (
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      zClass="z-[120]"
+      ariaLabel="Edit date"
+      dialogClassName="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30"
+    >
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
+        <h2 className="text-xl font-extrabold text-[#000000]">Edit date</h2>
+        <button onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#000000] transition hover:bg-[#FFF8F5] hover:text-[#E63B2E]" aria-label="Close edit date">
+          <CloseIcon size={22} />
+        </button>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4 p-5">
+        <FormField label="Place name" required>
+          <input type="text" className={inputCls} value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required autoFocus />
+        </FormField>
+        <FormField label="Location">
+          <div className="relative">
+            <input
+              type="text"
+              className={inputCls}
+              value={formData.address || ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                address: e.target.value,
+                selectedAddressLabel: '',
+                selectedAddressLat: null,
+                selectedAddressLng: null
+              })}
+              onFocus={() => setShowAddressSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 120)}
+              placeholder="Start typing an address..."
+            />
+            {showAddressSuggestions && addressSuggestions.length > 0 && (
+              <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-[#E1D8D4] bg-white shadow-lg">
+                {addressSuggestions.map((suggestion, idx) => (
+                  <button
+                    key={`${suggestion.label}-${idx}`}
+                    type="button"
+                    className="block w-full border-b border-[#F2E7E3] px-3 py-2 text-left text-sm text-[#000000] last:border-b-0 hover:bg-[#FFF8F5]"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setFormData({
+                        ...formData,
+                        address: suggestion.label,
+                        selectedAddressLabel: suggestion.label,
+                        selectedAddressLat: suggestion.lat,
+                        selectedAddressLng: suggestion.lng
+                      });
+                      setShowAddressSuggestions(false);
+                    }}
+                  >
+                    {suggestion.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </FormField>
+        <FormField label="Category">
+          <select className={selectCls} value={formData.category || 'restaurant'} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+            {dateCategories.map(category => (
+              <option key={category.value} value={category.value}>{category.label}</option>
+            ))}
+          </select>
+        </FormField>
+        <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+          <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+          Favourite
+        </label>
+        <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+          <input
+            type="checkbox"
+            checked={isDateVisited(formData)}
+            onChange={(e) => setFormData({
+              ...formData,
+              status: e.target.checked ? 'visited' : 'want-to-go',
+              beenThere: e.target.checked
+            })}
+            className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+          />
+          Visited
+        </label>
+        <FormField label="Notes">
+          <textarea rows="3" className={`${inputCls} min-h-[80px]`} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+        </FormField>
+        <FormField label="Link">
+          <input type="url" className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
+        </FormField>
+        <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
+          Save changes
+        </button>
+      </form>
+    </ModalShell>
+  );
+};
+
+Object.assign(window, { AddModal, EditEventModal, EditRecipeModal, EditDateModal });
