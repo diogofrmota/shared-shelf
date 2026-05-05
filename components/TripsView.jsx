@@ -24,9 +24,9 @@ const inputCls = 'min-h-[40px] w-full rounded-lg border border-[#E1D8D4] bg-whit
 
 const SectionHeading = ({ title, count }) => (
   <div className="flex items-center gap-2">
-    <h4 className="text-sm font-extrabold uppercase tracking-wide text-[#A9372C]">{title}</h4>
+    <h4 className="text-xs font-bold uppercase tracking-wide text-[#000000]">{title}</h4>
     {typeof count === 'number' && count > 0 && (
-      <span className="rounded-full bg-[#FFDAD4] px-2 py-0.5 text-[10px] font-bold text-[#A9372C]">{count}</span>
+      <span className="rounded-full bg-[#F2EDED] px-2 py-0.5 text-[10px] font-bold text-[#000000]">{count}</span>
     )}
   </div>
 );
@@ -123,7 +123,7 @@ const ItineraryEditor = ({ items = [], onChange }) => {
       {(items || []).map(item => (
         <div key={item.id} className="rounded-lg border border-[#E1D8D4] bg-white p-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-extrabold uppercase tracking-wide text-[#A9372C]">Day {item.day}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#000000]">Day {item.day}</p>
             <button
               type="button"
               onClick={() => handleRemove(item.id)}
@@ -158,7 +158,7 @@ const ItineraryEditor = ({ items = [], onChange }) => {
       <button
         type="button"
         onClick={handleAdd}
-        className="min-h-[40px] w-full rounded-lg border border-dashed border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#A9372C] transition hover:bg-[#FFF8F5]"
+        className="min-h-[40px] w-full rounded-lg border border-dashed border-[#E1D8D4] bg-white px-3 text-sm font-bold text-[#000000] transition hover:bg-[#FFF8F5]"
       >
         + Add day
       </button>

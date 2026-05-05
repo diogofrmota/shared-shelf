@@ -16,6 +16,8 @@ const {
   sectionToView
 } = window;
 
+const TASK_ASSIGNMENT_COLORS = ['#E63B2E', '#8C4F45', '#A9372C', '#2563EB', '#16A34A', '#9333EA'];
+
 function MediaTracker() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentDashboard, setCurrentDashboard] = useState(null);
@@ -1137,6 +1139,30 @@ function MediaTracker() {
     );
   }
   const visibleData = data || defaultDashboardData();
+  const taskAssignmentProfile = (() => {
+    const byId = new Map();
+    const addUser = (user = {}) => {
+      const id = user?.id ? String(user.id) : '';
+      if (!id) return;
+      const existing = byId.get(id) || {};
+      byId.set(id, { ...existing, ...user, id });
+    };
+
+    (Array.isArray(visibleData?.profile?.users) ? visibleData.profile.users : []).forEach(addUser);
+    (Array.isArray(currentDashboard?.members) ? currentDashboard.members : []).forEach(addUser);
+    if (currentUser?.id) addUser(currentUser);
+
+    const users = Array.from(byId.values()).map((user, index) => ({
+      ...user,
+      name: user.name || user.username || user.email || 'User',
+      color: user.color || TASK_ASSIGNMENT_COLORS[index % TASK_ASSIGNMENT_COLORS.length]
+    }));
+
+    return {
+      ...(visibleData?.profile || {}),
+      users
+    };
+  })();
 
   // Determine what to render based on category + subTab
   const renderContent = () => {
@@ -1150,7 +1176,7 @@ function MediaTracker() {
             onUpdateTask={handleUpdateTask}
             onReorderTasks={handleReorderTasks}
             onAddClick={() => { setAddCategory('tasks'); setAddModalOpen(true); }}
-            profile={data?.profile}
+            profile={taskAssignmentProfile}
           />
         );
       }
@@ -1274,7 +1300,7 @@ function MediaTracker() {
         onAddRecipe={handleAddRecipe}
         onAddDate={handleAddDate}
         onAddTask={handleAddTask}
-        profile={visibleData?.profile}
+        profile={addCategory === 'tasks' || activeSubTab === 'tasks' ? taskAssignmentProfile : visibleData?.profile}
         initialData={addEventInitialData}
         mediaWatchOptions={mediaWatchOptions}
         mediaWatchFilter={mediaWatchFilter}

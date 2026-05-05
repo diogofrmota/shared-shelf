@@ -27,7 +27,7 @@ const FormField = ({ label, required, children }) => (
   </div>
 );
 
-const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#000000] placeholder-[#000000] outline-none transition focus:border-[#E63B2E]";
+const inputCls = "min-h-[44px] w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2.5 text-[#000000] placeholder-[#857370] outline-none transition focus:border-[#E63B2E]";
 const selectCls = inputCls;
 
 const formatDateForInput = (isoDate) => {
@@ -228,7 +228,7 @@ const buildCalendarEventPayload = (formData = {}) => {
     date: formData.date || '',
     startDate: formData.date || '',
     endDate: endDate || '',
-    time: multiDay ? '' : formData.time || '',
+    time: multiDay || formData.allDay ? '' : formData.time || '',
     description: formData.description || '',
     color: formData.color || DEFAULT_EVENT_COLOR,
     isPersonal: Boolean(formData.isPersonal),
@@ -504,7 +504,6 @@ const TripChecklistEditor = ({ items = [], onChange, placeholder, withCheckbox =
 const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTrip, onAddRecipe, onAddDate, onAddTask, profile, initialData, mediaWatchOptions, mediaWatchFilter }) => {
   const [formData, setFormData] = useState({});
   const [isSaving, setIsSaving] = useState(false);
-  const [showCalendarOptions, setShowCalendarOptions] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const addressLookupTimerRef = useRef(null);
@@ -525,7 +524,6 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
     setIsSaving(false);
     setAddressSuggestions([]);
     setShowAddressSuggestions(false);
-    setShowCalendarOptions(Boolean(initialData?.date));
   }, [isOpen, activeTab]);
 
   useEffect(() => {
@@ -558,10 +556,17 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
   const getModalTitle = () => {
     const titles = {
       tasks: 'Add task', movies: 'Add movie', tvshows: 'Add TV show',
-      books: 'Add book', calendar: 'Add activity', trips: 'Add trip',
+      books: 'Add book', calendar: 'Add event', trips: 'Add trip',
       dates: 'Add date', recipes: 'Add recipe'
     };
     return titles[activeTab] || 'Add item';
+  };
+
+  const getSubmitLabel = () => {
+    const labels = {
+      calendar: 'Save event'
+    };
+    return labels[activeTab] || getModalTitle();
   };
 
   const isMediaType = ['movies', 'tvshows', 'books'].includes(activeTab);
@@ -677,10 +682,10 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
   const ModalShell = getModalShell();
   const CloseIcon = getComponent('Close');
-  const ChevronRightIcon = getComponent('ChevronRight');
   const dateCategories = window.DATE_CATEGORIES || [];
-  const profileUsers = Array.isArray(profile?.users) ? profile.users : [];
+  const profileUsers = Array.isArray(profile?.users) ? profile.users.filter(user => user?.id) : [];
   const isCalendarMultiDay = isMultiDayCalendarEvent(formData);
+  const isCalendarAllDay = Boolean(formData.allDay) || isCalendarMultiDay;
 
   return (
     <ModalShell
@@ -688,7 +693,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
       onClose={onClose}
       zClass="z-[100]"
       ariaLabel={getModalTitle()}
-      dialogClassName={`max-h-[90vh] w-full ${activeTab === 'trips' ? 'max-w-2xl' : 'max-w-md'} overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30`}
+      dialogClassName={`max-h-[90vh] w-full ${activeTab === 'trips' || activeTab === 'calendar' ? 'max-w-2xl' : 'max-w-md'} overflow-y-auto rounded-2xl border border-[#E1D8D4] bg-white shadow-2xl shadow-[#000000]/30`}
     >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E1D8D4] bg-white p-5">
           <h2 className="text-xl font-extrabold text-[#000000]">{getModalTitle()}</h2>
@@ -709,7 +714,7 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
               <FormField label="Assign to">
                 <select className={selectCls} value={formData.assignedTo || ''} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value || null })}>
                   <option value="">Unassigned</option>
-                  {profileUsers.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
+                  {profileUsers.map(u => <option key={u.id} value={String(u.id)}>{u.name || u.username || u.email || 'User'}</option>)}
                 </select>
               </FormField>
               <FormField label="Due date">
@@ -720,56 +725,55 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
 
           {activeTab === 'calendar' && (
             <>
-              <FormField label="Title" required>
-                <input type="text" className={inputCls} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+              <FormField label="Event Title" required>
+                <input type="text" className={inputCls} value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required autoFocus />
               </FormField>
               <FormField label="For">
                 <VisibilityToggle value={Boolean(formData.isPersonal)} onChange={(v) => setFormData({ ...formData, isPersonal: v })} />
               </FormField>
-              <FormField label="Date" required>
-                <DateInput value={formData.date || ''} onChange={(date) => setFormData({ ...formData, date })} required />
-              </FormField>
-              {!isCalendarMultiDay && (
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <FormField label="Start date" required>
+                  <DateInput
+                    value={formData.date || ''}
+                    onChange={(date) => setFormData({
+                      ...formData,
+                      date,
+                      endDate: formData.endDate && date && formData.endDate < date ? date : formData.endDate
+                    })}
+                    required
+                  />
+                </FormField>
+                <FormField label="End date">
+                  <DateInput
+                    value={formData.endDate || ''}
+                    onChange={(endDate) => setFormData({
+                      ...formData,
+                      endDate,
+                      time: endDate && endDate > formData.date ? '' : formData.time
+                    })}
+                  />
+                </FormField>
+              </div>
+              {formData.endDate && formData.date && formData.endDate < formData.date && (
+                <p className="-mt-2 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
+              )}
+              {!isCalendarAllDay && (
                 <FormField label="Time">
-                  <select className={selectCls} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
+                  <select className={selectCls} value={formData.time || ''} onChange={(e) => setFormData({ ...formData, time: e.target.value })}>
                     <option value="">- none -</option>
                     {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </FormField>
               )}
-              <button
-                type="button"
-                onClick={() => setShowCalendarOptions(open => !open)}
-                className="flex min-h-[44px] w-full items-center justify-between rounded-lg border border-[#E1D8D4] bg-[#FFF8F5] px-3 py-2 text-sm font-bold text-[#000000] transition hover:border-[#FFB4A9] hover:bg-[#FFDAD4]/35"
-                aria-expanded={showCalendarOptions}
-              >
-                <span>More options</span>
-                <ChevronRightIcon size={18} className={`transition ${showCalendarOptions ? 'rotate-90' : ''}`} />
-              </button>
-              {showCalendarOptions && (
-                <div className="space-y-4 rounded-xl border border-[#E1D8D4] bg-[#FFF8F5] p-3">
-                  <FormField label="Colour">
-                    <ColorPicker value={formData.color || DEFAULT_EVENT_COLOR} onChange={(color) => setFormData({ ...formData, color })} />
-                  </FormField>
-                  <FormField label="End date">
-                    <DateInput
-                      value={formData.endDate || ''}
-                      onChange={(endDate) => setFormData({
-                        ...formData,
-                        endDate,
-                        time: endDate && endDate > formData.date ? '' : formData.time
-                      })}
-                    />
-                    {formData.endDate && formData.date && formData.endDate < formData.date && (
-                      <p className="mt-1 text-xs font-semibold text-[#E63B2E]">End date must be on or after the start date.</p>
-                    )}
-                  </FormField>
-                  <CalendarRecurrenceFields formData={formData} setFormData={setFormData} />
-                  <FormField label="Description">
-                    <textarea rows="3" className={inputCls} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-                  </FormField>
-                </div>
-              )}
+              <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+                <input
+                  type="checkbox"
+                  checked={isCalendarAllDay}
+                  onChange={(e) => setFormData({ ...formData, allDay: e.target.checked, time: e.target.checked ? '' : formData.time })}
+                  className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                />
+                All day
+              </label>
             </>
           )}
 
@@ -892,28 +896,30 @@ const AddModal = ({ isOpen, onClose, activeTab, onAddMedia, onAddEvent, onAddTri
                   ))}
                 </select>
               </FormField>
-              <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
-                <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
-                Favourite
-              </label>
-              <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
-                <input
-                  type="checkbox"
-                  checked={isDateVisited(formData)}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    status: e.target.checked ? 'visited' : 'want-to-go',
-                    beenThere: e.target.checked
-                  })}
-                  className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
-                />
-                Visited
-              </label>
+              <div className="space-y-2">
+                <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+                  <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+                  Favourite
+                </label>
+                <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+                  <input
+                    type="checkbox"
+                    checked={isDateVisited(formData)}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      status: e.target.checked ? 'visited' : 'want-to-go',
+                      beenThere: e.target.checked
+                    })}
+                    className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+                  />
+                  Visited
+                </label>
+              </div>
             </>
           )}
 
           <button type="submit" disabled={isSaving} className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F] disabled:cursor-not-allowed disabled:bg-[#D8C2BE] disabled:shadow-none">
-            {isSaving && activeTab === 'dates' ? 'Locating address...' : getModalTitle()}
+            {isSaving && activeTab === 'dates' ? 'Locating address...' : getSubmitLabel()}
           </button>
         </form>
     </ModalShell>
@@ -1097,8 +1103,6 @@ const EditDateModal = ({ isOpen, onClose, date, onSave }) => {
       name: date.name || '',
       address: date.address || '',
       category: date.category || 'restaurant',
-      notes: date.notes || '',
-      link: date.link || '',
       isFavourite: Boolean(date.isFavourite),
       status: isDateVisited(date) ? 'visited' : 'want-to-go',
       beenThere: isDateVisited(date)
@@ -1153,8 +1157,6 @@ const EditDateModal = ({ isOpen, onClose, date, onSave }) => {
       name: formData.name,
       category: formData.category || 'restaurant',
       address,
-      notes: formData.notes || '',
-      link: window.safeExternalUrl?.(formData.link) || '',
       isFavourite: Boolean(formData.isFavourite),
       status,
       beenThere: status === 'visited',
@@ -1238,29 +1240,25 @@ const EditDateModal = ({ isOpen, onClose, date, onSave }) => {
             ))}
           </select>
         </FormField>
-        <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
-          <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
-          Favourite
-        </label>
-        <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
-          <input
-            type="checkbox"
-            checked={isDateVisited(formData)}
-            onChange={(e) => setFormData({
-              ...formData,
-              status: e.target.checked ? 'visited' : 'want-to-go',
-              beenThere: e.target.checked
-            })}
-            className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
-          />
-          Visited
-        </label>
-        <FormField label="Notes">
-          <textarea rows="3" className={`${inputCls} min-h-[80px]`} value={formData.notes || ''} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-        </FormField>
-        <FormField label="Link">
-          <input type="url" className={inputCls} value={formData.link || ''} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
-        </FormField>
+        <div className="space-y-2">
+          <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+            <input type="checkbox" checked={Boolean(formData.isFavourite)} onChange={(e) => setFormData({ ...formData, isFavourite: e.target.checked })} className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]" />
+            Favourite
+          </label>
+          <label className="flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#000000]">
+            <input
+              type="checkbox"
+              checked={isDateVisited(formData)}
+              onChange={(e) => setFormData({
+                ...formData,
+                status: e.target.checked ? 'visited' : 'want-to-go',
+                beenThere: e.target.checked
+              })}
+              className="h-4 w-4 rounded border-[#D8C2BE] accent-[#E63B2E]"
+            />
+            Visited
+          </label>
+        </div>
         <button type="submit" className="mt-2 min-h-[44px] w-full rounded-xl bg-[#E63B2E] py-3 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]">
           Save changes
         </button>

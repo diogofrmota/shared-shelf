@@ -74,8 +74,8 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [completedExpanded, setCompletedExpanded] = useState(false);
 
-  const users = profile?.users || [];
-  const getUserById = (id) => users.find(u => u.id === id);
+  const users = Array.isArray(profile?.users) ? profile.users.filter(user => user?.id) : [];
+  const getUserById = (id) => users.find(u => String(u.id) === String(id));
 
   const sortedTasks = useMemo(() => [...tasks].sort((a, b) => {
     if (a.completed === b.completed) return 0;
@@ -96,7 +96,6 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
   const activeCnt = activeTasks.length;
   const EmptyState = window.getWindowComponent?.('EmptyState', window.MissingComponent) || window.MissingComponent;
   const CheckSquare = getTaskComponent('CheckSquare');
-  const Plus = getTaskComponent('Plus');
   const Trash = getTaskComponent('Trash');
   const ChevronRight = getTaskComponent('ChevronRight');
 
@@ -245,7 +244,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
                     className="w-full rounded-lg border border-[#E1D8D4] bg-white px-3 py-2 text-[#000000] outline-none transition focus:border-[#E63B2E]"
                   >
                     <option value="">Unassigned</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.name || u.username}</option>)}
+                    {users.map(u => <option key={u.id} value={String(u.id)}>{u.name || u.username || u.email || 'User'}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
@@ -394,9 +393,7 @@ const TasksView = ({ tasks, onToggleTask, onDeleteTask, onUpdateTask, onReorderT
           onClick={onAddClick}
           className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-xl bg-[#E63B2E] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#E63B2E]/25 transition hover:bg-[#CC302F]"
         >
-          <Plus size={16} />
-          <CheckSquare size={16} />
-          Add task
+          + Add tasks
         </button>
       </div>
 
